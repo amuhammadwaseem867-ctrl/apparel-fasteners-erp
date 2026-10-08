@@ -1,403 +1,57 @@
 "use client";
 
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Edit3,
-  FileText,
-  Image as ImageIcon,
-  Package,
-  Boxes,
-  DollarSign,
-  ClipboardList,
-  Activity,
-} from "lucide-react";
+import { useEffect, useState } from "react";
 
-import PageHeader from "@/components/layout/PageHeader";
-import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
-
-import "./ProductDetail.css";
-
-/*
- * Product detail — fetched from the backend by product id.
- * No mock record: until the backend is connected the page
- * shows an empty state.
- */
-const PRODUCT = null;
+import { apiRequest } from "@/lib/api/client";
+import "../ProductMaster.css";
 
 export default function ProductDetailClient({ id }) {
-  const productId = id;
+  const [product, setProduct] = useState(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  if (!PRODUCT) {
-    return (
-      <div className="product-detail-page">
-        <PageHeader
-          title="Product"
-          description="Product details load from the backend once connected."
-          action={
-            <Link href="/products">
-              <Button variant="secondary" icon={ArrowLeft}>
-                Products
-              </Button>
-            </Link>
-          }
-        />
-
-        <div
-          style={{
-            padding: "60px 20px",
-            textAlign: "center",
-            color: "var(--af-text-muted)",
-            fontSize: "12px",
-            background: "var(--af-surface)",
-            border: "1px solid var(--af-border)",
-            borderRadius: "9px",
-          }}
-        >
-          No product data available yet. Products will appear here
-          once the product database is connected.
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    let active = true;
+    apiRequest(`/api/products/${encodeURIComponent(id)}`)
+      .then((value) => { if (active) setProduct(value); })
+      .catch((cause) => { if (active) setError(cause.message); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [id]);
 
   return (
-    <div className="product-detail-page">
-      <PageHeader
-        title={PRODUCT.name}
-        description={`${PRODUCT.sku} · ${PRODUCT.division} · ${PRODUCT.category}`}
-        action={
-          <div className="product-detail-header-actions">
-            <Link href="/products">
-              <Button
-                variant="secondary"
-                icon={ArrowLeft}
-              >
-                Products
-              </Button>
-            </Link>
-
-            <Link
-              href={`/products/${productId}/edit`}
-            >
-              <Button icon={Edit3}>
-                Edit Product
-              </Button>
-            </Link>
-          </div>
-        }
-      />
-
-      <div className="product-detail-hero">
-        <div className="product-detail-hero__identity">
-          <div className="product-detail-hero__icon">
-            <Package size={24} />
-          </div>
-
-          <div>
-            <div className="product-detail-hero__eyebrow">
-              Product Master
-            </div>
-
-            <h2>{PRODUCT.name}</h2>
-
-            <p>{PRODUCT.description}</p>
-
-            <div className="product-detail-hero__meta">
-              <span>{PRODUCT.sku}</span>
-              <span>{PRODUCT.division}</span>
-              <span>{PRODUCT.category}</span>
-              <span>{PRODUCT.unit}</span>
-            </div>
-          </div>
+    <main className="product-master">
+      <header className="product-master__header">
+        <div>
+          <p>PRODUCT MASTER</p>
+          <h1>{product?.name || "Product details"}</h1>
+          <span>Catalog record loaded from the database.</span>
         </div>
-
-        <div className="product-detail-hero__status">
-          <Badge variant="success">
-            Active
-          </Badge>
+        <div className="product-master__detail-actions">
+          <Link href="/products">Products</Link>
+          {product && product.status !== "ARCHIVED" && <Link href={`/products/${product.id}/edit`}>Edit product</Link>}
         </div>
-      </div>
-
-      <div className="product-detail-stats">
-        <Stat
-          label="Current Stock"
-          value={PRODUCT.inventory.currentStock}
-          icon={Boxes}
-        />
-
-        <Stat
-          label="Selling Price"
-          value={PRODUCT.pricing.sellingPrice}
-          icon={DollarSign}
-        />
-
-        <Stat
-          label="Variants"
-          value={PRODUCT.variants.length}
-          icon={ClipboardList}
-        />
-
-        <Stat
-          label="Documents"
-          value={PRODUCT.documents.length}
-          icon={FileText}
-        />
-      </div>
-
-      <div className="product-detail-grid">
-        <div className="product-detail-main">
-          <Card
-            title="Overview"
-            description="Core product master information."
-          >
-            <div className="product-detail-info-grid">
-              <Info
-                label="Product Name"
-                value={PRODUCT.name}
-              />
-              <Info
-                label="SKU / Product Code"
-                value={PRODUCT.sku}
-              />
-              <Info
-                label="Brand"
-                value={PRODUCT.brand}
-              />
-              <Info
-                label="Division"
-                value={PRODUCT.division}
-              />
-              <Info
-                label="Category"
-                value={PRODUCT.category}
-              />
-              <Info
-                label="Unit"
-                value={PRODUCT.unit}
-              />
-              <Info
-                label="Status"
-                value="Active"
-              />
-            </div>
-          </Card>
-
-          <Card
-            title="Specifications"
-            description="Technical characteristics of the product."
-          >
-            <div className="product-detail-info-grid">
-              {Object.entries(
-                PRODUCT.specifications
-              ).map(([key, value]) => (
-                <Info
-                  key={key}
-                  label={formatLabel(key)}
-                  value={value}
-                />
-              ))}
-            </div>
-          </Card>
-
-          <Card
-            title="Variants"
-            description={`${PRODUCT.variants.length} configured product variants.`}
-          >
-            <div className="product-detail-table-wrapper">
-              <table className="product-detail-table">
-                <thead>
-                  <tr>
-                    <th>SKU</th>
-                    <th>Size</th>
-                    <th>Color</th>
-                    <th>Barcode</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {PRODUCT.variants.map(
-                    (variant) => (
-                      <tr key={variant.sku}>
-                        <td>
-                          <strong>
-                            {variant.sku}
-                          </strong>
-                        </td>
-                        <td>{variant.size}</td>
-                        <td>{variant.color}</td>
-                        <td>
-                          {variant.barcode}
-                        </td>
-                        <td>
-                          <Badge variant="success">
-                            Active
-                          </Badge>
-                        </td>
-                      </tr>
-                    )
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-
-          <Card
-            title="Inventory"
-            description="Stock control and warehouse configuration."
-          >
-            <div className="product-detail-info-grid">
-              {Object.entries(
-                PRODUCT.inventory
-              ).map(([key, value]) => (
-                <Info
-                  key={key}
-                  label={formatLabel(key)}
-                  value={value}
-                />
-              ))}
-            </div>
-          </Card>
-
-          <Card
-            title="Pricing"
-            description="Commercial pricing and tax configuration."
-          >
-            <div className="product-detail-info-grid">
-              {Object.entries(
-                PRODUCT.pricing
-              ).map(([key, value]) => (
-                <Info
-                  key={key}
-                  label={formatLabel(key)}
-                  value={value}
-                />
-              ))}
-            </div>
-          </Card>
-
-          <Card
-            title="Documents"
-            description="Technical and compliance documents attached to this product."
-          >
-            <div className="product-detail-documents">
-              {PRODUCT.documents.map(
-                (document) => (
-                  <div
-                    className="product-detail-document"
-                    key={document.name}
-                  >
-                    <div className="product-detail-document__icon">
-                      <FileText size={18} />
-                    </div>
-
-                    <div>
-                      <strong>
-                        {document.name}
-                      </strong>
-                      <span>
-                        {document.type} ·{" "}
-                        {document.size}
-                      </span>
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
-          </Card>
-        </div>
-
-        <aside className="product-detail-sidebar">
-          <Card
-            title="Product Image"
-            description="Primary catalog image."
-          >
-            <div className="product-detail-image-placeholder">
-              <ImageIcon size={24} />
-              <span>
-                Product image
-              </span>
-            </div>
-          </Card>
-
-          <Card
-            title="Activity"
-            description="Recent product changes."
-          >
-            <div className="product-detail-activity">
-              {PRODUCT.activity.map(
-                (item, index) => (
-                  <div
-                    className="product-detail-activity__item"
-                    key={`${item.action}-${index}`}
-                  >
-                    <div className="product-detail-activity__marker">
-                      <Activity size={13} />
-                    </div>
-
-                    <div>
-                      <strong>
-                        {item.action}
-                      </strong>
-
-                      <span>
-                        {item.user}
-                      </span>
-
-                      <small>
-                        {item.date}
-                      </small>
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
-          </Card>
-        </aside>
-      </div>
-    </div>
+      </header>
+      <section className="product-master__detail">
+        {loading && <p role="status">Loading product…</p>}
+        {!loading && error && <p role="alert" className="product-master__error">{error}</p>}
+        {!loading && !error && product && (
+          <dl>
+            <div><dt>SKU</dt><dd>{product.sku}</dd></div>
+            <div><dt>Category</dt><dd>{product.category}</dd></div>
+            <div><dt>Product type</dt><dd>{product.productType}</dd></div>
+            <div><dt>Variant</dt><dd>{product.variant || "—"}</dd></div>
+            <div><dt>Unit</dt><dd>{product.unit}</dd></div>
+            <div><dt>Unit price</dt><dd>{Number(product.unitPrice).toFixed(2)}</dd></div>
+            <div><dt>Status</dt><dd>{product.status}</dd></div>
+            <div><dt>Stock</dt><dd>Not configured</dd></div>
+            <div className="product-master__detail-wide"><dt>Description</dt><dd>{product.description || "—"}</dd></div>
+            <div><dt>Created</dt><dd>{new Date(product.createdAt).toLocaleString()}</dd></div>
+            <div><dt>Updated</dt><dd>{new Date(product.updatedAt).toLocaleString()}</dd></div>
+          </dl>
+        )}
+      </section>
+    </main>
   );
-}
-
-function Stat({
-  label,
-  value,
-  icon: Icon,
-}) {
-  return (
-    <div className="product-detail-stat">
-      <div>
-        <span>{label}</span>
-        <strong>{value}</strong>
-      </div>
-
-      <div className="product-detail-stat__icon">
-        <Icon size={17} />
-      </div>
-    </div>
-  );
-}
-
-function Info({
-  label,
-  value,
-}) {
-  return (
-    <div className="product-detail-info">
-      <span>{label}</span>
-      <strong>{value || "—"}</strong>
-    </div>
-  );
-}
-
-function formatLabel(value) {
-  return String(value)
-    .replace(/([A-Z])/g, " $1")
-    .replace(/-/g, " ")
-    .replace(/^./, (char) =>
-      char.toUpperCase()
-    );
 }

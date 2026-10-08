@@ -114,15 +114,27 @@ export default function CommandPalette({
   const [activeIndex, setActiveIndex] =
     useState(0);
 
+  /*
+   * Reset the palette when it closes. This runs during render
+   * (tracking the previous open state) instead of inside an effect.
+   */
+  const [previousOpen, setPreviousOpen] =
+    useState(open);
+
+  if (open !== previousOpen) {
+    setPreviousOpen(open);
+
+    if (!open) {
+      setQuery("");
+      setActiveIndex(0);
+    }
+  }
+
   const inputRef = useRef(null);
   const listRef = useRef(null);
 
   useEffect(() => {
-    if (!open) {
-      setQuery("");
-      setActiveIndex(0);
-      return;
-    }
+    if (!open) return;
 
     const timeout = window.setTimeout(
       () => {
@@ -241,10 +253,6 @@ export default function CommandPalette({
   }, [items, query]);
 
   useEffect(() => {
-    setActiveIndex(0);
-  }, [query]);
-
-  useEffect(() => {
     const activeElement =
       listRef.current?.querySelector(
         "[data-active='true']"
@@ -318,9 +326,10 @@ export default function CommandPalette({
           <input
             ref={inputRef}
             value={query}
-            onChange={(event) =>
-              setQuery(event.target.value)
-            }
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setActiveIndex(0);
+            }}
             placeholder={placeholder}
             aria-label="Command search"
             autoComplete="off"

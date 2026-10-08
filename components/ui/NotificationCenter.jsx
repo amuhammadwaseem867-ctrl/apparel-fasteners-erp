@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import {
   Bell,
   CheckCheck,
@@ -41,13 +42,23 @@ export default function NotificationCenter({
   onMarkAllRead,
 }) {
   const panelRef = useRef(null);
+  const router = useRouter();
 
   const [items, setItems] = useState(notifications);
   const [filter, setFilter] = useState("all");
 
-  useEffect(() => {
+  /*
+   * Keep the local copy in sync with the incoming notifications prop.
+   * This runs during render (adjusting state derived from props)
+   * instead of inside an effect.
+   */
+  const [previousNotifications, setPreviousNotifications] =
+    useState(notifications);
+
+  if (notifications !== previousNotifications) {
+    setPreviousNotifications(notifications);
     setItems(notifications);
-  }, [notifications]);
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -138,7 +149,7 @@ export default function NotificationCenter({
     onSelect?.(item);
 
     if (!onSelect && item.href) {
-      window.location.href = item.href;
+      router.push(item.href);
     }
 
     onClose?.();
@@ -305,8 +316,7 @@ export default function NotificationCenter({
             type="button"
             onClick={() => {
               onClose?.();
-              window.location.href =
-                "/administration/settings";
+              router.push("/administration/settings");
             }}
           >
             View notification settings

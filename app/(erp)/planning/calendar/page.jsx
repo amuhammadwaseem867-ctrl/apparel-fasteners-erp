@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   CalendarDays,
   ChevronLeft,
@@ -100,10 +104,42 @@ function formatDateKey(date) {
   return `${year}-${month}-${day}`;
 }
 
+/*
+ * Minute ticker for the live "today" value. This subscribes to the
+ * system clock as an external store: the highlighted day updates when
+ * the day changes, without setting state synchronously inside an
+ * effect. Only runs on the client.
+ */
+function subscribeToClock(onStoreChange) {
+  const timer = window.setInterval(
+    onStoreChange,
+    60 * 1000
+  );
+
+  return () => window.clearInterval(timer);
+}
+
+const PLACEHOLDER_DATE = new Date(2000, 0, 1);
+
 export default function PlanningCalendarPage() {
-  const [currentDate, setCurrentDate] =
-    useState(() => new Date(2000, 0, 1));
-  const [todayKey, setTodayKey] = useState("");
+  /*
+   * null means "follow the live current month". The month label and
+   * grid fall back to a fixed placeholder until the client has the
+   * live today value, which keeps server and hydration renders
+   * identical without a setState call inside an effect.
+   */
+  const [currentDate, setCurrentDate] = useState(null);
+
+  /*
+   * Live "today" key subscribed from the clock ticker (external
+   * system) instead of an interval that sets state inside an effect.
+   * The server snapshot is empty for hydration safety.
+   */
+  const todayKey = useSyncExternalStore(
+    subscribeToClock,
+    () => formatDateKey(new Date()),
+    () => ""
+  );
 
   const [search, setSearch] = useState("");
   const [eventType, setEventType] =
@@ -126,24 +162,23 @@ export default function PlanningCalendarPage() {
    */
   const events = useMemo(() => [], []);
 
+  /*
+   * The displayed month is derived: an explicitly navigated month
+   * wins, otherwise the live current month is used (placeholder on
+   * the server / during hydration).
+   */
+  const viewDate = useMemo(() => {
+    if (currentDate) return currentDate;
+
+    if (!todayKey) return PLACEHOLDER_DATE;
+
+    return new Date();
+  }, [currentDate, todayKey]);
+
   const days = useMemo(
-    () => getMonthDays(currentDate),
-    [currentDate]
+    () => getMonthDays(viewDate),
+    [viewDate]
   );
-
-  useEffect(() => {
-    const updateToday = () => {
-      setTodayKey(formatDateKey(new Date()));
-    };
-
-    const now = new Date();
-    setCurrentDate(now);
-    updateToday();
-
-    const timer = window.setInterval(updateToday, 60 * 1000);
-
-    return () => window.clearInterval(timer);
-  }, []);
 
   const filteredEvents = useMemo(() => {
     return events.filter((event) => {
@@ -189,30 +224,38 @@ export default function PlanningCalendarPage() {
 
   const goToPreviousMonth = () => {
     setCurrentDate(
-      (previous) =>
-        new Date(
-          previous.getFullYear(),
-          previous.getMonth() - 1,
+      (previous) => {
+        const base = previous ?? new Date();
+
+        return new Date(
+          base.getFullYear(),
+          base.getMonth() - 1,
           1
-        )
+        );
+      }
     );
   };
 
   const goToNextMonth = () => {
     setCurrentDate(
-      (previous) =>
-        new Date(
-          previous.getFullYear(),
-          previous.getMonth() + 1,
+      (previous) => {
+        const base = previous ?? new Date();
+
+        return new Date(
+          base.getFullYear(),
+          base.getMonth() + 1,
           1
-        )
+        );
+      }
     );
   };
 
   const goToToday = () => {
-    const now = new Date();
-    setCurrentDate(now);
-    setTodayKey(formatDateKey(now));
+    /*
+     * Follow the live current month again; the highlighted day is
+     * already kept up to date by the clock subscription.
+     */
+    setCurrentDate(null);
   };
 
   const handleRefresh = () => {
@@ -333,7 +376,7 @@ export default function PlanningCalendarPage() {
               </button>
 
               <h2>
-                {getMonthLabel(currentDate)}
+                {getMonthLabel(viewDate)}
               </h2>
 
               <button

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Calendar,
   Check,
@@ -72,11 +72,25 @@ export default function FilterPanel({
   const [draftFilters, setDraftFilters] =
     useState(filters);
 
-  useEffect(() => {
+  /*
+   * Synchronize the draft with the incoming props when the panel
+   * opens or the filters change while it is open. This runs during
+   * render (adjusting state derived from props) instead of inside an
+   * effect.
+   */
+  const [previousContext, setPreviousContext] =
+    useState({ open, filters });
+
+  if (
+    previousContext.open !== open ||
+    previousContext.filters !== filters
+  ) {
+    setPreviousContext({ open, filters });
+
     if (open) {
       setDraftFilters(filters);
     }
-  }, [open, filters]);
+  }
 
   const activeCount = useMemo(() => {
     return Object.entries(draftFilters).filter(

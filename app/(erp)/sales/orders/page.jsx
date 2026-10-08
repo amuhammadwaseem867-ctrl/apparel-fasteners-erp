@@ -1,670 +1,454 @@
- "use client";
+﻿"use client";
 
-import { useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  Eye,
-  Pencil,
-  Plus,
-  ShoppingCart,
-  Trash2,
-} from "lucide-react";
+import { useEffect, useState } from "react";
 
-import PageHeader from "@/components/ui/PageHeader";
-import Button from "@/components/ui/Button";
-import EmptyState from "@/components/ui/EmptyState";
-import Badge from "@/components/ui/Badge";
-import Pagination from "@/components/ui/Pagination";
-import ConfirmDialog from "@/components/ui/ConfirmDialog";
-import Modal from "@/components/ui/Modal";
-import Select from "@/components/ui/Select";
-import Input from "@/components/ui/Input";
-import { useToast } from "@/components/ui/ToastProvider";
-
-import useOrderStore from "@/lib/useOrderStore";
-import useOrderFilters from "@/lib/useOrderFilters";
-
-import {
-  ORDER_STATUSES,
-  ZIPPER_SIZES,
-  MATERIALS,
-  LOGO_TYPES,
-  PRODUCTION_PRIORITIES,
-} from "@/config/orders";
-import { PRODUCTION_STAGES } from "@/config/production";
-
-import "./Orders.css";
+import { apiRequest } from "@/lib/api/client";
+import "./SalesOrders.css";
 
 const PAGE_SIZE = 25;
 
+function money(value) {
+  const amount = Number(value);
+
+  if (!Number.isFinite(amount)) {
+    return "0.00";
+  }
+
+  return amount.toFixed(2);
+}
+
 export default function OrdersPage() {
-  const toast = useToast();
-
-  const {
-    orders,
-    deleteOrder,
-    setStatus,
-  } = useOrderStore([]);
-
   const [filters, setFilters] = useState({
     search: "",
-    status: "all",
-    customer: "",
-    stage: "all",
-    priority: "all",
-    product: "",
-    size: "all",
-    material: "all",
-    finish: "",
-    logo: "all",
+    customerId: "",
+    status: "",
     dateFrom: "",
     dateTo: "",
   });
 
-  const [showFilters, setShowFilters] = useState(false);
+  const [customers, setCustomers] = useState([]);
+  const [result, setResult] = useState(null);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [actionBusy, setActionBusy] = useState("");
+  const [error, setError] = useState("");
+  const [refresh, setRefresh] = useState(0);
 
-  const [sort, setSort] = useState({
-    key: "updatedAt",
-    direction: "desc",
-  });
+  useEffect(() => {
+    let active = true;
 
-  const [pagination, setPagination] = useState({
-    page: 1,
-    pageSize: PAGE_SIZE,
-  });
+    const timer = window.setTimeout(async () => {
+      setLoading(true);
+      setError("");
 
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [statusTarget, setStatusTarget] = useState(null);
-  const [statusNext, setStatusNext] = useState("");
-  const [statusRemarks, setStatusRemarks] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+      const params = new URLSearchParams({
+        ...filters,
+        page: String(page),
+        pageSize: String(PAGE_SIZE),
+      });
 
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
+      try {
+        const data = await apiRequest(
+          `/api/sales/orders?${params.toString()}`,
+        );
 
-    if (filters.search) count += 1;
-    if (filters.status !== "all") count += 1;
-    if (filters.customer) count += 1;
-    if (filters.stage !== "all") count += 1;
-    if (filters.priority !== "all") count += 1;
-    if (filters.product) count += 1;
-    if (filters.size !== "all") count += 1;
-    if (filters.material !== "all") count += 1;
-    if (filters.finish) count += 1;
-    if (filters.logo !== "all") count += 1;
-    if (filters.dateFrom) count += 1;
-    if (filters.dateTo) count += 1;
+        if (active) {
+          setResult(data);
+        }
+      } catch (cause) {
+        if (active) {
+          setError(
+            cause?.message || "Unable to load sales orders.",
+          );
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }, 250);
 
-    return count;
-  }, [filters]);
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [filters, page, refresh]);
 
-  const {
-    rows,
-    total,
-    page,
-    pageSize,
-    totalPages,
-  } = useOrderFilters(orders, filters, sort, pagination);
+  useEffect(() => {
+    let active = true;
 
-  const statusCounts = useMemo(() => {
-    const counts = Object.fromEntries(
-      ORDER_STATUSES.map((status) => [status.id, 0])
-    );
+    async function loadCustomers() {
+      try {
+        const value = await apiRequest(
+          "/api/customers?page=1&pageSize=100",
+        );
 
-    orders.forEach((order) => {
-      counts[order.status] = (counts[order.status] || 0) + 1;
-    });
+        if (active) {
+          setCustomers(value.customers ?? []);
+        }
+      } catch (cause) {
+        if (active) {
+          setError(
+            cause?.message || "Unable to load customers.",
+          );
+        }
+      }
+    }
 
-    return counts;
-  }, [orders]);
+    loadCustomers();
 
-  function updateFilter(key, value) {
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  function setFilter(key, value) {
     setFilters((current) => ({
       ...current,
       [key]: value,
     }));
 
-    setPagination((current) => ({ ...current, page: 1 }));
+    setPage(1);
   }
 
-  function clearFilters() {
-    setFilters({
-      search: "",
-      status: "all",
-      customer: "",
-      stage: "all",
-      priority: "all",
-      product: "",
-      size: "all",
-      material: "all",
-      finish: "",
-      logo: "all",
-      dateFrom: "",
-      dateTo: "",
-    });
+  async function changeStatus(order, action) {
+    if (action === "cancel") {
+      const confirmed = window.confirm(
+        `Cancel sales order ${order.orderNumber}?`,
+      );
 
-    setPagination((current) => ({ ...current, page: 1 }));
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    setActionBusy(`${order.id}:${action}`);
+    setError("");
+
+    try {
+      await apiRequest(
+        `/api/sales/orders/${encodeURIComponent(order.id)}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ action }),
+        },
+      );
+
+      setRefresh((current) => current + 1);
+    } catch (cause) {
+      setError(
+        cause?.message ||
+          `Unable to ${action} sales order.`,
+      );
+    } finally {
+      setActionBusy("");
+    }
   }
 
-  function handleSort(key) {
-    setSort((current) => ({
-      key,
-      direction:
-        current.key === key && current.direction === "asc"
-          ? "desc"
-          : "asc",
-    }));
-  }
-
-  function handleDelete() {
-    if (!deleteTarget) return;
-
-    setSubmitting(true);
-
-    deleteOrder(deleteTarget.id);
-
-    setSubmitting(false);
-    setDeleteTarget(null);
-
-    toast.success({
-      title: "Order deleted",
-      message: `${deleteTarget.orderNumber} was removed.`,
-    });
-  }
-
-  function handleStatusChange() {
-    if (!statusTarget || !statusNext) return;
-
-    setSubmitting(true);
-
-    setStatus(statusTarget.id, statusNext, statusRemarks);
-
-    setSubmitting(false);
-    setStatusTarget(null);
-    setStatusNext("");
-    setStatusRemarks("");
-
-    toast.success({
-      title: "Status updated",
-      message: `${statusTarget.orderNumber} updated.`,
-    });
-  }
-
-  const stageLabel = (key) =>
-    PRODUCTION_STAGES.find((stage) => stage.key === key)?.label || "—";
-
-  const priorityVariant = {
-    low: "default",
-    normal: "info",
-    high: "warning",
-    urgent: "danger",
-  };
+  const orders = result?.orders ?? [];
 
   return (
-    <main className="sales-orders">
-      <PageHeader
-        eyebrow="Business / Sales & CRM"
-        title="Orders"
-        description="Customer orders are the backbone of the ERP. Create, filter, track and trace every zipper order."
-        action={
-          <Link href="/sales/orders/new">
-            <Button variant="primary" icon={Plus}>
-              New Order
-            </Button>
-          </Link>
-        }
-      />
+    <main className="order-list">
+      <header className="order-list__header">
+        <div className="order-list__heading">
+          <p className="order-list__eyebrow">
+            SALES / CRM
+          </p>
 
-      <div className="sales-orders__content">
-        {/* STATUS OVERVIEW — clickable filters */}
-        <section className="sales-orders__status-card">
-          <div className="sales-orders__status-grid sales-orders__status-grid--wide">
-            {ORDER_STATUSES.map((status) => (
-              <button
-                className={`sales-orders__status sales-orders__status--${status.id}${
-                  filters.status === status.id
-                    ? " sales-orders__status--selected"
-                    : ""
-                }`}
-                key={status.id}
-                type="button"
-                onClick={() =>
-                  updateFilter(
-                    "status",
-                    filters.status === status.id ? "all" : status.id
-                  )
-                }
+          <h1>Sales orders</h1>
+
+          <span>
+            Manage customer orders, line items and approval
+            status.
+          </span>
+        </div>
+
+        <Link
+          className="order-list__primary"
+          href="/sales/orders/new"
+        >
+          + New sales order
+        </Link>
+      </header>
+
+      <section
+        className="order-list__filters"
+        aria-label="Sales order filters"
+      >
+        <label>
+          <span>Search</span>
+
+          <input
+            type="search"
+            placeholder="Order number or customer"
+            value={filters.search}
+            onChange={(event) =>
+              setFilter("search", event.target.value)
+            }
+          />
+        </label>
+
+        <label>
+          <span>Customer</span>
+
+          <select
+            value={filters.customerId}
+            onChange={(event) =>
+              setFilter(
+                "customerId",
+                event.target.value,
+              )
+            }
+          >
+            <option value="">All customers</option>
+
+            {customers.map((customer) => (
+              <option
+                key={customer.id}
+                value={customer.id}
               >
-                <div className="sales-orders__status-content">
-                  <strong>{status.label}</strong>
-                </div>
-
-                <b>{statusCounts[status.id] ?? 0}</b>
-              </button>
+                {customer.code} — {customer.name}
+              </option>
             ))}
-          </div>
-        </section>
+          </select>
+        </label>
 
-        {/* TOOLBAR */}
-        <section className="sales-orders__toolbar">
-          <div className="sales-orders__search">
-            <Input
-              placeholder="Search order number, customer, code, SKU, stage..."
-              value={filters.search}
-              onChange={(event) => updateFilter("search", event.target.value)}
-            />
-          </div>
+        <label>
+          <span>Status</span>
 
-          <div className="sales-orders__filters">
-            <Button
-              variant={activeFilterCount > 0 ? "soft" : "secondary"}
-              onClick={() => setShowFilters((current) => !current)}
-            >
-              Filters
-              {activeFilterCount > 0 && (
-                <span className="sales-orders__filter-count">
-                  {activeFilterCount}
-                </span>
+          <select
+            value={filters.status}
+            onChange={(event) =>
+              setFilter("status", event.target.value)
+            }
+          >
+            <option value="">All statuses</option>
+            <option value="DRAFT">Draft</option>
+            <option value="APPROVED">Approved</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Order date from</span>
+
+          <input
+            type="date"
+            value={filters.dateFrom}
+            onChange={(event) =>
+              setFilter("dateFrom", event.target.value)
+            }
+          />
+        </label>
+
+        <label>
+          <span>Order date to</span>
+
+          <input
+            type="date"
+            value={filters.dateTo}
+            onChange={(event) =>
+              setFilter("dateTo", event.target.value)
+            }
+          />
+        </label>
+      </section>
+
+      {error && (
+        <div className="order-list__top-error" role="alert">
+          <span>{error}</span>
+
+          <button
+            type="button"
+            onClick={() =>
+              setRefresh((current) => current + 1)
+            }
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      <section className="order-list__panel">
+        <div className="order-list__scroll">
+          <table className="order-list__table">
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th className="order-list__numeric">
+                  Items
+                </th>
+                <th className="order-list__numeric">
+                  Total
+                </th>
+                <th>Status</th>
+                <th className="order-list__actions-head">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {loading && (
+                <tr>
+                  <td
+                    colSpan="7"
+                    className="order-list__message"
+                  >
+                    Loading sales orders...
+                  </td>
+                </tr>
               )}
-            </Button>
 
-            {activeFilterCount > 0 && (
-              <Button variant="secondary" onClick={clearFilters}>
-                Clear Filters
-              </Button>
-            )}
-          </div>
-        </section>
-
-        {/* FILTER PANEL */}
-        {showFilters && (
-          <section className="sales-orders__filter-panel">
-            <div className="sales-orders__filter-grid">
-              <Select
-                label="Status"
-                value={filters.status}
-                onChange={(value) => updateFilter("status", value)}
-                options={[
-                  { value: "all", label: "All Statuses" },
-                  ...ORDER_STATUSES.map((status) => ({
-                    value: status.id,
-                    label: status.label,
-                  })),
-                ]}
-              />
-
-              <Input
-                label="Customer"
-                placeholder="Filter by customer name"
-                value={filters.customer}
-                onChange={(event) =>
-                  updateFilter("customer", event.target.value)
-                }
-              />
-
-              <Select
-                label="Production Stage"
-                value={filters.stage}
-                onChange={(value) => updateFilter("stage", value)}
-                options={[
-                  { value: "all", label: "All Stages" },
-                  ...PRODUCTION_STAGES.map((stage) => ({
-                    value: stage.key,
-                    label: stage.label,
-                  })),
-                ]}
-              />
-
-              <Select
-                label="Priority"
-                value={filters.priority}
-                onChange={(value) => updateFilter("priority", value)}
-                options={[
-                  { value: "all", label: "All Priorities" },
-                  ...PRODUCTION_PRIORITIES.map((priority) => ({
-                    value: priority.id,
-                    label: priority.label,
-                  })),
-                ]}
-              />
-
-              <Input
-                label="Product / Zipper Type"
-                placeholder="e.g. Metal Zipper"
-                value={filters.product}
-                onChange={(event) =>
-                  updateFilter("product", event.target.value)
-                }
-              />
-
-              <Select
-                label="Size"
-                value={filters.size}
-                onChange={(value) => updateFilter("size", value)}
-                options={[
-                  { value: "all", label: "All Sizes" },
-                  ...ZIPPER_SIZES.map((size) => ({
-                    value: size,
-                    label: size,
-                  })),
-                ]}
-              />
-
-              <Select
-                label="Material"
-                value={filters.material}
-                onChange={(value) => updateFilter("material", value)}
-                options={[
-                  { value: "all", label: "All Materials" },
-                  ...MATERIALS.map((material) => ({
-                    value: material,
-                    label: material,
-                  })),
-                ]}
-              />
-
-              <Input
-                label="Color / Finish"
-                placeholder="e.g. Antique Silver"
-                value={filters.finish}
-                onChange={(event) =>
-                  updateFilter("finish", event.target.value)
-                }
-              />
-
-              <Select
-                label="Logo / Plain"
-                value={filters.logo}
-                onChange={(value) => updateFilter("logo", value)}
-                options={[
-                  { value: "all", label: "All" },
-                  ...LOGO_TYPES.map((logo) => ({
-                    value: logo.id,
-                    label: logo.label,
-                  })),
-                ]}
-              />
-
-              <Input
-                label="Order Date From"
-                type="date"
-                value={filters.dateFrom}
-                onChange={(event) =>
-                  updateFilter("dateFrom", event.target.value)
-                }
-              />
-
-              <Input
-                label="Order Date To"
-                type="date"
-                value={filters.dateTo}
-                onChange={(event) =>
-                  updateFilter("dateTo", event.target.value)
-                }
-              />
-            </div>
-          </section>
-        )}
-
-        {/* TABLE */}
-        <section className="sales-orders__table-card">
-          {total === 0 ? (
-            <EmptyState
-              icon={ShoppingCart}
-              title={
-                activeFilterCount > 0 ? "No matching orders" : "No orders yet"
-              }
-              description={
-                activeFilterCount > 0
-                  ? "No orders match the current search and filters. Clear filters to see all orders."
-                  : "Create the first customer order. Orders drive planning, production, QC, packing and delivery."
-              }
-              action={
-                activeFilterCount > 0 ? (
-                  <Button variant="secondary" onClick={clearFilters}>
-                    Clear Filters
-                  </Button>
-                ) : (
-                  <Link href="/sales/orders/new">
-                    <Button variant="primary" icon={Plus}>
-                      New Order
-                    </Button>
-                  </Link>
-                )
-              }
-            />
-          ) : (
-            <div className="sales-orders__table-wrap">
-              <table className="sales-orders__table">
-                <thead>
+              {!loading &&
+                !error &&
+                orders.length === 0 && (
                   <tr>
-                    <th
-                      className="sales-orders__th-sortable"
-                      onClick={() => handleSort("orderNumber")}
+                    <td
+                      colSpan="7"
+                      className="order-list__message"
                     >
-                      Order Number{" "}
-                      {sort.key === "orderNumber" &&
-                        (sort.direction === "asc" ? "↑" : "↓")}
-                    </th>
-
-                    <th>Customer</th>
-
-                    <th>Product</th>
-
-                    <th
-                      className="sales-orders__th-sortable"
-                      onClick={() => handleSort("requiredQuantity")}
-                    >
-                      Quantity{" "}
-                      {sort.key === "requiredQuantity" &&
-                        (sort.direction === "asc" ? "↑" : "↓")}
-                    </th>
-
-                    <th>Current Stage</th>
-
-                    <th>Status</th>
-
-                    <th
-                      className="sales-orders__th-sortable"
-                      onClick={() => handleSort("requiredDeliveryDate")}
-                    >
-                      Required Delivery{" "}
-                      {sort.key === "requiredDeliveryDate" &&
-                        (sort.direction === "asc" ? "↑" : "↓")}
-                    </th>
-
-                    <th>Priority</th>
-
-                    <th>Actions</th>
+                      No sales orders found.
+                    </td>
                   </tr>
-                </thead>
+                )}
 
-                <tbody>
-                  {rows.map((order) => (
+              {!loading &&
+                !error &&
+                orders.map((order) => {
+                  const busy =
+                    actionBusy.startsWith(`${order.id}:`);
+
+                  return (
                     <tr key={order.id}>
                       <td>
                         <Link
                           href={`/sales/orders/${order.id}`}
-                          className="sales-orders__order-link"
                         >
                           {order.orderNumber}
                         </Link>
                       </td>
 
                       <td>
-                        <div className="sales-orders__cell-main">
-                          {order.customerName || "—"}
-                        </div>
+                        <strong>
+                          {order.customerName}
+                        </strong>
+                      </td>
 
-                        <div className="sales-orders__cell-sub">
-                          {order.customerCode}
-                        </div>
+                      <td>{order.orderDate}</td>
+
+                      <td className="order-list__numeric">
+                        {order.items}
+                      </td>
+
+                      <td className="order-list__numeric">
+                        {money(order.totalAmount)}
                       </td>
 
                       <td>
-                        <div className="sales-orders__cell-main">
-                          {order.zipperType || "—"}
-                        </div>
-
-                        <div className="sales-orders__cell-sub">
-                          {[
-                            order.zipperSize,
-                            order.material,
-                            order.colorFinish,
-                            order.logoType === "logo" ? "Logo" : "Plain",
-                          ]
-                            .filter(Boolean)
-                            .join(" · ")}
-                        </div>
-                      </td>
-
-                      <td>
-                        {order.requiredQuantity.toLocaleString()}{" "}
-                        {order.unit}
-                      </td>
-
-                      <td>{stageLabel(order.currentStage)}</td>
-
-                      <td>
-                        <Badge
-                          variant={
-                            order.status === "delivered"
-                              ? "success"
-                              : order.status === "cancelled"
-                                ? "danger"
-                                : order.status === "on-hold" ||
-                                    order.status === "qc-pending"
-                                  ? "warning"
-                                  : "info"
-                          }
+                        <span
+                          className={`order-list__status order-list__status--${String(
+                            order.status || "UNKNOWN",
+                          ).toLowerCase()}`}
                         >
-                          {ORDER_STATUSES.find((s) => s.id === order.status)
-                            ?.label || order.status}
-                        </Badge>
+                          {order.status}
+                        </span>
                       </td>
 
-                      <td>{order.requiredDeliveryDate || "—"}</td>
-
-                      <td>
-                        <Badge
-                          variant={priorityVariant[order.productionPriority]}
+                      <td className="order-list__actions">
+                        <Link
+                          href={`/sales/orders/${order.id}`}
                         >
-                          {PRODUCTION_PRIORITIES.find(
-                            (priority) =>
-                              priority.id === order.productionPriority
-                          )?.label || order.productionPriority}
-                        </Badge>
-                      </td>
+                          View
+                        </Link>
 
-                      <td>
-                        <div className="sales-orders__row-actions">
-                          <Link href={`/sales/orders/${order.id}`}>
-                            <Button
-                              variant="secondary"
-                              size="icon"
-                              icon={Eye}
-                              ariaLabel="View order"
-                            />
-                          </Link>
+                        {order.status === "DRAFT" && (
+                          <>
+                            <Link
+                              href={`/sales/orders/${order.id}/edit`}
+                            >
+                              Edit
+                            </Link>
 
-                          <Link href={`/sales/orders/${order.id}/edit`}>
-                            <Button
-                              variant="secondary"
-                              size="icon"
-                              icon={Pencil}
-                              ariaLabel="Edit order"
-                            />
-                          </Link>
+                            <button
+                              type="button"
+                              disabled={Boolean(actionBusy)}
+                              onClick={() =>
+                                changeStatus(
+                                  order,
+                                  "approve",
+                                )
+                              }
+                            >
+                              {busy &&
+                              actionBusy.endsWith(
+                                ":approve",
+                              )
+                                ? "Approving..."
+                                : "Approve"}
+                            </button>
+                          </>
+                        )}
 
-                          <Button
-                            variant="secondary"
-                            size="icon"
-                            icon={Trash2}
-                            ariaLabel="Delete order"
-                            onClick={() => setDeleteTarget(order)}
-                          />
-                        </div>
+                        {order.status !== "CANCELLED" && (
+                          <button
+                            type="button"
+                            disabled={Boolean(actionBusy)}
+                            onClick={() =>
+                              changeStatus(
+                                order,
+                                "cancel",
+                              )
+                            }
+                          >
+                            {busy &&
+                            actionBusy.endsWith(
+                              ":cancel",
+                            )
+                              ? "Cancelling..."
+                              : "Cancel"}
+                          </button>
+                        )}
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
-
-        {total > 0 && (
-          <Pagination
-            page={page}
-            pageSize={pageSize}
-            total={total}
-            onPageChange={(nextPage) =>
-              setPagination((current) => ({ ...current, page: nextPage }))
-            }
-            onPageSizeChange={(nextSize) =>
-              setPagination({ page: 1, pageSize: nextSize })
-            }
-          />
-        )}
-      </div>
-
-      {/* DELETE CONFIRMATION */}
-      <ConfirmDialog
-        open={Boolean(deleteTarget)}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDelete}
-        title="Delete order?"
-        description={`This will permanently remove ${
-          deleteTarget?.orderNumber || ""
-        } from the current ERP state.`}
-        confirmLabel="Delete"
-        variant="danger"
-        loading={submitting}
-      />
-
-      {/* STATUS CHANGE */}
-      <Modal
-        open={Boolean(statusTarget)}
-        onClose={() => setStatusTarget(null)}
-        title="Change Order Status"
-        description={statusTarget?.orderNumber}
-      >
-        <div className="sales-orders__status-form">
-          <Select
-            label="New Status"
-            value={statusNext}
-            onChange={setStatusNext}
-            options={ORDER_STATUSES.map((status) => ({
-              value: status.id,
-              label: status.label,
-            }))}
-          />
-
-          <Input
-            label="Remarks"
-            placeholder="Optional remarks for the status change"
-            value={statusRemarks}
-            onChange={(event) => setStatusRemarks(event.target.value)}
-          />
-
-          <div className="sales-orders__status-form-actions">
-            <Button
-              variant="secondary"
-              onClick={() => setStatusTarget(null)}
-            >
-              Cancel
-            </Button>
-
-            <Button
-              variant="primary"
-              disabled={!statusNext || submitting}
-              onClick={handleStatusChange}
-            >
-              Save Changes
-            </Button>
-          </div>
+                  );
+                })}
+            </tbody>
+          </table>
         </div>
-      </Modal>
+
+        <footer className="order-list__pagination">
+          <span>
+            Page {page}
+            {result?.hasMore ? "+" : ""}
+          </span>
+
+          <div>
+            <button
+              type="button"
+              disabled={loading || page <= 1}
+              onClick={() =>
+                setPage((value) => value - 1)
+              }
+            >
+              Previous
+            </button>
+
+            <button
+              type="button"
+              disabled={loading || !result?.hasMore}
+              onClick={() =>
+                setPage((value) => value + 1)
+              }
+            >
+              Next
+            </button>
+          </div>
+        </footer>
+      </section>
     </main>
   );
 }

@@ -1,285 +1,108 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
-import {
-  ArrowRight,
-  Eye,
-  EyeOff,
-  LockKeyhole,
-  Mail,
-} from "lucide-react";
-import "./login.css";
+import { ArrowRight, ShieldCheck } from "lucide-react";
+import "./welcome.css";
 
-export default function LoginPage() {
-  const [currentYear, setCurrentYear] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [error, setError] = useState("");
-
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
-
-  useEffect(() => {
-    setCurrentYear(String(new Date().getFullYear()));
-  }, []);
-
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-
-    setForm((current) => ({
-      ...current,
-      [name]: value,
-    }));
-
-    if (error) {
-      setError("");
-    }
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    if (!form.email.trim()) {
-      setError("Please enter your email address.");
-      return;
-    }
-
-    if (!form.password) {
-      setError("Please enter your password.");
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: form.email,
-          password: form.password,
-        }),
-      });
-
-      const payload = await response.json();
-
-      if (!response.ok || payload.success === false) {
-        setError(payload?.error?.message || "Authentication failed.");
-        return;
-      }
-
-      window.location.assign("/administration");
-    } catch (error) {
-      setError("Authentication is temporarily unavailable.");
-    }
-  };
-
+export default function WelcomePage() {
   return (
-    <main className="login-page">
-      <section className="login-brand-panel">
-        <div className="login-brand-panel__inner">
-          <div className="login-brand-panel__top">
-            <div className="login-brand-panel__logo">
-              <Image
-                src="/logos/logo in navy.png"
-                alt="Apparel Fastener"
-                width={420}
-                height={120}
-                priority
-              />
-            </div>
+    <main className="welcome-page">
+      <section className="welcome-visual">
+        <div className="welcome-visual__inner">
+          <div className="welcome-top">
+            <Image
+              src="/logo in white.png"
+              alt="Apparel Fastener"
+              width={320}
+              height={92}
+              priority
+              className="welcome-logo"
+            />
           </div>
 
-          <div className="login-brand-panel__content">
-            <span className="login-brand-panel__eyebrow">
+          <div className="welcome-content">
+            <span className="welcome-eyebrow">
               APPAREL FASTENER ERP
             </span>
 
             <h1>
-              Production.
+              Manufacturing
               <br />
-              Precision.
+              operations,
               <br />
-              Control.
+              connected.
             </h1>
 
             <p>
-              A centralized platform for managing orders, production,
-              inventory, quality, packing and delivery across the
-              Apparel Fastener manufacturing operation.
+              A centralized business platform for managing sales,
+              products, inventory, production, quality, dispatch
+              and financial operations.
             </p>
+
+            <div className="welcome-actions">
+              <a href="/login" className="welcome-button">
+                <span>Enter ERP</span>
+                <ArrowRight size={19} strokeWidth={2} />
+              </a>
+            </div>
           </div>
 
-          <div className="login-brand-panel__footer">
-            <span>APPAREL FASTENER</span>
+          <div className="welcome-bottom">
+            <div>
+              <ShieldCheck size={16} strokeWidth={1.8} />
+              <span>SECURE BUSINESS PLATFORM</span>
+            </div>
+
             <span>LAHORE · PAKISTAN</span>
           </div>
         </div>
       </section>
 
-      <section className="login-form-panel">
-        <div className="login-form-wrapper">
-          <div className="login-mobile-logo">
-            <Image
-              src="/logos/logo in navy.png"
-              alt="Apparel Fastener"
-              width={300}
-              height={90}
-              priority
-            />
-          </div>
+      <section className="welcome-side">
+        <div className="welcome-side__content">
+          <span className="welcome-side__label">
+            OPERATIONS PLATFORM
+          </span>
 
-          <div className="login-heading">
-            <span className="login-heading__eyebrow">
-              SECURE ACCESS
-            </span>
+          <h2>
+            One system.
+            <br />
+            Every operation.
+          </h2>
 
-            <h2>Welcome back</h2>
-
-            <p>
-              Sign in to access the Apparel Fastener ERP.
-            </p>
-          </div>
-
-          <form
-            className="login-form"
-            onSubmit={handleSubmit}
-            noValidate
-          >
-            <div className="login-field">
-              <label htmlFor="email">
-                Email address
-              </label>
-
-              <div className="login-input-wrapper">
-                <Mail
-                  size={18}
-                  strokeWidth={1.8}
-                  aria-hidden="true"
-                />
-
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder="Enter your email"
-                  autoComplete="email"
-                />
-              </div>
-            </div>
-
-            <div className="login-field">
-              <div className="login-field__label-row">
-                <label htmlFor="password">
-                  Password
-                </label>
-
-                <button
-                  type="button"
-                  className="login-forgot"
-                  onClick={() => {
-                    setError(
-                      "Password recovery will be connected to the authentication system."
-                    );
-                  }}
-                >
-                  Forgot password?
-                </button>
-              </div>
-
-              <div className="login-input-wrapper">
-                <LockKeyhole
-                  size={18}
-                  strokeWidth={1.8}
-                  aria-hidden="true"
-                />
-
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
-                />
-
-                <button
-                  type="button"
-                  className="login-password-toggle"
-                  onClick={() =>
-                    setShowPassword((current) => !current)
-                  }
-                  aria-label={
-                    showPassword
-                      ? "Hide password"
-                      : "Show password"
-                  }
-                >
-                  {showPassword ? (
-                    <EyeOff size={18} strokeWidth={1.8} />
-                  ) : (
-                    <Eye size={18} strokeWidth={1.8} />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <label className="login-remember">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(event) =>
-                  setRememberMe(event.target.checked)
-                }
-              />
-
-              <span className="login-checkbox">
-                <span />
-              </span>
-
-              <span>Remember me</span>
-            </label>
-
-            {error && (
-              <div className="login-error" role="alert">
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              className="login-submit"
-            >
-              <span>Sign in</span>
-              <ArrowRight
-                size={18}
-                strokeWidth={2}
-                aria-hidden="true"
-              />
-            </button>
-          </form>
-
-          <div className="login-security">
-            <span className="login-security__line" />
-
-            <p>
-              Authorized personnel only
-            </p>
-
-            <span className="login-security__line" />
-          </div>
-
-          <p className="login-copyright">
-            © {currentYear} Apparel Fastener.
-            All rights reserved.
+          <p>
+            Apparel Fastener ERP brings your commercial and
+            manufacturing workflows into one connected operating
+            environment.
           </p>
+
+          <div className="welcome-side__modules">
+            <div>
+              <span>01</span>
+              <strong>Sales & CRM</strong>
+            </div>
+
+            <div>
+              <span>02</span>
+              <strong>Products & Inventory</strong>
+            </div>
+
+            <div>
+              <span>03</span>
+              <strong>Production & Quality</strong>
+            </div>
+
+            <div>
+              <span>04</span>
+              <strong>Dispatch & Finance</strong>
+            </div>
+          </div>
         </div>
+
+        <footer className="welcome-footer">
+          <span>APPAREL FASTENER ERP</span>
+          <span>v1.0</span>
+        </footer>
       </section>
     </main>
   );

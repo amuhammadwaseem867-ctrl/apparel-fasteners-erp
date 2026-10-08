@@ -7,6 +7,8 @@ import {
   Users,
 } from "lucide-react";
 
+import Link from "next/link";
+
 import PageHeader from "@/components/ui/PageHeader";
 
 import SalesKpiGrid from "@/components/sales/SalesKpiGrid";
@@ -134,7 +136,7 @@ export default function SalesDashboardPage() {
           </div>
 
           <div className="sales-dashboard__module-grid">
-            <a
+            <Link
               href="/sales/customers"
               className="sales-dashboard__module"
             >
@@ -152,9 +154,9 @@ export default function SalesDashboardPage() {
                   Customer accounts and relationship records.
                 </span>
               </div>
-            </a>
+            </Link>
 
-            <a
+            <Link
               href="/sales/orders"
               className="sales-dashboard__module"
             >
@@ -172,7 +174,7 @@ export default function SalesDashboardPage() {
                   Manage confirmed customer orders.
                 </span>
               </div>
-            </a>
+            </Link>
           </div>
         </section>
       </div>

@@ -5,12 +5,14 @@ import {
   isValidElement,
   useEffect,
   useId,
-  useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import { createPortal } from "react-dom";
 
 import "./Tooltip.css";
+
+const emptySubscribe = () => () => {};
 
 export default function Tooltip({
   children,
@@ -26,47 +28,71 @@ export default function Tooltip({
 
   className = "",
 }) {
-  const triggerRef = useRef(null);
-  const timeoutRef = useRef(null);
   const tooltipId = useId();
 
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [position, setPosition] = useState(null);
 
-  useEffect(() => {
-    setMounted(true);
+  /*
+   * The trigger node is tracked as state so the cloned trigger can
+   * receive a plain callback ref without touching ref values during
+   * render.
+   */
+  const [triggerNode, setTriggerNode] = useState(null);
 
+  /*
+   * The pending show timer is tracked as state so the handlers cloned
+   * onto the trigger never reach into a ref (which would make the
+   * cloned element unsafe to create during render).
+   */
+  const [showTimeoutId, setShowTimeoutId] =
+    useState(null);
+
+  /*
+   * Hydration-safe mounted flag: the server snapshot is false and the
+   * client snapshot is true, so the tooltip only renders after
+   * hydration without a setState call inside an effect.
+   */
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+
+  useEffect(() => {
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+      if (showTimeoutId) {
+        clearTimeout(showTimeoutId);
       }
     };
-  }, []);
+  }, [showTimeoutId]);
 
   function showTooltip() {
     if (disabled || !content) return;
 
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+    if (showTimeoutId) {
+      clearTimeout(showTimeoutId);
     }
 
-    timeoutRef.current = setTimeout(() => {
-      updatePosition();
-      setOpen(true);
-    }, delay);
+    setShowTimeoutId(
+      setTimeout(() => {
+        updatePosition();
+        setOpen(true);
+      }, delay)
+    );
   }
 
   function hideTooltip() {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+    if (showTimeoutId) {
+      clearTimeout(showTimeoutId);
     }
 
+    setShowTimeoutId(null);
     setOpen(false);
   }
 
   function updatePosition() {
-    const element = triggerRef.current;
+    const element = triggerNode;
 
     if (!element) return;
 
@@ -157,11 +183,13 @@ export default function Tooltip({
         handleViewportChange
       );
     };
-  }, [open, side, align]);
+  }, [open, side, align, triggerNode]);
 
   const trigger = isValidElement(children)
     ? cloneElement(children, {
-        ref: triggerRef,
+        ref: (node) => {
+          setTriggerNode(node);
+        },
         "aria-describedby": open
           ? tooltipId
           : undefined,

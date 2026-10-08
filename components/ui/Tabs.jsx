@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import Link from "next/link";
 
 import "./Tabs.css";
@@ -35,22 +35,21 @@ export default function Tabs({
       ? activeTab
       : internalTab;
 
-  useEffect(() => {
-    if (
-      currentTab &&
-      tabs.some((tab) => tab.value === currentTab)
-    ) {
-      return;
-    }
+  /*
+   * Derive the effective tab during render instead of synchronizing
+   * state inside an effect: when the current value is not present in
+   * the tab list, fall back to the first enabled tab (controlled
+   * values are left untouched, matching the previous behavior).
+   */
+  const currentTabExists =
+    Boolean(currentTab) &&
+    tabs.some((tab) => tab.value === currentTab);
 
-    const fallback = tabs.find(
-      (tab) => !tab.disabled
-    )?.value;
-
-    if (fallback) {
-      setInternalTab(fallback);
-    }
-  }, [tabs, currentTab]);
+  const resolvedTab =
+    currentTabExists || activeTab !== undefined
+      ? currentTab
+      : tabs.find((tab) => !tab.disabled)?.value ??
+        currentTab;
 
   function handleChange(tab) {
     if (tab.disabled) return;
@@ -128,7 +127,7 @@ export default function Tabs({
       >
         {tabs.map((tab, index) => {
           const isActive =
-            currentTab === tab.value;
+            resolvedTab === tab.value;
 
           const Icon = tab.icon;
 

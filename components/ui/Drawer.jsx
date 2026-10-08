@@ -3,13 +3,15 @@
 import {
   useEffect,
   useRef,
-  useState,
+  useSyncExternalStore,
 } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 import "./Drawer.css";
 import { acquireBodyScrollLock } from "./bodyScrollLock";
+
+const emptySubscribe = () => () => {};
 
 export default function Drawer({
   open = false,
@@ -42,11 +44,17 @@ export default function Drawer({
   const drawerRef = useRef(null);
   const previousActiveElement =
     useRef(null);
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  /*
+   * Hydration-safe mounted flag: false on the server and true on the
+   * client, so the drawer only renders after hydration without a
+   * setState call inside an effect.
+   */
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
 
   useEffect(() => {
     if (!open) return;

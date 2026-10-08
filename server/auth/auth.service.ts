@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+﻿import { createHash } from "node:crypto";
 
 import { db } from "../core/database/client";
 import { AppError } from "../core/errors/app-error";
@@ -335,9 +335,122 @@ export async function readCurrentUserFromRequest(
   return getCurrentUser(token);
 }
 
+export async function changeUserPassword(
+  userId: string,
+  currentPassword: string,
+  newPassword: string,
+  currentSessionId?: string | null,
+) {
+  if (!currentPassword) {
+    throw new AppError("Current password is required.", {
+      code: "PASSWORD_CURRENT_REQUIRED",
+      status: 400,
+    });
+  }
+
+  if (!newPassword || newPassword.length < 8) {
+    throw new AppError(
+      "New password must be at least 8 characters.",
+      {
+        code: "PASSWORD_INVALID",
+        status: 400,
+      },
+    );
+  }
+
+  if (currentPassword === newPassword) {
+    throw new AppError(
+      "New password must be different from the current password.",
+      {
+        code: "PASSWORD_SAME",
+        status: 400,
+      },
+    );
+  }
+
+  const user = await db.orm.public.User
+    .where({ id: userId })
+    .first();
+
+  if (!user) {
+    throw new AppError("User account was not found.", {
+      code: "USER_NOT_FOUND",
+      status: 404,
+    });
+  }
+
+  if (user.status !== "ACTIVE") {
+    throw new AppError("User account is not active.", {
+      code: "USER_INACTIVE",
+      status: 403,
+    });
+  }
+
+  if (!verifyPassword(currentPassword, user.passwordHash)) {
+    await recordAuditEvent({
+      actorId: user.id,
+      action: "PASSWORD_CHANGE_FAILURE",
+      entityType: "User",
+      entityId: user.id,
+      metadata: {
+        reason: "invalid_current_password",
+      },
+    });
+
+    throw new AppError("Current password is incorrect.", {
+      code: "PASSWORD_CURRENT_INVALID",
+      status: 400,
+    });
+  }
+
+  const passwordHash = hashPassword(newPassword);
+  const now = new Date().toISOString();
+
+  await db.transaction(async (tx) => {
+    await tx.orm.public.User
+      .where({ id: user.id })
+      .update({
+        passwordHash,
+        updatedAt: now,
+      });
+
+    const sessions = await tx.orm.public.UserSession
+      .where({ userId: user.id })
+      .all();
+
+    for (const session of sessions) {
+      if (
+        session.id !== currentSessionId &&
+        !session.revokedAt
+      ) {
+        await tx.orm.public.UserSession
+          .where({ id: session.id })
+          .update({
+            revokedAt: now,
+            revokedBy: user.id,
+          });
+      }
+    }
+  });
+
+  await recordAuditEvent({
+    actorId: user.id,
+    action: "PASSWORD_CHANGED",
+    entityType: "User",
+    entityId: user.id,
+    metadata: {
+      otherSessionsRevoked: true,
+    },
+  });
+
+  return {
+    success: true,
+  };
+}
 export function handleAuthError(
   error: unknown,
   requestId?: string,
 ) {
   return handleApiError(error, requestId);
 }
+

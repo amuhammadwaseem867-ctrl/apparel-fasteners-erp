@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Bell,
   ChevronDown,
@@ -24,62 +24,20 @@ import {
 import "./Topbar.css";
 
 const PAGE_NAMES = {
-  "/dashboard": {
-    section: "Command Center",
-    title: "Dashboard",
-  },
-  "/sales": {
-    section: "Business",
-    title: "Sales & CRM",
-  },
-  "/products": {
-    section: "Business",
-    title: "Products",
-  },
-  "/procurement": {
-    section: "Business",
-    title: "Procurement",
-  },
-  "/inventory": {
-    section: "Materials & Inventory",
-    title: "Inventory",
-  },
-  "/planning": {
-    section: "Materials & Inventory",
-    title: "Planning / MRP",
-  },
-  "/production": {
-    section: "Factory Operations",
-    title: "Production",
-  },
-  "/quality": {
-    section: "Factory Operations",
-    title: "Quality Control",
-  },
-  "/packing": {
-    section: "Factory Operations",
-    title: "Packing",
-  },
-  "/dispatch": {
-    section: "Factory Operations",
-    title: "Dispatch & Logistics",
-  },
-  "/finance": {
-    section: "Finance & People",
-    title: "Finance",
-  },
-  "/people-payroll": {
-    section: "Finance & People",
-    title: "People & Payroll",
-  },
-  "/reports": {
-    section: "Finance & People",
-    title: "Reports & Analytics",
-  },
-  "/administration": {
-    section: "Administration",
-    title: "Settings",
-  },
+  "/dashboard": { section: "Command Center", title: "Dashboard" },
+  "/sales": { section: "Business", title: "Sales & CRM" },
+  "/products": { section: "Business", title: "Products" },
+  "/procurement": { section: "Business", title: "Procurement" },
+  "/inventory": { section: "Materials & Inventory", title: "Inventory" },
+  "/planning": { section: "Materials & Inventory", title: "Planning / MRP" },
+  "/production": { section: "Factory Operations", title: "Production" },
+  "/quality": { section: "Factory Operations", title: "Quality Control" },
+  "/packing": { section: "Factory Operations", title: "Packing" },
+  "/dispatch": { section: "Factory Operations", title: "Dispatch & Logistics" },
+  "/finance": { section: "Finance & People", title: "Finance" },
+  "/people-payroll": { section: "Finance & People", title: "People & Payroll" },
+  "/reports": { section: "Finance & People", title: "Reports & Analytics" },
+  "/administration": { section: "Administration", title: "Settings" },
 };
 
 const QUICK_ACTIONS = [
@@ -141,25 +99,89 @@ function getPageContext(pathname) {
   };
 }
 
+function getInitials(name = "") {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+
+  if (!parts.length) {
+    return "U";
+  }
+
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
+
+function formatRole(role = "") {
+  return role
+    .replaceAll("_", " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 export default function Topbar({ onMenuClick }) {
   const pathname = usePathname();
+  const router = useRouter();
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] =
-    useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
+  const [currentUser, setCurrentUser] = useState(null);
+  const [sessionLoading, setSessionLoading] = useState(true);
+
   const pageContext = getPageContext(pathname);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadCurrentUser() {
+      try {
+        const response = await fetch("/api/auth/session", {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          if (mounted) {
+            setCurrentUser(null);
+          }
+          return;
+        }
+
+        const result = await response.json();
+
+        if (mounted && result?.success && result?.data) {
+          setCurrentUser(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to load current user:", error);
+
+        if (mounted) {
+          setCurrentUser(null);
+        }
+      } finally {
+        if (mounted) {
+          setSessionLoading(false);
+        }
+      }
+    }
+
+    loadCurrentUser();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     function handleKeyboard(event) {
       const commandKey = event.ctrlKey || event.metaKey;
 
-      if (
-        commandKey &&
-        event.key.toLowerCase() === "k"
-      ) {
+      if (commandKey && event.key.toLowerCase() === "k") {
         event.preventDefault();
 
         setSearchOpen(true);
@@ -179,12 +201,26 @@ export default function Topbar({ onMenuClick }) {
     window.addEventListener("keydown", handleKeyboard);
 
     return () => {
-      window.removeEventListener(
-        "keydown",
-        handleKeyboard
-      );
+      window.removeEventListener("keydown", handleKeyboard);
     };
   }, []);
+
+  async function handleSignOut() {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+      });
+    } catch (error) {
+      console.error("Sign out request failed:", error);
+    } finally {
+      setCurrentUser(null);
+      setProfileOpen(false);
+      router.replace("/login");
+      router.refresh();
+    }
+  }
 
   function closeMenus() {
     setSearchOpen(false);
@@ -194,23 +230,12 @@ export default function Topbar({ onMenuClick }) {
   }
 
   function toggleMenu(menu) {
-    setSearchOpen(
-      menu === "search" ? !searchOpen : false
-    );
-
-    setCreateOpen(
-      menu === "create" ? !createOpen : false
-    );
-
+    setSearchOpen(menu === "search" ? !searchOpen : false);
+    setCreateOpen(menu === "create" ? !createOpen : false);
     setNotificationsOpen(
-      menu === "notifications"
-        ? !notificationsOpen
-        : false
+      menu === "notifications" ? !notificationsOpen : false
     );
-
-    setProfileOpen(
-      menu === "profile" ? !profileOpen : false
-    );
+    setProfileOpen(menu === "profile" ? !profileOpen : false);
   }
 
   return (
@@ -231,9 +256,7 @@ export default function Topbar({ onMenuClick }) {
               {pageContext.section}
             </span>
 
-            <span className="erp-topbar__separator">
-              /
-            </span>
+            <span className="erp-topbar__separator">/</span>
 
             <span className="erp-topbar__title">
               {pageContext.title}
@@ -242,7 +265,6 @@ export default function Topbar({ onMenuClick }) {
         </div>
 
         <div className="erp-topbar__right">
-          {/* Search */}
           <button
             type="button"
             className="erp-topbar__search-trigger"
@@ -260,7 +282,6 @@ export default function Topbar({ onMenuClick }) {
             </span>
           </button>
 
-          {/* New */}
           <button
             type="button"
             className="erp-topbar__create"
@@ -270,14 +291,11 @@ export default function Topbar({ onMenuClick }) {
             <span>New</span>
           </button>
 
-          {/* Notifications */}
           <div className="erp-topbar__action-wrap">
             <button
               type="button"
               className="erp-topbar__icon-button"
-              onClick={() =>
-                toggleMenu("notifications")
-              }
+              onClick={() => toggleMenu("notifications")}
               aria-label="Notifications"
             >
               <Bell size={18} />
@@ -306,8 +324,8 @@ export default function Topbar({ onMenuClick }) {
 
                 <div className="erp-topbar__notification-list">
                   <div className="erp-topbar__notification-empty">
-                    No notifications yet. Notifications will appear
-                    once the backend is connected.
+                    No notifications yet. Notifications will appear once
+                    the backend is connected.
                   </div>
                 </div>
 
@@ -320,7 +338,6 @@ export default function Topbar({ onMenuClick }) {
             )}
           </div>
 
-          {/* Settings */}
           <button
             type="button"
             className="erp-topbar__icon-button erp-topbar__settings"
@@ -329,7 +346,6 @@ export default function Topbar({ onMenuClick }) {
             <Settings size={18} />
           </button>
 
-          {/* Profile */}
           <div className="erp-topbar__action-wrap">
             <button
               type="button"
@@ -337,12 +353,23 @@ export default function Topbar({ onMenuClick }) {
               onClick={() => toggleMenu("profile")}
             >
               <span className="erp-topbar__avatar">
-                WA
+                {sessionLoading
+                  ? "U"
+                  : getInitials(currentUser?.name)}
               </span>
 
               <span className="erp-topbar__profile-copy">
-                <strong>Waseem Akram</strong>
-                <small>Administrator</small>
+                <strong>
+                  {sessionLoading
+                    ? "Loading..."
+                    : currentUser?.name || "User"}
+                </strong>
+
+                <small>
+                  {sessionLoading
+                    ? "..."
+                    : formatRole(currentUser?.roles?.[0] || "USER")}
+                </small>
               </span>
 
               <ChevronDown size={15} />
@@ -352,12 +379,19 @@ export default function Topbar({ onMenuClick }) {
               <div className="erp-topbar__dropdown erp-topbar__dropdown--profile">
                 <div className="erp-topbar__profile-header">
                   <span className="erp-topbar__avatar erp-topbar__avatar--large">
-                    WA
+                    {getInitials(currentUser?.name)}
                   </span>
 
                   <div>
-                    <strong>Waseem Akram</strong>
-                    <span>Administrator</span>
+                    <strong>
+                      {currentUser?.name || "User"}
+                    </strong>
+
+                    <span>
+                      {formatRole(
+                        currentUser?.roles?.[0] || "USER"
+                      )}
+                    </span>
                   </div>
                 </div>
 
@@ -384,14 +418,11 @@ export default function Topbar({ onMenuClick }) {
         </div>
       </header>
 
-      {/* COMMAND PALETTE */}
       {searchOpen && (
         <div
           className="erp-command"
           onMouseDown={(event) => {
-            if (
-              event.target === event.currentTarget
-            ) {
+            if (event.target === event.currentTarget) {
               setSearchOpen(false);
             }
           }}
@@ -433,6 +464,7 @@ export default function Topbar({ onMenuClick }) {
                   description="View and manage sales orders"
                   href="/sales/orders"
                 />
+
                 <CommandItem
                   icon={Package}
                   title="Inventory"
@@ -470,7 +502,6 @@ export default function Topbar({ onMenuClick }) {
         </div>
       )}
 
-      {/* CREATE MENU */}
       {createOpen && (
         <div className="erp-topbar__create-menu">
           <div className="erp-topbar__create-header">
@@ -517,25 +548,6 @@ export default function Topbar({ onMenuClick }) {
   );
 }
 
-function Notification({
-  title,
-  description,
-  type,
-}) {
-  return (
-    <div className="erp-topbar__notification">
-      <span
-        className={`erp-topbar__notification-indicator erp-topbar__notification-indicator--${type}`}
-      />
-
-      <div>
-        <strong>{title}</strong>
-        <span>{description}</span>
-      </div>
-    </div>
-  );
-}
-
 function CommandItem({
   icon: Icon,
   title,
@@ -543,10 +555,7 @@ function CommandItem({
   href,
 }) {
   return (
-    <a
-      href={href}
-      className="erp-command__item"
-    >
+    <a href={href}>
       <span className="erp-command__item-icon">
         <Icon size={18} />
       </span>
@@ -563,3 +572,6 @@ function CommandItem({
     </a>
   );
 }
+
+
+

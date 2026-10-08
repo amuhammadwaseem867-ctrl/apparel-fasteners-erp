@@ -54,6 +54,21 @@ export default function GlobalSearch({
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
 
+  /*
+   * Reset the search when it opens. This runs during render (tracking
+   * the previous open state) instead of inside an effect.
+   */
+  const [previousOpen, setPreviousOpen] = useState(open);
+
+  if (open !== previousOpen) {
+    setPreviousOpen(open);
+
+    if (open) {
+      setQuery("");
+      setActiveIndex(0);
+    }
+  }
+
   const filteredResults = useMemo(() => {
     const value = query.trim().toLowerCase();
 
@@ -101,9 +116,6 @@ export default function GlobalSearch({
 
   useEffect(() => {
     if (!open) return;
-
-    setQuery("");
-    setActiveIndex(0);
 
     requestAnimationFrame(() => {
       inputRef.current?.focus();

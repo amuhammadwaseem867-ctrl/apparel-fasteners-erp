@@ -50,8 +50,8 @@ export const SYSTEM_PERMISSIONS = [
 export const SYSTEM_ROLES = [
   { name: "SUPER_ADMIN", code: "SUPER_ADMIN", description: "Top-level system administrator.", permissions: SYSTEM_PERMISSIONS.map((permission) => permission.code) },
   { name: "ADMIN", code: "ADMIN", description: "Administrative user with full operational access.", permissions: SYSTEM_PERMISSIONS.map((permission) => permission.code) },
-  { name: "SALES_MANAGER", code: "SALES_MANAGER", description: "Sales leadership role.", permissions: ["dashboard:view", "sales:view", "sales:create", "sales:update", "sales:approve", "customers:view", "customers:create", "customers:update", "reports:view"] },
-  { name: "SALES_EXECUTIVE", code: "SALES_EXECUTIVE", description: "Sales operations role.", permissions: ["dashboard:view", "sales:view", "sales:create", "sales:update", "customers:view", "customers:create", "reports:view"] },
+  { name: "SALES_MANAGER", code: "SALES_MANAGER", description: "Sales leadership role.", permissions: ["dashboard:view", "sales:view", "sales:create", "sales:update", "sales:approve", "customers:view", "customers:create", "customers:update", "products:view", "reports:view"] },
+  { name: "SALES_EXECUTIVE", code: "SALES_EXECUTIVE", description: "Sales operations role.", permissions: ["dashboard:view", "sales:view", "sales:create", "sales:update", "customers:view", "customers:create", "products:view", "reports:view"] },
   { name: "PURCHASE_MANAGER", code: "PURCHASE_MANAGER", description: "Purchasing leadership role.", permissions: ["dashboard:view", "purchasing:view", "purchasing:create", "purchasing:approve", "products:view", "reports:view"] },
   { name: "INVENTORY_MANAGER", code: "INVENTORY_MANAGER", description: "Inventory management role.", permissions: ["dashboard:view", "inventory:view", "inventory:create", "inventory:transfer", "inventory:adjust", "products:view", "reports:view"] },
   { name: "PRODUCTION_MANAGER", code: "PRODUCTION_MANAGER", description: "Production management role.", permissions: ["dashboard:view", "production:view", "production:create", "production:update", "production:complete", "inventory:view", "reports:view"] },

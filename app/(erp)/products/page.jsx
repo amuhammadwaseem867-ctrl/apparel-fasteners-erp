@@ -1,410 +1,162 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import {
-  ArrowUpRight,
-  Box,
-  CheckCircle2,
-  ChevronDown,
-  Layers3,
-  Package,
-  Plus,
-  Search,
-  Shirt,
-  SlidersHorizontal,
-  Tag,
-  Warehouse,
-} from "lucide-react";
+import { useEffect, useState } from "react";
 
-import PageHeader from "@/components/ui/PageHeader";
-import Button from "@/components/ui/Button";
-import Card, { StatCard } from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
+import { apiRequest } from "@/lib/api/client";
+import "./ProductMaster.css";
 
-import "./Products.css";
-
-const DIVISIONS = [
-  "All Divisions",
-  "Garments",
-  "Fabrics",
-  "Garment Accessories",
-];
-
-const STATUS_OPTIONS = [
-  "All Status",
-  "active",
-  "draft",
-  "inactive",
-];
-
-function getStatusLabel(status) {
-  switch (status) {
-    case "active":
-      return "Active";
-    case "draft":
-      return "Draft";
-    case "inactive":
-      return "Inactive";
-    default:
-      return status;
-  }
-}
+const PAGE_SIZE = 25;
 
 export default function ProductsPage() {
-  const [search, setSearch] = useState("");
-  const [division, setDivision] = useState("All Divisions");
-  const [status, setStatus] = useState("All Status");
-  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    search: "",
+    category: "",
+    productType: "",
+    variant: "",
+    status: "",
+  });
+  const [page, setPage] = useState(1);
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [refresh, setRefresh] = useState(0);
 
-  function clearFilters() {
-    setSearch("");
-    setDivision("All Divisions");
-    setStatus("All Status");
+  useEffect(() => {
+    let active = true;
+    const timer = window.setTimeout(async () => {
+      setLoading(true);
+      setError("");
+      const params = new URLSearchParams({
+        ...filters,
+        page: String(page),
+        pageSize: String(PAGE_SIZE),
+      });
+      try {
+        const data = await apiRequest(`/api/products?${params}`);
+        if (active) setResult(data);
+      } catch (cause) {
+        if (active) setError(cause.message);
+      } finally {
+        if (active) setLoading(false);
+      }
+    }, 0);
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [filters, page, refresh]);
+
+  function changeFilter(key, value) {
+    setFilters((current) => ({ ...current, [key]: value }));
+    setPage(1);
   }
 
+  async function archive(product) {
+    if (!window.confirm(`Archive ${product.name} (${product.sku})? Existing order history will be preserved.`)) return;
+    try {
+      await apiRequest(`/api/products/${encodeURIComponent(product.id)}`, { method: "DELETE" });
+      setRefresh((current) => current + 1);
+    } catch (cause) {
+      setError(cause.message);
+    }
+  }
+
+  const products = result?.products ?? [];
+
   return (
-    <div className="products-page">
-      <PageHeader
-        eyebrow="Product Master"
-        title="Products"
-        description="Manage garments, fabrics and garment accessories from a single product master."
-        action={
-          <Link href="/products/new">
-            <Button variant="primary">
-              <Plus size={16} strokeWidth={2} />
-              Add Product
-            </Button>
-          </Link>
-        }
-      />
+    <main className="product-master">
+      <header className="product-master__header">
+        <div>
+          <p>PRODUCT MASTER</p>
+          <h1>Products</h1>
+          <span>Catalog records and commercial details. Stock is not configured in this database.</span>
+        </div>
+        <Link className="product-master__primary" href="/products/new">+ Create product</Link>
+      </header>
 
-      <section className="products-stats">
-        <StatCard
-          label="Total Products"
-          value="0"
-          description="No products created yet"
-          icon={Package}
-        />
-
-        <StatCard
-          label="Active Products"
-          value="0"
-          description="Currently available"
-          icon={CheckCircle2}
-        />
-
-        <StatCard
-          label="Garments"
-          value="0"
-          description="Garment products"
-          icon={Shirt}
-        />
-
-        <StatCard
-          label="Fabrics"
-          value="0"
-          description="Fabric products"
-          icon={Layers3}
-        />
-
-        <StatCard
-          label="Accessories"
-          value="0"
-          description="Garment accessories"
-          icon={Tag}
-        />
+      <section className="product-master__filters" aria-label="Product filters">
+        <label className="product-master__search">
+          <span>Search</span>
+          <input
+            type="search"
+            placeholder="Name, SKU, category or variant"
+            value={filters.search}
+            onChange={(event) => changeFilter("search", event.target.value)}
+          />
+        </label>
+        <label>
+          <span>Category</span>
+          <input value={filters.category} onChange={(event) => changeFilter("category", event.target.value)} />
+        </label>
+        <label>
+          <span>Type</span>
+          <input value={filters.productType} onChange={(event) => changeFilter("productType", event.target.value)} />
+        </label>
+        <label>
+          <span>Variant</span>
+          <input value={filters.variant} onChange={(event) => changeFilter("variant", event.target.value)} />
+        </label>
+        <label>
+          <span>Status</span>
+          <select value={filters.status} onChange={(event) => changeFilter("status", event.target.value)}>
+            <option value="">Active and inactive</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+            <option value="ARCHIVED">Archived</option>
+          </select>
+        </label>
       </section>
 
-      <div className="products-backend-notice">
-        <div className="products-backend-notice__icon">
-          <Warehouse size={17} strokeWidth={1.8} />
+      <section className="product-master__table-panel" aria-label="Product records">
+        <div className="product-master__table-scroll">
+          <table className="product-master__table">
+            <thead>
+              <tr>
+                <th>SKU</th><th>Product</th><th>Category</th><th>Type</th>
+                <th>Variant</th><th>Unit</th><th>Status</th><th>Stock</th>
+                <th>Updated</th><th className="product-master__right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading && <tr><td colSpan="10" className="product-master__message">Loading product records…</td></tr>}
+              {!loading && error && (
+                <tr><td colSpan="10" className="product-master__message product-master__error">
+                  {error} <button type="button" onClick={() => setRefresh((value) => value + 1)}>Retry</button>
+                </td></tr>
+              )}
+              {!loading && !error && products.length === 0 && (
+                <tr><td colSpan="10" className="product-master__message">No products found.</td></tr>
+              )}
+              {!loading && !error && products.map((product) => (
+                <tr key={product.id}>
+                  <td>{product.sku}</td>
+                  <td><Link href={`/products/${product.id}`}>{product.name}</Link></td>
+                  <td>{product.category}</td>
+                  <td>{product.productType}</td>
+                  <td>{product.variant || "—"}</td>
+                  <td>{product.unit}</td>
+                  <td><span className={`product-master__status product-master__status--${product.status.toLowerCase()}`}>{product.status}</span></td>
+                  <td>Not configured</td>
+                  <td>{new Date(product.updatedAt).toLocaleDateString()}</td>
+                  <td className="product-master__actions">
+                    <Link href={`/products/${product.id}`}>View</Link>
+                    {product.status !== "ARCHIVED" && <Link href={`/products/${product.id}/edit`}>Edit</Link>}
+                    {product.status !== "ARCHIVED" && <button type="button" onClick={() => archive(product)}>Archive</button>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-
-        <div className="products-backend-notice__content">
-          <strong>Product database is not connected yet</strong>
-
-          <p>
-            The product master interface is ready. Product records,
-            inventory, pricing and status data will load from the backend
-            when the database and API layer are connected.
-          </p>
-        </div>
-
-        <Badge variant="success">Frontend Ready</Badge>
-      </div>
-
-      <Card
-        className="products-toolbar-card"
-        padding={false}
-      >
-        <div className="products-toolbar">
-          <div className="products-search">
-            <Search
-              size={17}
-              strokeWidth={1.8}
-            />
-
-            <input
-              type="search"
-              value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
-              placeholder="Search product, SKU or category..."
-              aria-label="Search products"
-            />
-          </div>
-
-          <div className="products-toolbar__filters">
-            <div className="products-select">
-              <select
-                value={division}
-                onChange={(event) =>
-                  setDivision(event.target.value)
-                }
-                aria-label="Filter by division"
-              >
-                {DIVISIONS.map((item) => (
-                  <option
-                    key={item}
-                    value={item}
-                  >
-                    {item}
-                  </option>
-                ))}
-              </select>
-
-              <ChevronDown size={15} />
-            </div>
-
-            <div className="products-select">
-              <select
-                value={status}
-                onChange={(event) =>
-                  setStatus(event.target.value)
-                }
-                aria-label="Filter by status"
-              >
-                {STATUS_OPTIONS.map((item) => (
-                  <option
-                    key={item}
-                    value={item}
-                  >
-                    {item === "All Status"
-                      ? item
-                      : getStatusLabel(item)}
-                  </option>
-                ))}
-              </select>
-
-              <ChevronDown size={15} />
-            </div>
-
-            <Button
-              variant={
-                showFilters ? "secondary" : "ghost"
-              }
-              onClick={() =>
-                setShowFilters((current) => !current)
-              }
-            >
-              <SlidersHorizontal size={16} />
-              Filters
-            </Button>
-          </div>
-        </div>
-
-        {showFilters && (
-          <div className="products-advanced-filters">
-            <div className="products-filter-info">
-              <SlidersHorizontal size={16} />
-
-              <span>
-                Advanced filters will become available when
-                inventory, pricing and supplier data are connected.
-              </span>
-            </div>
-
-            <Button
-              variant="ghost"
-              onClick={clearFilters}
-            >
-              Clear Filters
-            </Button>
-          </div>
-        )}
-      </Card>
-
-      <Card
-        className="products-table-card"
-        padding={false}
-      >
-        <div className="products-table-header">
+        <footer className="product-master__pagination">
+          <span>Page {page}{result?.hasMore ? "+" : ""}</span>
           <div>
-            <h2>Product Records</h2>
-
-            <p>
-              No product records available
-            </p>
+            <button type="button" disabled={loading || page <= 1} onClick={() => setPage((value) => value - 1)}>Previous</button>
+            <button type="button" disabled={loading || !result?.hasMore} onClick={() => setPage((value) => value + 1)}>Next</button>
           </div>
-
-          <div className="products-table-header__meta">
-            <Warehouse size={16} />
-            <span>Master Inventory</span>
-          </div>
-        </div>
-
-        <div className="products-empty-state">
-          <div className="products-empty-state__icon">
-            <Box
-              size={26}
-              strokeWidth={1.7}
-            />
-          </div>
-
-          <h3>No products found</h3>
-
-          <p>
-            Product records will appear here once they are
-            created and connected to the database.
-          </p>
-
-          <Link href="/products/new">
-            <Button
-              variant="primary"
-              icon={Plus}
-            >
-              Create First Product
-            </Button>
-          </Link>
-        </div>
-      </Card>
-
-      <section className="products-tools">
-        <div className="products-section-heading">
-          <div>
-            <span>Product Configuration</span>
-
-            <h2>Product Master Tools</h2>
-
-            <p>
-              Configure the supporting structures used by
-              product records.
-            </p>
-          </div>
-        </div>
-
-        <div className="products-tools-grid">
-          <Link
-            href="/products/categories"
-            className="products-tool"
-          >
-            <div className="products-tool__icon">
-              <Layers3 size={19} strokeWidth={1.8} />
-            </div>
-
-            <div className="products-tool__content">
-              <div className="products-tool__title">
-                <h3>Categories</h3>
-                <ArrowUpRight size={16} />
-              </div>
-
-              <p>
-                Manage divisions and subcategories across the
-                product master.
-              </p>
-            </div>
-          </Link>
-
-          <Link
-            href="/products/variants"
-            className="products-tool"
-          >
-            <div className="products-tool__icon">
-              <SlidersHorizontal
-                size={19}
-                strokeWidth={1.8}
-              />
-            </div>
-
-            <div className="products-tool__content">
-              <div className="products-tool__title">
-                <h3>Variants</h3>
-                <ArrowUpRight size={16} />
-              </div>
-
-              <p>
-                Configure size, color, width and finish based
-                product variations.
-              </p>
-            </div>
-          </Link>
-
-          <Link
-            href="/products/bom"
-            className="products-tool"
-          >
-            <div className="products-tool__icon">
-              <Box size={19} strokeWidth={1.8} />
-            </div>
-
-            <div className="products-tool__content">
-              <div className="products-tool__title">
-                <h3>BOM</h3>
-                <ArrowUpRight size={16} />
-              </div>
-
-              <p>
-                Define materials, components and production
-                requirements.
-              </p>
-            </div>
-          </Link>
-
-          <Link
-            href="/products/pricing"
-            className="products-tool"
-          >
-            <div className="products-tool__icon">
-              <Tag size={19} strokeWidth={1.8} />
-            </div>
-
-            <div className="products-tool__content">
-              <div className="products-tool__title">
-                <h3>Pricing</h3>
-                <ArrowUpRight size={16} />
-              </div>
-
-              <p>
-                Manage purchase cost, selling prices, margins
-                and tax treatment.
-              </p>
-            </div>
-          </Link>
-
-          <Link
-            href="/products/documents"
-            className="products-tool"
-          >
-            <div className="products-tool__icon">
-              <Package size={19} strokeWidth={1.8} />
-            </div>
-
-            <div className="products-tool__content">
-              <div className="products-tool__title">
-                <h3>Documents</h3>
-                <ArrowUpRight size={16} />
-              </div>
-
-              <p>
-                Manage technical sheets, certificates and
-                product documentation.
-              </p>
-            </div>
-          </Link>
-        </div>
+        </footer>
       </section>
-    </div>
+    </main>
   );
 }

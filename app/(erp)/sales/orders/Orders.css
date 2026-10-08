@@ -1,4 +1,4 @@
-.sales-orders {
+﻿.sales-orders {
   width: 100%;
   min-width: 0;
 }
@@ -269,11 +269,10 @@
 /* LIST */
 
 .sales-orders__list-card {
-  min-height: 300px;
+  width: 100%;
+  min-height: 0;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
 
   background: var(--af-surface);
 
@@ -285,6 +284,202 @@
 
 .sales-orders__table {
   width: 100%;
+  min-width: 920px;
+
+  border-collapse: separate;
+  border-spacing: 0;
+
+  table-layout: fixed;
+
+  font-size: 12px;
+}
+
+/* TABLE HEADER */
+
+.sales-orders__table thead th {
+  height: 44px;
+
+  padding: 0 12px;
+
+  background: var(--af-surface-soft);
+
+  border-right: 1px solid var(--af-border);
+  border-bottom: 1px solid var(--af-border);
+
+  color: var(--af-text-muted);
+
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 700;
+
+  text-align: left;
+  vertical-align: middle;
+
+  white-space: nowrap;
+}
+
+.sales-orders__table thead th:last-child {
+  border-right: 0;
+}
+
+/* TABLE BODY */
+
+.sales-orders__table tbody td {
+  height: 56px;
+
+  padding: 0 12px;
+
+  background: var(--af-surface);
+
+  border-right: 1px solid var(--af-border);
+  border-bottom: 1px solid var(--af-border);
+
+  color: var(--af-text);
+
+  font-size: 12px;
+  line-height: 17px;
+
+  vertical-align: middle;
+}
+
+.sales-orders__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.sales-orders__table tbody td:last-child {
+  border-right: 0;
+}
+
+.sales-orders__table tbody tr:hover td {
+  background: var(--af-surface-soft);
+}
+
+/* COLUMN ALIGNMENT */
+
+.sales-orders__table th:nth-child(1),
+.sales-orders__table td:nth-child(1) {
+  width: 17%;
+}
+
+.sales-orders__table th:nth-child(2),
+.sales-orders__table td:nth-child(2) {
+  width: 25%;
+}
+
+.sales-orders__table th:nth-child(3),
+.sales-orders__table td:nth-child(3) {
+  width: 12%;
+}
+
+.sales-orders__table th:nth-child(4),
+.sales-orders__table td:nth-child(4) {
+  width: 9%;
+
+  text-align: center;
+}
+
+.sales-orders__table th:nth-child(5),
+.sales-orders__table td:nth-child(5) {
+  width: 13%;
+
+  text-align: right;
+}
+
+.sales-orders__table th:nth-child(6),
+.sales-orders__table td:nth-child(6) {
+  width: 12%;
+
+  text-align: center;
+}
+
+.sales-orders__table th:nth-child(7),
+.sales-orders__table td:nth-child(7) {
+  width: 12%;
+
+  text-align: center;
+}
+
+/* ORDER NUMBER */
+
+.sales-orders__table td:first-child strong {
+  font-weight: 700;
+  color: var(--af-text);
+  white-space: nowrap;
+}
+
+/* CUSTOMER */
+
+.sales-orders__table td:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* DATE */
+
+.sales-orders__table td:nth-child(3) {
+  white-space: nowrap;
+}
+
+/* ITEMS */
+
+.sales-orders__table td:nth-child(4) {
+  font-variant-numeric: tabular-nums;
+}
+
+/* TOTAL */
+
+.sales-orders__table td:nth-child(5) {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* STATUS */
+
+.sales-orders__table td:nth-child(6) > * {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ACTIONS */
+
+.sales-orders__table td:nth-child(7) {
+  white-space: nowrap;
+}
+
+.sales-orders__table td:nth-child(7) a,
+.sales-orders__table td:nth-child(7) button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 32px;
+
+  margin: 0 3px;
+}
+
+/* EMPTY / LOADING STATE */
+
+.sales-orders__table tbody td[colspan] {
+  height: 180px;
+
+  padding: 24px;
+
+  border-right: 0;
+
+  color: var(--af-text-muted);
+
+  text-align: center;
+
+  vertical-align: middle;
+}
+
+/* TABLE SCROLL */
+
+.sales-orders__list-card {
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 /* ATTENTION */
@@ -405,3 +600,160 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* FINAL TABLE COLUMN BALANCE */
+
+.sales-orders__table th:nth-child(1),
+.sales-orders__table td:nth-child(1) {
+  width: 16%;
+}
+
+.sales-orders__table th:nth-child(2),
+.sales-orders__table td:nth-child(2) {
+  width: 27%;
+}
+
+.sales-orders__table th:nth-child(3),
+.sales-orders__table td:nth-child(3) {
+  width: 12%;
+}
+
+.sales-orders__table th:nth-child(4),
+.sales-orders__table td:nth-child(4) {
+  width: 8%;
+}
+
+.sales-orders__table th:nth-child(5),
+.sales-orders__table td:nth-child(5) {
+  width: 14%;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.sales-orders__table th:nth-child(6),
+.sales-orders__table td:nth-child(6) {
+  width: 12%;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.sales-orders__table th:nth-child(7),
+.sales-orders__table td:nth-child(7) {
+  width: 11%;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.sales-orders__table th:nth-child(5) {
+  text-align: right;
+}
+
+.sales-orders__table th:nth-child(6),
+.sales-orders__table th:nth-child(7) {
+  text-align: center;
+}
+
+.sales-orders__table td:nth-child(5) {
+  text-align: right;
+}
+
+.sales-orders__table td:nth-child(6),
+.sales-orders__table td:nth-child(7) {
+  text-align: center;
+}
+
+/* FINAL SALES ORDER TABLE GRID */
+
+.sales-orders__table {
+  min-width: 1000px;
+  table-layout: fixed;
+}
+
+/* Order # */
+.sales-orders__table th:nth-child(1),
+.sales-orders__table td:nth-child(1) {
+  width: 160px;
+}
+
+/* Customer */
+.sales-orders__table th:nth-child(2),
+.sales-orders__table td:nth-child(2) {
+  width: 280px;
+}
+
+/* Date */
+.sales-orders__table th:nth-child(3),
+.sales-orders__table td:nth-child(3) {
+  width: 130px;
+  text-align: left;
+}
+
+/* Items */
+.sales-orders__table th:nth-child(4),
+.sales-orders__table td:nth-child(4) {
+  width: 90px;
+  text-align: center;
+}
+
+/* Total */
+.sales-orders__table th:nth-child(5),
+.sales-orders__table td:nth-child(5) {
+  width: 130px;
+  padding-left: 20px;
+  padding-right: 20px;
+  text-align: right;
+}
+
+/* Status */
+.sales-orders__table th:nth-child(6),
+.sales-orders__table td:nth-child(6) {
+  width: 130px;
+  padding-left: 20px;
+  padding-right: 20px;
+  text-align: center;
+}
+
+/* Action */
+.sales-orders__table th:nth-child(7),
+.sales-orders__table td:nth-child(7) {
+  width: 120px;
+  padding-left: 20px;
+  padding-right: 20px;
+  text-align: center;
+}
+
+/* Header alignment */
+.sales-orders__table thead th:nth-child(5) {
+  text-align: right;
+}
+
+.sales-orders__table thead th:nth-child(6),
+.sales-orders__table thead th:nth-child(7) {
+  text-align: center;
+}
+
+/* Keep final three columns visually separated */
+.sales-orders__table th:nth-child(5),
+.sales-orders__table td:nth-child(5),
+.sales-orders__table th:nth-child(6),
+.sales-orders__table td:nth-child(6) {
+  border-right: 1px solid var(--af-border);
+}
+
+/* Status badge */
+.sales-orders__table td:nth-child(6) > * {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Actions */
+.sales-orders__table td:nth-child(7) {
+  white-space: nowrap;
+}
+
+.sales-orders__table td:nth-child(7) a,
+.sales-orders__table td:nth-child(7) button {
+  margin: 0;
+}
+

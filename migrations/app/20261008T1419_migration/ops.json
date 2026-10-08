@@ -1,0 +1,1948 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.erp_audit_logs",
+    "label": "Create table \"erp_audit_logs\"",
+    "summary": "Creates table \"erp_audit_logs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_audit_logs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_audit_logs\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_audit_logs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_audit_logs\"",
+        "sql": "CREATE TABLE \"public\".\"erp_audit_logs\" (\n  \"action\" text NOT NULL,\n  \"actorId\" uuid,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"entityId\" text,\n  \"entityType\" text,\n  \"id\" uuid NOT NULL,\n  \"ip\" text,\n  \"metadata\" text,\n  \"requestId\" text,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_audit_logs\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_audit_logs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_customers",
+    "label": "Create table \"erp_customers\"",
+    "summary": "Creates table \"erp_customers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_customers\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_customers\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_customers\"",
+        "sql": "CREATE TABLE \"public\".\"erp_customers\" (\n  \"code\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"email\" text,\n  \"id\" uuid NOT NULL,\n  \"name\" text NOT NULL,\n  \"phone\" text,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_customers\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_customers\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_permissions",
+    "label": "Create table \"erp_permissions\"",
+    "summary": "Creates table \"erp_permissions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_permissions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_permissions\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_permissions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_permissions\"",
+        "sql": "CREATE TABLE \"public\".\"erp_permissions\" (\n  \"action\" text NOT NULL,\n  \"code\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"module\" text NOT NULL,\n  \"name\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_permissions\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_permissions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_products",
+    "label": "Create table \"erp_products\"",
+    "summary": "Creates table \"erp_products\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_products"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_products\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_products\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_products\"",
+        "sql": "CREATE TABLE \"public\".\"erp_products\" (\n  \"category\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" uuid NOT NULL,\n  \"name\" text NOT NULL,\n  \"productType\" text NOT NULL,\n  \"sku\" text NOT NULL,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"unit\" text NOT NULL,\n  \"unitPrice\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"variant\" text,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_products\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_products\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_role_permissions",
+    "label": "Create table \"erp_role_permissions\"",
+    "summary": "Creates table \"erp_role_permissions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_role_permissions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_role_permissions\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_role_permissions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_role_permissions\"",
+        "sql": "CREATE TABLE \"public\".\"erp_role_permissions\" (\n  \"grantedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"permissionId\" uuid NOT NULL,\n  \"roleId\" uuid NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_role_permissions\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_role_permissions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_roles",
+    "label": "Create table \"erp_roles\"",
+    "summary": "Creates table \"erp_roles\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_roles"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_roles\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_roles\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_roles\"",
+        "sql": "CREATE TABLE \"public\".\"erp_roles\" (\n  \"code\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"isSystem\" bool DEFAULT false NOT NULL,\n  \"name\" text NOT NULL,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_roles_status_check_56c81764\" CHECK (\"status\" IN ('ACTIVE', 'DISABLED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_roles\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_roles\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_sales_order_lines",
+    "label": "Create table \"erp_sales_order_lines\"",
+    "summary": "Creates table \"erp_sales_order_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_sales_order_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_sales_order_lines\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_order_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_sales_order_lines\"",
+        "sql": "CREATE TABLE \"public\".\"erp_sales_order_lines\" (\n  \"category\" text,\n  \"customerReference\" text,\n  \"discountPercent\" int4 DEFAULT 0 NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"isCustom\" bool DEFAULT false NOT NULL,\n  \"lineTotal\" numeric NOT NULL,\n  \"notes\" text,\n  \"productId\" uuid,\n  \"productName\" text NOT NULL,\n  \"quantity\" numeric NOT NULL,\n  \"salesOrderId\" uuid NOT NULL,\n  \"skuReference\" text,\n  \"taxPercent\" int4 DEFAULT 0 NOT NULL,\n  \"unit\" text NOT NULL,\n  \"unitPrice\" numeric NOT NULL,\n  \"variant\" text,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_sales_order_lines\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_order_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_sales_orders",
+    "label": "Create table \"erp_sales_orders\"",
+    "summary": "Creates table \"erp_sales_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_sales_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_sales_orders\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_orders\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_sales_orders\"",
+        "sql": "CREATE TABLE \"public\".\"erp_sales_orders\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"customerId\" uuid NOT NULL,\n  \"deliveryDate\" text,\n  \"discountTotal\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"notes\" text,\n  \"orderDate\" text NOT NULL,\n  \"orderNumber\" text NOT NULL,\n  \"status\" text DEFAULT 'DRAFT' NOT NULL,\n  \"subtotal\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"taxTotal\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"totalAmount\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_sales_orders\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_orders\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_user_roles",
+    "label": "Create table \"erp_user_roles\"",
+    "summary": "Creates table \"erp_user_roles\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_user_roles"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_user_roles\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_user_roles\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_user_roles\"",
+        "sql": "CREATE TABLE \"public\".\"erp_user_roles\" (\n  \"grantedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"roleId\" uuid NOT NULL,\n  \"userId\" uuid NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_user_roles\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_user_roles\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_user_sessions",
+    "label": "Create table \"erp_user_sessions\"",
+    "summary": "Creates table \"erp_user_sessions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_user_sessions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_user_sessions\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_user_sessions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_user_sessions\"",
+        "sql": "CREATE TABLE \"public\".\"erp_user_sessions\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"expiresAt\" timestamptz NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"ip\" text,\n  \"lastUsedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"revokedAt\" timestamptz,\n  \"revokedBy\" uuid,\n  \"tokenHash\" text NOT NULL,\n  \"userAgent\" text,\n  \"userId\" uuid NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_user_sessions\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_user_sessions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_users",
+    "label": "Create table \"erp_users\"",
+    "summary": "Creates table \"erp_users\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_users\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_users\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_users\"",
+        "sql": "CREATE TABLE \"public\".\"erp_users\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"email\" text NOT NULL,\n  \"employeeCode\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"lastLoginAt\" timestamptz,\n  \"name\" text NOT NULL,\n  \"passwordHash\" text NOT NULL,\n  \"phone\" text,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_users_status_check_56c81764\" CHECK (\"status\" IN ('ACTIVE', 'DISABLED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_users\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_users\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_customers.erp_customers_code_key",
+    "label": "Add unique constraint on \"erp_customers\" (code)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_customers_code_key",
+        "table": "erp_customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_customers_code_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_customers_code_key",
+          "public",
+          "\"public\".\"erp_customers\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_customers_code_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_customers\" ADD CONSTRAINT \"erp_customers_code_key\" UNIQUE (\"code\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_customers_code_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_customers_code_key",
+          "public",
+          "\"public\".\"erp_customers\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_permissions.erp_permissions_code_key",
+    "label": "Add unique constraint on \"erp_permissions\" (code)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_permissions_code_key",
+        "table": "erp_permissions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_permissions_code_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_permissions_code_key",
+          "public",
+          "\"public\".\"erp_permissions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_permissions_code_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_permissions\" ADD CONSTRAINT \"erp_permissions_code_key\" UNIQUE (\"code\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_permissions_code_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_permissions_code_key",
+          "public",
+          "\"public\".\"erp_permissions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_products.erp_products_sku_key",
+    "label": "Add unique constraint on \"erp_products\" (sku)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_products_sku_key",
+        "table": "erp_products"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_products_sku_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_products_sku_key",
+          "public",
+          "\"public\".\"erp_products\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_products_sku_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_products\" ADD CONSTRAINT \"erp_products_sku_key\" UNIQUE (\"sku\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_products_sku_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_products_sku_key",
+          "public",
+          "\"public\".\"erp_products\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_role_permissions.erp_role_permissions_roleId_permissionId_key",
+    "label": "Add unique constraint on \"erp_role_permissions\" (roleId, permissionId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_role_permissions_roleId_permissionId_key",
+        "table": "erp_role_permissions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_role_permissions_roleId_permissionId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_role_permissions_roleId_permissionId_key",
+          "public",
+          "\"public\".\"erp_role_permissions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_role_permissions_roleId_permissionId_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_role_permissions\" ADD CONSTRAINT \"erp_role_permissions_roleId_permissionId_key\" UNIQUE (\"roleId\", \"permissionId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_role_permissions_roleId_permissionId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_role_permissions_roleId_permissionId_key",
+          "public",
+          "\"public\".\"erp_role_permissions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_roles.erp_roles_name_key",
+    "label": "Add unique constraint on \"erp_roles\" (name)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_roles_name_key",
+        "table": "erp_roles"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_roles_name_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_roles_name_key",
+          "public",
+          "\"public\".\"erp_roles\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_roles_name_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_roles\" ADD CONSTRAINT \"erp_roles_name_key\" UNIQUE (\"name\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_roles_name_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_roles_name_key",
+          "public",
+          "\"public\".\"erp_roles\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_roles.erp_roles_code_key",
+    "label": "Add unique constraint on \"erp_roles\" (code)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_roles_code_key",
+        "table": "erp_roles"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_roles_code_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_roles_code_key",
+          "public",
+          "\"public\".\"erp_roles\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_roles_code_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_roles\" ADD CONSTRAINT \"erp_roles_code_key\" UNIQUE (\"code\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_roles_code_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_roles_code_key",
+          "public",
+          "\"public\".\"erp_roles\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_sales_orders.erp_sales_orders_orderNumber_key",
+    "label": "Add unique constraint on \"erp_sales_orders\" (orderNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_sales_orders_orderNumber_key",
+        "table": "erp_sales_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_sales_orders_orderNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_sales_orders_orderNumber_key",
+          "public",
+          "\"public\".\"erp_sales_orders\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_sales_orders_orderNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_sales_orders\" ADD CONSTRAINT \"erp_sales_orders_orderNumber_key\" UNIQUE (\"orderNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_sales_orders_orderNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_sales_orders_orderNumber_key",
+          "public",
+          "\"public\".\"erp_sales_orders\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_user_roles.erp_user_roles_userId_roleId_key",
+    "label": "Add unique constraint on \"erp_user_roles\" (userId, roleId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_user_roles_userId_roleId_key",
+        "table": "erp_user_roles"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_user_roles_userId_roleId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_user_roles_userId_roleId_key",
+          "public",
+          "\"public\".\"erp_user_roles\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_user_roles_userId_roleId_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_user_roles\" ADD CONSTRAINT \"erp_user_roles_userId_roleId_key\" UNIQUE (\"userId\", \"roleId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_user_roles_userId_roleId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_user_roles_userId_roleId_key",
+          "public",
+          "\"public\".\"erp_user_roles\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_user_sessions.erp_user_sessions_tokenHash_key",
+    "label": "Add unique constraint on \"erp_user_sessions\" (tokenHash)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_user_sessions_tokenHash_key",
+        "table": "erp_user_sessions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_user_sessions_tokenHash_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_user_sessions_tokenHash_key",
+          "public",
+          "\"public\".\"erp_user_sessions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_user_sessions_tokenHash_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_user_sessions\" ADD CONSTRAINT \"erp_user_sessions_tokenHash_key\" UNIQUE (\"tokenHash\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_user_sessions_tokenHash_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_user_sessions_tokenHash_key",
+          "public",
+          "\"public\".\"erp_user_sessions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_users.erp_users_employeeCode_key",
+    "label": "Add unique constraint on \"erp_users\" (employeeCode)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_users_employeeCode_key",
+        "table": "erp_users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_users_employeeCode_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_users_employeeCode_key",
+          "public",
+          "\"public\".\"erp_users\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_users_employeeCode_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_users\" ADD CONSTRAINT \"erp_users_employeeCode_key\" UNIQUE (\"employeeCode\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_users_employeeCode_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_users_employeeCode_key",
+          "public",
+          "\"public\".\"erp_users\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_users.erp_users_email_key",
+    "label": "Add unique constraint on \"erp_users\" (email)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_users_email_key",
+        "table": "erp_users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_users_email_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_users_email_key",
+          "public",
+          "\"public\".\"erp_users\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_users_email_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_users\" ADD CONSTRAINT \"erp_users_email_key\" UNIQUE (\"email\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_users_email_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_users_email_key",
+          "public",
+          "\"public\".\"erp_users\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_audit_logs.erp_audit_logs_action_idx_cd0d2116",
+    "label": "Create index \"erp_audit_logs_action_idx_cd0d2116\" on \"erp_audit_logs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_audit_logs_action_idx_cd0d2116",
+        "table": "erp_audit_logs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_audit_logs_action_idx_cd0d2116\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_audit_logs_action_idx_cd0d2116\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_audit_logs_action_idx_cd0d2116\"",
+        "sql": "CREATE INDEX \"erp_audit_logs_action_idx_cd0d2116\" ON \"public\".\"erp_audit_logs\" (\"action\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_audit_logs_action_idx_cd0d2116\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_audit_logs_action_idx_cd0d2116\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_audit_logs.erp_audit_logs_actorId_idx_a58f6b4b",
+    "label": "Create index \"erp_audit_logs_actorId_idx_a58f6b4b\" on \"erp_audit_logs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_audit_logs_actorId_idx_a58f6b4b",
+        "table": "erp_audit_logs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_audit_logs_actorId_idx_a58f6b4b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_audit_logs_actorId_idx_a58f6b4b\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_audit_logs_actorId_idx_a58f6b4b\"",
+        "sql": "CREATE INDEX \"erp_audit_logs_actorId_idx_a58f6b4b\" ON \"public\".\"erp_audit_logs\" (\"actorId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_audit_logs_actorId_idx_a58f6b4b\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_audit_logs_actorId_idx_a58f6b4b\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_audit_logs.erp_audit_logs_createdAt_idx_9575dbd7",
+    "label": "Create index \"erp_audit_logs_createdAt_idx_9575dbd7\" on \"erp_audit_logs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_audit_logs_createdAt_idx_9575dbd7",
+        "table": "erp_audit_logs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_audit_logs_createdAt_idx_9575dbd7\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_audit_logs_createdAt_idx_9575dbd7\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_audit_logs_createdAt_idx_9575dbd7\"",
+        "sql": "CREATE INDEX \"erp_audit_logs_createdAt_idx_9575dbd7\" ON \"public\".\"erp_audit_logs\" (\"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_audit_logs_createdAt_idx_9575dbd7\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_audit_logs_createdAt_idx_9575dbd7\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_customers.erp_customers_name_idx_ce87e6ba",
+    "label": "Create index \"erp_customers_name_idx_ce87e6ba\" on \"erp_customers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_customers_name_idx_ce87e6ba",
+        "table": "erp_customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_customers_name_idx_ce87e6ba\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_customers_name_idx_ce87e6ba\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_customers_name_idx_ce87e6ba\"",
+        "sql": "CREATE INDEX \"erp_customers_name_idx_ce87e6ba\" ON \"public\".\"erp_customers\" (\"name\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_customers_name_idx_ce87e6ba\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_customers_name_idx_ce87e6ba\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_products.erp_products_category_idx_f2600f8e",
+    "label": "Create index \"erp_products_category_idx_f2600f8e\" on \"erp_products\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_products_category_idx_f2600f8e",
+        "table": "erp_products"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_products_category_idx_f2600f8e\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_products_category_idx_f2600f8e\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_products_category_idx_f2600f8e\"",
+        "sql": "CREATE INDEX \"erp_products_category_idx_f2600f8e\" ON \"public\".\"erp_products\" (\"category\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_products_category_idx_f2600f8e\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_products_category_idx_f2600f8e\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_products.erp_products_name_idx_ce87e6ba",
+    "label": "Create index \"erp_products_name_idx_ce87e6ba\" on \"erp_products\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_products_name_idx_ce87e6ba",
+        "table": "erp_products"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_products_name_idx_ce87e6ba\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_products_name_idx_ce87e6ba\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_products_name_idx_ce87e6ba\"",
+        "sql": "CREATE INDEX \"erp_products_name_idx_ce87e6ba\" ON \"public\".\"erp_products\" (\"name\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_products_name_idx_ce87e6ba\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_products_name_idx_ce87e6ba\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_products.erp_products_status_idx_e98638ab",
+    "label": "Create index \"erp_products_status_idx_e98638ab\" on \"erp_products\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_products_status_idx_e98638ab",
+        "table": "erp_products"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_products_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_products_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_products_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"erp_products_status_idx_e98638ab\" ON \"public\".\"erp_products\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_products_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_products_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_role_permissions.erp_role_permissions_permissionId_idx_f46fcdf5",
+    "label": "Create index \"erp_role_permissions_permissionId_idx_f46fcdf5\" on \"erp_role_permissions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_role_permissions_permissionId_idx_f46fcdf5",
+        "table": "erp_role_permissions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_role_permissions_permissionId_idx_f46fcdf5\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_role_permissions_permissionId_idx_f46fcdf5\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_role_permissions_permissionId_idx_f46fcdf5\"",
+        "sql": "CREATE INDEX \"erp_role_permissions_permissionId_idx_f46fcdf5\" ON \"public\".\"erp_role_permissions\" (\"permissionId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_role_permissions_permissionId_idx_f46fcdf5\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_role_permissions_permissionId_idx_f46fcdf5\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_role_permissions.erp_role_permissions_roleId_idx_ffccc9a4",
+    "label": "Create index \"erp_role_permissions_roleId_idx_ffccc9a4\" on \"erp_role_permissions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_role_permissions_roleId_idx_ffccc9a4",
+        "table": "erp_role_permissions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_role_permissions_roleId_idx_ffccc9a4\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_role_permissions_roleId_idx_ffccc9a4\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_role_permissions_roleId_idx_ffccc9a4\"",
+        "sql": "CREATE INDEX \"erp_role_permissions_roleId_idx_ffccc9a4\" ON \"public\".\"erp_role_permissions\" (\"roleId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_role_permissions_roleId_idx_ffccc9a4\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_role_permissions_roleId_idx_ffccc9a4\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_sales_order_lines.erp_sales_order_lines_productId_idx_5858600a",
+    "label": "Create index \"erp_sales_order_lines_productId_idx_5858600a\" on \"erp_sales_order_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_sales_order_lines_productId_idx_5858600a",
+        "table": "erp_sales_order_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_sales_order_lines_productId_idx_5858600a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_order_lines_productId_idx_5858600a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_sales_order_lines_productId_idx_5858600a\"",
+        "sql": "CREATE INDEX \"erp_sales_order_lines_productId_idx_5858600a\" ON \"public\".\"erp_sales_order_lines\" (\"productId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_sales_order_lines_productId_idx_5858600a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_order_lines_productId_idx_5858600a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_sales_order_lines.erp_sales_order_lines_salesOrderId_idx_0f1a116c",
+    "label": "Create index \"erp_sales_order_lines_salesOrderId_idx_0f1a116c\" on \"erp_sales_order_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_sales_order_lines_salesOrderId_idx_0f1a116c",
+        "table": "erp_sales_order_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_sales_order_lines_salesOrderId_idx_0f1a116c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_order_lines_salesOrderId_idx_0f1a116c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_sales_order_lines_salesOrderId_idx_0f1a116c\"",
+        "sql": "CREATE INDEX \"erp_sales_order_lines_salesOrderId_idx_0f1a116c\" ON \"public\".\"erp_sales_order_lines\" (\"salesOrderId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_sales_order_lines_salesOrderId_idx_0f1a116c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_order_lines_salesOrderId_idx_0f1a116c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_sales_orders.erp_sales_orders_customerId_idx_b2a8a46c",
+    "label": "Create index \"erp_sales_orders_customerId_idx_b2a8a46c\" on \"erp_sales_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_sales_orders_customerId_idx_b2a8a46c",
+        "table": "erp_sales_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_sales_orders_customerId_idx_b2a8a46c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_orders_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_sales_orders_customerId_idx_b2a8a46c\"",
+        "sql": "CREATE INDEX \"erp_sales_orders_customerId_idx_b2a8a46c\" ON \"public\".\"erp_sales_orders\" (\"customerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_sales_orders_customerId_idx_b2a8a46c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_orders_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_sales_orders.erp_sales_orders_orderDate_idx_a1a011d5",
+    "label": "Create index \"erp_sales_orders_orderDate_idx_a1a011d5\" on \"erp_sales_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_sales_orders_orderDate_idx_a1a011d5",
+        "table": "erp_sales_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_sales_orders_orderDate_idx_a1a011d5\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_orders_orderDate_idx_a1a011d5\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_sales_orders_orderDate_idx_a1a011d5\"",
+        "sql": "CREATE INDEX \"erp_sales_orders_orderDate_idx_a1a011d5\" ON \"public\".\"erp_sales_orders\" (\"orderDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_sales_orders_orderDate_idx_a1a011d5\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_orders_orderDate_idx_a1a011d5\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_sales_orders.erp_sales_orders_status_idx_e98638ab",
+    "label": "Create index \"erp_sales_orders_status_idx_e98638ab\" on \"erp_sales_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_sales_orders_status_idx_e98638ab",
+        "table": "erp_sales_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_sales_orders_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_orders_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_sales_orders_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"erp_sales_orders_status_idx_e98638ab\" ON \"public\".\"erp_sales_orders\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_sales_orders_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_orders_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_user_roles.erp_user_roles_roleId_idx_ffccc9a4",
+    "label": "Create index \"erp_user_roles_roleId_idx_ffccc9a4\" on \"erp_user_roles\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_user_roles_roleId_idx_ffccc9a4",
+        "table": "erp_user_roles"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_user_roles_roleId_idx_ffccc9a4\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_user_roles_roleId_idx_ffccc9a4\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_user_roles_roleId_idx_ffccc9a4\"",
+        "sql": "CREATE INDEX \"erp_user_roles_roleId_idx_ffccc9a4\" ON \"public\".\"erp_user_roles\" (\"roleId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_user_roles_roleId_idx_ffccc9a4\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_user_roles_roleId_idx_ffccc9a4\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_user_roles.erp_user_roles_userId_idx_a489d58a",
+    "label": "Create index \"erp_user_roles_userId_idx_a489d58a\" on \"erp_user_roles\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_user_roles_userId_idx_a489d58a",
+        "table": "erp_user_roles"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_user_roles_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_user_roles_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_user_roles_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"erp_user_roles_userId_idx_a489d58a\" ON \"public\".\"erp_user_roles\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_user_roles_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_user_roles_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_user_sessions.erp_user_sessions_expiresAt_idx_6b6b8c10",
+    "label": "Create index \"erp_user_sessions_expiresAt_idx_6b6b8c10\" on \"erp_user_sessions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_user_sessions_expiresAt_idx_6b6b8c10",
+        "table": "erp_user_sessions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_user_sessions_expiresAt_idx_6b6b8c10\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_user_sessions_expiresAt_idx_6b6b8c10\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_user_sessions_expiresAt_idx_6b6b8c10\"",
+        "sql": "CREATE INDEX \"erp_user_sessions_expiresAt_idx_6b6b8c10\" ON \"public\".\"erp_user_sessions\" (\"expiresAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_user_sessions_expiresAt_idx_6b6b8c10\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_user_sessions_expiresAt_idx_6b6b8c10\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_user_sessions.erp_user_sessions_userId_idx_a489d58a",
+    "label": "Create index \"erp_user_sessions_userId_idx_a489d58a\" on \"erp_user_sessions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_user_sessions_userId_idx_a489d58a",
+        "table": "erp_user_sessions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_user_sessions_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_user_sessions_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_user_sessions_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"erp_user_sessions_userId_idx_a489d58a\" ON \"public\".\"erp_user_sessions\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_user_sessions_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_user_sessions_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_role_permissions.erp_role_permissions_roleId_fkey",
+    "label": "Add foreign key \"erp_role_permissions_roleId_fkey\" on \"erp_role_permissions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_role_permissions_roleId_fkey",
+        "table": "erp_role_permissions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_role_permissions_roleId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_role_permissions_roleId_fkey",
+          "public",
+          "\"public\".\"erp_role_permissions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_role_permissions_roleId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_role_permissions\"\nADD CONSTRAINT \"erp_role_permissions_roleId_fkey\"\nFOREIGN KEY (\"roleId\")\nREFERENCES \"public\".\"erp_roles\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_role_permissions_roleId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_role_permissions_roleId_fkey",
+          "public",
+          "\"public\".\"erp_role_permissions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_role_permissions.erp_role_permissions_permissionId_fkey",
+    "label": "Add foreign key \"erp_role_permissions_permissionId_fkey\" on \"erp_role_permissions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_role_permissions_permissionId_fkey",
+        "table": "erp_role_permissions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_role_permissions_permissionId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_role_permissions_permissionId_fkey",
+          "public",
+          "\"public\".\"erp_role_permissions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_role_permissions_permissionId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_role_permissions\"\nADD CONSTRAINT \"erp_role_permissions_permissionId_fkey\"\nFOREIGN KEY (\"permissionId\")\nREFERENCES \"public\".\"erp_permissions\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_role_permissions_permissionId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_role_permissions_permissionId_fkey",
+          "public",
+          "\"public\".\"erp_role_permissions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_sales_order_lines.erp_sales_order_lines_salesOrderId_fkey",
+    "label": "Add foreign key \"erp_sales_order_lines_salesOrderId_fkey\" on \"erp_sales_order_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_sales_order_lines_salesOrderId_fkey",
+        "table": "erp_sales_order_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_sales_order_lines_salesOrderId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_sales_order_lines_salesOrderId_fkey",
+          "public",
+          "\"public\".\"erp_sales_order_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_sales_order_lines_salesOrderId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_sales_order_lines\"\nADD CONSTRAINT \"erp_sales_order_lines_salesOrderId_fkey\"\nFOREIGN KEY (\"salesOrderId\")\nREFERENCES \"public\".\"erp_sales_orders\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_sales_order_lines_salesOrderId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_sales_order_lines_salesOrderId_fkey",
+          "public",
+          "\"public\".\"erp_sales_order_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_sales_order_lines.erp_sales_order_lines_productId_fkey",
+    "label": "Add foreign key \"erp_sales_order_lines_productId_fkey\" on \"erp_sales_order_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_sales_order_lines_productId_fkey",
+        "table": "erp_sales_order_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_sales_order_lines_productId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_sales_order_lines_productId_fkey",
+          "public",
+          "\"public\".\"erp_sales_order_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_sales_order_lines_productId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_sales_order_lines\"\nADD CONSTRAINT \"erp_sales_order_lines_productId_fkey\"\nFOREIGN KEY (\"productId\")\nREFERENCES \"public\".\"erp_products\" (\"id\")\nON DELETE SET NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_sales_order_lines_productId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_sales_order_lines_productId_fkey",
+          "public",
+          "\"public\".\"erp_sales_order_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_sales_orders.erp_sales_orders_customerId_fkey",
+    "label": "Add foreign key \"erp_sales_orders_customerId_fkey\" on \"erp_sales_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_sales_orders_customerId_fkey",
+        "table": "erp_sales_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_sales_orders_customerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_sales_orders_customerId_fkey",
+          "public",
+          "\"public\".\"erp_sales_orders\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_sales_orders_customerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_sales_orders\"\nADD CONSTRAINT \"erp_sales_orders_customerId_fkey\"\nFOREIGN KEY (\"customerId\")\nREFERENCES \"public\".\"erp_customers\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_sales_orders_customerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_sales_orders_customerId_fkey",
+          "public",
+          "\"public\".\"erp_sales_orders\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_user_roles.erp_user_roles_userId_fkey",
+    "label": "Add foreign key \"erp_user_roles_userId_fkey\" on \"erp_user_roles\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_user_roles_userId_fkey",
+        "table": "erp_user_roles"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_user_roles_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_user_roles_userId_fkey",
+          "public",
+          "\"public\".\"erp_user_roles\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_user_roles_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_user_roles\"\nADD CONSTRAINT \"erp_user_roles_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"erp_users\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_user_roles_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_user_roles_userId_fkey",
+          "public",
+          "\"public\".\"erp_user_roles\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_user_roles.erp_user_roles_roleId_fkey",
+    "label": "Add foreign key \"erp_user_roles_roleId_fkey\" on \"erp_user_roles\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_user_roles_roleId_fkey",
+        "table": "erp_user_roles"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_user_roles_roleId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_user_roles_roleId_fkey",
+          "public",
+          "\"public\".\"erp_user_roles\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_user_roles_roleId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_user_roles\"\nADD CONSTRAINT \"erp_user_roles_roleId_fkey\"\nFOREIGN KEY (\"roleId\")\nREFERENCES \"public\".\"erp_roles\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_user_roles_roleId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_user_roles_roleId_fkey",
+          "public",
+          "\"public\".\"erp_user_roles\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_user_sessions.erp_user_sessions_userId_fkey",
+    "label": "Add foreign key \"erp_user_sessions_userId_fkey\" on \"erp_user_sessions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_user_sessions_userId_fkey",
+        "table": "erp_user_sessions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_user_sessions_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_user_sessions_userId_fkey",
+          "public",
+          "\"public\".\"erp_user_sessions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_user_sessions_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_user_sessions\"\nADD CONSTRAINT \"erp_user_sessions_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"erp_users\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_user_sessions_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_user_sessions_userId_fkey",
+          "public",
+          "\"public\".\"erp_user_sessions\""
+        ]
+      }
+    ]
+  }
+]

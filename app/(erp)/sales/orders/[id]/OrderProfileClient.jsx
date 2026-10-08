@@ -1,869 +1,397 @@
-"use client";
+﻿"use client";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  Circle,
-  CircleDot,
-  FileText,
-  PauseCircle,
-  PlayCircle,
-  Pencil,
-  Trash2,
-  TriangleAlert,
-  Upload,
-  X,
-} from "lucide-react";
+import { useEffect, useState } from "react";
 
-import PageHeader from "@/components/ui/PageHeader";
-import Button from "@/components/ui/Button";
-import EmptyState from "@/components/ui/EmptyState";
-import ConfirmDialog from "@/components/ui/ConfirmDialog";
-import Modal from "@/components/ui/Modal";
-import Select from "@/components/ui/Select";
-import Input from "@/components/ui/Input";
-import { useToast } from "@/components/ui/ToastProvider";
-
-import useOrderStore from "@/lib/useOrderStore";
-import { PRODUCTION_STAGES, getStage } from "@/config/production";
-import { ORDER_STATUSES, ORDER_ATTACHMENT_TYPES } from "@/config/orders";
-
+import { apiRequest } from "@/lib/api/client";
+import "../SalesOrders.css";
 import "./OrderProfile.css";
 
-function StageRow({ stage, delayed, actions }) {
-  const state =
-    stage.status === "completed"
-      ? "completed"
-      : stage.status === "in-progress"
-        ? "current"
-        : "pending";
+function amount(value) {
+  const number = Number(value);
 
-  const StateIcon =
-    state === "completed"
-      ? CheckCircle2
-      : state === "current"
-        ? CircleDot
-        : Circle;
-
-  const qty = {
-    input: stage.inputQuantity,
-    completed: stage.completedQuantity,
-    rejected: stage.rejectedQuantity,
-    wastage: stage.wastageQuantity,
-    remaining: stage.remainingQuantity,
-  };
-
-  return (
-    <div
-      className={`order-profile__stage order-profile__stage--${state}${
-        delayed ? " order-profile__stage--delayed" : ""
-      }`}
-    >
-      <div className="order-profile__stage-marker">
-        <StateIcon size={20} strokeWidth={1.8} />
-      </div>
-
-      <div className="order-profile__stage-main">
-        <div className="order-profile__stage-title">
-          <strong>{stage.label}</strong>
-
-          <span className="order-profile__stage-badge">
-            {stage.status === "in-progress"
-              ? "In Progress"
-              : stage.status === "completed"
-                ? "Completed"
-                : stage.status === "ready"
-                  ? "Ready"
-                  : stage.status === "paused"
-                    ? "On Hold"
-                    : "Pending"}
-          </span>
-
-          {delayed && (
-            <span className="order-profile__stage-delayed-badge">
-              <TriangleAlert size={12} strokeWidth={2} />
-              Delayed
-            </span>
-          )}
-
-          <div className="order-profile__stage-actions">{actions}</div>
-        </div>
-
-        <div className="order-profile__stage-meta">
-          {stage.startedAt && (
-            <span>
-              Started: <b>{new Date(stage.startedAt).toLocaleString()}</b>
-            </span>
-          )}
-
-          {stage.completedAt && (
-            <span>
-              Completed: <b>{new Date(stage.completedAt).toLocaleString()}</b>
-            </span>
-          )}
-
-          {stage.remarks && (
-            <span>
-              Remarks: <b>{stage.remarks}</b>
-            </span>
-          )}
-
-          {stage.updatedBy && stage.updatedAt && (
-            <span>
-              Updated by <b>{stage.updatedBy}</b> at{" "}
-              <b>{new Date(stage.updatedAt).toLocaleString()}</b>
-            </span>
-          )}
-        </div>
-
-        <div className="order-profile__stage-qty">
-          <span>
-            Input <b>{qty.input.toLocaleString()}</b>
-          </span>
-
-          <span>
-            Completed <b>{qty.completed.toLocaleString()}</b>
-          </span>
-
-          <span className="order-profile__qty-reject">
-            Rejected <b>{qty.rejected.toLocaleString()}</b>
-          </span>
-
-          <span className="order-profile__qty-waste">
-            Wastage <b>{qty.wastage.toLocaleString()}</b>
-          </span>
-
-          <span className="order-profile__qty-remaining">
-            Remaining <b>{qty.remaining.toLocaleString()}</b>
-          </span>
-        </div>
-      </div>
-    </div>
-  );
+  return Number.isFinite(number) ? number.toFixed(2) : "0.00";
 }
 
 export default function OrderProfileClient({ id }) {
-  const router = useRouter();
-  const toast = useToast();
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [reload, setReload] = useState(0);
 
-  const orderId = id;
+  useEffect(() => {
+    let active = true;
 
-  const {
-    getOrder,
-    startStage,
-    completeStage,
-    holdStage,
-    resumeStage,
-    setStatus,
-    deleteOrder,
-    addAttachment,
-    removeAttachment,
-    stageProgress,
-    delayed,
-  } = useOrderStore([]);
+    const timer = window.setTimeout(async () => {
+      setLoading(true);
+      setError("");
 
-  const order = getOrder(orderId);
+      try {
+        const value = await apiRequest(
+          `/api/sales/orders/${encodeURIComponent(id)}`,
+        );
 
-  const [completeDialog, setCompleteDialog] = useState(null);
-  const [completedQty, setCompletedQty] = useState("");
-  const [rejectedQty, setRejectedQty] = useState("0");
-  const [wastageQty, setWastageQty] = useState("0");
-  const [remarks, setRemarks] = useState("");
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [statusOpen, setStatusOpen] = useState(false);
-  const [statusNext, setStatusNext] = useState("");
-  const [attachmentOpen, setAttachmentOpen] = useState(false);
-  const [attachmentType, setAttachmentType] = useState("purchase-order");
-  const [attachmentName, setAttachmentName] = useState("");
-  const [attachmentFile, setAttachmentFile] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
+        if (active) {
+          setOrder(value);
+        }
+      } catch (cause) {
+        if (active) {
+          setError(
+            cause?.message || "Unable to load this sales order.",
+          );
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }, 0);
 
-  const progress = useMemo(() => stageProgress(order), [order, stageProgress]);
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [id, reload]);
 
-  if (!order) {
-    return (
-      <main className="order-profile">
-        <PageHeader
-          eyebrow="Business / Sales & CRM / Orders"
-          title="Order Profile"
-          description="Complete order traceability: production stages, QC, packing, dispatch and delivery."
-          action={
-            <Link href="/sales/orders">
-              <Button variant="secondary" icon={ArrowLeft}>
-                Back to Orders
-              </Button>
-            </Link>
-          }
-        />
+  async function updateStatus(action) {
+    if (!order) {
+      return;
+    }
 
-        <div className="order-profile__content">
-          <section className="order-profile__empty-card">
-            <EmptyState
-              icon={FileText}
-              title="Order not found"
-              description="This order doesn't exist in the current ERP state. It may have been deleted, or the backend isn't connected yet. Create an order from the Orders list to see the full profile with live stage tracking."
-              action={
-                <Link href="/sales/orders">
-                  <Button variant="primary">Go to Orders</Button>
-                </Link>
-              }
-            />
-          </section>
-        </div>
-      </main>
-    );
-  }
+    if (action === "cancel") {
+      const confirmed = window.confirm(
+        `Cancel sales order ${order.orderNumber}?`,
+      );
 
-  const currentStage = getStage(order.currentStage);
-  const isDelayed = delayed(order);
+      if (!confirmed) {
+        return;
+      }
+    }
 
-  function openCompleteDialog(stageKey) {
-    setCompleteDialog(stageKey);
-    setCompletedQty("");
-    setRejectedQty("0");
-    setWastageQty("0");
-    setRemarks("");
-  }
+    setBusy(true);
+    setError("");
 
-  function handleComplete() {
-    if (!completeDialog) return;
+    try {
+      const updated = await apiRequest(
+        `/api/sales/orders/${encodeURIComponent(id)}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ action }),
+        },
+      );
 
-    setSubmitting(true);
-
-    completeStage(order.id, completeDialog, {
-      completedQuantity: Number(completedQty) || 0,
-      rejectedQuantity: Number(rejectedQty) || 0,
-      wastageQuantity: Number(wastageQty) || 0,
-      remarks,
-    });
-
-    setSubmitting(false);
-    setCompleteDialog(null);
-
-    toast.success({
-      title: "Stage updated",
-      message: `${getStage(completeDialog)?.label} quantities recorded.`,
-    });
-  }
-
-  function handleDelete() {
-    setSubmitting(true);
-
-    deleteOrder(order.id);
-
-    setSubmitting(false);
-    setDeleteOpen(false);
-
-    toast.success({
-      title: "Order deleted",
-      message: `${order.orderNumber} was removed.`,
-    });
-
-    router.push("/sales/orders");
-  }
-
-  function handleStatusChange() {
-    if (!statusNext) return;
-
-    setSubmitting(true);
-
-    setStatus(order.id, statusNext, remarks);
-
-    setSubmitting(false);
-    setStatusOpen(false);
-    setStatusNext("");
-    setRemarks("");
-
-    toast.success({ title: "Status updated" });
-  }
-
-  function handleAttachmentUpload() {
-    if (!attachmentName.trim()) return;
-
-    setSubmitting(true);
-
-    addAttachment(order.id, {
-      type: attachmentType,
-      name: attachmentName.trim(),
-      size: attachmentFile ? attachmentFile.size : 0,
-    });
-
-    setSubmitting(false);
-    setAttachmentOpen(false);
-    setAttachmentName("");
-    setAttachmentFile(null);
-
-    toast.success({ title: "Attachment added" });
-  }
-
-  function handleRemoveAttachment(id) {
-    removeAttachment(order.id, id);
-
-    toast.success({ title: "Attachment removed" });
+      setOrder(updated);
+    } catch (cause) {
+      setError(
+        cause?.message ||
+          `Unable to ${action} sales order.`,
+      );
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
-    <main className="order-profile">
-      <PageHeader
-        eyebrow="Business / Sales & CRM / Orders"
-        title={order.orderNumber}
-        description={`${order.customerName || "No customer"} · ${
-          ORDER_STATUSES.find((s) => s.id === order.status)?.label
-        } · ${currentStage?.label || "No stage"}`}
-        action={
-          <div className="order-profile__header-actions">
-            <Link href="/sales/orders">
-              <Button variant="secondary" icon={ArrowLeft}>
-                Orders
-              </Button>
+    <main className="order-list order-detail">
+      <header className="order-detail__header">
+        <div className="order-detail__heading">
+          <p className="order-detail__eyebrow">
+            SALES / ORDERS
+          </p>
+
+          <h1>
+            {order?.orderNumber || "Sales order"}
+          </h1>
+
+          <span>
+            Review customer information, order items,
+            pricing and approval status.
+          </span>
+        </div>
+
+        <div className="order-detail__header-actions">
+          <Link href="/sales/orders">
+            Back to orders
+          </Link>
+
+          {order?.status === "DRAFT" && (
+            <Link href={`/sales/orders/${id}/edit`}>
+              Edit order
             </Link>
-
-            <Button
-              variant="secondary"
-              icon={Pencil}
-              onClick={() => router.push(`/sales/orders/${order.id}/edit`)}
-            >
-              Edit
-            </Button>
-
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setStatusNext(order.status);
-                setStatusOpen(true);
-              }}
-            >
-              Change Status
-            </Button>
-
-            <Button
-              variant="secondary"
-              icon={Trash2}
-              onClick={() => setDeleteOpen(true)}
-            >
-              Delete
-            </Button>
-          </div>
-        }
-      />
-
-      <div className="order-profile__content">
-        {/* SUMMARY */}
-        <section className="order-profile__summary">
-          <div className="order-profile__summary-card">
-            <h3>Order Summary</h3>
-
-            <div className="order-profile__summary-grid">
-              <div>
-                <span>Order Number</span>
-                <strong>{order.orderNumber}</strong>
-              </div>
-
-              <div>
-                <span>Status</span>
-                <strong>
-                  {ORDER_STATUSES.find((s) => s.id === order.status)?.label}
-                </strong>
-              </div>
-
-              <div>
-                <span>Current Stage</span>
-                <strong>{currentStage?.label || "—"}</strong>
-              </div>
-
-              <div>
-                <span>Progress</span>
-                <strong>{progress}%</strong>
-              </div>
-
-              <div>
-                <span>Order Date</span>
-                <strong>{order.orderDate || "—"}</strong>
-              </div>
-
-              <div>
-                <span>Required Delivery</span>
-                <strong>{order.requiredDeliveryDate || "—"}</strong>
-              </div>
-
-              <div>
-                <span>Priority</span>
-                <strong>{order.productionPriority}</strong>
-              </div>
-
-              <div>
-                <span>Department</span>
-                <strong>{order.responsibleDepartment}</strong>
-              </div>
-            </div>
-
-            {isDelayed && (
-              <div className="order-profile__delayed-banner">
-                <TriangleAlert size={16} strokeWidth={1.8} />
-
-                <span>This order is past its expected completion date.</span>
-              </div>
-            )}
-          </div>
-
-          <div className="order-profile__summary-card">
-            <h3>Quantity Summary</h3>
-
-            <div className="order-profile__qty-grid">
-              <div>
-                <span>Required</span>
-                <strong>
-                  {order.requiredQuantity.toLocaleString()} {order.unit}
-                </strong>
-              </div>
-
-              <div>
-                <span>Completed (current stage)</span>
-                <strong>
-                  {order.stages.find(
-                    (stage) => stage.stageType === order.currentStage
-                  )?.completedQuantity.toLocaleString() || 0}
-                </strong>
-              </div>
-
-              <div>
-                <span>Rejected (total)</span>
-                <strong className="order-profile__qty-reject">
-                  {order.stages
-                    .reduce((sum, stage) => sum + stage.rejectedQuantity, 0)
-                    .toLocaleString()}
-                </strong>
-              </div>
-
-              <div>
-                <span>Wastage (total)</span>
-                <strong className="order-profile__qty-waste">
-                  {order.stages
-                    .reduce((sum, stage) => sum + stage.wastageQuantity, 0)
-                    .toLocaleString()}
-                </strong>
-              </div>
-            </div>
-          </div>
-
-          <div className="order-profile__summary-card">
-            <h3>Customer Information</h3>
-
-            <div className="order-profile__summary-grid">
-              <div>
-                <span>Customer Name</span>
-                <strong>{order.customerName || "—"}</strong>
-              </div>
-
-              <div>
-                <span>Customer Code</span>
-                <strong>{order.customerCode || "—"}</strong>
-              </div>
-            </div>
-          </div>
-
-          <div className="order-profile__summary-card">
-            <h3>Product Specification</h3>
-
-            <div className="order-profile__summary-grid">
-              <div>
-                <span>Zipper Type</span>
-                <strong>{order.zipperType || "—"}</strong>
-              </div>
-
-              <div>
-                <span>Size</span>
-                <strong>{order.zipperSize || "—"}</strong>
-              </div>
-
-              <div>
-                <span>Material</span>
-                <strong>{order.material || "—"}</strong>
-              </div>
-
-              <div>
-                <span>Color / Finish</span>
-                <strong>{order.colorFinish || "—"}</strong>
-              </div>
-
-              <div>
-                <span>Logo / Plain</span>
-                <strong>{order.logoType === "logo" ? "Logo" : "Plain"}</strong>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* STAGE TIMELINE */}
-        <section className="order-profile__stages-card">
-          <div className="order-profile__section-heading">
-            <div>
-              <h2>Production Timeline</h2>
-
-              <p>
-                All nine factory stages. Start, complete, hold and
-                resume stages — quantities carry forward to the next
-                stage when a stage completes.
-              </p>
-            </div>
-          </div>
-
-          <div className="order-profile__stages">
-            {order.stages.map((stage) => {
-              const isCurrent = order.currentStage === stage.stageType;
-
-              const actions = (
-                <>
-                  {stage.status === "pending" && isCurrent && (
-                    <Button
-                      variant="primary"
-                      size="small"
-                      icon={PlayCircle}
-                      onClick={() => {
-                        startStage(order.id, stage.stageType);
-                        toast.info({
-                          title: "Stage started",
-                          message: `${stage.label} is now in progress.`,
-                        });
-                      }}
-                    >
-                      Start Stage
-                    </Button>
-                  )}
-
-                  {(stage.status === "in-progress" ||
-                    stage.status === "ready") && (
-                    <Button
-                      variant="primary"
-                      size="small"
-                      onClick={() => openCompleteDialog(stage.stageType)}
-                    >
-                      Complete Stage
-                    </Button>
-                  )}
-
-                  {stage.status === "in-progress" && (
-                    <Button
-                      variant="secondary"
-                      size="small"
-                      icon={PauseCircle}
-                      onClick={() => {
-                        holdStage(order.id, stage.stageType, "On hold by user");
-                        toast.warning({
-                          title: "Stage on hold",
-                          message: `${stage.label} was put on hold.`,
-                        });
-                      }}
-                    >
-                      Hold
-                    </Button>
-                  )}
-
-                  {stage.status === "paused" && (
-                    <Button
-                      variant="secondary"
-                      size="small"
-                      icon={PlayCircle}
-                      onClick={() => {
-                        resumeStage(order.id, stage.stageType);
-                        toast.info({
-                          title: "Stage resumed",
-                          message: `${stage.label} resumed.`,
-                        });
-                      }}
-                    >
-                      Resume
-                    </Button>
-                  )}
-                </>
-              );
-
-              return (
-                <StageRow
-                  stage={stage}
-                  delayed={
-                    stage.status === "in-progress" &&
-                    isDelayed
-                  }
-                  actions={actions}
-                  key={stage.stageType}
-                />
-              );
-            })}
-          </div>
-        </section>
-
-        {/* PRODUCTION HISTORY */}
-        <section className="order-profile__history-card">
-          <div className="order-profile__section-heading">
-            <div>
-              <h2>Production History &amp; Audit</h2>
-
-              <p>
-                Every change on this order: who did it, when, from
-                which value to which.
-              </p>
-            </div>
-          </div>
-
-          {order.audit.length === 0 ? (
-            <div className="order-profile__history-empty">
-              <span>No history recorded yet.</span>
-            </div>
-          ) : (
-            <div className="order-profile__history-list">
-              {[...order.audit].reverse().map((entry, index) => (
-                <div className="order-profile__history-item" key={index}>
-                  <span className="order-profile__history-dot" />
-
-                  <div className="order-profile__history-content">
-                    <strong>
-                      {entry.action.replace(/_/g, " ")}
-                      {entry.newValue ? ` — ${entry.newValue}` : ""}
-                    </strong>
-
-                    <span>
-                      {entry.user} ·{" "}
-                      {new Date(entry.timestamp).toLocaleString()}
-                      {entry.oldValue ? ` (was: ${entry.oldValue})` : ""}
-                      {entry.remarks ? ` · ${entry.remarks}` : ""}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
           )}
-        </section>
 
-        {/* ATTACHMENTS */}
-        <section className="order-profile__attachments-card">
-          <div className="order-profile__section-heading order-profile__section-heading--row">
-            <div>
-              <h2>Attachments</h2>
-
-              <p>
-                Purchase Order, Order Sheet, Specification, Artwork /
-                Logo, Packing Instructions and other documents.
-              </p>
-            </div>
-
-            <Button
-              variant="primary"
-              size="small"
-              icon={Upload}
-              onClick={() => setAttachmentOpen(true)}
+          {order?.status === "DRAFT" && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => updateStatus("approve")}
             >
-              Upload
-            </Button>
-          </div>
-
-          {order.attachments.length === 0 ? (
-            <div className="order-profile__attachments-empty">
-              <span>No attachments yet.</span>
-            </div>
-          ) : (
-            <div className="order-profile__attachments-list">
-              {order.attachments.map((attachment) => (
-                <div className="order-profile__attachment" key={attachment.id}>
-                  <div className="order-profile__attachment-main">
-                    <strong>{attachment.name}</strong>
-
-                    <span>
-                      {ORDER_ATTACHMENT_TYPES.find(
-                        (type) => type.id === attachment.type
-                      )?.label || attachment.type}
-                      {attachment.size
-                        ? ` · ${(attachment.size / 1024).toFixed(1)} KB`
-                        : ""}{" "}
-                      · {attachment.uploadedBy} ·{" "}
-                      {new Date(attachment.uploadedAt).toLocaleDateString()}
-                    </span>
-                  </div>
-
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    icon={X}
-                    aria-label="Remove attachment"
-                    onClick={() => handleRemoveAttachment(attachment.id)}
-                  />
-                </div>
-              ))}
-            </div>
+              {busy ? "Processing..." : "Approve"}
+            </button>
           )}
-        </section>
 
-        {/* REMARKS */}
-        {order.remarks && (
-          <section className="order-profile__remarks-card">
-            <h2>Remarks / Special Instructions</h2>
+          {order && order.status !== "CANCELLED" && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => updateStatus("cancel")}
+            >
+              Cancel
+            </button>
+          )}
+        </div>
+      </header>
 
-            <p>{order.remarks}</p>
+      {error && (
+        <div
+          className="order-detail__error"
+          role="alert"
+        >
+          <span>{error}</span>
+
+          <button
+            type="button"
+            onClick={() =>
+              setReload((current) => current + 1)
+            }
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {loading && (
+        <div
+          className="order-detail__state"
+          role="status"
+        >
+          Loading sales order...
+        </div>
+      )}
+
+      {!loading && !error && order && (
+        <>
+          <section className="order-detail__facts">
+            <div>
+              <span>Customer</span>
+
+              <strong>{order.customer.name}</strong>
+
+              <small>{order.customer.code}</small>
+            </div>
+
+            <div>
+              <span>Order date</span>
+
+              <strong>{order.orderDate}</strong>
+            </div>
+
+            <div>
+              <span>Delivery date</span>
+
+              <strong>
+                {order.deliveryDate || "—"}
+              </strong>
+            </div>
+
+            <div>
+              <span>Status</span>
+
+              <strong>
+                <span
+                  className={`order-list__status order-list__status--${String(
+                    order.status || "unknown",
+                  ).toLowerCase()}`}
+                >
+                  {order.status}
+                </span>
+              </strong>
+            </div>
           </section>
-        )}
-      </div>
 
-      {/* COMPLETE STAGE DIALOG */}
-      <Modal
-        open={Boolean(completeDialog)}
-        onClose={() => setCompleteDialog(null)}
-        title="Complete Stage"
-        description={getStage(completeDialog)?.label}
-      >
-        <div className="order-profile__form">
-          <Input
-            label="Completed Quantity"
-            type="number"
-            min="0"
-            value={completedQty}
-            onChange={(event) => setCompletedQty(event.target.value)}
-          />
+          <section className="order-detail__section">
+            <div className="order-detail__section-heading">
+              <div>
+                <h2>Order items</h2>
 
-          <Input
-            label="Rejected Quantity"
-            type="number"
-            min="0"
-            value={rejectedQty}
-            onChange={(event) => setRejectedQty(event.target.value)}
-          />
+                <p>
+                  {order.lines.length}{" "}
+                  {order.lines.length === 1
+                    ? "line item"
+                    : "line items"}
+                </p>
+              </div>
+            </div>
 
-          <Input
-            label="Wastage Quantity"
-            type="number"
-            min="0"
-            value={wastageQty}
-            onChange={(event) => setWastageQty(event.target.value)}
-          />
+            <div className="order-detail__table-scroll">
+              <table className="order-detail__table">
+                <colgroup>
+                  <col className="order-detail__col-number" />
+                  <col className="order-detail__col-product" />
+                  <col className="order-detail__col-reference" />
+                  <col className="order-detail__col-category" />
+                  <col className="order-detail__col-variant" />
+                  <col className="order-detail__col-qty" />
+                  <col className="order-detail__col-unit" />
+                  <col className="order-detail__col-price" />
+                  <col className="order-detail__col-discount" />
+                  <col className="order-detail__col-tax" />
+                  <col className="order-detail__col-total" />
+                </colgroup>
 
-          <Input
-            label="Remarks"
-            value={remarks}
-            onChange={(event) => setRemarks(event.target.value)}
-          />
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Product / description</th>
+                    <th>SKU / reference</th>
+                    <th>Category</th>
+                    <th>Variant</th>
+                    <th>Qty</th>
+                    <th>Unit</th>
+                    <th>Unit price</th>
+                    <th>Discount</th>
+                    <th>Tax</th>
+                    <th>Line total</th>
+                  </tr>
+                </thead>
 
-          <div className="order-profile__form-actions">
-            <Button
-              variant="secondary"
-              onClick={() => setCompleteDialog(null)}
-            >
-              Cancel
-            </Button>
+                <tbody>
+                  {order.lines.map((line, index) => (
+                    <tr key={line.id}>
+                      <td className="order-detail__center">
+                        {index + 1}
+                      </td>
 
-            <Button
-              variant="primary"
-              disabled={!completedQty || submitting}
-              onClick={handleComplete}
-            >
-              Save Changes
-            </Button>
-          </div>
-        </div>
-      </Modal>
+                      <td>
+                        <div className="order-detail__product">
+                          {line.isCustom && (
+                            <span className="order-detail__custom">
+                              CUSTOM
+                            </span>
+                          )}
 
-      {/* STATUS DIALOG */}
-      <Modal
-        open={statusOpen}
-        onClose={() => setStatusOpen(false)}
-        title="Change Order Status"
-        description={order.orderNumber}
-      >
-        <div className="order-profile__form">
-          <Select
-            label="New Status"
-            value={statusNext}
-            onChange={setStatusNext}
-            options={ORDER_STATUSES.map((status) => ({
-              value: status.id,
-              label: status.label,
-            }))}
-          />
+                          <strong>
+                            {line.productName}
+                          </strong>
 
-          <Input
-            label="Remarks"
-            value={remarks}
-            onChange={(event) => setRemarks(event.target.value)}
-          />
+                          {line.customerReference && (
+                            <small>
+                              Ref: {line.customerReference}
+                            </small>
+                          )}
 
-          <div className="order-profile__form-actions">
-            <Button variant="secondary" onClick={() => setStatusOpen(false)}>
-              Cancel
-            </Button>
+                          {line.notes && (
+                            <small>
+                              {line.notes}
+                            </small>
+                          )}
+                        </div>
+                      </td>
 
-            <Button
-              variant="primary"
-              disabled={!statusNext || submitting}
-              onClick={handleStatusChange}
-            >
-              Save Changes
-            </Button>
-          </div>
-        </div>
-      </Modal>
+                      <td>
+                        {line.skuReference || "—"}
+                      </td>
 
-      {/* ATTACHMENT DIALOG */}
-      <Modal
-        open={attachmentOpen}
-        onClose={() => setAttachmentOpen(false)}
-        title="Upload Attachment"
-        description={order.orderNumber}
-      >
-        <div className="order-profile__form">
-          <Select
-            label="Attachment Type"
-            value={attachmentType}
-            onChange={setAttachmentType}
-            options={ORDER_ATTACHMENT_TYPES.map((type) => ({
-              value: type.id,
-              label: type.label,
-            }))}
-          />
+                      <td>
+                        {line.category || "—"}
+                      </td>
 
-          <Input
-            label="File Name"
-            placeholder="e.g. purchase-order-1042.pdf"
-            value={attachmentName}
-            onChange={(event) => setAttachmentName(event.target.value)}
-          />
+                      <td>
+                        {line.variant || "—"}
+                      </td>
 
-          <Input
-            label="File"
-            type="file"
-            onChange={(event) => setAttachmentFile(event.target.files?.[0])}
-          />
+                      <td className="order-detail__number">
+                        {line.quantity}
+                      </td>
 
-          <div className="order-profile__form-actions">
-            <Button
-              variant="secondary"
-              onClick={() => setAttachmentOpen(false)}
-            >
-              Cancel
-            </Button>
+                      <td>
+                        {line.unit}
+                      </td>
 
-            <Button
-              variant="primary"
-              disabled={!attachmentName.trim() || submitting}
-              onClick={handleAttachmentUpload}
-            >
-              Upload
-            </Button>
-          </div>
-        </div>
-      </Modal>
+                      <td className="order-detail__money">
+                        {amount(line.unitPrice)}
+                      </td>
 
-      {/* DELETE CONFIRMATION */}
-      <ConfirmDialog
-        open={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={handleDelete}
-        title="Delete order?"
-        description={`This will permanently remove ${order.orderNumber} from the current ERP state.`}
-        confirmLabel="Delete"
-        variant="danger"
-        loading={submitting}
-      />
+                      <td className="order-detail__number">
+                        {line.discountPercent}%
+                      </td>
+
+                      <td className="order-detail__number">
+                        {line.taxPercent}%
+                      </td>
+
+                      <td className="order-detail__money order-detail__line-total">
+                        {amount(line.lineTotal)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className="order-detail__bottom">
+            <div className="order-detail__notes">
+              <div className="order-detail__section-heading">
+                <div>
+                  <h2>Notes / specifications</h2>
+                  <p>Order-specific instructions</p>
+                </div>
+              </div>
+
+              <p>
+                {order.notes || "No order notes."}
+              </p>
+            </div>
+
+            <div className="order-detail__totals-wrap">
+              <h2>Order summary</h2>
+
+              <dl className="order-detail__totals">
+                <div>
+                  <dt>Subtotal</dt>
+                  <dd>{amount(order.subtotal)}</dd>
+                </div>
+
+                <div>
+                  <dt>Discount</dt>
+                  <dd>{amount(order.discountTotal)}</dd>
+                </div>
+
+                <div>
+                  <dt>Tax</dt>
+                  <dd>{amount(order.taxTotal)}</dd>
+                </div>
+
+                <div className="order-detail__grand-total">
+                  <dt>Order total</dt>
+                  <dd>{amount(order.totalAmount)}</dd>
+                </div>
+              </dl>
+            </div>
+          </section>
+
+          <footer className="order-detail__audit">
+            <span>
+              Created{" "}
+              {new Date(
+                order.createdAt,
+              ).toLocaleString()}
+            </span>
+
+            <span aria-hidden="true">·</span>
+
+            <span>
+              Updated{" "}
+              {new Date(
+                order.updatedAt,
+              ).toLocaleString()}
+            </span>
+          </footer>
+        </>
+      )}
     </main>
   );
 }
+

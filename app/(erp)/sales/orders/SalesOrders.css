@@ -1,0 +1,817 @@
+﻿.order-list {
+  width: 100%;
+  min-width: 0;
+  padding: 28px 32px 32px;
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.order-list__header {
+  width: 100%;
+  min-width: 0;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.order-list__heading {
+  min-width: 0;
+}
+
+.order-list__eyebrow {
+  margin: 0 0 8px;
+
+  color: #66727d;
+
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: 0.08em;
+}
+
+.order-list__heading h1 {
+  margin: 0;
+
+  color: #17212b;
+
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 34px;
+  letter-spacing: -0.02em;
+}
+
+.order-list__heading > span {
+  display: block;
+
+  margin-top: 7px;
+
+  color: #66727d;
+
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 19px;
+}
+
+.order-list__primary {
+  flex: 0 0 auto;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 38px;
+
+  padding: 0 16px;
+
+  border: 1px solid #183f5c;
+  border-radius: 5px;
+
+  background: #183f5c;
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+
+  text-decoration: none;
+
+  white-space: nowrap;
+
+  transition:
+    background 140ms ease,
+    border-color 140ms ease;
+}
+
+.order-list__primary:hover {
+  background: #12334b;
+  border-color: #12334b;
+}
+
+/* =========================================================
+   FILTERS
+   ========================================================= */
+
+.order-list__filters {
+  width: 100%;
+  min-width: 0;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(220px, 1.6fr)
+    minmax(190px, 1.25fr)
+    minmax(150px, 1fr)
+    minmax(145px, 0.9fr)
+    minmax(145px, 0.9fr);
+
+  gap: 12px;
+
+  margin-bottom: 16px;
+  padding: 14px;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border: 1px solid #dfe4e8;
+  border-radius: 7px;
+}
+
+.order-list__filters label {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.order-list__filters label > span {
+  color: #596672;
+
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.order-list__filters input,
+.order-list__filters select {
+  width: 100%;
+  height: 38px;
+
+  min-width: 0;
+
+  box-sizing: border-box;
+
+  padding: 0 10px;
+
+  border: 1px solid #d5dce2;
+  border-radius: 5px;
+
+  outline: none;
+
+  background: #ffffff;
+  color: #1b2732;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.order-list__filters input:focus,
+.order-list__filters select:focus {
+  border-color: #567a96;
+  box-shadow: 0 0 0 2px rgba(86, 122, 150, 0.12);
+}
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.order-list__top-error {
+  width: 100%;
+  min-height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  box-sizing: border-box;
+
+  margin-bottom: 16px;
+  padding: 8px 12px;
+
+  border: 1px solid #e4bcbc;
+  border-radius: 5px;
+
+  background: #fff8f8;
+  color: #8b3030;
+
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.order-list__top-error button {
+  flex: 0 0 auto;
+
+  height: 30px;
+
+  padding: 0 11px;
+
+  border: 1px solid #d5a5a5;
+  border-radius: 4px;
+
+  background: #ffffff;
+  color: #7c2929;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+/* =========================================================
+   TABLE PANEL
+   ========================================================= */
+
+.order-list__panel {
+  width: 100%;
+  min-width: 0;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border: 1px solid #d9e0e5;
+  border-radius: 7px;
+}
+
+/* =========================================================
+   TABLE SCROLLER
+   ========================================================= */
+
+.order-list__scroll {
+  width: 100%;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  scrollbar-width: thin;
+}
+
+/* =========================================================
+   TABLE
+
+   IMPORTANT:
+   Exact tracks:
+   1 = Order #
+   2 = Customer
+   3 = Date
+   4 = Items
+   5 = Total
+   6 = Status
+   7 = Action
+   ========================================================= */
+
+.order-list__table {
+  width: 100%;
+  min-width: 1120px;
+
+  table-layout: fixed;
+
+  border-collapse: collapse;
+  border-spacing: 0;
+
+  color: #17212b;
+
+  font-size: 12px;
+}
+
+/* =========================================================
+   COLUMN WIDTHS
+
+   These widths are shared by TH + TD.
+   Therefore header and body can NEVER drift apart.
+   ========================================================= */
+
+.order-list__table th:nth-child(1),
+.order-list__table td:nth-child(1) {
+  width: 150px;
+}
+
+.order-list__table th:nth-child(2),
+.order-list__table td:nth-child(2) {
+  width: 300px;
+}
+
+.order-list__table th:nth-child(3),
+.order-list__table td:nth-child(3) {
+  width: 135px;
+}
+
+.order-list__table th:nth-child(4),
+.order-list__table td:nth-child(4) {
+  width: 80px;
+}
+
+.order-list__table th:nth-child(5),
+.order-list__table td:nth-child(5) {
+  width: 155px;
+}
+
+.order-list__table th:nth-child(6),
+.order-list__table td:nth-child(6) {
+  width: 125px;
+}
+
+.order-list__table th:nth-child(7),
+.order-list__table td:nth-child(7) {
+  width: 175px;
+}
+
+/* =========================================================
+   TABLE HEADER
+   ========================================================= */
+
+.order-list__table thead {
+  background: #f5f7f9;
+}
+
+.order-list__table thead th {
+  height: 46px;
+
+  box-sizing: border-box;
+
+  padding: 0 14px;
+
+  border-right: 1px solid #dce2e7;
+  border-bottom: 1px solid #d4dbe1;
+
+  color: #4e5b67;
+
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+
+  text-align: left;
+  vertical-align: middle;
+
+  white-space: nowrap;
+}
+
+.order-list__table thead th:last-child {
+  border-right: 0;
+}
+
+/* Header alignment */
+
+.order-list__table thead th:nth-child(1),
+.order-list__table thead th:nth-child(2),
+.order-list__table thead th:nth-child(3) {
+  text-align: left;
+}
+
+.order-list__table thead th:nth-child(4),
+.order-list__table thead th:nth-child(6),
+.order-list__table thead th:nth-child(7) {
+  text-align: center;
+}
+
+.order-list__table thead th:nth-child(5) {
+  text-align: right;
+}
+
+/* =========================================================
+   TABLE BODY
+   ========================================================= */
+
+.order-list__table tbody td {
+  height: 58px;
+
+  box-sizing: border-box;
+
+  padding: 0 14px;
+
+  border-right: 1px solid #e3e8ec;
+  border-bottom: 1px solid #e3e8ec;
+
+  background: #ffffff;
+
+  color: #202b35;
+
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 17px;
+
+  vertical-align: middle;
+}
+
+.order-list__table tbody td:last-child {
+  border-right: 0;
+}
+
+.order-list__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.order-list__table tbody tr:hover td {
+  background: #fafbfd;
+}
+
+/* =========================================================
+   BODY ALIGNMENT
+   ========================================================= */
+
+.order-list__table tbody td:nth-child(1),
+.order-list__table tbody td:nth-child(2),
+.order-list__table tbody td:nth-child(3) {
+  text-align: left;
+}
+
+.order-list__table tbody td:nth-child(4),
+.order-list__table tbody td:nth-child(6),
+.order-list__table tbody td:nth-child(7) {
+  text-align: center;
+}
+
+.order-list__table tbody td:nth-child(5) {
+  text-align: right;
+}
+
+/* =========================================================
+   ORDER NUMBER
+   ========================================================= */
+
+.order-list__table tbody td:nth-child(1) a {
+  display: inline-block;
+
+  max-width: 100%;
+
+  overflow: hidden;
+
+  color: #205b86;
+
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 17px;
+
+  text-decoration: none;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-list__table tbody td:nth-child(1) a:hover {
+  text-decoration: underline;
+}
+
+/* =========================================================
+   CUSTOMER
+   ========================================================= */
+
+.order-list__table tbody td:nth-child(2) {
+  overflow: hidden;
+}
+
+.order-list__table tbody td:nth-child(2) strong {
+  display: block;
+
+  width: 100%;
+
+  overflow: hidden;
+
+  color: #202b35;
+
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 17px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   DATE
+   ========================================================= */
+
+.order-list__table tbody td:nth-child(3) {
+  white-space: nowrap;
+
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================================
+   ITEMS
+   ========================================================= */
+
+.order-list__table tbody td:nth-child(4) {
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================================
+   TOTAL
+   ========================================================= */
+
+.order-list__table tbody td:nth-child(5) {
+  padding-left: 18px;
+  padding-right: 18px;
+
+  font-weight: 700;
+
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.order-list__table tbody td:nth-child(6) {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.order-list__status {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 88px;
+  height: 28px;
+
+  box-sizing: border-box;
+
+  padding: 0 8px;
+
+  border: 1px solid #d6dde2;
+  border-radius: 4px;
+
+  background: #f7f9fa;
+  color: #52606c;
+
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+
+  white-space: nowrap;
+}
+
+.order-list__status--draft {
+  background: #f7f9fa;
+  border-color: #d6dde2;
+  color: #52606c;
+}
+
+.order-list__status--approved {
+  background: #f3f8f5;
+  border-color: #c8ddd0;
+  color: #356548;
+}
+
+.order-list__status--cancelled {
+  background: #fbf4f4;
+  border-color: #e4cccc;
+  color: #8a4646;
+}
+
+/* =========================================================
+   ACTION COLUMN
+
+   The TD itself remains a table-cell.
+   Only the inner action container is flex.
+   ========================================================= */
+
+.order-list__table tbody td.order-list__actions {
+  padding: 0 10px;
+
+  text-align: center;
+
+  white-space: nowrap;
+}
+
+.order-list__actions {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  width: 100%;
+  min-height: 58px;
+
+  box-sizing: border-box;
+}
+
+.order-list__actions > a,
+.order-list__actions > button {
+  flex: 0 0 auto;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  height: 30px;
+  min-width: 44px;
+
+  box-sizing: border-box;
+
+  padding: 0 8px;
+
+  border: 1px solid #d4dbe1;
+  border-radius: 4px;
+
+  background: #ffffff;
+  color: #3f4d59;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+
+  text-decoration: none;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    background 120ms ease,
+    border-color 120ms ease;
+}
+
+.order-list__actions > a:hover,
+.order-list__actions > button:hover:not(:disabled) {
+  background: #f4f6f8;
+  border-color: #c4cdd5;
+}
+
+.order-list__actions > button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+/* =========================================================
+   LOADING / EMPTY
+   ========================================================= */
+
+.order-list__message {
+  height: 180px !important;
+
+  box-sizing: border-box;
+
+  padding: 24px !important;
+
+  color: #697681 !important;
+
+  font-size: 12px !important;
+  font-weight: 500 !important;
+
+  line-height: 18px !important;
+
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* =========================================================
+   PAGINATION
+   ========================================================= */
+
+.order-list__pagination {
+  min-height: 58px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  box-sizing: border-box;
+
+  padding: 10px 14px;
+
+  border-top: 1px solid #dfe4e8;
+
+  background: #ffffff;
+
+  color: #596672;
+
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.order-list__pagination > div {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+}
+
+.order-list__pagination button {
+  height: 32px;
+
+  padding: 0 12px;
+
+  border: 1px solid #d4dbe1;
+  border-radius: 4px;
+
+  background: #ffffff;
+  color: #465460;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.order-list__pagination button:hover:not(:disabled) {
+  background: #f5f7f9;
+}
+
+.order-list__pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .order-list {
+    padding: 24px;
+  }
+
+  .order-list__header {
+    align-items: flex-start;
+  }
+
+  .order-list__filters {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 640px) {
+  .order-list {
+    padding: 18px 14px 24px;
+  }
+
+  .order-list__header {
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 16px;
+  }
+
+  .order-list__heading h1 {
+    font-size: 24px;
+    line-height: 30px;
+  }
+
+  .order-list__primary {
+    width: 100%;
+  }
+
+  .order-list__filters {
+    grid-template-columns: 1fr;
+
+    gap: 10px;
+
+    padding: 12px;
+  }
+
+  .order-list__top-error {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .order-list__top-error button {
+    width: 100%;
+  }
+
+  .order-list__panel {
+    border-radius: 6px;
+  }
+
+  .order-list__table {
+    min-width: 1120px;
+  }
+
+  .order-list__pagination {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .order-list__pagination > div {
+    width: 100%;
+  }
+
+  .order-list__pagination button {
+    flex: 1;
+  }
+}

@@ -151,15 +151,25 @@ export default function DatePicker({
 
   const [todayKey, setTodayKey] = useState("");
 
-  useEffect(() => {
-    if (!selectedDateKey) return;
+  /*
+   * Follow the selected date during render (adjusting state derived
+   * from the selected value) instead of synchronizing the view date
+   * inside an effect.
+   */
+  const [previousSelectedDateKey, setPreviousSelectedDateKey] =
+    useState(selectedDateKey);
 
-    const [year, month, day] = selectedDateKey
-      .split("-")
-      .map(Number);
+  if (selectedDateKey !== previousSelectedDateKey) {
+    setPreviousSelectedDateKey(selectedDateKey);
 
-    setViewDate(new Date(year, month - 1, day));
-  }, [selectedDateKey]);
+    if (selectedDateKey) {
+      const [year, month, day] = selectedDateKey
+        .split("-")
+        .map(Number);
+
+      setViewDate(new Date(year, month - 1, day));
+    }
+  }
 
   useEffect(() => {
     const updateToday = () => {

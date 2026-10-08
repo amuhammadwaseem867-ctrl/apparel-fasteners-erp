@@ -175,6 +175,22 @@ export default function QuickCreate({
   const [activeIndex, setActiveIndex] = useState(0);
   const [position, setPosition] = useState(null);
 
+  /*
+   * Reset the quick create panel when it opens. This runs during
+   * render (tracking the previous open state) instead of inside an
+   * effect.
+   */
+  const [previousOpen, setPreviousOpen] = useState(open);
+
+  if (open !== previousOpen) {
+    setPreviousOpen(open);
+
+    if (open) {
+      setQuery("");
+      setActiveIndex(0);
+    }
+  }
+
   const filteredItems = useMemo(() => {
     const normalized = query.trim().toLowerCase();
 
@@ -205,9 +221,6 @@ export default function QuickCreate({
 
   useEffect(() => {
     if (!open) return;
-
-    setQuery("");
-    setActiveIndex(0);
 
     requestAnimationFrame(() => {
       searchRef.current?.focus();

@@ -155,7 +155,22 @@ export default function ContextMenu({
       !item.disabled
   );
 
-  let keyboardIndex = -1;
+  /*
+   * Keyboard index per item (index among non-divider, non-label
+   * items), computed immutably during render so no render-scope
+   * variable is reassigned from inside the map callback.
+   */
+  const isKeyboardItem = (item) =>
+    item.type !== "divider" &&
+    item.type !== "label";
+
+  const keyboardIndexes = items.map((item, index) =>
+    isKeyboardItem(item)
+      ? items
+          .slice(0, index + 1)
+          .filter(isKeyboardItem).length - 1
+      : null
+  );
 
   return (
     <div
@@ -202,10 +217,8 @@ export default function ContextMenu({
                   );
                 }
 
-                keyboardIndex += 1;
-
                 const currentKeyboardIndex =
-                  keyboardIndex;
+                  keyboardIndexes[index];
 
                 const Icon = item.icon;
 

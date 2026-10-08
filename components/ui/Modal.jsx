@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import {
   AlertTriangle,
@@ -12,6 +12,8 @@ import {
 
 import "./Modal.css";
 import { acquireBodyScrollLock } from "./bodyScrollLock";
+
+const emptySubscribe = () => () => {};
 
 const VARIANT_ICONS = {
   default: null,
@@ -52,11 +54,48 @@ export default function Modal({
   const dialogRef = useRef(null);
   const previousActiveElement =
     useRef(null);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  function trapFocus(event) {
+    const dialog = dialogRef.current;
+
+    if (!dialog) return;
+
+    const focusable = dialog.querySelectorAll(
+      [
+        "button:not([disabled])",
+        "a[href]",
+        "input:not([disabled])",
+        "select:not([disabled])",
+        "textarea:not([disabled])",
+        '[tabindex]:not([tabindex="-1"])',
+      ].join(",")
+    );
+
+    if (!focusable.length) return;
+
+    const first = focusable[0];
+    const last =
+      focusable[focusable.length - 1];
+
+    if (
+      event.shiftKey &&
+      document.activeElement === first
+    ) {
+      event.preventDefault();
+      last.focus();
+    } else if (
+      !event.shiftKey &&
+      document.activeElement === last
+    ) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -108,43 +147,6 @@ export default function Modal({
 
   if (!open || !mounted) {
     return null;
-  }
-
-  function trapFocus(event) {
-    const dialog = dialogRef.current;
-
-    if (!dialog) return;
-
-    const focusable = dialog.querySelectorAll(
-      [
-        "button:not([disabled])",
-        "a[href]",
-        "input:not([disabled])",
-        "select:not([disabled])",
-        "textarea:not([disabled])",
-        '[tabindex]:not([tabindex="-1"])',
-      ].join(",")
-    );
-
-    if (!focusable.length) return;
-
-    const first = focusable[0];
-    const last =
-      focusable[focusable.length - 1];
-
-    if (
-      event.shiftKey &&
-      document.activeElement === first
-    ) {
-      event.preventDefault();
-      last.focus();
-    } else if (
-      !event.shiftKey &&
-      document.activeElement === last
-    ) {
-      event.preventDefault();
-      first.focus();
-    }
   }
 
   function handleOverlayClick(event) {

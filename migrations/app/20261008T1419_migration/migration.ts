@@ -1,0 +1,586 @@
+#!/usr/bin/env -S node
+import type { Contract as End } from '../../snapshots/1fb3f8d5732e6a75e4561d2d3af3564ce040e31e7d935927ce4b91cceb21150a/contract';
+import endContract from '../../snapshots/1fb3f8d5732e6a75e4561d2d3af3564ce040e31e7d935927ce4b91cceb21150a/contract.json' with { type: 'json' };
+import {
+  Migration,
+  MigrationCLI,
+  checkExpression,
+  col,
+  fn,
+  lit,
+  primaryKey,
+} from '@prisma/orm-postgres/migration';
+
+export default class M extends Migration<never, End> {
+  override readonly endContractJson = endContract;
+
+  override get operations() {
+    return [
+      this.createSchema({ schema: 'public' }),
+      this.createTable({
+        schema: 'public',
+        table: 'erp_audit_logs',
+        columns: [
+          col('action', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('actorId', 'uuid', { codecRef: { codecId: 'pg/uuid@1' } }),
+          col('createdAt', 'timestamptz', {
+            notNull: true,
+            default: fn('now()'),
+            codecRef: { codecId: 'pg/timestamptz-string@1' },
+          }),
+          col('entityId', 'text', { codecRef: { codecId: 'pg/text@1' } }),
+          col('entityType', 'text', { codecRef: { codecId: 'pg/text@1' } }),
+          col('id', 'uuid', { notNull: true, codecRef: { codecId: 'pg/uuid@1' } }),
+          col('ip', 'text', { codecRef: { codecId: 'pg/text@1' } }),
+          col('metadata', 'text', { codecRef: { codecId: 'pg/text@1' } }),
+          col('requestId', 'text', { codecRef: { codecId: 'pg/text@1' } }),
+        ],
+        constraints: [primaryKey(['id'])],
+      }),
+      this.createTable({
+        schema: 'public',
+        table: 'erp_customers',
+        columns: [
+          col('code', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('createdAt', 'timestamptz', {
+            notNull: true,
+            default: fn('now()'),
+            codecRef: { codecId: 'pg/timestamptz-string@1' },
+          }),
+          col('email', 'text', { codecRef: { codecId: 'pg/text@1' } }),
+          col('id', 'uuid', { notNull: true, codecRef: { codecId: 'pg/uuid@1' } }),
+          col('name', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('phone', 'text', { codecRef: { codecId: 'pg/text@1' } }),
+          col('status', 'text', {
+            notNull: true,
+            default: lit('ACTIVE'),
+            codecRef: { codecId: 'pg/text@1' },
+          }),
+          col('updatedAt', 'timestamptz', {
+            notNull: true,
+            default: fn('now()'),
+            codecRef: { codecId: 'pg/timestamptz-string@1' },
+          }),
+        ],
+        constraints: [primaryKey(['id'])],
+      }),
+      this.createTable({
+        schema: 'public',
+        table: 'erp_permissions',
+        columns: [
+          col('action', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('code', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('createdAt', 'timestamptz', {
+            notNull: true,
+            default: fn('now()'),
+            codecRef: { codecId: 'pg/timestamptz-string@1' },
+          }),
+          col('description', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('id', 'uuid', { notNull: true, codecRef: { codecId: 'pg/uuid@1' } }),
+          col('module', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('name', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+        ],
+        constraints: [primaryKey(['id'])],
+      }),
+      this.createTable({
+        schema: 'public',
+        table: 'erp_products',
+        columns: [
+          col('category', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('createdAt', 'timestamptz', {
+            notNull: true,
+            default: fn('now()'),
+            codecRef: { codecId: 'pg/timestamptz-string@1' },
+          }),
+          col('description', 'text', { codecRef: { codecId: 'pg/text@1' } }),
+          col('id', 'uuid', { notNull: true, codecRef: { codecId: 'pg/uuid@1' } }),
+          col('name', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('productType', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('sku', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('status', 'text', {
+            notNull: true,
+            default: lit('ACTIVE'),
+            codecRef: { codecId: 'pg/text@1' },
+          }),
+          col('unit', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('unitPrice', 'numeric', {
+            notNull: true,
+            default: lit('0'),
+            codecRef: { codecId: 'pg/numeric@1' },
+          }),
+          col('updatedAt', 'timestamptz', {
+            notNull: true,
+            default: fn('now()'),
+            codecRef: { codecId: 'pg/timestamptz-string@1' },
+          }),
+          col('variant', 'text', { codecRef: { codecId: 'pg/text@1' } }),
+        ],
+        constraints: [primaryKey(['id'])],
+      }),
+      this.createTable({
+        schema: 'public',
+        table: 'erp_role_permissions',
+        columns: [
+          col('grantedAt', 'timestamptz', {
+            notNull: true,
+            default: fn('now()'),
+            codecRef: { codecId: 'pg/timestamptz-string@1' },
+          }),
+          col('id', 'uuid', { notNull: true, codecRef: { codecId: 'pg/uuid@1' } }),
+          col('permissionId', 'uuid', { notNull: true, codecRef: { codecId: 'pg/uuid@1' } }),
+          col('roleId', 'uuid', { notNull: true, codecRef: { codecId: 'pg/uuid@1' } }),
+        ],
+        constraints: [primaryKey(['id'])],
+      }),
+      this.createTable({
+        schema: 'public',
+        table: 'erp_roles',
+        columns: [
+          col('code', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('createdAt', 'timestamptz', {
+            notNull: true,
+            default: fn('now()'),
+            codecRef: { codecId: 'pg/timestamptz-string@1' },
+          }),
+          col('description', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('id', 'uuid', { notNull: true, codecRef: { codecId: 'pg/uuid@1' } }),
+          col('isSystem', 'bool', {
+            notNull: true,
+            default: lit(false),
+            codecRef: { codecId: 'pg/bool@1' },
+          }),
+          col('name', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('status', 'text', {
+            notNull: true,
+            default: lit('ACTIVE'),
+            codecRef: { codecId: 'pg/text@1' },
+          }),
+          col('updatedAt', 'timestamptz', {
+            notNull: true,
+            default: fn('now()'),
+            codecRef: { codecId: 'pg/timestamptz-string@1' },
+          }),
+        ],
+        constraints: [
+          primaryKey(['id']),
+          checkExpression('erp_roles_status_check_56c81764', `"status" IN ('ACTIVE', 'DISABLED')`),
+        ],
+      }),
+      this.createTable({
+        schema: 'public',
+        table: 'erp_sales_order_lines',
+        columns: [
+          col('category', 'text', { codecRef: { codecId: 'pg/text@1' } }),
+          col('customerReference', 'text', { codecRef: { codecId: 'pg/text@1' } }),
+          col('discountPercent', 'int4', {
+            notNull: true,
+            default: lit(0),
+            codecRef: { codecId: 'pg/int4@1' },
+          }),
+          col('id', 'uuid', { notNull: true, codecRef: { codecId: 'pg/uuid@1' } }),
+          col('isCustom', 'bool', {
+            notNull: true,
+            default: lit(false),
+            codecRef: { codecId: 'pg/bool@1' },
+          }),
+          col('lineTotal', 'numeric', { notNull: true, codecRef: { codecId: 'pg/numeric@1' } }),
+          col('notes', 'text', { codecRef: { codecId: 'pg/text@1' } }),
+          col('productId', 'uuid', { codecRef: { codecId: 'pg/uuid@1' } }),
+          col('productName', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('quantity', 'numeric', { notNull: true, codecRef: { codecId: 'pg/numeric@1' } }),
+          col('salesOrderId', 'uuid', { notNull: true, codecRef: { codecId: 'pg/uuid@1' } }),
+          col('skuReference', 'text', { codecRef: { codecId: 'pg/text@1' } }),
+          col('taxPercent', 'int4', {
+            notNull: true,
+            default: lit(0),
+            codecRef: { codecId: 'pg/int4@1' },
+          }),
+          col('unit', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('unitPrice', 'numeric', { notNull: true, codecRef: { codecId: 'pg/numeric@1' } }),
+          col('variant', 'text', { codecRef: { codecId: 'pg/text@1' } }),
+        ],
+        constraints: [primaryKey(['id'])],
+      }),
+      this.createTable({
+        schema: 'public',
+        table: 'erp_sales_orders',
+        columns: [
+          col('createdAt', 'timestamptz', {
+            notNull: true,
+            default: fn('now()'),
+            codecRef: { codecId: 'pg/timestamptz-string@1' },
+          }),
+          col('createdBy', 'uuid', { notNull: true, codecRef: { codecId: 'pg/uuid@1' } }),
+          col('customerId', 'uuid', { notNull: true, codecRef: { codecId: 'pg/uuid@1' } }),
+          col('deliveryDate', 'text', { codecRef: { codecId: 'pg/text@1' } }),
+          col('discountTotal', 'numeric', {
+            notNull: true,
+            default: lit('0'),
+            codecRef: { codecId: 'pg/numeric@1' },
+          }),
+          col('id', 'uuid', { notNull: true, codecRef: { codecId: 'pg/uuid@1' } }),
+          col('notes', 'text', { codecRef: { codecId: 'pg/text@1' } }),
+          col('orderDate', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('orderNumber', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('status', 'text', {
+            notNull: true,
+            default: lit('DRAFT'),
+            codecRef: { codecId: 'pg/text@1' },
+          }),
+          col('subtotal', 'numeric', {
+            notNull: true,
+            default: lit('0'),
+            codecRef: { codecId: 'pg/numeric@1' },
+          }),
+          col('taxTotal', 'numeric', {
+            notNull: true,
+            default: lit('0'),
+            codecRef: { codecId: 'pg/numeric@1' },
+          }),
+          col('totalAmount', 'numeric', {
+            notNull: true,
+            default: lit('0'),
+            codecRef: { codecId: 'pg/numeric@1' },
+          }),
+          col('updatedAt', 'timestamptz', {
+            notNull: true,
+            default: fn('now()'),
+            codecRef: { codecId: 'pg/timestamptz-string@1' },
+          }),
+        ],
+        constraints: [primaryKey(['id'])],
+      }),
+      this.createTable({
+        schema: 'public',
+        table: 'erp_user_roles',
+        columns: [
+          col('grantedAt', 'timestamptz', {
+            notNull: true,
+            default: fn('now()'),
+            codecRef: { codecId: 'pg/timestamptz-string@1' },
+          }),
+          col('id', 'uuid', { notNull: true, codecRef: { codecId: 'pg/uuid@1' } }),
+          col('roleId', 'uuid', { notNull: true, codecRef: { codecId: 'pg/uuid@1' } }),
+          col('userId', 'uuid', { notNull: true, codecRef: { codecId: 'pg/uuid@1' } }),
+        ],
+        constraints: [primaryKey(['id'])],
+      }),
+      this.createTable({
+        schema: 'public',
+        table: 'erp_user_sessions',
+        columns: [
+          col('createdAt', 'timestamptz', {
+            notNull: true,
+            default: fn('now()'),
+            codecRef: { codecId: 'pg/timestamptz-string@1' },
+          }),
+          col('expiresAt', 'timestamptz', {
+            notNull: true,
+            codecRef: { codecId: 'pg/timestamptz-string@1' },
+          }),
+          col('id', 'uuid', { notNull: true, codecRef: { codecId: 'pg/uuid@1' } }),
+          col('ip', 'text', { codecRef: { codecId: 'pg/text@1' } }),
+          col('lastUsedAt', 'timestamptz', {
+            notNull: true,
+            default: fn('now()'),
+            codecRef: { codecId: 'pg/timestamptz-string@1' },
+          }),
+          col('revokedAt', 'timestamptz', { codecRef: { codecId: 'pg/timestamptz-string@1' } }),
+          col('revokedBy', 'uuid', { codecRef: { codecId: 'pg/uuid@1' } }),
+          col('tokenHash', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('userAgent', 'text', { codecRef: { codecId: 'pg/text@1' } }),
+          col('userId', 'uuid', { notNull: true, codecRef: { codecId: 'pg/uuid@1' } }),
+        ],
+        constraints: [primaryKey(['id'])],
+      }),
+      this.createTable({
+        schema: 'public',
+        table: 'erp_users',
+        columns: [
+          col('createdAt', 'timestamptz', {
+            notNull: true,
+            default: fn('now()'),
+            codecRef: { codecId: 'pg/timestamptz-string@1' },
+          }),
+          col('email', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('employeeCode', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('id', 'uuid', { notNull: true, codecRef: { codecId: 'pg/uuid@1' } }),
+          col('lastLoginAt', 'timestamptz', { codecRef: { codecId: 'pg/timestamptz-string@1' } }),
+          col('name', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('passwordHash', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
+          col('phone', 'text', { codecRef: { codecId: 'pg/text@1' } }),
+          col('status', 'text', {
+            notNull: true,
+            default: lit('ACTIVE'),
+            codecRef: { codecId: 'pg/text@1' },
+          }),
+          col('updatedAt', 'timestamptz', {
+            notNull: true,
+            default: fn('now()'),
+            codecRef: { codecId: 'pg/timestamptz-string@1' },
+          }),
+        ],
+        constraints: [
+          primaryKey(['id']),
+          checkExpression('erp_users_status_check_56c81764', `"status" IN ('ACTIVE', 'DISABLED')`),
+        ],
+      }),
+      this.addUnique({
+        schema: 'public',
+        table: 'erp_customers',
+        constraint: 'erp_customers_code_key',
+        columns: ['code'],
+      }),
+      this.addUnique({
+        schema: 'public',
+        table: 'erp_permissions',
+        constraint: 'erp_permissions_code_key',
+        columns: ['code'],
+      }),
+      this.addUnique({
+        schema: 'public',
+        table: 'erp_products',
+        constraint: 'erp_products_sku_key',
+        columns: ['sku'],
+      }),
+      this.addUnique({
+        schema: 'public',
+        table: 'erp_role_permissions',
+        constraint: 'erp_role_permissions_roleId_permissionId_key',
+        columns: ['roleId', 'permissionId'],
+      }),
+      this.addUnique({
+        schema: 'public',
+        table: 'erp_roles',
+        constraint: 'erp_roles_name_key',
+        columns: ['name'],
+      }),
+      this.addUnique({
+        schema: 'public',
+        table: 'erp_roles',
+        constraint: 'erp_roles_code_key',
+        columns: ['code'],
+      }),
+      this.addUnique({
+        schema: 'public',
+        table: 'erp_sales_orders',
+        constraint: 'erp_sales_orders_orderNumber_key',
+        columns: ['orderNumber'],
+      }),
+      this.addUnique({
+        schema: 'public',
+        table: 'erp_user_roles',
+        constraint: 'erp_user_roles_userId_roleId_key',
+        columns: ['userId', 'roleId'],
+      }),
+      this.addUnique({
+        schema: 'public',
+        table: 'erp_user_sessions',
+        constraint: 'erp_user_sessions_tokenHash_key',
+        columns: ['tokenHash'],
+      }),
+      this.addUnique({
+        schema: 'public',
+        table: 'erp_users',
+        constraint: 'erp_users_employeeCode_key',
+        columns: ['employeeCode'],
+      }),
+      this.addUnique({
+        schema: 'public',
+        table: 'erp_users',
+        constraint: 'erp_users_email_key',
+        columns: ['email'],
+      }),
+      this.createIndex({
+        schema: 'public',
+        table: 'erp_audit_logs',
+        index: 'erp_audit_logs_action_idx_cd0d2116',
+        columns: ['action'],
+      }),
+      this.createIndex({
+        schema: 'public',
+        table: 'erp_audit_logs',
+        index: 'erp_audit_logs_actorId_idx_a58f6b4b',
+        columns: ['actorId'],
+      }),
+      this.createIndex({
+        schema: 'public',
+        table: 'erp_audit_logs',
+        index: 'erp_audit_logs_createdAt_idx_9575dbd7',
+        columns: ['createdAt'],
+      }),
+      this.createIndex({
+        schema: 'public',
+        table: 'erp_customers',
+        index: 'erp_customers_name_idx_ce87e6ba',
+        columns: ['name'],
+      }),
+      this.createIndex({
+        schema: 'public',
+        table: 'erp_products',
+        index: 'erp_products_category_idx_f2600f8e',
+        columns: ['category'],
+      }),
+      this.createIndex({
+        schema: 'public',
+        table: 'erp_products',
+        index: 'erp_products_name_idx_ce87e6ba',
+        columns: ['name'],
+      }),
+      this.createIndex({
+        schema: 'public',
+        table: 'erp_products',
+        index: 'erp_products_status_idx_e98638ab',
+        columns: ['status'],
+      }),
+      this.createIndex({
+        schema: 'public',
+        table: 'erp_role_permissions',
+        index: 'erp_role_permissions_permissionId_idx_f46fcdf5',
+        columns: ['permissionId'],
+      }),
+      this.createIndex({
+        schema: 'public',
+        table: 'erp_role_permissions',
+        index: 'erp_role_permissions_roleId_idx_ffccc9a4',
+        columns: ['roleId'],
+      }),
+      this.createIndex({
+        schema: 'public',
+        table: 'erp_sales_order_lines',
+        index: 'erp_sales_order_lines_productId_idx_5858600a',
+        columns: ['productId'],
+      }),
+      this.createIndex({
+        schema: 'public',
+        table: 'erp_sales_order_lines',
+        index: 'erp_sales_order_lines_salesOrderId_idx_0f1a116c',
+        columns: ['salesOrderId'],
+      }),
+      this.createIndex({
+        schema: 'public',
+        table: 'erp_sales_orders',
+        index: 'erp_sales_orders_customerId_idx_b2a8a46c',
+        columns: ['customerId'],
+      }),
+      this.createIndex({
+        schema: 'public',
+        table: 'erp_sales_orders',
+        index: 'erp_sales_orders_orderDate_idx_a1a011d5',
+        columns: ['orderDate'],
+      }),
+      this.createIndex({
+        schema: 'public',
+        table: 'erp_sales_orders',
+        index: 'erp_sales_orders_status_idx_e98638ab',
+        columns: ['status'],
+      }),
+      this.createIndex({
+        schema: 'public',
+        table: 'erp_user_roles',
+        index: 'erp_user_roles_roleId_idx_ffccc9a4',
+        columns: ['roleId'],
+      }),
+      this.createIndex({
+        schema: 'public',
+        table: 'erp_user_roles',
+        index: 'erp_user_roles_userId_idx_a489d58a',
+        columns: ['userId'],
+      }),
+      this.createIndex({
+        schema: 'public',
+        table: 'erp_user_sessions',
+        index: 'erp_user_sessions_expiresAt_idx_6b6b8c10',
+        columns: ['expiresAt'],
+      }),
+      this.createIndex({
+        schema: 'public',
+        table: 'erp_user_sessions',
+        index: 'erp_user_sessions_userId_idx_a489d58a',
+        columns: ['userId'],
+      }),
+      this.addForeignKey({
+        schema: 'public',
+        table: 'erp_role_permissions',
+        foreignKey: {
+          name: 'erp_role_permissions_roleId_fkey',
+          columns: ['roleId'],
+          references: { schema: 'public', table: 'erp_roles', columns: ['id'] },
+          onDelete: 'cascade',
+        },
+      }),
+      this.addForeignKey({
+        schema: 'public',
+        table: 'erp_role_permissions',
+        foreignKey: {
+          name: 'erp_role_permissions_permissionId_fkey',
+          columns: ['permissionId'],
+          references: { schema: 'public', table: 'erp_permissions', columns: ['id'] },
+          onDelete: 'cascade',
+        },
+      }),
+      this.addForeignKey({
+        schema: 'public',
+        table: 'erp_sales_order_lines',
+        foreignKey: {
+          name: 'erp_sales_order_lines_salesOrderId_fkey',
+          columns: ['salesOrderId'],
+          references: { schema: 'public', table: 'erp_sales_orders', columns: ['id'] },
+          onDelete: 'cascade',
+        },
+      }),
+      this.addForeignKey({
+        schema: 'public',
+        table: 'erp_sales_order_lines',
+        foreignKey: {
+          name: 'erp_sales_order_lines_productId_fkey',
+          columns: ['productId'],
+          references: { schema: 'public', table: 'erp_products', columns: ['id'] },
+          onDelete: 'setNull',
+        },
+      }),
+      this.addForeignKey({
+        schema: 'public',
+        table: 'erp_sales_orders',
+        foreignKey: {
+          name: 'erp_sales_orders_customerId_fkey',
+          columns: ['customerId'],
+          references: { schema: 'public', table: 'erp_customers', columns: ['id'] },
+          onDelete: 'restrict',
+        },
+      }),
+      this.addForeignKey({
+        schema: 'public',
+        table: 'erp_user_roles',
+        foreignKey: {
+          name: 'erp_user_roles_userId_fkey',
+          columns: ['userId'],
+          references: { schema: 'public', table: 'erp_users', columns: ['id'] },
+          onDelete: 'cascade',
+        },
+      }),
+      this.addForeignKey({
+        schema: 'public',
+        table: 'erp_user_roles',
+        foreignKey: {
+          name: 'erp_user_roles_roleId_fkey',
+          columns: ['roleId'],
+          references: { schema: 'public', table: 'erp_roles', columns: ['id'] },
+          onDelete: 'cascade',
+        },
+      }),
+      this.addForeignKey({
+        schema: 'public',
+        table: 'erp_user_sessions',
+        foreignKey: {
+          name: 'erp_user_sessions_userId_fkey',
+          columns: ['userId'],
+          references: { schema: 'public', table: 'erp_users', columns: ['id'] },
+          onDelete: 'cascade',
+        },
+      }),
+    ];
+  }
+}
+
+MigrationCLI.run(import.meta.url, M);

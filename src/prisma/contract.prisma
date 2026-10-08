@@ -132,3 +132,92 @@ model AuditLog {
   @@index([createdAt])
   @@map("erp_audit_logs")
 }
+
+model Customer {
+  id        Uuid              @id @default(uuid())
+  code      String            @unique
+  name      String
+  email     String?
+  phone     String?
+  status    String            @default("ACTIVE")
+  createdAt TimestamptzString @default(now())
+  updatedAt TimestamptzString @default(now())
+
+  salesOrders SalesOrder[]
+
+  @@index([name])
+  @@map("erp_customers")
+}
+
+model Product {
+  id          Uuid              @id @default(uuid())
+  sku         String            @unique
+  name        String
+  description String?
+  category    String
+  productType String
+  variant     String?
+  unit        String
+  unitPrice   Decimal           @default(0)
+  status      String            @default("ACTIVE")
+  createdAt   TimestamptzString @default(now())
+  updatedAt   TimestamptzString @default(now())
+
+  salesOrderLines SalesOrderLine[]
+
+  @@index([name])
+  @@index([category])
+  @@index([status])
+  @@map("erp_products")
+}
+
+model SalesOrder {
+  id             Uuid              @id @default(uuid())
+  orderNumber    String            @unique
+  customerId     Uuid
+  orderDate      String
+  deliveryDate   String?
+  status         String            @default("DRAFT")
+  notes          String?
+  subtotal       Decimal           @default(0)
+  discountTotal  Decimal           @default(0)
+  taxTotal       Decimal           @default(0)
+  totalAmount    Decimal           @default(0)
+  createdBy      Uuid
+  createdAt      TimestamptzString @default(now())
+  updatedAt      TimestamptzString @default(now())
+
+  customer Customer          @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  lines    SalesOrderLine[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([orderDate])
+  @@map("erp_sales_orders")
+}
+
+model SalesOrderLine {
+  id                Uuid    @id @default(uuid())
+  salesOrderId      Uuid
+  productId         Uuid?
+  isCustom          Boolean @default(false)
+  productName       String
+  customerReference String?
+  skuReference      String?
+  category          String?
+  variant           String?
+  unit              String
+  quantity          Decimal
+  unitPrice         Decimal
+  discountPercent   Int     @default(0)
+  taxPercent        Int     @default(0)
+  lineTotal         Decimal
+  notes             String?
+
+  salesOrder SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  product    Product?   @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([salesOrderId])
+  @@index([productId])
+  @@map("erp_sales_order_lines")
+}

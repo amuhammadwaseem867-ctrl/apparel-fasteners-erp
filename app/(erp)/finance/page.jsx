@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -90,6 +91,8 @@ const financeModules = [
 ];
 
 export default function FinancePage() {
+  const router = useRouter();
+
   const [search, setSearch] = useState("");
   const [period, setPeriod] = useState("current-month");
 
@@ -129,7 +132,7 @@ export default function FinancePage() {
             size="md"
             icon={Plus}
             onClick={() => {
-              window.location.href = "/finance/transactions";
+              router.push("/finance/transactions");
             }}
           >
             New Transaction

@@ -18,6 +18,19 @@ import "./Dropdown.css";
 
 const DropdownContext = createContext(null);
 
+/*
+ * Safely assigns a ref value (callback or object ref).
+ * Kept at module scope so ref composition never happens
+ * inside the render path of the component.
+ */
+function assignRef(ref, node) {
+  if (typeof ref === "function") {
+    ref(node);
+  } else if (ref) {
+    ref.current = node;
+  }
+}
+
 function getPosition(
   triggerRect,
   menuRect,
@@ -103,8 +116,15 @@ export default function Dropdown({
 }) {
   const id = useId();
   const rootRef = useRef(null);
-  const triggerRef = useRef(null);
   const menuRef = useRef(null);
+
+  /*
+   * The trigger node is tracked as state instead of a ref so the
+   * cloned trigger can receive a plain callback ref while still
+   * exposing the node to render-safe consumers (effects read it,
+   * event handlers receive it through re-renders).
+   */
+  const [triggerNode, setTriggerNode] = useState(null);
 
   const isControlled = controlledOpen !== undefined;
 
@@ -149,17 +169,17 @@ export default function Dropdown({
   }
 
   useLayoutEffect(() => {
-    if (!open || !triggerRef.current || !menuRef.current) {
+    if (!open || !triggerNode || !menuRef.current) {
       return;
     }
 
     function updatePosition() {
-      if (!triggerRef.current || !menuRef.current) {
+      if (!triggerNode || !menuRef.current) {
         return;
       }
 
       const triggerRect =
-        triggerRef.current.getBoundingClientRect();
+        triggerNode.getBoundingClientRect();
 
       const menuRect =
         menuRef.current.getBoundingClientRect();
@@ -198,7 +218,7 @@ export default function Dropdown({
         true
       );
     };
-  }, [open, placement, width]);
+  }, [open, triggerNode, placement, width]);
 
   useEffect(() => {
     if (!open) return;
@@ -220,7 +240,7 @@ export default function Dropdown({
       if (event.key === "Escape") {
         event.preventDefault();
         closeMenu();
-        triggerRef.current?.focus();
+        triggerNode?.focus();
         return;
       }
 
@@ -302,21 +322,17 @@ export default function Dropdown({
         handleKeyDown
       );
     };
-  }, [open]);
+  }, [open, triggerNode]);
+
+  const triggerOriginalRef = isValidElement(trigger)
+    ? trigger.props?.ref
+    : null;
 
   const triggerElement = isValidElement(trigger)
     ? cloneElement(trigger, {
         ref: (node) => {
-          triggerRef.current = node;
-
-          const originalRef =
-            trigger.ref;
-
-          if (typeof originalRef === "function") {
-            originalRef(node);
-          } else if (originalRef) {
-            originalRef.current = node;
-          }
+          setTriggerNode(node);
+          assignRef(triggerOriginalRef, node);
         },
         "aria-haspopup": "menu",
         "aria-expanded": open,
@@ -347,7 +363,7 @@ export default function Dropdown({
       })
     : (
       <button
-        ref={triggerRef}
+        ref={setTriggerNode}
         type="button"
         className="af-dropdown__default-trigger"
         disabled={disabled}
