@@ -5,5 +5,6 @@ export default async function ItemProfilePage({ params }) {
   return <ItemProfileClient sku={sku} />;
 }
 
+// Sidebar/Topbar use usePathname(); allow blocking prerender for this route.
 export const instant = false;
 
