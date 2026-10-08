@@ -5,20 +5,24 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "test": "node --experimental-strip-types --test tests/server/core-foundation.test.mjs",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma skills sync || exit 0"
+    "postinstall": "prisma skills sync || exit 0",
+    "contract:emit": "prisma contract emit"
   },
   "dependencies": {
-    "@prisma/client": "^7.10.0",
+    "@prisma/orm-postgres": "^8.0.0-rc.16",
     "lucide-react": "^1.52.0",
     "next": "16.4.0",
     "prisma": "^8.0.0-rc.21",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
+    "@types/react": "19.3.0",
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
     "tailwindcss": "^4"

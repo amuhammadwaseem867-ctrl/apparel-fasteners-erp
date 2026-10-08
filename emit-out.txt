@@ -1,0 +1,11 @@
+﻿node.exe : npm notice run apparel-fasteners-erp@0.1.0 npx
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\waseem\AppData\Roaming ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ...s-erp@0.1.0 npx:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run prisma contract emit
+{"kind":"step-started","step":"Resolving contract source...","id":"resolveSource","commandId":"contract.emit","timestamp":"2026-10-08T10:15:12.457Z"}
+{"kind":"step-finished","step":"Resolving contract source...","id":"resolveSource","outcome":"failed","commandId":"contract.emit","timestamp":"2026-10-08T10:15:12.666Z"}
+{"kind":"result","envelope":{"ok":false,"commandId":"contract.emit","error":{"code":"CONTRACT.SOURCE_LOAD_FAILED","severity":"error","summary":"Failed to resolve contract source","why":"Schema has 1 error","nextActions":[{"kind":"user-choice","label":"Edit the source where each finding points, then run the command again."}],"meta":{"diagnostics":[{"code":"PSL_UNRESOLVED_REFERENCE","message":"Cannot find type \"Bool\"","sourceId":"D:/apparel-fasteners-erp/src/prisma/contract.prisma","span":{"start":{"offset":1501,"line":48,"column":15},"end":{"offset":1505,"line":48,"column":19}},"data":{"reference":"type","name":"Bool","constructorCall":false}}],"issues":[{"kind":"PSL_UNRESOLVED_REFERENCE","message":"Cannot find type \"Bool\" (D:/apparel-fasteners-erp/src/prisma/contract.prisma:48:15)"}]},"docsUrl":"https://docs.prisma.io/docs/orm/v8/reference/error-reference/CONTRACT.SOURCE_LOAD_FAILED"},"diagnostics":[{"code":"CONTRACT.SOURCE_DIAGNOSTIC","summary":"src/prisma/contract.prisma:48:15 PSL_UNRESOLVED_REFERENCE: Cannot find type \"Bool\"","severity":"error","nextActions":[],"where":{"path":"src/prisma/contract.prisma","line":48},"meta":{"code":"PSL_UNRESOLVED_REFERENCE"},"docsUrl":"https://docs.prisma.io/docs/orm/v8/reference/error-reference/CONTRACT.SOURCE_DIAGNOSTIC"}],"nextActions":[{"kind":"user-choice","label":"Edit the source where each finding points, then run the command again."}]},"commandId":"contract.emit","timestamp":"2026-10-08T10:15:12.667Z"}

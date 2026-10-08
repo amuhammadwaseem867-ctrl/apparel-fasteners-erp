@@ -1,0 +1,134 @@
+// use prisma-8
+// ---------------------------------------------------------------------------
+// Apparel Fasteners ERP — data contract (Phase B: Auth, Users, Roles, RBAC)
+//
+// Conventions:
+// - camelCase model/field names; snake_case physical table names via @@map.
+// - Timestamps are TimestamptzString (text-backed) because the Node 24 runtime
+//   lacks a global Temporal; never hand these to a Temporal codec.
+// - No implicit many-to-many: Role-Permission and User-Role use explicit join
+//   models (RolePermission, UserRole) as required by the SQL interpreter.
+// ---------------------------------------------------------------------------
+
+enum UserStatus {
+  @@type("pg/text@1")
+  ACTIVE = "ACTIVE"
+  DISABLED = "DISABLED"
+}
+
+enum RoleStatus {
+  @@type("pg/text@1")
+  ACTIVE = "ACTIVE"
+  DISABLED = "DISABLED"
+}
+
+model User {
+  id           Uuid              @id @default(uuid())
+  employeeCode String            @unique
+  name         String
+  email        String            @unique
+  phone        String?
+  passwordHash String
+  status       UserStatus        @default(ACTIVE)
+  lastLoginAt  TimestamptzString?
+  createdAt    TimestamptzString @default(now())
+  updatedAt    TimestamptzString @default(now())
+
+  userRoles UserRole[]
+
+  @@map("erp_users")
+}
+
+model Role {
+  id          Uuid              @id @default(uuid())
+  name        String            @unique
+  code        String            @unique
+  description String
+  status      RoleStatus        @default(ACTIVE)
+  isSystem    Boolean          @default(false)
+  createdAt   TimestamptzString @default(now())
+  updatedAt   TimestamptzString @default(now())
+
+  userRoles       UserRole[]
+  rolePermissions RolePermission[]
+
+  @@map("erp_roles")
+}
+
+model Permission {
+  id          Uuid              @id @default(uuid())
+  code        String            @unique
+  name        String
+  module      String
+  action      String
+  description String
+  createdAt   TimestamptzString @default(now())
+
+  rolePermissions RolePermission[]
+
+  @@map("erp_permissions")
+}
+
+model RolePermission {
+  id           Uuid              @id @default(uuid())
+  roleId       Uuid
+  permissionId Uuid
+  grantedAt    TimestamptzString @default(now())
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([permissionId])
+  @@map("erp_role_permissions")
+}
+
+model UserRole {
+  id        Uuid              @id @default(uuid())
+  userId    Uuid
+  roleId    Uuid
+  grantedAt TimestamptzString @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@index([roleId])
+  @@map("erp_user_roles")
+}
+
+model UserSession {
+  id         Uuid               @id @default(uuid())
+  userId     Uuid
+  tokenHash  String             @unique
+  expiresAt  TimestamptzString
+  createdAt  TimestamptzString  @default(now())
+  lastUsedAt TimestamptzString  @default(now())
+  revokedAt  TimestamptzString?
+  revokedBy  Uuid?
+  ip         String?
+  userAgent  String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("erp_user_sessions")
+}
+
+model AuditLog {
+  id         Uuid              @id @default(uuid())
+  actorId    Uuid?
+  action     String
+  entityType String?
+  entityId   String?
+  requestId  String?
+  ip         String?
+  metadata   String?
+  createdAt  TimestamptzString @default(now())
+
+  @@index([actorId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("erp_audit_logs")
+}

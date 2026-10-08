@@ -39,7 +39,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!form.email.trim()) {
@@ -52,9 +52,29 @@ export default function LoginPage() {
       return;
     }
 
-    setError(
-      "Sign-in is unavailable until authentication is connected."
-    );
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+        }),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok || payload.success === false) {
+        setError(payload?.error?.message || "Authentication failed.");
+        return;
+      }
+
+      window.location.assign("/administration");
+    } catch (error) {
+      setError("Authentication is temporarily unavailable.");
+    }
   };
 
   return (
