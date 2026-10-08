@@ -1,0 +1,278 @@
+.erp-toast-container {
+  position: fixed;
+
+  top: 82px;
+  right: 20px;
+
+  z-index: 5000;
+
+  width: min(
+    390px,
+    calc(100vw - 32px)
+  );
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  pointer-events: none;
+}
+
+.erp-toast {
+  position: relative;
+
+  display: flex;
+  align-items: flex-start;
+
+  gap: 11px;
+
+  width: 100%;
+  min-height: 64px;
+
+  padding: 13px 12px 13px 14px;
+
+  overflow: hidden;
+
+  border: 1px solid
+    var(--af-border);
+
+  border-radius: 8px;
+
+  background: var(--af-surface);
+
+  box-shadow:
+    0 8px 24px
+    rgba(16, 24, 40, 0.12);
+
+  pointer-events: auto;
+
+  animation:
+    erp-toast-in
+    220ms cubic-bezier(
+      0.22,
+      1,
+      0.36,
+      1
+    )
+    forwards;
+}
+
+.erp-toast__icon {
+  width: 22px;
+  height: 22px;
+
+  min-width: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-top: 1px;
+}
+
+.erp-toast__content {
+  min-width: 0;
+  flex: 1;
+}
+
+.erp-toast__title {
+  color: var(--af-text);
+
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.erp-toast__message {
+  margin-top: 2px;
+
+  color: var(--af-text-secondary);
+
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.erp-toast__close {
+  width: 26px;
+  height: 26px;
+
+  min-width: 26px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-top: -2px;
+
+  padding: 0;
+
+  border: 0;
+  border-radius: 5px;
+
+  background: transparent;
+  color: var(--af-text-muted);
+
+  cursor: pointer;
+
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.erp-toast__close:hover {
+  background: var(--af-surface-soft);
+  color: var(--af-text);
+}
+
+.erp-toast__close:focus-visible {
+  outline: none;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(36, 49, 70, 0.1);
+}
+
+/* -------------------------------------------------------
+   Types
+------------------------------------------------------- */
+
+.erp-toast--success {
+  border-left: 3px solid
+    var(--af-success);
+}
+
+.erp-toast--success
+  .erp-toast__icon {
+  color: var(--af-success);
+}
+
+.erp-toast--error {
+  border-left: 3px solid
+    var(--af-danger);
+}
+
+.erp-toast--error
+  .erp-toast__icon {
+  color: var(--af-danger);
+}
+
+.erp-toast--warning {
+  border-left: 3px solid
+    var(--af-warning);
+}
+
+.erp-toast--warning
+  .erp-toast__icon {
+  color: var(--af-warning);
+}
+
+.erp-toast--info {
+  border-left: 3px solid
+    var(--af-info);
+}
+
+.erp-toast--info
+  .erp-toast__icon {
+  color: var(--af-info);
+}
+
+/* -------------------------------------------------------
+   Progress
+------------------------------------------------------- */
+
+.erp-toast__progress {
+  position: absolute;
+
+  left: 0;
+  bottom: 0;
+
+  height: 2px;
+  width: 100%;
+
+  transform-origin: left center;
+
+  background: currentColor;
+
+  opacity: 0.35;
+
+  animation-name:
+    erp-toast-progress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+.erp-toast--success
+  .erp-toast__progress {
+  color: var(--af-success);
+}
+
+.erp-toast--error
+  .erp-toast__progress {
+  color: var(--af-danger);
+}
+
+.erp-toast--warning
+  .erp-toast__progress {
+  color: var(--af-warning);
+}
+
+.erp-toast--info
+  .erp-toast__progress {
+  color: var(--af-info);
+}
+
+/* -------------------------------------------------------
+   Animation
+------------------------------------------------------- */
+
+@keyframes erp-toast-in {
+  from {
+    opacity: 0;
+    transform:
+      translateX(24px)
+      scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translateX(0)
+      scale(1);
+  }
+}
+
+@keyframes erp-toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* -------------------------------------------------------
+   Responsive
+------------------------------------------------------- */
+
+@media (max-width: 680px) {
+  .erp-toast-container {
+    top: auto;
+    right: 12px;
+    bottom: 16px;
+
+    width: calc(100vw - 24px);
+  }
+
+  .erp-toast {
+    min-height: 60px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .erp-toast,
+  .erp-toast__progress {
+    animation: none;
+  }
+}

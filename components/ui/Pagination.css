@@ -1,0 +1,257 @@
+.erp-pagination {
+  width: 100%;
+  min-height: 52px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  padding: 10px 0;
+
+  color: var(--af-text-secondary);
+}
+
+.erp-pagination--disabled {
+  opacity: 0.6;
+}
+
+/* -------------------------------------------------------
+   Summary
+------------------------------------------------------- */
+
+.erp-pagination__summary {
+  flex-shrink: 0;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.erp-pagination__summary strong {
+  color: var(--af-text);
+  font-weight: 600;
+}
+
+/* -------------------------------------------------------
+   Controls
+------------------------------------------------------- */
+
+.erp-pagination__controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+
+  min-width: 0;
+}
+
+/* -------------------------------------------------------
+   Page size
+------------------------------------------------------- */
+
+.erp-pagination__page-size {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.erp-pagination__page-size-label {
+  white-space: nowrap;
+}
+
+.erp-pagination__page-size select {
+  min-width: 64px;
+  height: 32px;
+
+  padding: 0 26px 0 9px;
+
+  border: 1px solid var(--af-border);
+  border-radius: 6px;
+
+  background: var(--af-surface);
+  color: var(--af-text);
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.erp-pagination__page-size select:hover {
+  border-color: var(--af-border-dark);
+}
+
+.erp-pagination__page-size select:focus {
+  outline: none;
+  border-color: var(--af-navy);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(36, 49, 70, 0.08);
+}
+
+/* -------------------------------------------------------
+   Buttons
+------------------------------------------------------- */
+
+.erp-pagination__buttons {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.erp-pagination__button,
+.erp-pagination__page {
+  width: 32px;
+  height: 32px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid transparent;
+  border-radius: 6px;
+
+  background: transparent;
+  color: var(--af-text-secondary);
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.erp-pagination__button:hover:not(:disabled),
+.erp-pagination__page:hover:not(:disabled) {
+  background: var(--af-surface-soft);
+  border-color: var(--af-border);
+  color: var(--af-text);
+}
+
+.erp-pagination__button:focus-visible,
+.erp-pagination__page:focus-visible {
+  outline: none;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(36, 49, 70, 0.09);
+}
+
+.erp-pagination__button:disabled,
+.erp-pagination__page:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.erp-pagination__page--active {
+  border-color: var(--af-navy);
+  background: var(--af-navy);
+  color: #ffffff;
+}
+
+.erp-pagination__page--active:hover:not(:disabled) {
+  border-color: var(--af-navy);
+  background: var(--af-navy);
+  color: #ffffff;
+}
+
+.erp-pagination__ellipsis {
+  width: 28px;
+  height: 32px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  font-weight: 600;
+
+  user-select: none;
+}
+
+/* -------------------------------------------------------
+   Mobile
+------------------------------------------------------- */
+
+@media (max-width: 760px) {
+  .erp-pagination {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .erp-pagination__controls {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  .erp-pagination {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .erp-pagination__summary {
+    text-align: center;
+  }
+
+  .erp-pagination__controls {
+    width: 100%;
+
+    justify-content: center;
+
+    margin-left: 0;
+  }
+
+  .erp-pagination__page-size {
+    display: none;
+  }
+}
+
+@media (max-width: 400px) {
+  .erp-pagination__button,
+  .erp-pagination__page {
+    width: 30px;
+    height: 30px;
+  }
+
+  .erp-pagination__buttons {
+    gap: 1px;
+  }
+
+  .erp-pagination__button:first-child,
+  .erp-pagination__button:last-child {
+    display: none;
+  }
+}
+
+/* -------------------------------------------------------
+   Reduced motion
+------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .erp-pagination__button,
+  .erp-pagination__page,
+  .erp-pagination__page-size select {
+    transition: none;
+  }
+}

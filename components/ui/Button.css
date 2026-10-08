@@ -1,0 +1,295 @@
+.erp-button {
+  min-width: 0;
+  min-height: 38px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 0 14px;
+
+  border: 1px solid transparent;
+  border-radius: 7px;
+
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 700;
+
+  text-decoration: none;
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease,
+    opacity 160ms ease;
+}
+
+.erp-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.erp-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.erp-button:focus-visible {
+  outline: 2px solid rgba(36, 49, 70, 0.28);
+  outline-offset: 2px;
+}
+
+.erp-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* =========================================
+   PRIMARY
+========================================= */
+
+.erp-button--primary {
+  color: #ffffff;
+
+  background: var(--af-navy);
+
+  border-color: var(--af-navy);
+
+  box-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.08);
+}
+
+.erp-button--primary:hover:not(:disabled) {
+  background: var(--af-navy-dark);
+  border-color: var(--af-navy-dark);
+}
+
+/* =========================================
+   SECONDARY
+========================================= */
+
+.erp-button--secondary {
+  color: var(--af-text);
+
+  background: var(--af-surface);
+
+  border-color: var(--af-border);
+}
+
+.erp-button--secondary:hover:not(:disabled) {
+  background: var(--af-surface-soft);
+
+  border-color: var(--af-border-dark);
+}
+
+/* =========================================
+   GHOST
+========================================= */
+
+.erp-button--ghost {
+  color: var(--af-text-secondary);
+
+  background: transparent;
+
+  border-color: transparent;
+}
+
+.erp-button--ghost:hover:not(:disabled) {
+  color: var(--af-text);
+
+  background: var(--af-surface-soft);
+}
+
+/* =========================================
+   SOFT
+========================================= */
+
+.erp-button--soft {
+  color: var(--af-navy);
+
+  background: #eef2f6;
+
+  border-color: #e0e5eb;
+}
+
+.erp-button--soft:hover:not(:disabled) {
+  background: #e5eaf0;
+
+  border-color: #d5dce4;
+}
+
+/* =========================================
+   SUCCESS
+========================================= */
+
+.erp-button--success {
+  color: #ffffff;
+
+  background: var(--af-success);
+
+  border-color: var(--af-success);
+}
+
+.erp-button--success:hover:not(:disabled) {
+  background: #11714d;
+
+  border-color: #11714d;
+}
+
+/* =========================================
+   DANGER
+========================================= */
+
+.erp-button--danger {
+  color: #ffffff;
+
+  background: var(--af-danger);
+
+  border-color: var(--af-danger);
+}
+
+.erp-button--danger:hover:not(:disabled) {
+  background: #a93838;
+
+  border-color: #a93838;
+}
+
+/* =========================================
+   OUTLINE DANGER
+========================================= */
+
+.erp-button--danger-outline {
+  color: var(--af-danger);
+
+  background: var(--af-surface);
+
+  border-color: rgba(196, 69, 69, 0.35);
+}
+
+.erp-button--danger-outline:hover:not(:disabled) {
+  background: #fff6f6;
+
+  border-color: var(--af-danger);
+}
+
+/* =========================================
+   WARNING
+========================================= */
+
+.erp-button--warning {
+  color: #ffffff;
+
+  background: var(--af-warning);
+
+  border-color: var(--af-warning);
+}
+
+.erp-button--warning:hover:not(:disabled) {
+  background: #a96e13;
+
+  border-color: #a96e13;
+}
+
+/* =========================================
+   SIZES
+========================================= */
+
+.erp-button--small {
+  min-height: 34px;
+
+  padding: 0 11px;
+
+  gap: 6px;
+
+  font-size: 12px;
+}
+
+.erp-button--medium {
+  min-height: 38px;
+
+  padding: 0 14px;
+}
+
+.erp-button--large {
+  min-height: 42px;
+
+  padding: 0 17px;
+
+  font-size: 13px;
+}
+
+/* =========================================
+   ICON ONLY
+========================================= */
+
+.erp-button--icon {
+  width: 38px;
+  min-width: 38px;
+
+  padding: 0;
+}
+
+.erp-button--icon.erp-button--small {
+  width: 34px;
+  min-width: 34px;
+}
+
+.erp-button--icon.erp-button--large {
+  width: 42px;
+  min-width: 42px;
+}
+
+/* =========================================
+   FULL WIDTH
+========================================= */
+
+.erp-button--full {
+  width: 100%;
+}
+
+/* =========================================
+   LOADING
+========================================= */
+
+.erp-button--loading {
+  cursor: wait;
+}
+
+.erp-button__loader {
+  flex: 0 0 auto;
+
+  animation: erp-button-spin 0.8s linear infinite;
+}
+
+.erp-button__icon {
+  flex: 0 0 auto;
+}
+
+.erp-button__label {
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+@keyframes erp-button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+  .erp-button {
+    min-height: 38px;
+  }
+}

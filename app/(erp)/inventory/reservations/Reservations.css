@@ -1,0 +1,77 @@
+.inv-reservations {
+  width: 100%;
+  min-width: 0;
+}
+
+.inv-reservations__content {
+  width: 100%;
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+.inv-reservations__toolbar {
+  padding: 12px;
+
+  background: var(--af-surface);
+
+  border: 1px solid var(--af-border);
+  border-radius: 9px;
+}
+
+.inv-reservations__search {
+  width: min(100%, 420px);
+}
+
+.inv-reservations__list-card {
+  min-height: 300px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: var(--af-surface);
+
+  border: 1px solid var(--af-border);
+  border-radius: 9px;
+}
+
+.inv-reservations__table {
+  width: 100%;
+}
+
+.inv-reservations__hint {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 12px 14px;
+
+  background: var(--af-surface);
+
+  border: 1px solid var(--af-border);
+  border-radius: 8px;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.inv-reservations__hint svg {
+  flex-shrink: 0;
+
+  color: var(--af-navy);
+}
+
+@media (max-width: 640px) {
+  .inv-reservations__search {
+    width: 100%;
+  }
+}

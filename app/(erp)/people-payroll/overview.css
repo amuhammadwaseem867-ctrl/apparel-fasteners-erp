@@ -1,0 +1,197 @@
+/* People & Payroll — Overview */
+
+.pp-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pp-overview__header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pp-overview__section {
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.pp-overview__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--af-border);
+}
+
+.pp-overview__section-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--af-text);
+}
+
+.pp-overview__section-sub {
+  margin: 0;
+  font-size: 12px;
+  color: var(--af-text-muted);
+}
+
+.pp-overview__section-body {
+  padding: 16px;
+}
+
+.pp-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pp-kpi {
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 92px;
+}
+
+.pp-kpi__label {
+  font-size: 12px;
+  color: var(--af-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.pp-kpi__value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--af-navy);
+  line-height: 1.1;
+}
+
+.pp-kpi__value--empty {
+  color: var(--af-text-muted);
+}
+
+.pp-kpi__hint {
+  font-size: 12px;
+  color: var(--af-text-muted);
+}
+
+.pp-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.pp-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.pp-quick {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--af-surface-soft);
+  border: 1px solid var(--af-border);
+  border-radius: var(--radius-md);
+  color: var(--af-text);
+  text-decoration: none;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.pp-quick:hover {
+  border-color: var(--af-navy-soft);
+  background: var(--af-surface);
+}
+
+.pp-quick:focus-visible {
+  outline: 2px solid var(--af-info);
+  outline-offset: 2px;
+}
+
+.pp-quick__icon {
+  color: var(--af-navy-soft);
+}
+
+.pp-quick__label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pp-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--af-border);
+  font-size: 13px;
+}
+
+.pp-list__item:last-child {
+  border-bottom: 0;
+}
+
+.pp-list__muted {
+  color: var(--af-text-muted);
+}
+
+.pp-workflow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pp-workflow__step {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--af-navy-soft);
+  background: var(--af-bg);
+  border: 1px solid var(--af-border);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.pp-workflow__arrow {
+  align-self: center;
+  color: var(--af-text-muted);
+  font-size: 12px;
+}
+
+@media (max-width: 1100px) {
+  .pp-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .pp-kpi-grid,
+  .pp-grid-2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pp-overview__header-actions {
+    width: 100%;
+  }
+}

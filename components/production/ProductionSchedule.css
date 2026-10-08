@@ -1,0 +1,141 @@
+.production-schedule {
+  width: 100%;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.production-schedule__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  border-bottom: 1px solid var(--af-border);
+}
+
+.production-schedule__eyebrow {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--af-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.production-schedule__header h2 {
+  margin: 0;
+  color: var(--af-text);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.production-schedule__header p {
+  margin: 4px 0 0;
+  color: var(--af-text-muted);
+  font-size: 12px;
+}
+
+.production-schedule__view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  color: var(--af-navy);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.production-schedule__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.production-schedule__item {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr) 90px;
+  gap: 16px;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--af-border);
+}
+
+.production-schedule__item:last-child {
+  border-bottom: 0;
+}
+
+.production-schedule__item:hover {
+  background: var(--af-surface-soft);
+}
+
+.production-schedule__date {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.production-schedule__date span {
+  color: var(--af-text-muted);
+  font-size: 12px;
+}
+
+.production-schedule__date strong {
+  color: var(--af-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.production-schedule__details {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.production-schedule__details strong {
+  overflow: hidden;
+  color: var(--af-text);
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.production-schedule__details span,
+.production-schedule__details small {
+  color: var(--af-text-muted);
+  font-size: 12px;
+}
+
+.production-schedule__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: right;
+}
+
+.production-schedule__meta span {
+  color: var(--af-text-secondary);
+  font-size: 12px;
+}
+
+@media (max-width: 640px) {
+  .production-schedule__header {
+    align-items: flex-start;
+    padding: 16px;
+  }
+
+  .production-schedule__item {
+    grid-template-columns: 64px minmax(0, 1fr);
+    padding: 14px 16px;
+  }
+
+  .production-schedule__meta {
+    grid-column: 2;
+    flex-direction: row;
+    text-align: left;
+  }
+}

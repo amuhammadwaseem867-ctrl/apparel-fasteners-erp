@@ -1,0 +1,127 @@
+.progress-ring {
+  display: inline-flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-ring__visual {
+  position: relative;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-ring__svg {
+  display: block;
+
+  transform: rotate(-90deg);
+}
+
+.progress-ring__track {
+  fill: none;
+
+  stroke: #e7ebef;
+}
+
+.progress-ring__fill {
+  fill: none;
+
+  stroke: var(--af-navy);
+
+  stroke-linecap: round;
+
+  transition:
+    stroke-dashoffset 400ms
+    cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Variants */
+
+.progress-ring--primary
+  .progress-ring__fill {
+  stroke: var(--af-navy);
+}
+
+.progress-ring--success
+  .progress-ring__fill {
+  stroke: var(--af-success);
+}
+
+.progress-ring--warning
+  .progress-ring__fill {
+  stroke: var(--af-warning);
+}
+
+.progress-ring--danger
+  .progress-ring__fill {
+  stroke: var(--af-danger);
+}
+
+.progress-ring--info
+  .progress-ring__fill {
+  stroke: var(--af-info);
+}
+
+.progress-ring__center {
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
+.progress-ring__value {
+  color: var(--af-text);
+
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+.progress-ring--small
+  .progress-ring__value {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.progress-ring--large
+  .progress-ring__value {
+  font-size: 19px;
+  line-height: 24px;
+}
+
+.progress-ring--xlarge
+  .progress-ring__value {
+  font-size: 25px;
+  line-height: 30px;
+}
+
+.progress-ring__label {
+  color: var(--af-text-secondary);
+
+  font-size: 12px;
+  line-height: 17px;
+  font-weight: 600;
+
+  text-align: center;
+}
+
+/* Responsive */
+
+@media (max-width: 640px) {
+  .progress-ring__label {
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-ring__fill {
+    transition: none;
+  }
+}

@@ -1,0 +1,505 @@
+.erp-input {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.erp-input--full {
+  width: 100%;
+}
+
+/* =========================================
+   LABEL
+========================================= */
+
+.erp-input__label {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 4px;
+
+  margin-bottom: 7px;
+
+  color: var(--af-text);
+
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.erp-input__required {
+  color: var(--af-danger);
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* =========================================
+   DESCRIPTION
+========================================= */
+
+.erp-input__description {
+  margin: -2px 0 7px;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+/* =========================================
+   CONTROL
+========================================= */
+
+.erp-input__control {
+  position: relative;
+
+  width: 100%;
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+}
+
+.erp-input__field {
+  width: 100%;
+  min-width: 0;
+
+  height: 40px;
+
+  padding: 0 12px;
+
+  color: var(--af-text);
+
+  background: var(--af-surface);
+
+  border: 1px solid var(--af-border);
+
+  border-radius: 7px;
+
+  outline: none;
+
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 500;
+
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.erp-input__field::placeholder {
+  color: #98a2b3;
+
+  font-weight: 400;
+
+  opacity: 1;
+}
+
+.erp-input__field:hover:not(:disabled) {
+  border-color: var(--af-border-dark);
+}
+
+.erp-input__field:focus {
+  border-color: var(--af-navy);
+
+  box-shadow:
+    0 0 0 3px rgba(36, 49, 70, 0.08);
+}
+
+.erp-input__field:focus::placeholder {
+  color: #a5adb8;
+}
+
+/* =========================================
+   SEARCH
+========================================= */
+
+.erp-input--search
+  .erp-input__field {
+  padding-left: 38px;
+}
+
+.erp-input__search-icon {
+  position: absolute;
+
+  left: 13px;
+  top: 50%;
+
+  z-index: 2;
+
+  display: inline-flex;
+
+  color: var(--af-text-muted);
+
+  transform: translateY(-50%);
+
+  pointer-events: none;
+}
+
+/* =========================================
+   LEADING ICON
+========================================= */
+
+.erp-input__leading-icon {
+  position: absolute;
+
+  left: 13px;
+  top: 50%;
+
+  z-index: 2;
+
+  display: inline-flex;
+
+  color: var(--af-text-muted);
+
+  transform: translateY(-50%);
+
+  pointer-events: none;
+}
+
+.erp-input__leading-icon
+  + .erp-input__field {
+  padding-left: 38px;
+}
+
+/* =========================================
+   PREFIX
+========================================= */
+
+.erp-input__prefix {
+  position: absolute;
+
+  left: 12px;
+  top: 50%;
+
+  z-index: 2;
+
+  display: inline-flex;
+  align-items: center;
+
+  color: var(--af-text-muted);
+
+  font-size: 13px;
+  font-weight: 600;
+
+  transform: translateY(-50%);
+
+  pointer-events: none;
+}
+
+.erp-input__prefix
+  + .erp-input__field {
+  padding-left: 34px;
+}
+
+/* =========================================
+   SUFFIX
+========================================= */
+
+.erp-input__suffix {
+  position: absolute;
+
+  right: 12px;
+  top: 50%;
+
+  z-index: 2;
+
+  display: inline-flex;
+  align-items: center;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  font-weight: 600;
+
+  transform: translateY(-50%);
+
+  pointer-events: none;
+}
+
+.erp-input__field:has(+ .erp-input__suffix) {
+  padding-right: 42px;
+}
+
+/* =========================================
+   CLEAR
+========================================= */
+
+.erp-input__clear {
+  position: absolute;
+
+  right: 10px;
+  top: 50%;
+
+  z-index: 3;
+
+  width: 24px;
+  height: 24px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  color: var(--af-text-muted);
+
+  background: transparent;
+
+  border: 0;
+  border-radius: 5px;
+
+  transform: translateY(-50%);
+
+  cursor: pointer;
+
+  transition:
+    color 140ms ease,
+    background-color 140ms ease;
+}
+
+.erp-input__clear:hover {
+  color: var(--af-text);
+
+  background: var(--af-surface-soft);
+}
+
+.erp-input__clear
+  ~ .erp-input__field {
+  padding-right: 38px;
+}
+
+/* =========================================
+   STATUS ICON
+========================================= */
+
+.erp-input__status-icon {
+  position: absolute;
+
+  right: 12px;
+  top: 50%;
+
+  z-index: 2;
+
+  display: inline-flex;
+
+  transform: translateY(-50%);
+
+  pointer-events: none;
+}
+
+.erp-input__status-icon--error {
+  color: var(--af-danger);
+}
+
+.erp-input__status-icon--success {
+  color: var(--af-success);
+}
+
+/* =========================================
+   ERROR STATE
+========================================= */
+
+.erp-input--error
+  .erp-input__field {
+  border-color: var(--af-danger);
+
+  background: #fffafa;
+}
+
+.erp-input--error
+  .erp-input__field:hover:not(:disabled) {
+  border-color: var(--af-danger);
+}
+
+.erp-input--error
+  .erp-input__field:focus {
+  border-color: var(--af-danger);
+
+  box-shadow:
+    0 0 0 3px rgba(196, 69, 69, 0.08);
+}
+
+.erp-input--error
+  .erp-input__field {
+  padding-right: 40px;
+}
+
+/* =========================================
+   SUCCESS STATE
+========================================= */
+
+.erp-input--success
+  .erp-input__field {
+  border-color: var(--af-success);
+}
+
+.erp-input--success
+  .erp-input__field:focus {
+  border-color: var(--af-success);
+
+  box-shadow:
+    0 0 0 3px rgba(22, 133, 91, 0.08);
+}
+
+.erp-input--success
+  .erp-input__field {
+  padding-right: 40px;
+}
+
+/* =========================================
+   MESSAGES
+========================================= */
+
+.erp-input__message {
+  min-height: 18px;
+
+  display: flex;
+  align-items: flex-start;
+
+  gap: 5px;
+
+  margin-top: 6px;
+
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+.erp-input__message svg {
+  flex: 0 0 auto;
+
+  margin-top: 1px;
+}
+
+.erp-input__message--error {
+  color: var(--af-danger);
+}
+
+.erp-input__message--success {
+  color: var(--af-success);
+}
+
+/* =========================================
+   DISABLED
+========================================= */
+
+.erp-input--disabled
+  .erp-input__label {
+  color: #98a2b3;
+
+  cursor: not-allowed;
+}
+
+.erp-input__field:disabled {
+  color: #98a2b3;
+
+  background: #f2f4f7;
+
+  border-color: #e4e7ec;
+
+  cursor: not-allowed;
+
+  opacity: 1;
+}
+
+/* =========================================
+   READ ONLY
+========================================= */
+
+.erp-input--readonly
+  .erp-input__field {
+  color: var(--af-text-secondary);
+
+  background: var(--af-surface-soft);
+
+  cursor: default;
+}
+
+.erp-input--readonly
+  .erp-input__field:hover {
+  border-color: var(--af-border);
+}
+
+/* =========================================
+   SIZES
+========================================= */
+
+.erp-input--small
+  .erp-input__field {
+  height: 34px;
+
+  padding-left: 10px;
+  padding-right: 10px;
+
+  font-size: 12px;
+}
+
+.erp-input--small
+  .erp-input__search-icon,
+.erp-input--small
+  .erp-input__leading-icon {
+  left: 10px;
+}
+
+.erp-input--small.erp-input--search
+  .erp-input__field {
+  padding-left: 34px;
+}
+
+.erp-input--large
+  .erp-input__field {
+  height: 44px;
+
+  padding-left: 13px;
+  padding-right: 13px;
+
+  font-size: 14px;
+}
+
+.erp-input--large.erp-input--search
+  .erp-input__field {
+  padding-left: 40px;
+}
+
+.erp-input--large
+  .erp-input__search-icon,
+.erp-input--large
+  .erp-input__leading-icon {
+  left: 13px;
+}
+
+/* =========================================
+   AUTOFILL
+========================================= */
+
+.erp-input__field:-webkit-autofill,
+.erp-input__field:-webkit-autofill:hover,
+.erp-input__field:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--af-text);
+
+  box-shadow: 0 0 0 1000px
+    var(--af-surface)
+    inset;
+
+  transition:
+    background-color 5000s ease-in-out 0s;
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+  .erp-input__field {
+    min-height: 40px;
+  }
+}

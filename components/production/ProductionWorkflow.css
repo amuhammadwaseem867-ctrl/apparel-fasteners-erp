@@ -1,0 +1,139 @@
+.production-workflow {
+  width: 100%;
+  padding: 20px;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 10px;
+}
+
+.production-workflow__header {
+  margin-bottom: 22px;
+}
+
+.production-workflow__eyebrow {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--af-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.production-workflow__header h2 {
+  margin: 0;
+  color: var(--af-text);
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.production-workflow__header p {
+  margin: 4px 0 0;
+  color: var(--af-text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.production-workflow__track {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.production-workflow__step {
+  position: relative;
+  min-width: 0;
+  text-align: center;
+}
+
+.production-workflow__node {
+  position: relative;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 10px;
+  display: grid;
+  place-items: center;
+  color: var(--af-text-muted);
+  background: var(--af-surface);
+  border: 1px solid var(--af-border-dark);
+  border-radius: 50%;
+  transition:
+    color var(--transition-normal),
+    background var(--transition-normal),
+    border-color var(--transition-normal);
+}
+
+.production-workflow__content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0 8px;
+}
+
+.production-workflow__content strong {
+  color: var(--af-text);
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.production-workflow__content span {
+  color: var(--af-text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.production-workflow__connector {
+  position: absolute;
+  z-index: 1;
+  top: 20px;
+  left: 50%;
+  width: 100%;
+  height: 1px;
+  background: var(--af-border);
+}
+
+.production-workflow__step--completed .production-workflow__node,
+.production-workflow__step--current .production-workflow__node {
+  color: var(--af-navy);
+  background: #eef2f6;
+  border-color: var(--af-navy);
+}
+
+.production-workflow__step--completed
+  .production-workflow__connector {
+  background: var(--af-navy);
+}
+
+@media (max-width: 800px) {
+  .production-workflow__track {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .production-workflow__step {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 12px;
+    min-height: 72px;
+    text-align: left;
+  }
+
+  .production-workflow__node {
+    margin: 0;
+  }
+
+  .production-workflow__content {
+    padding: 4px 0 0;
+  }
+
+  .production-workflow__connector {
+    top: 40px;
+    left: 19px;
+    width: 1px;
+    height: calc(100% - 20px);
+  }
+}

@@ -1,0 +1,23 @@
+.planning-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.planning-kpi-grid > * {
+  min-width: 0;
+}
+
+@media (max-width: 1200px) {
+  .planning-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .planning-kpi-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}

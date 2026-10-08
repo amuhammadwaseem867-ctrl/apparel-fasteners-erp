@@ -1,0 +1,52 @@
+/* Payroll Reports — page-specific styles */
+
+.rep-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.rep-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.rep-card:hover { border-color: var(--af-navy-soft); box-shadow: var(--shadow-sm); }
+.rep-card:focus-visible { outline: 2px solid var(--af-info); outline-offset: 2px; }
+.rep-card--active { border-color: var(--af-info); background: rgba(40, 104, 168, 0.05); }
+
+.rep-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  background: var(--af-bg);
+  color: var(--af-navy-soft);
+}
+
+.rep-card__title { font-size: 14px; font-weight: 600; color: var(--af-text); }
+.rep-card__desc { font-size: 12px; color: var(--af-text-muted); line-height: 1.4; }
+
+.rep-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.pp-report-filters {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--af-border);
+  color: var(--af-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}

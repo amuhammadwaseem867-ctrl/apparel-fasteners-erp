@@ -1,0 +1,319 @@
+.inventory-workflow {
+  width: 100%;
+  overflow: hidden;
+
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 10px;
+}
+
+/* --------------------------------------------------
+   HEADER
+-------------------------------------------------- */
+
+.inventory-workflow__header {
+  padding: 20px 22px;
+
+  border-bottom: 1px solid var(--af-border);
+}
+
+.inventory-workflow__eyebrow {
+  display: block;
+  margin-bottom: 5px;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.inventory-workflow__title {
+  margin: 0;
+
+  color: var(--af-text);
+
+  font-size: 18px;
+  line-height: 1.35;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.inventory-workflow__description {
+  max-width: 680px;
+
+  margin: 5px 0 0;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+/* --------------------------------------------------
+   BODY
+-------------------------------------------------- */
+
+.inventory-workflow__body {
+  padding: 24px 22px;
+  overflow-x: auto;
+}
+
+.inventory-workflow__track {
+  display: flex;
+  align-items: flex-start;
+
+  min-width: 900px;
+}
+
+/* --------------------------------------------------
+   STEP WRAPPER
+-------------------------------------------------- */
+
+.inventory-workflow__step-wrapper {
+  position: relative;
+
+  flex: 1;
+  min-width: 145px;
+}
+
+.inventory-workflow__step-wrapper--connected {
+  padding-right: 28px;
+}
+
+/* --------------------------------------------------
+   STEP
+-------------------------------------------------- */
+
+.inventory-workflow__step {
+  position: relative;
+  z-index: 2;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  width: 100%;
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+  color: inherit;
+
+  font-family: inherit;
+  text-align: left;
+
+  cursor: default;
+}
+
+.inventory-workflow__step--clickable {
+  cursor: pointer;
+}
+
+.inventory-workflow__step--clickable:hover
+  .inventory-workflow__step-icon {
+  border-color: var(--af-navy);
+  background: var(--af-navy);
+  color: #ffffff;
+}
+
+.inventory-workflow__step--clickable:focus-visible {
+  outline: 2px solid var(--af-info);
+  outline-offset: 5px;
+  border-radius: 7px;
+}
+
+/* --------------------------------------------------
+   ICON
+-------------------------------------------------- */
+
+.inventory-workflow__step-icon {
+  width: 38px;
+  height: 38px;
+
+  flex: 0 0 38px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid var(--af-border);
+  border-radius: 8px;
+
+  background: var(--af-surface-soft);
+  color: var(--af-text-secondary);
+
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal),
+    color var(--transition-normal),
+    box-shadow var(--transition-normal);
+}
+
+.inventory-workflow__step--active .inventory-workflow__step-icon {
+  border-color: var(--af-navy);
+  background: var(--af-navy);
+  color: #ffffff;
+
+  box-shadow: 0 0 0 4px rgba(36, 49, 70, 0.08);
+}
+
+.inventory-workflow__step--completed .inventory-workflow__step-icon {
+  border-color: var(--af-success);
+  background: var(--af-success);
+  color: #ffffff;
+}
+
+/* --------------------------------------------------
+   NUMBER
+-------------------------------------------------- */
+
+.inventory-workflow__step-number {
+  position: absolute;
+
+  top: -7px;
+  left: 27px;
+
+  min-width: 18px;
+  height: 18px;
+
+  padding: 0 4px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid var(--af-border);
+  border-radius: 999px;
+
+  background: var(--af-surface);
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 700;
+
+  font-variant-numeric: tabular-nums;
+
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal),
+    color var(--transition-normal);
+}
+
+.inventory-workflow__step--active .inventory-workflow__step-number {
+  border-color: var(--af-navy);
+  color: var(--af-navy);
+}
+
+.inventory-workflow__step--completed .inventory-workflow__step-number {
+  border-color: var(--af-success);
+  color: var(--af-success);
+}
+
+/* --------------------------------------------------
+   CONTENT
+-------------------------------------------------- */
+
+.inventory-workflow__step-content {
+  display: flex;
+
+  min-width: 0;
+
+  flex-direction: column;
+  gap: 3px;
+
+  padding-top: 2px;
+}
+
+.inventory-workflow__step-content strong {
+  color: var(--af-text);
+
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+.inventory-workflow__step-content span {
+  max-width: 125px;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+/* --------------------------------------------------
+   CONNECTOR
+-------------------------------------------------- */
+
+.inventory-workflow__connector {
+  position: absolute;
+
+  top: 18px;
+  left: 48px;
+  right: 0;
+
+  height: 1px;
+
+  background: var(--af-border);
+
+  z-index: 1;
+
+  transition:
+    background-color var(--transition-normal);
+}
+
+.inventory-workflow__connector::after {
+  content: "";
+
+  position: absolute;
+
+  top: -3px;
+  right: 0;
+
+  width: 6px;
+  height: 6px;
+
+  border-top: 1px solid var(--af-border-dark);
+  border-right: 1px solid var(--af-border-dark);
+
+  transform: rotate(45deg);
+
+  background: var(--af-surface);
+}
+
+.inventory-workflow__connector--completed {
+  background: var(--af-success);
+}
+
+.inventory-workflow__connector--completed::after {
+  border-color: var(--af-success);
+}
+
+/* --------------------------------------------------
+   RESPONSIVE
+-------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .inventory-workflow__body {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .inventory-workflow__header {
+    padding: 17px;
+  }
+
+  .inventory-workflow__body {
+    padding: 18px 14px;
+  }
+
+  .inventory-workflow__track {
+    min-width: 880px;
+  }
+} 

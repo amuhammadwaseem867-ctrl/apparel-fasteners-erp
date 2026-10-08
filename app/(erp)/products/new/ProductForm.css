@@ -1,0 +1,28 @@
+.product-form-page {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding-bottom: 32px;
+}
+
+.product-form-stepper {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.product-form-content {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 700px) {
+  .product-form-page {
+    padding-bottom: 20px;
+  }
+
+  .product-form-stepper {
+    margin-top: 16px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+  }
+}

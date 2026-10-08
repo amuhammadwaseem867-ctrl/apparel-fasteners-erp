@@ -1,0 +1,17 @@
+/* Salary Structure — page-specific styles */
+
+.ss-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ss-status--active { background: rgba(22, 133, 91, 0.12); color: var(--af-success); }
+.ss-status--inactive { background: var(--af-bg); color: var(--af-text-muted); }
+
+.ss-name { font-weight: 600; color: var(--af-navy); }
+.ss-amount { font-variant-numeric: tabular-nums; }

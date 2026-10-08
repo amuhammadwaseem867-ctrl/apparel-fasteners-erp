@@ -1,0 +1,224 @@
+.procurement-workflow-card {
+  min-width: 0;
+}
+
+.procurement-workflow {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  overflow-x: auto;
+  padding: 4px 2px 8px;
+  scrollbar-width: thin;
+}
+
+.procurement-workflow__step-wrapper {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  flex: 1 1 0;
+  min-width: 190px;
+}
+
+.procurement-workflow__step {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 154px;
+  padding: 14px;
+  border: 1px solid #dde2e7;
+  border-radius: 9px;
+  background: #ffffff;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+a.procurement-workflow__step {
+  cursor: pointer;
+}
+
+a.procurement-workflow__step:hover {
+  border-color: #c5ccd4;
+  box-shadow: 0 5px 14px rgba(36, 49, 70, 0.07);
+  transform: translateY(-2px);
+}
+
+.procurement-workflow__number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 27px;
+  height: 21px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: #f1f4f7;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.procurement-workflow__icon {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 14px;
+  border: 1px solid #dce2e7;
+  border-radius: 8px;
+  background: #f8fafb;
+  color: #243146;
+}
+
+.procurement-workflow__content {
+  min-width: 0;
+  margin-top: 11px;
+  padding-right: 18px;
+}
+
+.procurement-workflow__content strong {
+  display: block;
+  color: #344054;
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+.procurement-workflow__content p {
+  margin: 5px 0 0;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.procurement-workflow__arrow {
+  position: absolute;
+  right: 12px;
+  bottom: 15px;
+  color: #98a2b3;
+}
+
+.procurement-workflow__connector {
+  position: relative;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 1px;
+  margin-top: 76px;
+  background: #cbd2d9;
+}
+
+.procurement-workflow__connector::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 6px;
+  height: 6px;
+  border-top: 1px solid #98a2b3;
+  border-right: 1px solid #98a2b3;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.procurement-workflow__empty {
+  min-height: 170px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+
+.procurement-workflow__empty-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 11px;
+  border: 1px solid #dde2e7;
+  border-radius: 9px;
+  background: #f8fafb;
+  color: #667085;
+}
+
+.procurement-workflow__empty strong {
+  color: #344054;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.procurement-workflow__empty p {
+  max-width: 480px;
+  margin: 6px 0 0;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+@media (max-width: 1100px) {
+  .procurement-workflow__step-wrapper {
+    min-width: 175px;
+  }
+
+  .procurement-workflow__step {
+    min-height: 150px;
+    padding: 12px;
+  }
+
+  .procurement-workflow__connector {
+    flex-basis: 20px;
+    width: 20px;
+  }
+}
+
+@media (max-width: 760px) {
+  .procurement-workflow {
+    display: flex;
+    flex-direction: column;
+    overflow-x: visible;
+    padding: 2px 0;
+  }
+
+  .procurement-workflow__step-wrapper {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .procurement-workflow__step {
+    min-height: auto;
+    width: 100%;
+  }
+
+  .procurement-workflow__connector {
+    flex: 0 0 22px;
+    width: 1px;
+    height: 22px;
+    margin: 0 0 0 28px;
+    background: #cbd2d9;
+  }
+
+  .procurement-workflow__connector::after {
+    top: auto;
+    right: auto;
+    bottom: 0;
+    left: -2px;
+    width: 5px;
+    height: 5px;
+    border-top: 0;
+    border-right: 1px solid #98a2b3;
+    border-bottom: 1px solid #98a2b3;
+    transform: rotate(45deg);
+  }
+}

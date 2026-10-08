@@ -1,0 +1,428 @@
+.production-schedule-page {
+  width: 100%;
+  min-width: 0;
+}
+
+/* --------------------------------
+   Toolbar
+-------------------------------- */
+
+.production-schedule-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 22px;
+  padding: 12px;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 10px;
+}
+
+.production-schedule-toolbar__search {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-width: 240px;
+}
+
+.production-schedule-toolbar__search svg {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  color: var(--af-text-muted);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.production-schedule-toolbar__search input {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px 0 36px;
+  color: var(--af-text);
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 7px;
+  outline: none;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.production-schedule-toolbar__search input::placeholder {
+  color: var(--af-text-muted);
+}
+
+.production-schedule-toolbar__search input:focus {
+  border-color: var(--af-navy);
+  box-shadow: 0 0 0 2px rgb(36 49 70 / 8%);
+}
+
+.production-schedule-toolbar__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.production-schedule-filter,
+.production-schedule-view {
+  position: relative;
+}
+
+.production-schedule-filter {
+  display: flex;
+  align-items: center;
+}
+
+.production-schedule-filter svg {
+  position: absolute;
+  left: 11px;
+  color: var(--af-text-muted);
+  pointer-events: none;
+}
+
+.production-schedule-filter select,
+.production-schedule-view select {
+  height: 38px;
+  min-width: 145px;
+  padding: 0 30px 0 11px;
+  color: var(--af-text-secondary);
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 7px;
+  outline: none;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.production-schedule-filter select {
+  padding-left: 34px;
+}
+
+.production-schedule-filter select:focus,
+.production-schedule-view select:focus {
+  border-color: var(--af-navy);
+}
+
+/* --------------------------------
+   Navigation
+-------------------------------- */
+
+.production-schedule-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 12px;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 8px;
+}
+
+.production-schedule-nav-button {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  color: var(--af-text-secondary);
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    color var(--transition-normal),
+    background var(--transition-normal),
+    border-color var(--transition-normal);
+}
+
+.production-schedule-nav-button:hover {
+  color: var(--af-navy);
+  background: var(--af-surface-soft);
+  border-color: var(--af-border-dark);
+}
+
+.production-schedule-period {
+  min-width: 220px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
+}
+
+.production-schedule-period strong {
+  color: var(--af-text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.production-schedule-period span {
+  color: var(--af-text-muted);
+  font-size: 12px;
+}
+
+/* --------------------------------
+   Summary
+-------------------------------- */
+
+.production-schedule-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.production-schedule-summary__item {
+  display: flex;
+  min-height: 72px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 14px 16px;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 8px;
+}
+
+.production-schedule-summary__item span {
+  color: var(--af-text-muted);
+  font-size: 12px;
+}
+
+.production-schedule-summary__item strong {
+  color: var(--af-text);
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+/* --------------------------------
+   Content
+-------------------------------- */
+
+.production-schedule-content {
+  min-height: 320px;
+  margin-top: 14px;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* --------------------------------
+   Table
+-------------------------------- */
+
+.production-schedule-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.production-schedule-table {
+  width: 100%;
+  min-width: 1250px;
+  border-collapse: collapse;
+}
+
+.production-schedule-table th,
+.production-schedule-table td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--af-border);
+  text-align: left;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.production-schedule-table th {
+  color: var(--af-text-muted);
+  background: var(--af-surface-soft);
+  font-weight: 600;
+}
+
+.production-schedule-table td {
+  color: var(--af-text-secondary);
+}
+
+.production-schedule-table tbody tr:hover {
+  background: var(--af-surface-soft);
+}
+
+.production-schedule-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.production-schedule-table td strong {
+  color: var(--af-text);
+  font-weight: 700;
+}
+
+/* --------------------------------
+   Status
+-------------------------------- */
+
+.production-schedule-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.production-schedule-status--scheduled {
+  color: var(--af-info);
+  background: #edf4fb;
+}
+
+.production-schedule-status--ready {
+  color: var(--af-navy);
+  background: #eef2f6;
+}
+
+.production-schedule-status--in-progress {
+  color: var(--af-success);
+  background: #edf8f3;
+}
+
+.production-schedule-status--paused {
+  color: var(--af-warning);
+  background: #fff6e8;
+}
+
+.production-schedule-status--completed {
+  color: var(--af-success);
+  background: #edf8f3;
+}
+
+/* --------------------------------
+   Calendar
+-------------------------------- */
+
+.production-schedule-calendar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 16px;
+}
+
+.production-calendar-card {
+  padding: 16px;
+  border: 1px solid var(--af-border);
+  border-radius: 8px;
+  transition:
+    border-color var(--transition-normal),
+    background var(--transition-normal);
+}
+
+.production-calendar-card:hover {
+  background: var(--af-surface-soft);
+  border-color: var(--af-border-dark);
+}
+
+.production-calendar-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.production-calendar-card__top > span:first-child {
+  color: var(--af-text-muted);
+  font-size: 12px;
+}
+
+.production-calendar-card h3 {
+  margin: 0 0 4px;
+  color: var(--af-text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.production-calendar-card p {
+  margin: 0;
+  color: var(--af-text-secondary);
+  font-size: 12px;
+}
+
+.production-calendar-card__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--af-border);
+}
+
+.production-calendar-card__meta span {
+  color: var(--af-text-muted);
+  font-size: 12px;
+}
+
+/* --------------------------------
+   Responsive
+-------------------------------- */
+
+@media (max-width: 1100px) {
+  .production-schedule-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .production-schedule-toolbar__search {
+    width: 100%;
+  }
+
+  .production-schedule-toolbar__controls {
+    flex-wrap: wrap;
+  }
+
+  .production-schedule-filter,
+  .production-schedule-view {
+    flex: 1;
+  }
+
+  .production-schedule-filter select,
+  .production-schedule-view select {
+    width: 100%;
+  }
+
+  .production-schedule-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .production-schedule-calendar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .production-schedule-toolbar {
+    padding: 10px;
+  }
+
+  .production-schedule-toolbar__controls {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .production-schedule-navigation {
+    gap: 10px;
+  }
+
+  .production-schedule-period {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .production-schedule-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .production-schedule-calendar {
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
+}

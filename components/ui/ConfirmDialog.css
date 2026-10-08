@@ -1,0 +1,232 @@
+.erp-confirm-dialog {
+  width: 100%;
+  padding: 4px;
+}
+
+.erp-confirm-dialog__icon {
+  width: 44px;
+  height: 44px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 16px;
+
+  border-radius: 50%;
+}
+
+.erp-confirm-dialog__icon--danger {
+  background: #fcebea;
+  color: var(--af-danger);
+}
+
+.erp-confirm-dialog__icon--warning {
+  background: #fff4df;
+  color: var(--af-warning);
+}
+
+.erp-confirm-dialog__icon--success {
+  background: #e7f6ef;
+  color: var(--af-success);
+}
+
+.erp-confirm-dialog__icon--info {
+  background: #eaf2fa;
+  color: var(--af-info);
+}
+
+.erp-confirm-dialog__content {
+  min-width: 0;
+}
+
+.erp-confirm-dialog__title {
+  margin: 0;
+
+  color: var(--af-text);
+
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.erp-confirm-dialog__description {
+  margin: 7px 0 0;
+
+  color: var(--af-text-secondary);
+
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.erp-confirm-dialog__verification {
+  margin-top: 18px;
+  padding-top: 16px;
+
+  border-top: 1px solid
+    var(--af-border);
+}
+
+.erp-confirm-dialog__label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: var(--af-text-secondary);
+
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.erp-confirm-dialog__label strong {
+  color: var(--af-text);
+  font-weight: 700;
+}
+
+.erp-confirm-dialog__input {
+  width: 100%;
+  height: 38px;
+
+  padding: 0 11px;
+
+  border: 1px solid
+    var(--af-border-dark);
+  border-radius: 6px;
+
+  outline: none;
+
+  background: var(--af-surface);
+  color: var(--af-text);
+
+  font-family: inherit;
+  font-size: 13px;
+
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.erp-confirm-dialog__input:focus {
+  border-color: var(--af-navy);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(36, 49, 70, 0.08);
+}
+
+.erp-confirm-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  gap: 8px;
+
+  margin-top: 24px;
+}
+
+.erp-confirm-dialog__cancel,
+.erp-confirm-dialog__confirm {
+  min-height: 36px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  padding: 0 13px;
+
+  border-radius: 6px;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease;
+}
+
+.erp-confirm-dialog__cancel {
+  border: 1px solid
+    var(--af-border);
+
+  background: var(--af-surface);
+  color: var(--af-text-secondary);
+}
+
+.erp-confirm-dialog__cancel:hover {
+  background: var(--af-surface-soft);
+  color: var(--af-text);
+}
+
+.erp-confirm-dialog__confirm {
+  border: 1px solid transparent;
+  color: #ffffff;
+}
+
+.erp-confirm-dialog__confirm--danger {
+  background: var(--af-danger);
+}
+
+.erp-confirm-dialog__confirm--danger:hover {
+  background: #aa3838;
+}
+
+.erp-confirm-dialog__confirm--warning {
+  background: var(--af-warning);
+}
+
+.erp-confirm-dialog__confirm--warning:hover {
+  background: #ae6e10;
+}
+
+.erp-confirm-dialog__confirm--success {
+  background: var(--af-success);
+}
+
+.erp-confirm-dialog__confirm--success:hover {
+  background: #126f4b;
+}
+
+.erp-confirm-dialog__confirm--info {
+  background: var(--af-info);
+}
+
+.erp-confirm-dialog__confirm--info:hover {
+  background: #225889;
+}
+
+.erp-confirm-dialog__cancel:disabled,
+.erp-confirm-dialog__confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.erp-confirm-dialog__spinner {
+  animation: erp-confirm-spin 800ms linear infinite;
+}
+
+@keyframes erp-confirm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 520px) {
+  .erp-confirm-dialog__actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .erp-confirm-dialog__cancel,
+  .erp-confirm-dialog__confirm {
+    width: 100%;
+  }
+}

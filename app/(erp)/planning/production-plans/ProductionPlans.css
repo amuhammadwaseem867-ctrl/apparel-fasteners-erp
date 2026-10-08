@@ -1,0 +1,358 @@
+.production-plans {
+  width: 100%;
+  min-width: 0;
+  padding: 24px;
+}
+
+.production-plans__content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  min-width: 0;
+}
+
+.production-plans__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.production-plans__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 10px;
+}
+
+.production-plans__search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: 520px;
+  min-width: 0;
+  color: var(--af-text-muted);
+}
+
+.production-plans__search > svg {
+  position: absolute;
+  left: 12px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.production-plans__search input {
+  width: 100%;
+  padding-left: 38px;
+}
+
+.production-plans__filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.production-plans__filters label {
+  color: var(--af-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.production-plans__filters select {
+  min-width: 145px;
+  height: 38px;
+  padding: 0 28px 0 10px;
+  color: var(--af-text);
+  font: inherit;
+  font-size: 12px;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 7px;
+  outline: none;
+  cursor: pointer;
+}
+
+.production-plans__filters select:focus {
+  border-color: var(--af-navy);
+}
+
+.production-plans__table-card {
+  width: 100%;
+  overflow: hidden;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 10px;
+}
+
+.production-plans__table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--af-border);
+}
+
+.production-plans__table-header h2 {
+  margin: 0;
+  color: var(--af-text);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.production-plans__table-header p {
+  margin: 3px 0 0;
+  color: var(--af-text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.production-plans__summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--af-text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.production-plans__summary span {
+  padding-left: 16px;
+  border-left: 1px solid var(--af-border);
+}
+
+.production-plans__summary span:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.production-plans__table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.production-plans__table {
+  width: 100%;
+  min-width: 1180px;
+  border-collapse: collapse;
+}
+
+.production-plans__table th {
+  padding: 11px 16px;
+  color: var(--af-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+  background: var(--af-surface-soft);
+  border-bottom: 1px solid var(--af-border);
+}
+
+.production-plans__table td {
+  padding: 13px 16px;
+  color: var(--af-text-secondary);
+  font-size: 12px;
+  vertical-align: middle;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--af-border);
+}
+
+.production-plans__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.production-plans__table tbody tr {
+  transition: background var(--transition-normal);
+}
+
+.production-plans__table tbody tr:hover {
+  background: var(--af-surface-soft);
+}
+
+.production-plans__plan {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 150px;
+}
+
+.production-plans__plan strong {
+  color: var(--af-text);
+  font-weight: 700;
+}
+
+.production-plans__plan span {
+  color: var(--af-text-muted);
+  font-size: 12px;
+}
+
+.production-plans__product {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 150px;
+}
+
+.production-plans__product span {
+  color: var(--af-text);
+  font-weight: 600;
+}
+
+.production-plans__product small {
+  color: var(--af-text-muted);
+  font-size: 12px;
+}
+
+.production-plans__date {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.production-plans__date svg {
+  color: var(--af-text-muted);
+}
+
+.production-plans__status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  border: 1px solid transparent;
+  border-radius: 999px;
+}
+
+.production-plans__status--draft {
+  color: var(--af-text-secondary);
+  background: var(--af-surface-soft);
+  border-color: var(--af-border);
+}
+
+.production-plans__status--planned {
+  color: var(--af-info);
+  background: rgba(40, 104, 168, 0.08);
+  border-color: rgba(40, 104, 168, 0.18);
+}
+
+.production-plans__status--released {
+  color: var(--af-navy);
+  background: rgba(36, 49, 70, 0.08);
+  border-color: rgba(36, 49, 70, 0.18);
+}
+
+.production-plans__status--progress {
+  color: var(--af-warning);
+  background: rgba(201, 130, 22, 0.08);
+  border-color: rgba(201, 130, 22, 0.18);
+}
+
+.production-plans__status--completed {
+  color: var(--af-success);
+  background: rgba(22, 133, 91, 0.08);
+  border-color: rgba(22, 133, 91, 0.18);
+}
+
+.production-plans__status--cancelled {
+  color: var(--af-danger);
+  background: rgba(196, 69, 69, 0.08);
+  border-color: rgba(196, 69, 69, 0.18);
+}
+
+.production-plans .erp-empty-state {
+  min-height: 300px;
+  border: 0;
+  border-radius: 0;
+}
+
+@media (max-width: 1100px) {
+  .production-plans__table-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .production-plans__summary {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 900px) {
+  .production-plans {
+    padding: 20px;
+  }
+
+  .production-plans__toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .production-plans__search {
+    max-width: none;
+  }
+
+  .production-plans__filters {
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 640px) {
+  .production-plans {
+    padding: 16px;
+  }
+
+  .production-plans__header-actions {
+    width: 100%;
+  }
+
+  .production-plans__header-actions > * {
+    flex: 1;
+  }
+
+  .production-plans__table-header {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .production-plans {
+    padding: 12px;
+  }
+
+  .production-plans__header-actions {
+    flex-direction: column;
+  }
+
+  .production-plans__header-actions > * {
+    width: 100%;
+  }
+
+  .production-plans__filters {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .production-plans__filters select {
+    width: 100%;
+  }
+
+  .production-plans__summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
+  }
+
+  .production-plans__summary span {
+    padding-left: 0;
+    border-left: 0;
+  }
+}

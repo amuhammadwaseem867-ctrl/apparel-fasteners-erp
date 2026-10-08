@@ -1,0 +1,27 @@
+/* Deductions — page-specific styles */
+
+.dd-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dd-status--pending { background: rgba(201, 130, 22, 0.12); color: var(--af-warning); }
+.dd-status--applied { background: rgba(22, 133, 91, 0.12); color: var(--af-success); }
+.dd-status--cancelled { background: var(--af-bg); color: var(--af-text-muted); }
+
+.dd-type {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--af-navy-soft);
+  background: var(--af-bg);
+  border: 1px solid var(--af-border);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+}
+
+.dd-amount { font-variant-numeric: tabular-nums; white-space: nowrap; }

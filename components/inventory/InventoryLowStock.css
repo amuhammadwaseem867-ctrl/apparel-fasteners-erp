@@ -1,0 +1,579 @@
+.inventory-low-stock {
+  width: 100%;
+  overflow: hidden;
+
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 10px;
+}
+
+/* --------------------------------------------------
+   HEADER
+-------------------------------------------------- */
+
+.inventory-low-stock__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+
+  padding: 20px 22px;
+
+  border-bottom: 1px solid var(--af-border);
+}
+
+.inventory-low-stock__eyebrow {
+  display: block;
+  margin-bottom: 5px;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.inventory-low-stock__title {
+  margin: 0;
+
+  color: var(--af-text);
+
+  font-size: 18px;
+  line-height: 1.35;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.inventory-low-stock__description {
+  margin: 5px 0 0;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.inventory-low-stock__view-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  min-height: 34px;
+  padding: 0 11px;
+
+  flex: 0 0 auto;
+
+  border: 1px solid var(--af-border);
+  border-radius: 7px;
+
+  background: var(--af-surface);
+  color: var(--af-text-secondary);
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal),
+    color var(--transition-normal);
+}
+
+.inventory-low-stock__view-button:not(:disabled):hover {
+  background: var(--af-navy);
+  border-color: var(--af-navy);
+  color: #ffffff;
+}
+
+.inventory-low-stock__view-button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+/* --------------------------------------------------
+   LIST
+-------------------------------------------------- */
+
+.inventory-low-stock__content {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.inventory-low-stock__list {
+  min-width: 850px;
+}
+
+/* --------------------------------------------------
+   ROW
+-------------------------------------------------- */
+
+.inventory-low-stock-row {
+  display: grid;
+
+  grid-template-columns:
+    minmax(190px, 1.15fr)
+    minmax(220px, 1.5fr)
+    85px
+    78px;
+
+  align-items: center;
+  gap: 20px;
+
+  min-height: 82px;
+  padding: 10px 20px;
+
+  border-bottom: 1px solid var(--af-border);
+
+  transition: background-color var(--transition-normal);
+}
+
+.inventory-low-stock-row:last-child {
+  border-bottom: 0;
+}
+
+.inventory-low-stock-row:hover {
+  background: var(--af-surface-soft);
+}
+
+/* --------------------------------------------------
+   IDENTITY
+-------------------------------------------------- */
+
+.inventory-low-stock-row__identity {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  min-width: 0;
+}
+
+.inventory-low-stock-row__icon {
+  width: 36px;
+  height: 36px;
+
+  flex: 0 0 36px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid var(--af-border);
+  border-radius: 8px;
+
+  background: var(--af-surface-soft);
+}
+
+.inventory-low-stock-row__icon--danger {
+  color: var(--af-danger);
+}
+
+.inventory-low-stock-row__icon--warning {
+  color: var(--af-warning);
+}
+
+.inventory-low-stock-row__icon--success {
+  color: var(--af-success);
+}
+
+.inventory-low-stock-row__name {
+  min-width: 0;
+}
+
+.inventory-low-stock-row__name h3 {
+  margin: 0;
+
+  color: var(--af-text);
+
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 700;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inventory-low-stock-row__name span {
+  display: block;
+  margin-top: 3px;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 1.4;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --------------------------------------------------
+   STOCK
+-------------------------------------------------- */
+
+.inventory-low-stock-row__stock {
+  min-width: 0;
+}
+
+.inventory-low-stock-row__stock-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.inventory-low-stock-row__stock-head span {
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.inventory-low-stock-row__stock-head strong {
+  color: var(--af-text);
+
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 700;
+
+  font-variant-numeric: tabular-nums;
+}
+
+.inventory-low-stock-row__progress {
+  width: 100%;
+  height: 5px;
+
+  margin-top: 8px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+  background: var(--af-border);
+}
+
+.inventory-low-stock-row__progress-fill {
+  display: block;
+
+  height: 100%;
+  min-width: 4px;
+
+  border-radius: inherit;
+
+  transition: width 400ms ease;
+}
+
+.inventory-low-stock-row__progress-fill--danger {
+  background: var(--af-danger);
+}
+
+.inventory-low-stock-row__progress-fill--warning {
+  background: var(--af-warning);
+}
+
+.inventory-low-stock-row__progress-fill--success {
+  background: var(--af-success);
+}
+
+.inventory-low-stock-row__threshold {
+  display: block;
+  margin-top: 5px;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* --------------------------------------------------
+   SEVERITY
+-------------------------------------------------- */
+
+.inventory-low-stock-row__severity {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  min-height: 26px;
+  padding: 0 8px;
+
+  border: 1px solid var(--af-border);
+  border-radius: 999px;
+
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+.inventory-low-stock-row__severity--danger {
+  color: var(--af-danger);
+  background: rgba(196, 69, 69, 0.06);
+  border-color: rgba(196, 69, 69, 0.18);
+}
+
+.inventory-low-stock-row__severity--warning {
+  color: var(--af-warning);
+  background: rgba(201, 130, 22, 0.07);
+  border-color: rgba(201, 130, 22, 0.2);
+}
+
+.inventory-low-stock-row__severity--success {
+  color: var(--af-success);
+  background: rgba(22, 133, 91, 0.06);
+  border-color: rgba(22, 133, 91, 0.18);
+}
+
+.inventory-low-stock-row__severity-dot {
+  width: 6px;
+  height: 6px;
+
+  flex: 0 0 6px;
+
+  border-radius: 50%;
+
+  background: currentColor;
+}
+
+/* --------------------------------------------------
+   REORDER
+-------------------------------------------------- */
+
+.inventory-low-stock-row__reorder {
+  min-height: 30px;
+  padding: 0 9px;
+
+  border: 1px solid var(--af-border);
+  border-radius: 6px;
+
+  background: var(--af-surface);
+  color: var(--af-text-secondary);
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal),
+    color var(--transition-normal);
+}
+
+.inventory-low-stock-row__reorder:not(:disabled):hover {
+  background: var(--af-navy);
+  border-color: var(--af-navy);
+  color: #ffffff;
+}
+
+.inventory-low-stock-row__reorder:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+/* --------------------------------------------------
+   EMPTY
+-------------------------------------------------- */
+
+.inventory-low-stock__empty {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+
+  margin: 18px;
+  padding: 18px;
+
+  border: 1px dashed var(--af-border-dark);
+  border-radius: 8px;
+
+  background: var(--af-surface-soft);
+}
+
+.inventory-low-stock__empty-icon {
+  width: 40px;
+  height: 40px;
+
+  flex: 0 0 40px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid var(--af-border);
+  border-radius: 8px;
+
+  background: var(--af-surface);
+  color: var(--af-warning);
+}
+
+.inventory-low-stock__empty strong {
+  display: block;
+
+  color: var(--af-text-secondary);
+
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.inventory-low-stock__empty p {
+  max-width: 650px;
+  margin: 4px 0 0;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+/* --------------------------------------------------
+   LOADING
+-------------------------------------------------- */
+
+.inventory-low-stock__skeleton {
+  min-width: 850px;
+}
+
+.inventory-low-stock-skeleton-row {
+  display: grid;
+
+  grid-template-columns:
+    36px
+    minmax(150px, 1fr)
+    minmax(220px, 1.5fr)
+    85px
+    78px;
+
+  align-items: center;
+  gap: 11px;
+
+  min-height: 82px;
+  padding: 10px 20px;
+
+  border-bottom: 1px solid var(--af-border);
+}
+
+.inventory-low-stock-skeleton-icon,
+.inventory-low-stock-skeleton-line,
+.inventory-low-stock-skeleton-value,
+.inventory-low-stock-skeleton-status,
+.inventory-low-stock-skeleton-button {
+  display: block;
+
+  border-radius: 5px;
+  background: var(--af-border);
+
+  animation: low-stock-pulse 1.4s ease-in-out infinite;
+}
+
+.inventory-low-stock-skeleton-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+.inventory-low-stock-skeleton-name {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.inventory-low-stock-skeleton-name span {
+  display: block;
+
+  width: 65%;
+  height: 9px;
+
+  border-radius: 4px;
+  background: var(--af-border);
+
+  animation: low-stock-pulse 1.4s ease-in-out infinite;
+}
+
+.inventory-low-stock-skeleton-name span:last-child {
+  width: 42%;
+}
+
+.inventory-low-stock-skeleton-stock {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.inventory-low-stock-skeleton-stock span {
+  display: block;
+
+  height: 7px;
+
+  border-radius: 4px;
+  background: var(--af-border);
+
+  animation: low-stock-pulse 1.4s ease-in-out infinite;
+}
+
+.inventory-low-stock-skeleton-stock span:first-child {
+  width: 45%;
+}
+
+.inventory-low-stock-skeleton-stock span:nth-child(2) {
+  width: 100%;
+}
+
+.inventory-low-stock-skeleton-stock span:last-child {
+  width: 55%;
+}
+
+.inventory-low-stock-skeleton-status {
+  width: 60px;
+  height: 25px;
+  border-radius: 999px;
+}
+
+.inventory-low-stock-skeleton-button {
+  width: 65px;
+  height: 30px;
+}
+
+@keyframes low-stock-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 0.85;
+  }
+}
+
+/* --------------------------------------------------
+   MOBILE
+-------------------------------------------------- */
+
+@media (max-width: 640px) {
+  .inventory-low-stock__header {
+    flex-direction: column;
+    gap: 14px;
+
+    padding: 17px;
+  }
+
+  .inventory-low-stock__view-button {
+    width: 100%;
+  }
+
+  .inventory-low-stock-row {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .inventory-low-stock__empty {
+    align-items: flex-start;
+    margin: 12px;
+    padding: 14px;
+  }
+}

@@ -1,0 +1,215 @@
+.planning-requirements {
+  width: 100%;
+  overflow: hidden;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 10px;
+}
+
+.planning-requirements__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--af-border);
+}
+
+.planning-requirements__heading {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+
+.planning-requirements__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  color: var(--af-navy);
+  background: var(--af-surface-soft);
+  border: 1px solid var(--af-border);
+  border-radius: 7px;
+}
+
+.planning-requirements__title {
+  margin: 0;
+  color: var(--af-text);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.planning-requirements__description {
+  margin: 3px 0 0;
+  color: var(--af-text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.planning-requirements__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  color: var(--af-navy);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: opacity var(--transition-normal);
+}
+
+.planning-requirements__link:hover {
+  opacity: 0.72;
+}
+
+.planning-requirements__table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.planning-requirements__table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.planning-requirements__table th {
+  padding: 11px 20px;
+  color: var(--af-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  background: var(--af-surface-soft);
+  border-bottom: 1px solid var(--af-border);
+  white-space: nowrap;
+}
+
+.planning-requirements__table td {
+  padding: 13px 20px;
+  color: var(--af-text-secondary);
+  font-size: 12px;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--af-border);
+}
+
+.planning-requirements__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.planning-requirements__table tbody tr {
+  transition: background var(--transition-normal);
+}
+
+.planning-requirements__table tbody tr:hover {
+  background: var(--af-surface-soft);
+}
+
+.planning-requirements__material {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 190px;
+}
+
+.planning-requirements__material-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  color: var(--af-text-secondary);
+  background: var(--af-surface-soft);
+  border: 1px solid var(--af-border);
+  border-radius: 6px;
+}
+
+.planning-requirements__material-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.planning-requirements__material-name {
+  overflow: hidden;
+  color: var(--af-text);
+  font-weight: 700;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planning-requirements__material-code {
+  color: var(--af-text-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.planning-requirements__quantity {
+  color: var(--af-text-secondary);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.planning-requirements__quantity--strong {
+  color: var(--af-text);
+  font-weight: 700;
+}
+
+.planning-requirements__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 24px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.planning-requirements__status--success {
+  color: var(--af-success);
+  background: rgba(22, 133, 91, 0.08);
+  border-color: rgba(22, 133, 91, 0.18);
+}
+
+.planning-requirements__status--warning {
+  color: var(--af-warning);
+  background: rgba(201, 130, 22, 0.08);
+  border-color: rgba(201, 130, 22, 0.18);
+}
+
+.planning-requirements__status--danger {
+  color: var(--af-danger);
+  background: rgba(196, 69, 69, 0.08);
+  border-color: rgba(196, 69, 69, 0.18);
+}
+
+.planning-requirements .erp-empty-state {
+  min-height: 190px;
+  border: 0;
+  border-radius: 0;
+}
+
+@media (max-width: 640px) {
+  .planning-requirements__header {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .planning-requirements__table th,
+  .planning-requirements__table td {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

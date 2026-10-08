@@ -1,0 +1,76 @@
+/* Payroll — page-specific styles */
+
+.pr-steps {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.pr-workflow-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pr-step {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--af-navy-soft);
+  background: var(--af-bg);
+  border: 1px solid var(--af-border);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+}
+
+.pr-workflow-arrow {
+  color: var(--af-text-muted);
+  font-size: 14px;
+  line-height: 1.1;
+}
+
+.pr-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pr-status--draft { background: var(--af-bg); color: var(--af-text-muted); }
+.pr-status--processing { background: rgba(40, 104, 168, 0.12); color: var(--af-info); }
+.pr-status--pending-review { background: rgba(201, 130, 22, 0.12); color: var(--af-warning); }
+.pr-status--approved { background: rgba(22, 133, 91, 0.12); color: var(--af-success); }
+.pr-status--paid { background: rgba(22, 133, 91, 0.16); color: var(--af-success); }
+.pr-status--closed { background: var(--af-bg); color: var(--af-text-muted); }
+
+.pr-periods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+.pr-period {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  border: 1px solid var(--af-border);
+  border-radius: var(--radius-md);
+  background: var(--af-surface-soft);
+  cursor: pointer;
+  font-size: 12px;
+  text-align: left;
+  transition: border-color var(--transition-fast);
+}
+
+.pr-period:hover { border-color: var(--af-navy-soft); }
+.pr-period--active { border-color: var(--af-info); background: rgba(40, 104, 168, 0.06); }
+.pr-period__name { font-weight: 700; color: var(--af-navy); }
+.pr-period__dates { color: var(--af-text-muted); }
+
+.pr-amount { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pr-amount--muted { color: var(--af-text-muted); }

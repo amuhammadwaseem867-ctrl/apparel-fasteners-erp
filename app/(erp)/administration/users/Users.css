@@ -1,0 +1,68 @@
+.admin-users {
+  width: 100%;
+  min-width: 0;
+}
+
+.admin-users__content {
+  width: 100%;
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+.admin-users__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  flex-wrap: wrap;
+
+  gap: 12px;
+
+  padding: 12px;
+
+  background: var(--af-surface);
+
+  border: 1px solid var(--af-border);
+  border-radius: 9px;
+}
+
+.admin-users__search {
+  width: min(100%, 320px);
+}
+
+.admin-users__role-filter {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 6px;
+}
+
+.admin-users__list-card {
+  min-height: 300px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: var(--af-surface);
+
+  border: 1px solid var(--af-border);
+  border-radius: 9px;
+}
+
+.admin-users__table {
+  width: 100%;
+}
+
+@media (max-width: 800px) {
+  .admin-users__search {
+    width: 100%;
+  }
+}

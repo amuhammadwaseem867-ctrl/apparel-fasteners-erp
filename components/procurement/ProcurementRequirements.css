@@ -1,0 +1,225 @@
+.procurement-requirements-card {
+  min-width: 0;
+}
+
+.procurement-requirements__view {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #243146;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.procurement-requirements__view:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.procurement-requirements {
+  display: flex;
+  flex-direction: column;
+}
+
+.procurement-requirement {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  padding: 13px 3px;
+  border-bottom: 1px solid #edf0f2;
+  color: inherit;
+  text-decoration: none;
+}
+
+.procurement-requirement:first-child {
+  padding-top: 3px;
+}
+
+.procurement-requirement:last-child {
+  padding-bottom: 3px;
+  border-bottom: 0;
+}
+
+a.procurement-requirement {
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+a.procurement-requirement:hover {
+  background: #f8fafb;
+}
+
+.procurement-requirement__icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #fff7e9;
+  color: #a96c13;
+}
+
+.procurement-requirement__content {
+  min-width: 0;
+  flex: 1;
+}
+
+.procurement-requirement__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.procurement-requirement__top strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #344054;
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.procurement-requirement__priority {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 7px;
+  border-radius: 5px;
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+.procurement-requirement__priority--urgent {
+  background: #fff0f0;
+  color: #b33e3e;
+}
+
+.procurement-requirement__priority--high {
+  background: #fff7e9;
+  color: #a96c13;
+}
+
+.procurement-requirement__priority--normal {
+  background: #eef5fb;
+  color: #2868a8;
+}
+
+.procurement-requirement__priority--low {
+  background: #f1f4f7;
+  color: #667085;
+}
+
+.procurement-requirement__details {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.procurement-requirement__details span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 21px;
+  padding: 0 6px;
+  border: 1px solid #e4e8ec;
+  border-radius: 5px;
+  background: #f8fafb;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.procurement-requirement__content p {
+  margin: 6px 0 0;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.procurement-requirement__arrow {
+  flex: 0 0 auto;
+  margin-top: 9px;
+  color: #98a2b3;
+}
+
+.procurement-requirements__empty {
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+
+.procurement-requirements__empty-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 11px;
+  border: 1px solid #dde2e7;
+  border-radius: 9px;
+  background: #f8fafb;
+  color: #667085;
+}
+
+.procurement-requirements__empty strong {
+  color: #344054;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.procurement-requirements__empty p {
+  max-width: 450px;
+  margin: 6px 0 14px;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.procurement-requirements__empty a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #243146;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.procurement-requirements__empty a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .procurement-requirement__top {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .procurement-requirement__top strong {
+    white-space: normal;
+  }
+
+  .procurement-requirements__empty {
+    min-height: 160px;
+    padding: 18px;
+  }
+}

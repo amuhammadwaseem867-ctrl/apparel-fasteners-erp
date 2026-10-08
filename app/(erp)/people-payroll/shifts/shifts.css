@@ -1,0 +1,26 @@
+/* Shifts — page-specific styles */
+
+.shift-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.shift-status--active {
+  background: rgba(22, 133, 91, 0.12);
+  color: var(--af-success);
+}
+
+.shift-status--inactive {
+  background: var(--af-bg);
+  color: var(--af-text-muted);
+}
+
+.shift-code {
+  font-weight: 700;
+  color: var(--af-navy);
+}

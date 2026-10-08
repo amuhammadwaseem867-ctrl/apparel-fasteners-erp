@@ -6,10 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "prisma skills sync || exit 0"
   },
   "dependencies": {
+    "@prisma/client": "^7.10.0",
+    "lucide-react": "^1.52.0",
     "next": "16.4.0",
+    "prisma": "^8.0.0-rc.21",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },

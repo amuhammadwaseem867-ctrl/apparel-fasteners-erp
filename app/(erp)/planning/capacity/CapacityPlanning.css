@@ -1,0 +1,423 @@
+.capacity-planning {
+  width: 100%;
+  min-width: 0;
+  padding: 24px;
+}
+
+.capacity-planning__content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  min-width: 0;
+}
+
+.capacity-planning__summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  overflow: hidden;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 10px;
+}
+
+.capacity-planning__summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 18px 20px;
+  border-right: 1px solid var(--af-border);
+}
+
+.capacity-planning__summary-item:last-child {
+  border-right: 0;
+}
+
+.capacity-planning__summary-label {
+  color: var(--af-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.capacity-planning__summary-item strong {
+  color: var(--af-text);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.capacity-planning__summary-item > span:last-child {
+  color: var(--af-text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.capacity-planning__summary-item--alert strong {
+  color: var(--af-danger);
+}
+
+.capacity-planning__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 10px;
+}
+
+.capacity-planning__search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: 520px;
+  min-width: 0;
+  color: var(--af-text-muted);
+}
+
+.capacity-planning__search > svg {
+  position: absolute;
+  left: 12px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.capacity-planning__search input {
+  width: 100%;
+  padding-left: 38px;
+}
+
+.capacity-planning__filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.capacity-planning__filters label {
+  color: var(--af-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.capacity-planning__filters select {
+  min-width: 150px;
+  height: 38px;
+  padding: 0 28px 0 10px;
+  color: var(--af-text);
+  font: inherit;
+  font-size: 12px;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 7px;
+  outline: none;
+  cursor: pointer;
+}
+
+.capacity-planning__filters select:focus {
+  border-color: var(--af-navy);
+}
+
+.capacity-planning__table-card {
+  width: 100%;
+  overflow: hidden;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 10px;
+}
+
+.capacity-planning__table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--af-border);
+}
+
+.capacity-planning__table-header h2 {
+  margin: 0;
+  color: var(--af-text);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.capacity-planning__table-header p {
+  margin: 3px 0 0;
+  color: var(--af-text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.capacity-planning__header-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--af-text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.capacity-planning__header-summary span {
+  padding-left: 16px;
+  border-left: 1px solid var(--af-border);
+}
+
+.capacity-planning__header-summary span:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.capacity-planning__table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.capacity-planning__table {
+  width: 100%;
+  min-width: 1200px;
+  border-collapse: collapse;
+}
+
+.capacity-planning__table th {
+  padding: 11px 16px;
+  color: var(--af-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+  background: var(--af-surface-soft);
+  border-bottom: 1px solid var(--af-border);
+}
+
+.capacity-planning__table td {
+  padding: 13px 16px;
+  color: var(--af-text-secondary);
+  font-size: 12px;
+  vertical-align: middle;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--af-border);
+}
+
+.capacity-planning__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.capacity-planning__table tbody tr {
+  transition: background var(--transition-normal);
+}
+
+.capacity-planning__table tbody tr:hover {
+  background: var(--af-surface-soft);
+}
+
+.capacity-planning__work-center {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 180px;
+}
+
+.capacity-planning__work-center-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  color: var(--af-navy);
+  background: var(--af-surface-soft);
+  border: 1px solid var(--af-border);
+  border-radius: 7px;
+}
+
+.capacity-planning__work-center > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.capacity-planning__work-center strong {
+  color: var(--af-text);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.capacity-planning__work-center span {
+  color: var(--af-text-muted);
+  font-size: 12px;
+}
+
+.capacity-planning__utilization {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 130px;
+}
+
+.capacity-planning__utilization-bar {
+  width: 72px;
+  height: 6px;
+  overflow: hidden;
+  background: var(--af-border);
+  border-radius: 999px;
+}
+
+.capacity-planning__utilization-bar span {
+  display: block;
+  height: 100%;
+  background: var(--af-navy);
+  border-radius: inherit;
+}
+
+.capacity-planning__utilization strong {
+  min-width: 36px;
+  color: var(--af-text);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.capacity-planning__date {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.capacity-planning__date svg {
+  color: var(--af-text-muted);
+}
+
+.capacity-planning__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 24px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  border: 1px solid transparent;
+  border-radius: 999px;
+}
+
+.capacity-planning__status--available,
+.capacity-planning__status--balanced {
+  color: var(--af-success);
+  background: rgba(22, 133, 91, 0.08);
+  border-color: rgba(22, 133, 91, 0.18);
+}
+
+.capacity-planning__status--warning {
+  color: var(--af-warning);
+  background: rgba(201, 130, 22, 0.08);
+  border-color: rgba(201, 130, 22, 0.18);
+}
+
+.capacity-planning__status--danger {
+  color: var(--af-danger);
+  background: rgba(196, 69, 69, 0.08);
+  border-color: rgba(196, 69, 69, 0.18);
+}
+
+.capacity-planning .erp-empty-state {
+  min-height: 300px;
+  border: 0;
+  border-radius: 0;
+}
+
+@media (max-width: 1100px) {
+  .capacity-planning__summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .capacity-planning__summary-item:nth-child(2) {
+    border-right: 0;
+  }
+
+  .capacity-planning__summary-item:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--af-border);
+  }
+
+  .capacity-planning__table-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .capacity-planning__header-summary {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 900px) {
+  .capacity-planning {
+    padding: 20px;
+  }
+
+  .capacity-planning__toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .capacity-planning__search {
+    max-width: none;
+  }
+
+  .capacity-planning__filters {
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 640px) {
+  .capacity-planning {
+    padding: 16px;
+  }
+
+  .capacity-planning__summary {
+    grid-template-columns: 1fr;
+  }
+
+  .capacity-planning__summary-item {
+    border-right: 0;
+    border-bottom: 1px solid var(--af-border);
+  }
+
+  .capacity-planning__summary-item:last-child {
+    border-bottom: 0;
+  }
+
+  .capacity-planning__table-header {
+    padding: 16px;
+  }
+
+  .capacity-planning__filters {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .capacity-planning__filters select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .capacity-planning {
+    padding: 12px;
+  }
+
+  .capacity-planning__header-summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
+  }
+
+  .capacity-planning__header-summary span {
+    padding-left: 0;
+    border-left: 0;
+  }
+}

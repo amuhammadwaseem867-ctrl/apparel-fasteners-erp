@@ -1,0 +1,75 @@
+.sales-kpi-grid {
+  --sales-kpi-columns: 4;
+
+  width: 100%;
+  min-width: 0;
+
+  display: grid;
+  grid-template-columns: repeat(
+    var(--sales-kpi-columns),
+    minmax(0, 1fr)
+  );
+
+  gap: 16px;
+}
+
+/* =========================================
+   EMPTY STATE
+========================================= */
+
+.sales-kpi-grid__empty {
+  grid-column: 1 / -1;
+
+  min-height: 120px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background: var(--af-surface);
+
+  border: 1px dashed var(--af-border-dark);
+  border-radius: 10px;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 500;
+
+  text-align: center;
+}
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 1200px) {
+  .sales-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 640px) {
+  .sales-kpi-grid {
+    grid-template-columns: 1fr;
+
+    gap: 12px;
+  }
+}
+
+/* =========================================
+   SMALL MOBILE
+========================================= */
+
+@media (max-width: 400px) {
+  .sales-kpi-grid {
+    gap: 10px;
+  }
+}

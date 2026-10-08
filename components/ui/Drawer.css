@@ -1,0 +1,420 @@
+.erp-drawer-root {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+
+  pointer-events: none;
+}
+
+/* -------------------------------------------------------
+   Overlay
+------------------------------------------------------- */
+
+.erp-drawer__overlay {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  padding: 0;
+  border: 0;
+
+  background: rgba(15, 23, 42, 0.38);
+
+  opacity: 0;
+
+  pointer-events: auto;
+  cursor: pointer;
+
+  animation:
+    erp-drawer-overlay-in
+    180ms ease
+    forwards;
+}
+
+/* -------------------------------------------------------
+   Drawer
+------------------------------------------------------- */
+
+.erp-drawer {
+  position: absolute;
+
+  top: 0;
+  bottom: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  width: var(--drawer-width);
+
+  max-width: 100vw;
+  min-width: 0;
+
+  background: var(--af-surface);
+
+  box-shadow:
+    0 12px 40px
+    rgba(16, 24, 40, 0.16);
+
+  pointer-events: auto;
+
+  animation-duration: 220ms;
+  animation-timing-function:
+    cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: forwards;
+}
+
+.erp-drawer--right {
+  --drawer-width: 520px;
+
+  right: 0;
+
+  border-left: 1px solid var(--af-border);
+
+  animation-name:
+    erp-drawer-slide-right;
+}
+
+.erp-drawer--left {
+  --drawer-width: 520px;
+
+  left: 0;
+
+  border-right: 1px solid var(--af-border);
+
+  animation-name:
+    erp-drawer-slide-left;
+}
+
+/* -------------------------------------------------------
+   Sizes
+------------------------------------------------------- */
+
+.erp-drawer--small {
+  --drawer-width: 380px;
+}
+
+.erp-drawer--medium {
+  --drawer-width: 520px;
+}
+
+.erp-drawer--large {
+  --drawer-width: 720px;
+}
+
+.erp-drawer--xlarge {
+  --drawer-width: 920px;
+}
+
+.erp-drawer--full {
+  --drawer-width: 100vw;
+}
+
+/* -------------------------------------------------------
+   Header
+------------------------------------------------------- */
+
+.erp-drawer__header {
+  min-height: 72px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+
+  padding: 18px 20px;
+
+  border-bottom: 1px solid var(--af-border);
+
+  background: var(--af-surface);
+
+  flex-shrink: 0;
+}
+
+.erp-drawer__heading {
+  min-width: 0;
+  flex: 1;
+}
+
+.erp-drawer__eyebrow {
+  margin-bottom: 4px;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.erp-drawer__title {
+  margin: 0;
+
+  color: var(--af-text);
+
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.erp-drawer__description {
+  margin: 5px 0 0;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.erp-drawer__close {
+  width: 34px;
+  height: 34px;
+
+  min-width: 34px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid var(--af-border);
+  border-radius: 6px;
+
+  background: var(--af-surface);
+  color: var(--af-text-muted);
+
+  cursor: pointer;
+
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.erp-drawer__close:hover {
+  background: var(--af-surface-soft);
+  border-color: var(--af-border-dark);
+  color: var(--af-text);
+}
+
+.erp-drawer__close:focus-visible {
+  outline: none;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(36, 49, 70, 0.09);
+}
+
+.erp-drawer__close:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* -------------------------------------------------------
+   Body
+------------------------------------------------------- */
+
+.erp-drawer__body {
+  min-height: 0;
+  flex: 1;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding: 20px;
+
+  scrollbar-width: thin;
+}
+
+/* -------------------------------------------------------
+   Footer
+------------------------------------------------------- */
+
+.erp-drawer__footer {
+  min-height: 68px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 12px 20px;
+
+  border-top: 1px solid var(--af-border);
+
+  background: var(--af-surface);
+
+  flex-shrink: 0;
+}
+
+.erp-drawer__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+
+  margin-left: auto;
+}
+
+/* -------------------------------------------------------
+   Loading
+------------------------------------------------------- */
+
+.erp-drawer--loading {
+  pointer-events: none;
+}
+
+.erp-drawer__loading {
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+
+  padding-top: 72px;
+
+  background: rgba(255, 255, 255, 0.62);
+
+  pointer-events: auto;
+}
+
+.erp-drawer__loading span {
+  width: 32px;
+  height: 3px;
+
+  border-radius: 2px;
+
+  background: var(--af-navy);
+
+  animation:
+    erp-drawer-loading
+    900ms ease-in-out
+    infinite;
+}
+
+/* -------------------------------------------------------
+   Animations
+------------------------------------------------------- */
+
+@keyframes erp-drawer-slide-right {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes erp-drawer-slide-left {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes erp-drawer-overlay-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes erp-drawer-loading {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scaleX(0.65);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+/* -------------------------------------------------------
+   Mobile
+------------------------------------------------------- */
+
+@media (max-width: 680px) {
+  .erp-drawer--small,
+  .erp-drawer--medium,
+  .erp-drawer--large,
+  .erp-drawer--xlarge {
+    --drawer-width: 100vw;
+  }
+
+  .erp-drawer__header {
+    min-height: 64px;
+
+    padding: 15px 16px;
+  }
+
+  .erp-drawer__body {
+    padding: 16px;
+  }
+
+  .erp-drawer__footer {
+    padding: 11px 16px;
+  }
+
+  .erp-drawer__actions {
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .erp-drawer__footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .erp-drawer__actions {
+    justify-content: stretch;
+  }
+
+  .erp-drawer__actions > * {
+    flex: 1;
+  }
+}
+
+/* -------------------------------------------------------
+   Reduced Motion
+------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .erp-drawer,
+  .erp-drawer__overlay,
+  .erp-drawer__loading span {
+    animation: none;
+  }
+
+  .erp-drawer {
+    transform: translateX(0);
+  }
+
+  .erp-drawer__overlay {
+    opacity: 1;
+  }
+
+  .erp-drawer__close {
+    transition: none;
+  }
+}

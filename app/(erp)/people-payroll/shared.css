@@ -1,0 +1,261 @@
+/* People & Payroll — shared module styles */
+
+.pp-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pp-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+}
+
+.pp-toolbar__field {
+  min-width: 150px;
+  flex: 1 1 auto;
+}
+
+.pp-toolbar__field--search {
+  min-width: 220px;
+}
+
+.pp-toolbar__field--narrow {
+  min-width: 130px;
+  flex: 0 1 auto;
+}
+
+.pp-toolbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.pp-toolbar__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding-top: 4px;
+  border-top: 1px dashed var(--af-border);
+  font-size: 12px;
+  color: var(--af-text-muted);
+}
+
+.pp-toolbar__count {
+  font-weight: 600;
+  color: var(--af-text-secondary);
+}
+
+.pp-panel {
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.pp-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--af-border);
+}
+
+.pp-panel__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pp-panel__body {
+  padding: 16px;
+}
+
+.pp-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.pp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 720px;
+}
+
+.pp-table thead th {
+  background: var(--af-bg);
+  color: var(--af-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--af-border);
+  white-space: nowrap;
+}
+
+.pp-table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--af-border);
+  color: var(--af-text);
+  vertical-align: middle;
+}
+
+.pp-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.pp-table tbody tr:hover {
+  background: var(--af-surface-soft);
+}
+
+.pp-table__muted {
+  color: var(--af-text-muted);
+}
+
+.pp-table__strong {
+  font-weight: 600;
+}
+
+.pp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pp-action-btn {
+  background: transparent;
+  border: 1px solid var(--af-border);
+  border-radius: var(--radius-sm);
+  padding: 4px 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--af-navy-soft);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.pp-action-btn:hover {
+  background: var(--af-bg);
+  border-color: var(--af-navy-soft);
+}
+
+.pp-action-btn:focus-visible {
+  outline: 2px solid var(--af-info);
+  outline-offset: 1px;
+}
+
+.pp-action-btn--primary {
+  color: var(--af-info);
+}
+
+.pp-action-btn--danger {
+  color: var(--af-danger);
+}
+
+.pp-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pp-empty {
+  padding: 40px 20px;
+}
+
+.pp-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.pp-form-grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pp-form-field--full {
+  grid-column: 1 / -1;
+}
+
+.pp-form-section {
+  border-top: 1px solid var(--af-border);
+  padding-top: 14px;
+  margin-top: 4px;
+}
+
+.pp-form-section:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.pp-form-section__title {
+  margin: 0 0 2px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--af-navy);
+}
+
+.pp-form-section__hint {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--af-text-muted);
+}
+
+.pp-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+}
+
+.pp-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pp-detail-item--full {
+  grid-column: 1 / -1;
+}
+
+.pp-detail-item__label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--af-text-muted);
+  font-weight: 600;
+}
+
+.pp-detail-item__value {
+  font-size: 13px;
+  color: var(--af-text);
+  word-break: break-word;
+}
+
+.pp-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 760px) {
+  .pp-form-grid,
+  .pp-form-grid--3,
+  .pp-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pp-toolbar__actions {
+    width: 100%;
+  }
+}

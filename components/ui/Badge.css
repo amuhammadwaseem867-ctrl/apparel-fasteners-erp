@@ -1,0 +1,304 @@
+.erp-badge {
+  --badge-bg: #f2f4f7;
+  --badge-border: #e4e7ec;
+  --badge-text: #475467;
+  --badge-icon: #667085;
+  --badge-dot: #667085;
+
+  min-width: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  vertical-align: middle;
+
+  color: var(--badge-text);
+  background: var(--badge-bg);
+
+  border: 1px solid var(--badge-border);
+  border-radius: 6px;
+
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 600;
+
+  white-space: nowrap;
+
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.erp-badge__label {
+  min-width: 0;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.erp-badge__icon {
+  flex: 0 0 auto;
+
+  color: var(--badge-icon);
+}
+
+.erp-badge__dot {
+  width: 6px;
+  height: 6px;
+
+  flex: 0 0 auto;
+
+  border-radius: 50%;
+
+  background: var(--badge-dot);
+}
+
+/* =========================================
+   SIZES
+========================================= */
+
+.erp-badge--small {
+  min-height: 22px;
+
+  padding: 0 7px;
+
+  border-radius: 5px;
+
+  font-size: 12px;
+}
+
+.erp-badge--medium {
+  min-height: 26px;
+
+  padding: 0 9px;
+
+  border-radius: 6px;
+
+  font-size: 12px;
+}
+
+.erp-badge--large {
+  min-height: 30px;
+
+  padding: 0 10px;
+
+  border-radius: 6px;
+
+  font-size: 13px;
+}
+
+/* =========================================
+   NEUTRAL
+========================================= */
+
+.erp-badge--neutral {
+  --badge-bg: #f2f4f7;
+  --badge-border: #e4e7ec;
+  --badge-text: #475467;
+  --badge-icon: #667085;
+  --badge-dot: #667085;
+}
+
+/* =========================================
+   SUCCESS
+========================================= */
+
+.erp-badge--success,
+.erp-badge--approved,
+.erp-badge--active {
+  --badge-bg: #edf8f3;
+  --badge-border: #c8ead9;
+  --badge-text: #14724f;
+  --badge-icon: #16855b;
+  --badge-dot: #16855b;
+}
+
+/* =========================================
+   PENDING
+========================================= */
+
+.erp-badge--pending,
+.erp-badge--processing {
+  --badge-bg: #fff8eb;
+  --badge-border: #f3dfb8;
+  --badge-text: #956414;
+  --badge-icon: #c98216;
+  --badge-dot: #c98216;
+}
+
+/* =========================================
+   WARNING
+========================================= */
+
+.erp-badge--warning {
+  --badge-bg: #fff7e8;
+  --badge-border: #f2ddb1;
+  --badge-text: #8c5b0d;
+  --badge-icon: #c98216;
+  --badge-dot: #c98216;
+}
+
+/* =========================================
+   DANGER
+========================================= */
+
+.erp-badge--danger,
+.erp-badge--error {
+  --badge-bg: #fff1f1;
+  --badge-border: #f1cece;
+  --badge-text: #a93636;
+  --badge-icon: #c44545;
+  --badge-dot: #c44545;
+}
+
+/* =========================================
+   INFO
+========================================= */
+
+.erp-badge--info {
+  --badge-bg: #edf5fc;
+  --badge-border: #cbdff1;
+  --badge-text: #245d91;
+  --badge-icon: #2868a8;
+  --badge-dot: #2868a8;
+}
+
+/* =========================================
+   PRODUCTION
+========================================= */
+
+.erp-badge--production {
+  --badge-bg: #eef2f7;
+  --badge-border: #d5dce5;
+  --badge-text: #34445a;
+  --badge-icon: #243146;
+  --badge-dot: #243146;
+}
+
+/* =========================================
+   DISPATCH
+========================================= */
+
+.erp-badge--dispatch,
+.erp-badge--ready {
+  --badge-bg: #edf5f8;
+  --badge-border: #cce0e6;
+  --badge-text: #255f70;
+  --badge-icon: #2d7488;
+  --badge-dot: #2d7488;
+}
+
+/* =========================================
+   PAID
+========================================= */
+
+.erp-badge--paid {
+  --badge-bg: #edf8f3;
+  --badge-border: #c8ead9;
+  --badge-text: #14724f;
+  --badge-icon: #16855b;
+  --badge-dot: #16855b;
+}
+
+/* =========================================
+   CANCELLED
+========================================= */
+
+.erp-badge--cancelled {
+  --badge-bg: #f4f4f5;
+  --badge-border: #dedee2;
+  --badge-text: #52525b;
+  --badge-icon: #71717a;
+  --badge-dot: #71717a;
+}
+
+/* =========================================
+   ICON RIGHT
+========================================= */
+
+.erp-badge--icon-right {
+  flex-direction: row-reverse;
+}
+
+/* =========================================
+   REMOVABLE
+========================================= */
+
+.erp-badge--removable {
+  padding-right: 5px;
+}
+
+.erp-badge__remove {
+  width: 18px;
+  height: 18px;
+
+  flex: 0 0 auto;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-left: 1px;
+
+  padding: 0;
+
+  color: var(--badge-icon);
+
+  background: transparent;
+
+  border: 0;
+  border-radius: 4px;
+
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    color 140ms ease,
+    background-color 140ms ease;
+}
+
+.erp-badge__remove:hover {
+  color: var(--badge-text);
+
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* =========================================
+   DOT MODE
+========================================= */
+
+.erp-badge--dot {
+  gap: 6px;
+}
+
+/* =========================================
+   HOVER
+========================================= */
+
+.erp-badge:hover {
+  border-color: var(--badge-border);
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 520px) {
+  .erp-badge--large {
+    min-height: 28px;
+
+    padding: 0 8px;
+
+    font-size: 12px;
+  }
+}

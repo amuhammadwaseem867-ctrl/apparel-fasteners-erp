@@ -1,0 +1,308 @@
+.erp-tabs {
+  width: 100%;
+  min-width: 0;
+}
+
+.erp-tabs__list {
+  width: 100%;
+  min-width: 0;
+
+  display: flex;
+  align-items: stretch;
+
+  border-bottom: 1px solid var(--af-border);
+}
+
+/* -------------------------------------------------------
+   Tab
+------------------------------------------------------- */
+
+.erp-tabs__tab {
+  position: relative;
+
+  min-height: 42px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  flex-shrink: 0;
+
+  padding: 0 14px;
+
+  border: 0;
+  border-bottom: 2px solid transparent;
+
+  margin-bottom: -1px;
+
+  background: transparent;
+  color: var(--af-text-muted);
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+
+  white-space: nowrap;
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease;
+}
+
+.erp-tabs__tab:hover {
+  color: var(--af-text);
+  background: var(--af-surface-soft);
+}
+
+.erp-tabs__tab:focus-visible {
+  outline: none;
+
+  box-shadow:
+    inset 0 0 0 2px
+    rgba(36, 49, 70, 0.12);
+}
+
+.erp-tabs__tab--active {
+  color: var(--af-navy);
+  border-bottom-color: var(--af-navy);
+}
+
+.erp-tabs__tab--active:hover {
+  color: var(--af-navy);
+}
+
+.erp-tabs__tab--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* -------------------------------------------------------
+   Icon
+------------------------------------------------------- */
+
+.erp-tabs__icon {
+  flex-shrink: 0;
+}
+
+/* -------------------------------------------------------
+   Label
+------------------------------------------------------- */
+
+.erp-tabs__label {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* -------------------------------------------------------
+   Count
+------------------------------------------------------- */
+
+.erp-tabs__count {
+  min-width: 20px;
+  height: 20px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 6px;
+
+  border-radius: 10px;
+
+  background: var(--af-bg);
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  font-weight: 600;
+
+  line-height: 1;
+}
+
+.erp-tabs__count--active {
+  background: rgba(36, 49, 70, 0.08);
+  color: var(--af-navy);
+}
+
+/* -------------------------------------------------------
+   Badge
+------------------------------------------------------- */
+
+.erp-tabs__badge {
+  min-height: 18px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 2px 6px;
+
+  border-radius: 4px;
+
+  background: rgba(22, 133, 91, 0.09);
+  color: var(--af-success);
+
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* -------------------------------------------------------
+   Variants
+------------------------------------------------------- */
+
+.erp-tabs--pill .erp-tabs__list {
+  gap: 4px;
+
+  padding: 4px;
+
+  border: 1px solid var(--af-border);
+  border-radius: 8px;
+
+  background: var(--af-surface-soft);
+}
+
+.erp-tabs--pill .erp-tabs__tab {
+  min-height: 34px;
+
+  margin: 0;
+
+  border: 0;
+  border-radius: 6px;
+}
+
+.erp-tabs--pill
+  .erp-tabs__tab--active {
+  background: var(--af-surface);
+  color: var(--af-navy);
+
+  box-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.08);
+}
+
+.erp-tabs--boxed .erp-tabs__list {
+  gap: 4px;
+
+  border-bottom: 0;
+}
+
+.erp-tabs--boxed .erp-tabs__tab {
+  min-height: 38px;
+
+  margin: 0;
+
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+
+.erp-tabs--boxed
+  .erp-tabs__tab--active {
+  border-color: var(--af-border);
+  background: var(--af-surface);
+  color: var(--af-navy);
+
+  box-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.05);
+}
+
+/* -------------------------------------------------------
+   Sizes
+------------------------------------------------------- */
+
+.erp-tabs--small .erp-tabs__tab {
+  min-height: 36px;
+  padding: 0 11px;
+}
+
+.erp-tabs--large .erp-tabs__tab {
+  min-height: 48px;
+  padding: 0 17px;
+
+  font-size: 13px;
+}
+
+/* -------------------------------------------------------
+   Full width
+------------------------------------------------------- */
+
+.erp-tabs--full-width .erp-tabs__tab {
+  flex: 1;
+}
+
+/* -------------------------------------------------------
+   Scrolling
+------------------------------------------------------- */
+
+.erp-tabs--scrollable .erp-tabs__list {
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  scrollbar-width: thin;
+}
+
+/* -------------------------------------------------------
+   Panel
+------------------------------------------------------- */
+
+.erp-tab-panel {
+  width: 100%;
+  min-width: 0;
+
+  padding-top: 20px;
+}
+
+.erp-tab-panel:focus {
+  outline: none;
+}
+
+.erp-tab-panel--hidden {
+  display: none;
+}
+
+/* -------------------------------------------------------
+   Mobile
+------------------------------------------------------- */
+
+@media (max-width: 680px) {
+  .erp-tabs__tab {
+    min-height: 40px;
+    padding: 0 12px;
+  }
+
+  .erp-tabs--large .erp-tabs__tab {
+    min-height: 44px;
+    padding: 0 13px;
+  }
+
+  .erp-tab-panel {
+    padding-top: 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .erp-tabs__tab {
+    padding: 0 10px;
+  }
+
+  .erp-tabs__count {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+  }
+}
+
+/* -------------------------------------------------------
+   Reduced Motion
+------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .erp-tabs__tab {
+    transition: none;
+  }
+}

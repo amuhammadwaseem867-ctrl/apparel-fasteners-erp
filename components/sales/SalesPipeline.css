@@ -1,0 +1,357 @@
+.sales-pipeline {
+  width: 100%;
+  min-width: 0;
+
+  padding: 20px;
+
+  background: var(--af-surface);
+
+  border: 1px solid var(--af-border);
+  border-radius: 10px;
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.sales-pipeline__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  margin-bottom: 20px;
+}
+
+.sales-pipeline__heading {
+  min-width: 0;
+}
+
+.sales-pipeline__title {
+  margin: 0;
+
+  color: var(--af-text);
+
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 700;
+}
+
+.sales-pipeline__description {
+  margin: 5px 0 0;
+
+  max-width: 620px;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 500;
+}
+
+/* =========================================
+   BODY
+========================================= */
+
+.sales-pipeline__body {
+  width: 100%;
+
+  display: flex;
+  align-items: stretch;
+
+  overflow-x: auto;
+
+  padding-bottom: 2px;
+
+  scrollbar-width: thin;
+}
+
+.sales-pipeline__stage-wrap {
+  min-width: 0;
+
+  flex: 1 1 0;
+
+  display: flex;
+  align-items: center;
+}
+
+.sales-pipeline__stage {
+  position: relative;
+
+  width: 100%;
+  min-width: 150px;
+
+  min-height: 142px;
+
+  padding: 15px;
+
+  background: var(--af-surface-soft);
+
+  border: 1px solid var(--af-border);
+  border-radius: 8px;
+
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    transform 180ms ease;
+}
+
+.sales-pipeline__stage:hover {
+  border-color: var(--af-border-dark);
+
+  background: var(--af-surface);
+
+  transform: translateY(-1px);
+}
+
+.sales-pipeline__stage--active {
+  border-color: var(--af-navy-soft);
+}
+
+.sales-pipeline__stage--complete {
+  border-color: rgba(22, 133, 91, 0.35);
+}
+
+.sales-pipeline__stage--warning {
+  border-color: rgba(201, 130, 22, 0.35);
+}
+
+/* =========================================
+   STAGE TOP
+========================================= */
+
+.sales-pipeline__stage-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sales-pipeline__stage-icon {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 7px;
+
+  background: var(--af-bg);
+  color: var(--af-navy);
+}
+
+.sales-pipeline__stage-index {
+  font-size: 12px;
+  line-height: 14px;
+  font-weight: 700;
+}
+
+.sales-pipeline__stage-action {
+  width: 26px;
+  height: 26px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 6px;
+
+  color: var(--af-text-muted);
+
+  text-decoration: none;
+
+  transition:
+    color 150ms ease,
+    background-color 150ms ease;
+}
+
+.sales-pipeline__stage-action:hover {
+  color: var(--af-text);
+
+  background: var(--af-bg);
+}
+
+/* =========================================
+   STAGE CONTENT
+========================================= */
+
+.sales-pipeline__stage-content {
+  min-width: 0;
+
+  margin-top: 16px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.sales-pipeline__stage-label {
+  color: var(--af-text-secondary);
+
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sales-pipeline__stage-value {
+  margin-top: 4px;
+
+  color: var(--af-text);
+
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 700;
+
+  letter-spacing: -0.02em;
+}
+
+.sales-pipeline__stage-description {
+  margin-top: 4px;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 16px;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =========================================
+   CONNECTOR
+========================================= */
+
+.sales-pipeline__connector {
+  width: 42px;
+  min-width: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--af-border-dark);
+}
+
+/* =========================================
+   EMPTY STATE
+========================================= */
+
+.sales-pipeline__empty {
+  min-height: 142px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  padding: 24px;
+
+  border: 1px dashed var(--af-border-dark);
+  border-radius: 8px;
+
+  background: var(--af-surface-soft);
+}
+
+.sales-pipeline__empty-icon {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 7px;
+
+  background: var(--af-bg);
+  color: var(--af-text-muted);
+}
+
+.sales-pipeline__empty-content {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sales-pipeline__empty-content strong {
+  color: var(--af-text);
+
+  font-size: 12px;
+  line-height: 17px;
+  font-weight: 700;
+}
+
+.sales-pipeline__empty-content span {
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 17px;
+}
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 1000px) {
+  .sales-pipeline__body {
+    gap: 0;
+  }
+
+  .sales-pipeline__stage-wrap {
+    flex: 0 0 190px;
+  }
+
+  .sales-pipeline__connector {
+    width: 36px;
+    min-width: 36px;
+  }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 640px) {
+  .sales-pipeline {
+    padding: 16px;
+  }
+
+  .sales-pipeline__header {
+    margin-bottom: 16px;
+  }
+
+  .sales-pipeline__body {
+    overflow-x: auto;
+
+    margin-right: -4px;
+    padding-right: 4px;
+  }
+
+  .sales-pipeline__stage-wrap {
+    flex: 0 0 175px;
+  }
+
+  .sales-pipeline__stage {
+    min-height: 136px;
+
+    padding: 14px;
+  }
+
+  .sales-pipeline__stage-value {
+    font-size: 22px;
+    line-height: 28px;
+  }
+
+  .sales-pipeline__empty {
+    align-items: flex-start;
+    justify-content: flex-start;
+
+    padding: 18px;
+  }
+}

@@ -1,0 +1,210 @@
+.planning-production-plans {
+  width: 100%;
+  overflow: hidden;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 10px;
+}
+
+.planning-production-plans__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--af-border);
+}
+
+.planning-production-plans__heading {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+
+.planning-production-plans__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  color: var(--af-navy);
+  background: var(--af-surface-soft);
+  border: 1px solid var(--af-border);
+  border-radius: 7px;
+}
+
+.planning-production-plans__title {
+  margin: 0;
+  color: var(--af-text);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.planning-production-plans__description {
+  margin: 3px 0 0;
+  color: var(--af-text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.planning-production-plans__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  color: var(--af-navy);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: opacity var(--transition-normal);
+}
+
+.planning-production-plans__link:hover {
+  opacity: 0.72;
+}
+
+.planning-production-plans__table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.planning-production-plans__table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+}
+
+.planning-production-plans__table th {
+  padding: 11px 20px;
+  color: var(--af-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  background: var(--af-surface-soft);
+  border-bottom: 1px solid var(--af-border);
+  white-space: nowrap;
+}
+
+.planning-production-plans__table td {
+  padding: 13px 20px;
+  color: var(--af-text-secondary);
+  font-size: 12px;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--af-border);
+}
+
+.planning-production-plans__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.planning-production-plans__table tbody tr {
+  transition: background var(--transition-normal);
+}
+
+.planning-production-plans__table tbody tr:hover {
+  background: var(--af-surface-soft);
+}
+
+.planning-production-plans__plan {
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+  gap: 3px;
+}
+
+.planning-production-plans__plan-code {
+  color: var(--af-text);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.planning-production-plans__plan-name {
+  color: var(--af-text-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.planning-production-plans__product {
+  color: var(--af-text-secondary);
+  white-space: nowrap;
+}
+
+.planning-production-plans__quantity,
+.planning-production-plans__date {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--af-text-secondary);
+  white-space: nowrap;
+}
+
+.planning-production-plans__quantity svg,
+.planning-production-plans__date svg {
+  color: var(--af-text-muted);
+}
+
+.planning-production-plans__status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.planning-production-plans__status--draft {
+  color: var(--af-text-secondary);
+  background: var(--af-surface-soft);
+  border-color: var(--af-border);
+}
+
+.planning-production-plans__status--planned {
+  color: var(--af-info);
+  background: rgba(40, 104, 168, 0.08);
+  border-color: rgba(40, 104, 168, 0.16);
+}
+
+.planning-production-plans__status--released {
+  color: var(--af-navy);
+  background: rgba(36, 49, 70, 0.08);
+  border-color: rgba(36, 49, 70, 0.16);
+}
+
+.planning-production-plans__status--progress {
+  color: var(--af-warning);
+  background: rgba(201, 130, 22, 0.08);
+  border-color: rgba(201, 130, 22, 0.16);
+}
+
+.planning-production-plans__status--completed {
+  color: var(--af-success);
+  background: rgba(22, 133, 91, 0.08);
+  border-color: rgba(22, 133, 91, 0.16);
+}
+
+.planning-production-plans .erp-empty-state {
+  min-height: 190px;
+  border: 0;
+  border-radius: 0;
+}
+
+@media (max-width: 640px) {
+  .planning-production-plans__header {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .planning-production-plans__table th,
+  .planning-production-plans__table td {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

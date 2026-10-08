@@ -1,0 +1,148 @@
+.reports {
+  width: 100%;
+  min-width: 0;
+}
+
+.reports__content {
+  width: 100%;
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+.reports__notice {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 13px 15px;
+
+  background: var(--af-surface);
+
+  border: 1px solid var(--af-border);
+  border-left: 3px solid var(--af-info);
+  border-radius: 8px;
+}
+
+.reports__notice-icon {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 6px;
+
+  color: var(--af-info);
+  background: rgba(40, 104, 168, 0.08);
+}
+
+.reports__notice-content {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.reports__notice-content strong {
+  color: var(--af-text);
+
+  font-size: 12px;
+  line-height: 17px;
+  font-weight: 700;
+}
+
+.reports__notice-content span {
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.reports__groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 12px;
+}
+
+.reports__group {
+  padding: 18px;
+
+  background: var(--af-surface);
+
+  border: 1px solid var(--af-border);
+  border-radius: 9px;
+}
+
+.reports__group-heading h2 {
+  margin: 0 0 12px;
+
+  color: var(--af-text);
+
+  font-size: 14px;
+  line-height: 19px;
+  font-weight: 700;
+}
+
+.reports__group-items {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.reports__item {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 9px 11px;
+
+  background: var(--af-surface-soft);
+
+  border: 1px solid var(--af-border);
+  border-radius: 7px;
+
+  color: var(--af-text);
+
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+
+  text-decoration: none;
+
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.reports__item svg {
+  color: var(--af-navy);
+
+  flex-shrink: 0;
+}
+
+.reports__item:hover {
+  background: var(--af-bg);
+  border-color: var(--af-border-dark);
+}
+
+@media (max-width: 1000px) {
+  .reports__groups {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .reports__group {
+    padding: 14px;
+  }
+}

@@ -1,0 +1,197 @@
+.avatar {
+  position: relative;
+
+  display: inline-flex;
+  flex: 0 0 auto;
+
+  align-items: center;
+  justify-content: center;
+
+  overflow: visible;
+
+  color: var(--af-text);
+
+  background: #e8edf1;
+
+  vertical-align: middle;
+
+  user-select: none;
+}
+
+.avatar__image {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.avatar__initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+
+  font-weight: 700;
+  line-height: 1;
+
+  color: var(--af-navy);
+}
+
+.avatar__icon {
+  width: 52%;
+  height: 52%;
+
+  color: var(--af-text-muted);
+}
+
+.avatar--circle {
+  border-radius: 50%;
+}
+
+.avatar--rounded {
+  border-radius: 9px;
+}
+
+.avatar--square {
+  border-radius: 5px;
+}
+
+/* Sizes */
+
+.avatar--xs {
+  width: 24px;
+  height: 24px;
+
+  font-size: 12px;
+}
+
+.avatar--small {
+  width: 32px;
+  height: 32px;
+
+  font-size: 12px;
+}
+
+.avatar--medium {
+  width: 40px;
+  height: 40px;
+
+  font-size: 12px;
+}
+
+.avatar--large {
+  width: 48px;
+  height: 48px;
+
+  font-size: 14px;
+}
+
+.avatar--xlarge {
+  width: 64px;
+  height: 64px;
+
+  font-size: 17px;
+}
+
+/* Variants */
+
+.avatar--default {
+  background: #e8edf1;
+}
+
+.avatar--employee {
+  background: #e4e9ef;
+}
+
+.avatar--primary {
+  background: #dfe5ec;
+}
+
+.avatar--success {
+  background: #dcefe7;
+}
+
+.avatar--warning {
+  background: #f4e9d3;
+}
+
+.avatar--danger {
+  background: #f3dddd;
+}
+
+.avatar--info {
+  background: #dfeaf4;
+}
+
+/* Border */
+
+.avatar--bordered {
+  border: 2px solid var(--af-surface);
+  box-shadow: 0 0 0 1px var(--af-border);
+}
+
+/* Status */
+
+.avatar__status {
+  position: absolute;
+
+  right: -1px;
+  bottom: -1px;
+
+  width: 10px;
+  height: 10px;
+
+  border: 2px solid var(--af-surface);
+
+  border-radius: 50%;
+}
+
+.avatar--xs .avatar__status {
+  width: 7px;
+  height: 7px;
+
+  border-width: 1px;
+}
+
+.avatar--small .avatar__status {
+  width: 8px;
+  height: 8px;
+
+  border-width: 2px;
+}
+
+.avatar--large .avatar__status,
+.avatar--xlarge .avatar__status {
+  width: 11px;
+  height: 11px;
+}
+
+.avatar__status--online {
+  background: var(--af-success);
+}
+
+.avatar__status--offline {
+  background: #98a2b3;
+}
+
+.avatar__status--busy {
+  background: var(--af-danger);
+}
+
+.avatar__status--away {
+  background: var(--af-warning);
+}
+
+.avatar__status--active {
+  background: var(--af-success);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar {
+    transition: none;
+  }
+}

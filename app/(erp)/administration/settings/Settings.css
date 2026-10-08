@@ -1,0 +1,82 @@
+.admin-settings {
+  width: 100%;
+  min-width: 0;
+}
+
+.admin-settings__content {
+  width: 100%;
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+.admin-settings__card {
+  padding: 16px;
+
+  background: var(--af-surface);
+
+  border: 1px solid var(--af-border);
+  border-radius: 9px;
+}
+
+.admin-settings__card h2 {
+  margin: 0 0 12px;
+
+  color: var(--af-text);
+
+  font-size: 14px;
+  line-height: 19px;
+  font-weight: 700;
+}
+
+.admin-settings__chips {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 6px;
+}
+
+.admin-settings__chips span {
+  padding: 4px 10px;
+
+  border-radius: 10px;
+
+  background: var(--af-surface-soft);
+
+  border: 1px solid var(--af-border);
+
+  color: var(--af-text-secondary);
+
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+.admin-settings__note {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 12px 14px;
+
+  background: var(--af-surface);
+
+  border: 1px solid var(--af-border);
+  border-radius: 8px;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.admin-settings__note svg {
+  flex-shrink: 0;
+
+  color: var(--af-navy);
+}

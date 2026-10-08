@@ -1,0 +1,245 @@
+.af-number-input {
+  width: 100%;
+  min-width: 0;
+  font-family: inherit;
+}
+
+.af-number-input--full {
+  width: 100%;
+}
+
+.af-number-input__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 6px;
+  color: var(--af-text);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.af-number-input__required {
+  color: var(--af-danger);
+}
+
+.af-number-input__description {
+  margin: -1px 0 7px;
+  color: var(--af-text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.af-number-input__field {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--af-border-dark);
+  border-radius: 7px;
+  background: var(--af-surface);
+  transition:
+    border-color var(--transition-normal),
+    box-shadow var(--transition-normal);
+}
+
+.af-number-input__field:focus-within {
+  border-color: var(--af-navy);
+  box-shadow: 0 0 0 3px rgba(36, 49, 70, 0.08);
+}
+
+.af-number-input__input-wrap {
+  position: relative;
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.af-number-input__input-wrap input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0 10px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--af-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.af-number-input__input-wrap input::placeholder {
+  color: #98a2b3;
+}
+
+.af-number-input__input-wrap input:disabled {
+  cursor: not-allowed;
+}
+
+.af-number-input__control {
+  width: 38px;
+  flex: 0 0 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: #f7f8fa;
+  color: var(--af-text-secondary);
+  cursor: pointer;
+  transition:
+    background var(--transition-normal),
+    color var(--transition-normal);
+}
+
+.af-number-input__control:hover:not(:disabled) {
+  background: #edf0f3;
+  color: var(--af-navy);
+}
+
+.af-number-input__control:active:not(:disabled) {
+  background: #e5e9ed;
+}
+
+.af-number-input__control:disabled {
+  color: #b8bec6;
+  cursor: not-allowed;
+}
+
+.af-number-input__control:first-child {
+  border-right: 1px solid var(--af-border);
+}
+
+.af-number-input__control:last-child {
+  border-left: 1px solid var(--af-border);
+}
+
+.af-number-input__prefix,
+.af-number-input__suffix {
+  flex: 0 0 auto;
+  color: var(--af-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.af-number-input__prefix {
+  padding-left: 10px;
+}
+
+.af-number-input__suffix {
+  padding-right: 10px;
+}
+
+.af-number-input__message {
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.af-number-input__message--error {
+  color: var(--af-danger);
+}
+
+.af-number-input__message--success {
+  color: var(--af-success);
+}
+
+/* Sizes */
+
+.af-number-input--small .af-number-input__field {
+  min-height: 34px;
+}
+
+.af-number-input--small
+  .af-number-input__control {
+  width: 32px;
+  flex-basis: 32px;
+}
+
+.af-number-input--small
+  .af-number-input__input-wrap input {
+  font-size: 12px;
+}
+
+.af-number-input--medium .af-number-input__field {
+  min-height: 40px;
+}
+
+.af-number-input--large .af-number-input__field {
+  min-height: 46px;
+}
+
+.af-number-input--large
+  .af-number-input__control {
+  width: 44px;
+  flex-basis: 44px;
+}
+
+.af-number-input--large
+  .af-number-input__input-wrap input {
+  font-size: 14px;
+}
+
+/* Compact */
+
+.af-number-input--compact .af-number-input__field {
+  min-height: 34px;
+}
+
+.af-number-input--compact
+  .af-number-input__control {
+  width: 32px;
+  flex-basis: 32px;
+}
+
+.af-number-input--compact
+  .af-number-input__input-wrap input {
+  font-size: 12px;
+}
+
+/* States */
+
+.af-number-input--error .af-number-input__field {
+  border-color: #d58d8d;
+}
+
+.af-number-input--error .af-number-input__field:focus-within {
+  border-color: var(--af-danger);
+  box-shadow: 0 0 0 3px rgba(196, 69, 69, 0.08);
+}
+
+.af-number-input--success .af-number-input__field {
+  border-color: #9bcbb8;
+}
+
+.af-number-input--disabled {
+  opacity: 0.6;
+}
+
+.af-number-input--disabled
+  .af-number-input__field {
+  background: #f1f3f5;
+}
+
+.af-number-input--readonly
+  .af-number-input__field {
+  background: var(--af-surface-soft);
+}
+
+/* Responsive */
+
+@media (max-width: 480px) {
+  .af-number-input__control {
+    width: 36px;
+    flex-basis: 36px;
+  }
+
+  .af-number-input__input-wrap input {
+    font-size: 13px;
+  }
+}

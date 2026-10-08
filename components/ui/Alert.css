@@ -1,0 +1,290 @@
+.erp-alert {
+  width: 100%;
+  min-width: 0;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+
+  padding: 13px 14px;
+
+  border-radius: 8px;
+
+  background: var(--af-surface);
+
+  color: var(--af-text);
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.erp-alert--bordered {
+  border: 1px solid var(--af-border);
+}
+
+/* -------------------------------------------------------
+   Icon
+------------------------------------------------------- */
+
+.erp-alert__icon {
+  width: 20px;
+  min-width: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-top: 1px;
+}
+
+/* -------------------------------------------------------
+   Content
+------------------------------------------------------- */
+
+.erp-alert__content {
+  min-width: 0;
+  flex: 1;
+}
+
+.erp-alert__title {
+  color: var(--af-text);
+
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.erp-alert__message {
+  margin-top: 3px;
+
+  color: var(--af-text-secondary);
+
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.erp-alert__title
+  + .erp-alert__message {
+  margin-top: 3px;
+}
+
+/* -------------------------------------------------------
+   Action
+------------------------------------------------------- */
+
+.erp-alert__action {
+  margin-top: 8px;
+}
+
+.erp-alert__action-button {
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 28px;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: inherit;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  cursor: pointer;
+}
+
+.erp-alert__action-button:hover {
+  opacity: 0.75;
+}
+
+.erp-alert__action-button:focus-visible {
+  outline: none;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(36, 49, 70, 0.1);
+}
+
+/* -------------------------------------------------------
+   Close
+------------------------------------------------------- */
+
+.erp-alert__close {
+  width: 28px;
+  height: 28px;
+
+  min-width: 28px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: -3px -4px 0 0;
+
+  padding: 0;
+
+  border: 0;
+  border-radius: 5px;
+
+  background: transparent;
+  color: var(--af-text-muted);
+
+  cursor: pointer;
+
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.erp-alert__close:hover {
+  background: rgba(16, 24, 40, 0.06);
+  color: var(--af-text);
+}
+
+.erp-alert__close:focus-visible {
+  outline: none;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(36, 49, 70, 0.09);
+}
+
+/* -------------------------------------------------------
+   Info
+------------------------------------------------------- */
+
+.erp-alert--info {
+  background: rgba(40, 104, 168, 0.055);
+  border-color: rgba(40, 104, 168, 0.16);
+}
+
+.erp-alert--info .erp-alert__icon {
+  color: var(--af-info);
+}
+
+.erp-alert--info .erp-alert__action-button {
+  color: var(--af-info);
+}
+
+/* -------------------------------------------------------
+   Success
+------------------------------------------------------- */
+
+.erp-alert--success {
+  background: rgba(22, 133, 91, 0.055);
+  border-color: rgba(22, 133, 91, 0.16);
+}
+
+.erp-alert--success .erp-alert__icon {
+  color: var(--af-success);
+}
+
+.erp-alert--success .erp-alert__action-button {
+  color: var(--af-success);
+}
+
+/* -------------------------------------------------------
+   Warning
+------------------------------------------------------- */
+
+.erp-alert--warning {
+  background: rgba(201, 130, 22, 0.06);
+  border-color: rgba(201, 130, 22, 0.18);
+}
+
+.erp-alert--warning .erp-alert__icon {
+  color: var(--af-warning);
+}
+
+.erp-alert--warning .erp-alert__action-button {
+  color: var(--af-warning);
+}
+
+/* -------------------------------------------------------
+   Danger
+------------------------------------------------------- */
+
+.erp-alert--danger {
+  background: rgba(196, 69, 69, 0.055);
+  border-color: rgba(196, 69, 69, 0.17);
+}
+
+.erp-alert--danger .erp-alert__icon {
+  color: var(--af-danger);
+}
+
+.erp-alert--danger .erp-alert__action-button {
+  color: var(--af-danger);
+}
+
+/* -------------------------------------------------------
+   Neutral
+------------------------------------------------------- */
+
+.erp-alert--neutral {
+  background: var(--af-surface-soft);
+  border-color: var(--af-border);
+}
+
+.erp-alert--neutral .erp-alert__icon {
+  color: var(--af-text-muted);
+}
+
+.erp-alert--neutral .erp-alert__action-button {
+  color: var(--af-navy);
+}
+
+/* -------------------------------------------------------
+   Compact
+------------------------------------------------------- */
+
+.erp-alert--compact {
+  padding: 9px 11px;
+  gap: 8px;
+}
+
+.erp-alert--compact .erp-alert__icon {
+  width: 18px;
+  min-width: 18px;
+}
+
+.erp-alert--compact .erp-alert__title {
+  font-size: 12px;
+}
+
+.erp-alert--compact .erp-alert__message {
+  font-size: 12px;
+}
+
+/* -------------------------------------------------------
+   Mobile
+------------------------------------------------------- */
+
+@media (max-width: 560px) {
+  .erp-alert {
+    padding: 12px;
+  }
+
+  .erp-alert__close {
+    margin-right: -2px;
+  }
+}
+
+/* -------------------------------------------------------
+   Reduced motion
+------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .erp-alert__close,
+  .erp-alert__action-button {
+    transition: none;
+  }
+}

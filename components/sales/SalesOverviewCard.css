@@ -1,0 +1,230 @@
+.sales-overview-card {
+  position: relative;
+
+  min-width: 0;
+  min-height: 168px;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 18px;
+
+  background: var(--af-surface);
+
+  border: 1px solid var(--af-border);
+  border-radius: 10px;
+
+  overflow: hidden;
+
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.sales-overview-card:hover {
+  border-color: var(--af-border-dark);
+
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, 0.06);
+
+  transform: translateY(-1px);
+}
+
+/* =========================================
+   TOP
+========================================= */
+
+.sales-overview-card__top {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sales-overview-card__icon {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 7px;
+
+  background: var(--af-bg);
+  color: var(--af-navy);
+}
+
+.sales-overview-card__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* =========================================
+   LINK
+========================================= */
+
+.sales-overview-card__link {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 6px;
+
+  color: var(--af-text-muted);
+
+  text-decoration: none;
+
+  transition:
+    color 150ms ease,
+    background-color 150ms ease;
+}
+
+.sales-overview-card__link:hover {
+  color: var(--af-text);
+
+  background: var(--af-bg);
+}
+
+.sales-overview-card__link:focus-visible {
+  outline: 2px solid var(--af-info);
+  outline-offset: 2px;
+}
+
+/* =========================================
+   CONTENT
+========================================= */
+
+.sales-overview-card__content {
+  min-width: 0;
+
+  margin-top: 18px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.sales-overview-card__label {
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sales-overview-card__value {
+  margin-top: 5px;
+
+  color: var(--af-text);
+
+  font-size: 26px;
+  line-height: 32px;
+  font-weight: 700;
+
+  letter-spacing: -0.02em;
+
+  overflow-wrap: anywhere;
+}
+
+.sales-overview-card__description {
+  margin-top: 5px;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 17px;
+  font-weight: 500;
+}
+
+/* =========================================
+   TREND
+========================================= */
+
+.sales-overview-card__trend {
+  margin-top: auto;
+  padding-top: 14px;
+
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+.sales-overview-card__trend--positive {
+  color: var(--af-success);
+}
+
+.sales-overview-card__trend--negative {
+  color: var(--af-danger);
+}
+
+.sales-overview-card__trend--warning {
+  color: var(--af-warning);
+}
+
+.sales-overview-card__trend--neutral {
+  color: var(--af-text-muted);
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1100px) {
+  .sales-overview-card {
+    min-height: 158px;
+
+    padding: 16px;
+  }
+
+  .sales-overview-card__value {
+    font-size: 24px;
+    line-height: 30px;
+  }
+}
+
+@media (max-width: 700px) {
+  .sales-overview-card {
+    min-height: 150px;
+
+    padding: 15px;
+  }
+
+  .sales-overview-card__content {
+    margin-top: 15px;
+  }
+
+  .sales-overview-card__value {
+    font-size: 23px;
+    line-height: 29px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sales-overview-card {
+    min-height: 142px;
+
+    padding: 14px;
+  }
+
+  .sales-overview-card__icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+  }
+
+  .sales-overview-card__value {
+    font-size: 22px;
+    line-height: 28px;
+  }
+}

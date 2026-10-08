@@ -1,0 +1,256 @@
+.production-dashboard {
+  width: 100%;
+  min-width: 0;
+  padding: 24px;
+}
+
+.production-dashboard__content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  min-width: 0;
+}
+
+.production-dashboard__kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.production-dashboard__kpi {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  min-width: 0;
+  padding: 17px;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 10px;
+  transition:
+    border-color var(--transition-normal),
+    box-shadow var(--transition-normal);
+}
+
+.production-dashboard__kpi:hover {
+  border-color: var(--af-border-dark);
+  box-shadow: 0 4px 14px rgba(23, 32, 42, 0.04);
+}
+
+.production-dashboard__kpi-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  color: var(--af-navy);
+  background: var(--af-surface-soft);
+  border: 1px solid var(--af-border);
+  border-radius: 8px;
+}
+
+.production-dashboard__kpi--danger
+  .production-dashboard__kpi-icon {
+  color: var(--af-danger);
+}
+
+.production-dashboard__kpi-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.production-dashboard__kpi-body > span {
+  color: var(--af-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.production-dashboard__kpi-body strong {
+  color: var(--af-text);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.production-dashboard__kpi-body small {
+  color: var(--af-text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.production-dashboard__kpi--danger
+  .production-dashboard__kpi-body strong {
+  color: var(--af-danger);
+}
+
+.production-dashboard__workflow {
+  overflow: hidden;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 10px;
+}
+
+.production-dashboard__section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--af-border);
+}
+
+.production-dashboard__section-heading h2 {
+  margin: 0;
+  color: var(--af-text);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.production-dashboard__section-heading p {
+  margin: 3px 0 0;
+  color: var(--af-text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.production-dashboard__workflow-track {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding: 22px 20px;
+}
+
+.production-dashboard__workflow-step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.production-dashboard__workflow-icon {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  color: var(--af-navy);
+  background: var(--af-surface);
+  border: 1px solid var(--af-border-dark);
+  border-radius: 8px;
+}
+
+.production-dashboard__workflow-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.production-dashboard__workflow-copy strong {
+  color: var(--af-text);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.production-dashboard__workflow-copy span {
+  color: var(--af-text-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.production-dashboard__workflow-line {
+  position: absolute;
+  top: 19px;
+  left: 38px;
+  right: 0;
+  height: 1px;
+  background: var(--af-border);
+  transform: translateX(8px);
+}
+
+.production-dashboard__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.production-dashboard__panel {
+  min-width: 0;
+}
+
+.production-dashboard__panel .erp-card__body {
+  min-height: 190px;
+}
+
+.production-dashboard__panel .erp-empty-state {
+  min-height: 165px;
+  padding: 20px 10px;
+}
+
+@media (max-width: 1150px) {
+  .production-dashboard__kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .production-dashboard__workflow-track {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px 12px;
+  }
+
+  .production-dashboard__workflow-line {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .production-dashboard {
+    padding: 20px;
+  }
+
+  .production-dashboard__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .production-dashboard {
+    padding: 16px;
+  }
+
+  .production-dashboard__kpis {
+    grid-template-columns: 1fr;
+  }
+
+  .production-dashboard__workflow-track {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .production-dashboard__workflow-step {
+    padding-bottom: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .production-dashboard {
+    padding: 12px;
+  }
+
+  .production-dashboard__kpi {
+    padding: 14px;
+  }
+
+  .production-dashboard__section-heading {
+    padding: 15px;
+  }
+}

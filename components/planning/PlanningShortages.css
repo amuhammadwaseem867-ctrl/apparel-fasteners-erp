@@ -1,0 +1,237 @@
+.planning-shortages {
+  width: 100%;
+  overflow: hidden;
+  background: var(--af-surface);
+  border: 1px solid var(--af-border);
+  border-radius: 10px;
+}
+
+.planning-shortages__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--af-border);
+}
+
+.planning-shortages__heading {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+
+.planning-shortages__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  color: var(--af-warning);
+  background: rgba(201, 130, 22, 0.08);
+  border: 1px solid rgba(201, 130, 22, 0.18);
+  border-radius: 7px;
+}
+
+.planning-shortages__title {
+  margin: 0;
+  color: var(--af-text);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.planning-shortages__description {
+  margin: 3px 0 0;
+  color: var(--af-text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.planning-shortages__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  color: var(--af-navy);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: opacity var(--transition-normal);
+}
+
+.planning-shortages__link:hover {
+  opacity: 0.72;
+}
+
+.planning-shortages__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.planning-shortage {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--af-border);
+  transition: background var(--transition-normal);
+}
+
+.planning-shortage:last-child {
+  border-bottom: 0;
+}
+
+.planning-shortage:hover {
+  background: var(--af-surface-soft);
+}
+
+.planning-shortage__main {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  min-width: 0;
+}
+
+.planning-shortage__material-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  color: var(--af-danger);
+  background: rgba(196, 69, 69, 0.06);
+  border: 1px solid rgba(196, 69, 69, 0.15);
+  border-radius: 6px;
+}
+
+.planning-shortage__content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 3px;
+}
+
+.planning-shortage__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.planning-shortage__material {
+  margin: 0;
+  overflow: hidden;
+  color: var(--af-text);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planning-shortage__code {
+  color: var(--af-text-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.planning-shortage__details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+  color: var(--af-text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.planning-shortage__details strong {
+  color: var(--af-text-secondary);
+  font-weight: 700;
+}
+
+.planning-shortage__priority {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-height: 21px;
+  padding: 2px 7px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  border-radius: 999px;
+}
+
+.planning-shortage__priority--critical,
+.planning-shortage__priority--high {
+  color: var(--af-danger);
+  background: rgba(196, 69, 69, 0.08);
+  border: 1px solid rgba(196, 69, 69, 0.16);
+}
+
+.planning-shortage__priority--medium {
+  color: var(--af-warning);
+  background: rgba(201, 130, 22, 0.08);
+  border: 1px solid rgba(201, 130, 22, 0.16);
+}
+
+.planning-shortage__priority--low {
+  color: var(--af-info);
+  background: rgba(40, 104, 168, 0.08);
+  border: 1px solid rgba(40, 104, 168, 0.16);
+}
+
+.planning-shortage__date {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 6px;
+  color: var(--af-text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.planning-shortage__date svg {
+  color: var(--af-text-secondary);
+}
+
+.planning-shortages .erp-empty-state {
+  min-height: 190px;
+  border: 0;
+  border-radius: 0;
+}
+
+@media (max-width: 760px) {
+  .planning-shortages__header {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .planning-shortage {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 14px 16px;
+  }
+
+  .planning-shortage__date {
+    padding-left: 43px;
+  }
+}
+
+@media (max-width: 480px) {
+  .planning-shortage__title-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .planning-shortage__details {
+    flex-direction: column;
+    gap: 3px;
+  }
+}

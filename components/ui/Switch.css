@@ -1,0 +1,201 @@
+.switch {
+  display: flex;
+}
+
+.switch__label {
+  display: inline-flex;
+  align-items: flex-start;
+
+  gap: 10px;
+
+  cursor: pointer;
+}
+
+.switch__control {
+  position: relative;
+
+  display: inline-flex;
+
+  flex: 0 0 auto;
+}
+
+.switch__control input {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  opacity: 0;
+
+  pointer-events: none;
+}
+
+.switch__track {
+  position: relative;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  width: 38px;
+  height: 22px;
+
+  padding: 2px;
+
+  border-radius: 999px;
+
+  background: #c7ced6;
+
+  transition:
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.switch__thumb {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 18px;
+  height: 18px;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.16);
+
+  transform: translateX(0);
+
+  transition:
+    transform 160ms ease;
+}
+
+.switch__check {
+  display: none;
+
+  color: var(--af-success);
+}
+
+.switch__control input:checked
+  + .switch__track {
+  background: var(--af-success);
+}
+
+.switch__control input:checked
+  + .switch__track
+  .switch__thumb {
+  transform: translateX(16px);
+}
+
+.switch__control input:checked
+  + .switch__track
+  .switch__check {
+  display: block;
+}
+
+.switch__control input:focus-visible
+  + .switch__track {
+  box-shadow:
+    0 0 0 3px rgba(36, 49, 70, 0.12);
+}
+
+.switch__content {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+}
+
+.switch__title {
+  color: var(--af-text);
+
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+}
+
+.switch__description {
+  margin-top: 2px;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.switch__state {
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 650;
+}
+
+.switch--disabled {
+  opacity: 0.55;
+}
+
+.switch--disabled
+  .switch__label {
+  cursor: not-allowed;
+}
+
+/* Sizes */
+
+.switch--small
+  .switch__track {
+  width: 32px;
+  height: 19px;
+}
+
+.switch--small
+  .switch__thumb {
+  width: 15px;
+  height: 15px;
+}
+
+.switch--small
+  .switch__control input:checked
+  + .switch__track
+  .switch__thumb {
+  transform: translateX(13px);
+}
+
+.switch--small
+  .switch__title {
+  font-size: 12px;
+}
+
+.switch--large
+  .switch__track {
+  width: 44px;
+  height: 25px;
+}
+
+.switch--large
+  .switch__thumb {
+  width: 21px;
+  height: 21px;
+}
+
+.switch--large
+  .switch__control input:checked
+  + .switch__track
+  .switch__thumb {
+  transform: translateX(19px);
+}
+
+.switch--large
+  .switch__title {
+  font-size: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .switch__track,
+  .switch__thumb {
+    transition: none;
+  }
+}

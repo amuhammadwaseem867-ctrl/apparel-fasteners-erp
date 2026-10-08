@@ -1,0 +1,368 @@
+.rfqs-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.rfqs-page__primary-button {
+  min-height: 38px;
+  padding: 0 15px;
+  border: 1px solid #243146;
+  border-radius: 7px;
+  background: #243146;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rfqs-page__primary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.rfqs-page__notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 15px 18px;
+  border: 1px solid #e5d8bd;
+  border-radius: 9px;
+  background: #fffaf0;
+}
+
+.rfqs-page__notice strong {
+  display: block;
+  color: #684d1f;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.rfqs-page__notice p {
+  margin: 4px 0 0;
+  color: #806a42;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.rfqs-page__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+}
+
+.rfqs-page__stat {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.rfqs-page__stat-icon {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dde2e7;
+  border-radius: 8px;
+  background: #f8fafb;
+  color: #243146;
+}
+
+.rfqs-page__stat span {
+  display: block;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.rfqs-page__stat strong {
+  display: block;
+  margin-top: 3px;
+  color: #17202a;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 750;
+}
+
+.rfqs-page__toolbar-card {
+  padding: 12px;
+}
+
+.rfqs-page__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rfqs-page__search {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.rfqs-page__search > svg {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  z-index: 2;
+  color: #98a2b3;
+  transform: translateY(-50%);
+}
+
+.rfqs-page__search input {
+  padding-left: 37px;
+}
+
+.rfqs-page__filter {
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 13px;
+  border: 1px solid #dde2e7;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #475467;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.rfqs-page__filter:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.rfqs-page__register {
+  min-width: 0;
+}
+
+.rfqs-page__section {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.rfqs-page__section-heading h2 {
+  margin: 0;
+  color: #243146;
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: 750;
+}
+
+.rfqs-page__section-heading p {
+  margin: 4px 0 0;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.rfqs-page__lifecycle {
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+}
+
+.rfqs-page__lifecycle-wrapper {
+  display: flex;
+  align-items: center;
+  flex: 1 1 0;
+  min-width: 175px;
+}
+
+.rfqs-page__lifecycle-step {
+  width: 100%;
+  min-height: 125px;
+  padding: 14px;
+  border: 1px solid #dde2e7;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.rfqs-page__lifecycle-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 27px;
+  height: 21px;
+  border-radius: 4px;
+  background: #f1f4f7;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.rfqs-page__lifecycle-step strong {
+  display: block;
+  margin-top: 11px;
+  color: #344054;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.rfqs-page__lifecycle-step p {
+  margin: 5px 0 0;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.rfqs-page__lifecycle-arrow {
+  flex: 0 0 27px;
+  margin: 0 6px;
+  color: #98a2b3;
+}
+
+.rfqs-page__comparison-card {
+  min-width: 0;
+}
+
+.rfqs-page__comparison-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #edf0f2;
+}
+
+.rfqs-page__comparison-header strong {
+  display: block;
+  color: #344054;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.rfqs-page__comparison-header p {
+  margin: 4px 0 0;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.rfqs-page__criteria {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 15px;
+}
+
+.rfqs-page__criterion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 10px;
+  border: 1px solid #e5e8eb;
+  border-radius: 7px;
+  background: #f8fafb;
+}
+
+.rfqs-page__criterion svg {
+  flex: 0 0 auto;
+  color: #16855b;
+}
+
+.rfqs-page__criterion span {
+  color: #475467;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.rfqs-page__controls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+}
+
+.rfqs-page__controls p {
+  margin: 10px 0 0;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.rfqs-page__warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 13px 15px;
+  border: 1px solid #ead7d7;
+  border-radius: 8px;
+  background: #fff7f7;
+  color: #a34747;
+}
+
+.rfqs-page__warning svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.rfqs-page__warning p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 1100px) {
+  .rfqs-page__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rfqs-page__criteria {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rfqs-page__controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .rfqs-page__notice {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .rfqs-page__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rfqs-page__filter {
+    justify-content: center;
+  }
+
+  .rfqs-page__lifecycle {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    overflow: visible;
+  }
+
+  .rfqs-page__lifecycle-wrapper {
+    min-width: 0;
+  }
+
+  .rfqs-page__lifecycle-arrow {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .rfqs-page__stats,
+  .rfqs-page__criteria,
+  .rfqs-page__controls {
+    grid-template-columns: 1fr;
+  }
+
+  .rfqs-page__comparison-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

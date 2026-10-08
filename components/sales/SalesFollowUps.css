@@ -1,0 +1,391 @@
+.sales-follow-ups {
+  width: 100%;
+  min-width: 0;
+
+  padding: 20px;
+
+  background: var(--af-surface);
+
+  border: 1px solid var(--af-border);
+  border-radius: 10px;
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.sales-follow-ups__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  margin-bottom: 18px;
+}
+
+.sales-follow-ups__heading {
+  min-width: 0;
+}
+
+.sales-follow-ups__title {
+  margin: 0;
+
+  color: var(--af-text);
+
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 700;
+}
+
+.sales-follow-ups__description {
+  margin: 5px 0 0;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 500;
+}
+
+/* =========================================
+   VIEW ALL
+========================================= */
+
+.sales-follow-ups__view-all {
+  flex-shrink: 0;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  padding: 5px 7px;
+
+  border-radius: 5px;
+
+  color: var(--af-text-secondary);
+
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+
+  text-decoration: none;
+
+  transition:
+    color 150ms ease,
+    background-color 150ms ease;
+}
+
+.sales-follow-ups__view-all:hover {
+  color: var(--af-text);
+
+  background: var(--af-bg);
+}
+
+/* =========================================
+   LIST
+========================================= */
+
+.sales-follow-ups__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.sales-follow-ups__item {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 11px;
+
+  min-width: 0;
+
+  padding: 13px 0;
+
+  border-bottom: 1px solid var(--af-border);
+}
+
+.sales-follow-ups__item:first-child {
+  padding-top: 4px;
+}
+
+.sales-follow-ups__item:last-child {
+  padding-bottom: 4px;
+
+  border-bottom: 0;
+}
+
+/* =========================================
+   PRIORITY
+========================================= */
+
+.sales-follow-ups__priority {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 7px;
+
+  color: var(--af-text-muted);
+
+  background: var(--af-bg);
+}
+
+.sales-follow-ups__priority--urgent {
+  color: var(--af-danger);
+
+  background: rgba(196, 69, 69, 0.08);
+}
+
+.sales-follow-ups__priority--high {
+  color: var(--af-warning);
+
+  background: rgba(201, 130, 22, 0.08);
+}
+
+.sales-follow-ups__priority--normal {
+  color: var(--af-info);
+
+  background: rgba(40, 104, 168, 0.08);
+}
+
+.sales-follow-ups__priority--low {
+  color: var(--af-text-muted);
+
+  background: var(--af-bg);
+}
+
+/* =========================================
+   CONTENT
+========================================= */
+
+.sales-follow-ups__content {
+  min-width: 0;
+
+  flex: 1;
+}
+
+.sales-follow-ups__main {
+  min-width: 0;
+
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+
+  flex-wrap: wrap;
+}
+
+.sales-follow-ups__title-text {
+  color: var(--af-text);
+
+  font-size: 12px;
+  line-height: 17px;
+  font-weight: 700;
+
+  overflow-wrap: anywhere;
+}
+
+.sales-follow-ups__reference {
+  color: var(--af-text-secondary);
+
+  font-size: 12px;
+  line-height: 17px;
+  font-weight: 600;
+}
+
+.sales-follow-ups__customer {
+  margin-top: 4px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 5px;
+
+  color: var(--af-text-secondary);
+
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.sales-follow-ups__customer svg {
+  flex-shrink: 0;
+}
+
+/* =========================================
+   META
+========================================= */
+
+.sales-follow-ups__meta {
+  margin-top: 6px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  flex-wrap: wrap;
+}
+
+.sales-follow-ups__meta-item {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 5px;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+}
+
+.sales-follow-ups__meta-item--overdue {
+  color: var(--af-danger);
+
+  font-weight: 600;
+}
+
+/* =========================================
+   ACTION
+========================================= */
+
+.sales-follow-ups__action {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-top: 2px;
+
+  border-radius: 6px;
+
+  color: var(--af-text-muted);
+
+  text-decoration: none;
+
+  transition:
+    color 150ms ease,
+    background-color 150ms ease;
+}
+
+.sales-follow-ups__action:hover {
+  color: var(--af-text);
+
+  background: var(--af-bg);
+}
+
+/* =========================================
+   EMPTY STATE
+========================================= */
+
+.sales-follow-ups__empty {
+  min-height: 180px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  padding: 24px;
+
+  background: var(--af-surface-soft);
+
+  border: 1px dashed var(--af-border-dark);
+  border-radius: 8px;
+}
+
+.sales-follow-ups__empty-icon {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 7px;
+
+  background: var(--af-bg);
+  color: var(--af-text-muted);
+}
+
+.sales-follow-ups__empty-content {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sales-follow-ups__empty-content strong {
+  color: var(--af-text);
+
+  font-size: 12px;
+  line-height: 17px;
+  font-weight: 700;
+}
+
+.sales-follow-ups__empty-content span {
+  max-width: 460px;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+  line-height: 17px;
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 640px) {
+  .sales-follow-ups {
+    padding: 16px;
+  }
+
+  .sales-follow-ups__header {
+    margin-bottom: 15px;
+  }
+
+  .sales-follow-ups__view-all span {
+    display: none;
+  }
+
+  .sales-follow-ups__item {
+    gap: 9px;
+  }
+
+  .sales-follow-ups__priority {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+  }
+
+  .sales-follow-ups__meta {
+    gap: 8px;
+  }
+
+  .sales-follow-ups__empty {
+    align-items: flex-start;
+    justify-content: flex-start;
+
+    padding: 18px;
+  }
+}
+
+@media (max-width: 420px) {
+  .sales-follow-ups__item {
+    flex-wrap: wrap;
+  }
+
+  .sales-follow-ups__action {
+    margin-left: auto;
+  }
+}

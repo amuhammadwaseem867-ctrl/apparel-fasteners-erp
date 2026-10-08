@@ -1,0 +1,245 @@
+.procurement-activity-card {
+  min-width: 0;
+}
+
+.procurement-activity__view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #243146;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.procurement-activity__view-all:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.procurement-activity {
+  display: flex;
+  flex-direction: column;
+}
+
+.procurement-activity__item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  padding: 13px 4px;
+  border-bottom: 1px solid #edf0f2;
+  color: inherit;
+  text-decoration: none;
+}
+
+.procurement-activity__item:first-child {
+  padding-top: 4px;
+}
+
+.procurement-activity__item:last-child {
+  padding-bottom: 4px;
+  border-bottom: 0;
+}
+
+.procurement-activity__item[href] {
+  cursor: pointer;
+}
+
+.procurement-activity__item[href]:hover
+  .procurement-activity__content
+  > .procurement-activity__top
+  > strong {
+  color: #243146;
+}
+
+.procurement-activity__icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #f1f4f7;
+  color: #243146;
+}
+
+.procurement-activity__icon--success {
+  background: #edf8f3;
+  color: #16855b;
+}
+
+.procurement-activity__icon--warning {
+  background: #fff7e9;
+  color: #a96c13;
+}
+
+.procurement-activity__icon--danger {
+  background: #fff0f0;
+  color: #b33e3e;
+}
+
+.procurement-activity__icon--info {
+  background: #eef5fb;
+  color: #2868a8;
+}
+
+.procurement-activity__content {
+  min-width: 0;
+  flex: 1;
+}
+
+.procurement-activity__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.procurement-activity__top strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #344054;
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 160ms ease;
+}
+
+.procurement-activity__top time {
+  flex: 0 0 auto;
+  color: #98a2b3;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.procurement-activity__content p {
+  margin: 4px 0 0;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.procurement-activity__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.procurement-activity__meta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 7px;
+  border: 1px solid #e4e8ec;
+  border-radius: 5px;
+  background: #f8fafb;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.procurement-activity__status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-top: 7px;
+  padding: 3px 7px;
+  border-radius: 5px;
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+.procurement-activity__status--success {
+  background: #edf8f3;
+  color: #16855b;
+}
+
+.procurement-activity__status--warning {
+  background: #fff7e9;
+  color: #a96c13;
+}
+
+.procurement-activity__status--danger {
+  background: #fff0f0;
+  color: #b33e3e;
+}
+
+.procurement-activity__status--info {
+  background: #eef5fb;
+  color: #2868a8;
+}
+
+.procurement-activity__status--neutral {
+  background: #f1f4f7;
+  color: #667085;
+}
+
+.procurement-activity__arrow {
+  flex: 0 0 auto;
+  margin-top: 9px;
+  color: #98a2b3;
+}
+
+.procurement-activity__empty {
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+
+.procurement-activity__empty-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 11px;
+  border: 1px solid #dde2e7;
+  border-radius: 9px;
+  background: #f8fafb;
+  color: #667085;
+}
+
+.procurement-activity__empty strong {
+  color: #344054;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.procurement-activity__empty p {
+  max-width: 440px;
+  margin: 6px 0 0;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+@media (max-width: 640px) {
+  .procurement-activity__top {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .procurement-activity__top strong {
+    white-space: normal;
+  }
+
+  .procurement-activity__empty {
+    min-height: 160px;
+    padding: 18px;
+  }
+}
