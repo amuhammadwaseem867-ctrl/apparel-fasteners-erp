@@ -9,6 +9,7 @@ import {
   FileBarChart,
   ReceiptText,
   Users,
+  X,
 } from "lucide-react";
 
 import PageHeader from "@/components/ui/PageHeader";
