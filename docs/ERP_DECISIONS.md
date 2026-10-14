@@ -136,3 +136,45 @@ filters; it never silently truncates. CSV follows RFC 4180, starts with a
 UTF-8 BOM for Excel, and neutralises spreadsheet formulas in text fields
 (`server/core/utils/csv.ts`). CSV was chosen over a native .xlsx library to
 avoid a new dependency; Excel opens it directly.
+
+## D-016: Product is the single item master
+
+Inventory items are `Product` rows extended with size, material, type,
+finish, colour, logo, barcode and minimum stock. There is no second item
+table, and sales order lines already reference products. Every distinct
+combination is its own SKU. `lib/inventory/sku.js` suggests a deterministic
+SKU from the specification; the unique constraint guarantees no collisions.
+The required catalogue (`lib/inventory/catalog.js`, from `config/items.js`)
+expands to 72 distinct items. The previous generator collapsed "Antique
+Silver/Brass/Copper" into one SKU and dropped slider variants; it now yields
+72 unique SKUs (tested).
+
+## D-017: Stock ledger design
+
+- Balances (`erp_stock_balances`) per product + location with buckets on
+  hand / reserved / quality hold. CHECK constraints: all buckets >= 0, and
+  reserved + hold <= on hand.
+- All changes go through stock documents posted in one transaction. Each
+  bucket change is an atomic conditional `UPDATE ... RETURNING` that refuses
+  to take available stock below zero, and writes an append-only movement
+  with the resulting balance. The audit event is written in the same
+  transaction. Balance updates are applied in a fixed (product, location)
+  order to avoid deadlocks.
+- Idempotency: unique `idempotencyKey` per document. The UI creates one key
+  per opened form, so retries return the original document.
+- Document numbers come from `erp_document_sequences` via atomic upsert
+  (`GRN-2026-000001`).
+- Unit precision: Pcs, Sets, Boxes and Gross are whole numbers; Meters and
+  Kgs allow 3 decimals.
+- Finished goods and WIP views are balances in warehouses typed
+  `FINISHED_GOODS` / `WIP`. Stage-level WIP arrives with production.
+
+## D-018: Prisma 8 ORM filtered update is not atomic
+
+Verified with PostgreSQL statement logging: `where(filter).update(...)` runs
+`SELECT id ... WHERE filter LIMIT 1` and then `UPDATE ... WHERE id = <id>`.
+It updates at most one row and does not re-check the filter, so it cannot
+serve as compare-and-set. Concurrency-sensitive transitions (stock buckets,
+reservations, sales status) use raw conditional `UPDATE ... RETURNING` via
+`db.raw.sql\`...\`.returnsRow(...).build()` (`.build()` is required). Multi-row
+deletes use `deleteAll()`.

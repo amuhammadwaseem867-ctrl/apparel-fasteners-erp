@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { apiRequest } from "@/lib/api/client";
+import { suggestSku } from "@/lib/inventory/sku";
+import { UNITS } from "@/config/items";
 import "./ProductEditor.css";
 
 const EMPTY_PRODUCT = {
@@ -17,22 +19,42 @@ const EMPTY_PRODUCT = {
   unit: "",
   unitPrice: "0.00",
   status: "ACTIVE",
+  size: "",
+  material: "",
+  itemType: "",
+  finish: "",
+  color: "",
+  logoType: "",
+  barcode: "",
+  minimumStock: "0",
 };
 
+// [key, label, type, required]
 const FIELDS = [
-  ["sku", "SKU", "text"],
-  ["name", "Product name", "text"],
-  ["category", "Category", "text"],
-  ["productType", "Product type", "text"],
-  ["variant", "Variant", "text"],
-  ["unit", "Unit", "text"],
-  ["unitPrice", "Unit price", "number"],
+  ["sku", "SKU", "text", true],
+  ["name", "Product name", "text", true],
+  ["category", "Category", "text", true],
+  ["productType", "Product type", "text", true],
+  ["variant", "Variant", "text", false],
+  ["unitPrice", "Unit price", "number", true],
 ];
 
-export default function ProductEditor({ productId }) {
+// Item master specification: each distinct combination is its own SKU.
+const SPEC_FIELDS = [
+  ["size", "Size", "e.g. #5, #4.5, 620 SS"],
+  ["material", "Material", "e.g. Brass, Aluminium, Zinc"],
+  ["itemType", "Type", "e.g. Plain, Y-Cut, DA, Thumb"],
+  ["finish", "Finish", "e.g. Antique Silver, Golden Brass"],
+  ["color", "Colour", ""],
+  ["barcode", "Barcode / QR", "Optional, unique"],
+];
+
+const LOGO_OPTIONS = ["", "Plain", "Logo", "Standard"];
+
+export default function ProductEditor({ productId, initial }) {
   const router = useRouter();
   const editing = Boolean(productId);
-  const [form, setForm] = useState(EMPTY_PRODUCT);
+  const [form, setForm] = useState(() => ({ ...EMPTY_PRODUCT, ...initial }));
   const [loading, setLoading] = useState(editing);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -53,6 +75,14 @@ export default function ProductEditor({ productId }) {
           unit: product.unit,
           unitPrice: String(product.unitPrice),
           status: product.status === "INACTIVE" ? "INACTIVE" : "ACTIVE",
+          size: product.size || "",
+          material: product.material || "",
+          itemType: product.itemType || "",
+          finish: product.finish || "",
+          color: product.color || "",
+          logoType: product.logoType || "",
+          barcode: product.barcode || "",
+          minimumStock: String(product.minimumStock ?? 0),
         });
       })
       .catch((cause) => {
@@ -79,6 +109,11 @@ export default function ProductEditor({ productId }) {
       setError("Unit price must be a valid non-negative amount.");
       return;
     }
+    const minimumStock = Number(form.minimumStock || 0);
+    if (!Number.isFinite(minimumStock) || minimumStock < 0) {
+      setError("Minimum stock must be zero or more.");
+      return;
+    }
     setSaving(true);
     setError("");
     try {
@@ -86,7 +121,7 @@ export default function ProductEditor({ productId }) {
         editing ? `/api/products/${encodeURIComponent(productId)}` : "/api/products",
         {
           method: editing ? "PUT" : "POST",
-          body: JSON.stringify({ ...form, unitPrice }),
+          body: JSON.stringify({ ...form, unitPrice, minimumStock }),
         },
       );
       router.push(`/products/${product.id}`);
@@ -113,11 +148,11 @@ export default function ProductEditor({ productId }) {
       {error && <div className="product-editor__error" role="alert">{error}</div>}
       <form className="product-editor__form" onSubmit={submit}>
         <div className="product-editor__grid">
-          {FIELDS.map(([key, label, type]) => (
+          {FIELDS.map(([key, label, type, required]) => (
             <label key={key}>
-              <span>{label} *</span>
+              <span>{label}{required ? " *" : ""}</span>
               <input
-                required
+                required={required}
                 type={type}
                 min={type === "number" ? "0" : undefined}
                 step={type === "number" ? "any" : undefined}
@@ -126,6 +161,18 @@ export default function ProductEditor({ productId }) {
               />
             </label>
           ))}
+          <label>
+            <span>Unit *</span>
+            <input
+              required
+              list="product-editor-units"
+              value={form.unit}
+              onChange={(event) => setField("unit", event.target.value)}
+            />
+            <datalist id="product-editor-units">
+              {UNITS.map((unit) => <option key={unit} value={unit} />)}
+            </datalist>
+          </label>
           <label>
             <span>Status</span>
             <select value={form.status} onChange={(event) => setField("status", event.target.value)}>
@@ -143,6 +190,54 @@ export default function ProductEditor({ productId }) {
             />
           </label>
         </div>
+        <fieldset className="product-editor__spec">
+          <legend>Item specification</legend>
+          <p>
+            Every distinct size, material, type, finish, colour and logo
+            combination is a separate item with its own SKU and stock.
+          </p>
+          <div className="product-editor__grid">
+            {SPEC_FIELDS.map(([key, label, placeholder]) => (
+              <label key={key}>
+                <span>{label}</span>
+                <input
+                  value={form[key]}
+                  placeholder={placeholder}
+                  onChange={(event) => setField(key, event.target.value)}
+                />
+              </label>
+            ))}
+            <label>
+              <span>Logo / plain</span>
+              <select value={form.logoType} onChange={(event) => setField("logoType", event.target.value)}>
+                {LOGO_OPTIONS.map((option) => (
+                  <option key={option} value={option}>{option || "Not applicable"}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Minimum stock level</span>
+              <input
+                type="number"
+                min="0"
+                step="any"
+                value={form.minimumStock}
+                onChange={(event) => setField("minimumStock", event.target.value)}
+              />
+            </label>
+          </div>
+          {!editing && (
+            <button
+              type="button"
+              className="product-editor__suggest"
+              onClick={() => setField("sku", suggestSku(form))}
+              disabled={!form.category}
+              title={form.category ? "Build the SKU from category and specification" : "Enter a category first"}
+            >
+              Suggest SKU from specification
+            </button>
+          )}
+        </fieldset>
         <div className="product-editor__actions">
           <button type="button" disabled={saving} onClick={() => router.push("/products")}>Cancel</button>
           <button type="submit" disabled={saving}>{saving ? "Saving…" : editing ? "Save changes" : "Create product"}</button>

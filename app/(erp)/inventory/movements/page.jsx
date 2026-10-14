@@ -1,480 +1,121 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import {
-  ArrowDownToLine,
-  ArrowLeftRight,
-  ArrowUpFromLine,
-  Download,
-  Filter,
-  RefreshCw,
-  Search,
-  SlidersHorizontal,
-} from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
-import PageHeader from "@/components/ui/PageHeader";
-import InventoryBackendNotice, {
-  INVENTORY_BACKEND_UNAVAILABLE,
-} from "@/components/inventory/InventoryBackendNotice";
 import Button from "@/components/ui/Button";
+import InventoryPager from "@/components/inventory/InventoryPager";
+import { documentTypeLabel } from "@/components/inventory/DocumentsView";
+import useApiData, { toQuery } from "@/lib/inventory/useApiData";
+import { STOCK_DOCUMENT_TYPE_KEYS } from "@/server/inventory/stock-rules";
 
-import "./Movements.css";
+import "@/components/inventory/InventoryWorkspace.css";
 
-const TYPE_OPTIONS = [
-  { value: "all", label: "All Movements" },
-  { value: "receipt", label: "Receipt" },
-  { value: "issue", label: "Issue" },
-  { value: "transfer", label: "Transfer" },
-  { value: "adjustment", label: "Adjustment" },
-];
+const BUCKET_LABELS = { ON_HAND: "On hand", RESERVED: "Reserved", QUALITY_HOLD: "QC hold" };
+const TYPES = [...STOCK_DOCUMENT_TYPE_KEYS, "RESERVATION", "RESERVATION_RELEASE"];
 
-const DIRECTION_OPTIONS = [
-  { value: "all", label: "All Directions" },
-  { value: "in", label: "Stock In" },
-  { value: "out", label: "Stock Out" },
-];
+function formatDateTime(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "" : date.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
+}
 
-const MOVEMENT_CONFIG = {
-  receipt: {
-    label: "Receipt",
-    icon: ArrowDownToLine,
-    tone: "success",
-  },
-  issue: {
-    label: "Issue",
-    icon: ArrowUpFromLine,
-    tone: "danger",
-  },
-  transfer: {
-    label: "Transfer",
-    icon: ArrowLeftRight,
-    tone: "info",
-  },
-  adjustment: {
-    label: "Adjustment",
-    icon: SlidersHorizontal,
-    tone: "warning",
-  },
-};
-
+/*
+ * The stock ledger (GET /api/inventory/movements): every change to every
+ * balance bucket, newest first, with the signed quantity and the balance
+ * it left. Rows are append-only and never edited.
+ */
 export default function MovementsPage() {
-  const router = useRouter();
+  const [documentType, setDocumentType] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [page, setPage] = useState(1);
 
-  const [search, setSearch] = useState("");
-  const [type, setType] = useState("all");
-  const [direction, setDirection] = useState("all");
-  const [loading] = useState(false);
+  const movements = useApiData(`/api/inventory/movements${toQuery({ documentType, dateFrom, dateTo, page, pageSize: 50 })}`);
+  const rows = movements.data?.movements ?? [];
+  const filtered = Boolean(documentType || dateFrom || dateTo);
 
-  /*
-   * Backend-ready.
-   * No mock movement records.
-   */
-  const movements = [];
-
-  const filteredMovements = useMemo(() => {
-    const searchValue = search.trim().toLowerCase();
-
-    return movements.filter((movement) => {
-      const matchesSearch =
-        !searchValue ||
-        movement.reference
-          ?.toLowerCase()
-          .includes(searchValue) ||
-        movement.productName
-          ?.toLowerCase()
-          .includes(searchValue) ||
-        movement.sku
-          ?.toLowerCase()
-          .includes(searchValue) ||
-        movement.warehouseName
-          ?.toLowerCase()
-          .includes(searchValue);
-
-      const matchesType =
-        type === "all" || movement.type === type;
-
-      const matchesDirection =
-        direction === "all" ||
-        movement.direction === direction;
-
-      return (
-        matchesSearch &&
-        matchesType &&
-        matchesDirection
-      );
-    });
-  }, [movements, search, type, direction]);
-
-  const resetFilters = () => {
-    setSearch("");
-    setType("all");
-    setDirection("all");
-  };
-
-  const handleExport = () => {
-    /*
-     * Real client-side CSV export of the currently filtered
-     * movements. Backend-generated Excel/PDF exports will
-     * replace this when the API is connected.
-     */
-    const rows = [
-      [
-        "Type", "Reference", "Product", "SKU", "Warehouse",
-        "Direction", "Quantity", "Unit", "User", "Date",
-      ],
-      ...filteredMovements.map((movement) => [
-        movement.typeLabel || movement.type,
-        movement.reference || "",
-        movement.productName || "",
-        movement.sku || "",
-        movement.warehouseName || "",
-        movement.direction || "",
-        movement.quantity ?? "",
-        movement.unit || "",
-        movement.userName || "",
-        movement.createdAt || "",
-      ]),
-    ];
-
-    const csv = rows
-      .map((row) =>
-        row.map((cell) => `"` + String(cell).replace(/"/g, `""`) + `"`).join(",")
-      )
-      .join("\n");
-
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "stock-movements-" + new Date().toISOString().slice(0, 10) + ".csv";
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleRefresh = () => {
-    /*
-     * API refetch will be connected later; filters reset is the
-     * current frontend behavior.
-     */
-    resetFilters();
-  };
-  const hasFilters =
-    search ||
-    type !== "all" ||
-    direction !== "all";
+  function change(setter) {
+    return (event) => { setter(event.target.value); setPage(1); };
+  }
 
   return (
-    <main className="inventory-movements">
-      <PageHeader
-        eyebrow="Inventory"
-        title="Stock Movements"
-        description="Track every inventory movement across warehouses, products, and stock operations."
-        action={
-          <div className="inventory-movements__header-actions">
-            <Button
-              variant="secondary"
-              onClick={handleRefresh}
-              disabled
-              title={INVENTORY_BACKEND_UNAVAILABLE}
-            >
-              <RefreshCw size={15} />
-              Refresh
-            </Button>
+    <main className="inv-page">
+      <header className="inv-header">
+        <div>
+          <p className="inv-header__eyebrow">Inventory</p>
+          <h1>Stock Movements</h1>
+          <p>The permanent stock ledger. Every posted document writes one row per balance it changes, with the resulting balance.</p>
+        </div>
+      </header>
 
-            <Button
-              variant="secondary"
-              onClick={handleExport}
-              disabled={
-                loading ||
-                filteredMovements.length === 0
-              }
-            >
-              <Download size={15} />
-              Export
-            </Button>
-          </div>
-        }
-      />
-
-      <div className="inventory-movements__content">
-        <InventoryBackendNotice />
-
-        {/* ------------------------------------------------
-            SUMMARY
-        ------------------------------------------------ */}
-
-        <section className="inventory-movements__summary">
-          <div className="inventory-movements__summary-card">
-            <span>Total Movements</span>
-            <strong>{movements.length}</strong>
-          </div>
-
-          <div className="inventory-movements__summary-card">
-            <span>Stock In</span>
-            <strong>
-              {
-                movements.filter(
-                  (item) => item.direction === "in"
-                ).length
-              }
-            </strong>
-          </div>
-
-          <div className="inventory-movements__summary-card">
-            <span>Stock Out</span>
-            <strong>
-              {
-                movements.filter(
-                  (item) => item.direction === "out"
-                ).length
-              }
-            </strong>
-          </div>
-
-          <div className="inventory-movements__summary-card">
-            <span>Transfers</span>
-            <strong>
-              {
-                movements.filter(
-                  (item) => item.type === "transfer"
-                ).length
-              }
-            </strong>
-          </div>
-        </section>
-
-        {/* ------------------------------------------------
-            FILTERS
-        ------------------------------------------------ */}
-
-        <section className="inventory-movements__filters">
-          <div className="inventory-movements__search">
-            <Search size={16} />
-
-            <input
-              type="search"
-              value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
-              placeholder="Search reference, SKU, product..."
-              aria-label="Search stock movements"
-            />
-          </div>
-
-          <div className="inventory-movements__filter">
-            <Filter size={15} />
-
-            <select
-              value={type}
-              onChange={(event) =>
-                setType(event.target.value)
-              }
-              aria-label="Filter movement type"
-            >
-              {TYPE_OPTIONS.map((option) => (
-                <option
-                  key={option.value}
-                  value={option.value}
-                >
-                  {option.label}
-                </option>
-              ))}
+      <section className="inv-card">
+        <div className="inv-toolbar">
+          <div className="inv-field">
+            <label htmlFor="mv-type">Transaction type</label>
+            <select id="mv-type" value={documentType} onChange={change(setDocumentType)}>
+              <option value="">All types</option>
+              {TYPES.map((type) => <option key={type} value={type}>{documentTypeLabel(type)}</option>)}
             </select>
           </div>
-
-          <div className="inventory-movements__filter">
-            <SlidersHorizontal size={15} />
-
-            <select
-              value={direction}
-              onChange={(event) =>
-                setDirection(event.target.value)
-              }
-              aria-label="Filter movement direction"
-            >
-              {DIRECTION_OPTIONS.map((option) => (
-                <option
-                  key={option.value}
-                  value={option.value}
-                >
-                  {option.label}
-                </option>
-              ))}
-            </select>
+          <div className="inv-field">
+            <label htmlFor="mv-from">From</label>
+            <input id="mv-from" type="date" value={dateFrom} onChange={change(setDateFrom)} />
           </div>
-
-          {hasFilters && (
-            <button
-              type="button"
-              className="inventory-movements__reset"
-              onClick={resetFilters}
-            >
-              Reset
-            </button>
-          )}
-        </section>
-
-        {/* ------------------------------------------------
-            MOVEMENT TABLE
-        ------------------------------------------------ */}
-
-        <section className="inventory-movements__card">
-          <div className="inventory-movements__card-header">
-            <div>
-              <span className="inventory-movements__eyebrow">
-                Stock Ledger
-              </span>
-
-              <h2>Movement History</h2>
-            </div>
-
-            <span className="inventory-movements__count">
-              {filteredMovements.length} records
-            </span>
+          <div className="inv-field">
+            <label htmlFor="mv-to">To</label>
+            <input id="mv-to" type="date" value={dateTo} onChange={change(setDateTo)} />
           </div>
+          <Button variant="secondary" onClick={movements.reload} disabled={movements.loading}>Refresh</Button>
+        </div>
 
-          {loading ? (
-            <div className="inventory-movements__loading">
-              <RefreshCw
-                size={17}
-                className="inventory-movements__spin"
-              />
-              Loading movements...
-            </div>
-          ) : filteredMovements.length === 0 ? (
-            <div className="inventory-movements__empty">
-              <div className="inventory-movements__empty-icon">
-                <ArrowLeftRight size={21} />
-              </div>
-
-              <h3>No stock movements yet</h3>
-
-              <p>
-                Stock receipts, issues, transfers, and
-                adjustments will appear here once inventory
-                operations are recorded.
-              </p>
-
-              <Button
-                variant="primary"
-                onClick={() =>
-                  router.push(
-                    "/procurement/goods-receipts"
-                  )
-                }
-              >
-                Receive Stock
-              </Button>
-            </div>
-          ) : (
-            <div className="inventory-movements__table-wrap">
-              <table className="inventory-movements__table">
-                <thead>
-                  <tr>
-                    <th>Type</th>
-                    <th>Reference</th>
-                    <th>Product</th>
-                    <th>Warehouse</th>
-                    <th>Direction</th>
-                    <th>Quantity</th>
-                    <th>User</th>
-                    <th>Date / Time</th>
+        {movements.error ? (
+          <p className="inv-state inv-state--error" role="alert">{movements.error}</p>
+        ) : movements.loading && !movements.data ? (
+          <p className="inv-state" role="status">Loading movements…</p>
+        ) : rows.length === 0 ? (
+          <p className="inv-state">{filtered ? "No movements match these filters." : "No stock movements have been posted yet."}</p>
+        ) : (
+          <div className="inv-table-wrap">
+            <table className="inv-table" aria-busy={movements.loading}>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Document</th>
+                  <th>Type</th>
+                  <th>Item</th>
+                  <th>Location</th>
+                  <th>Bucket</th>
+                  <th className="inv-num">Change</th>
+                  <th className="inv-num">Balance after</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.id}>
+                    <td data-label="Date">{formatDateTime(row.createdAt)}</td>
+                    <td data-label="Document">
+                      <Link href={`/print/stock-documents/${row.documentId}`}>{row.documentNumber}</Link>
+                      {row.reference && <small>{row.reference}</small>}
+                    </td>
+                    <td data-label="Type">{documentTypeLabel(row.movementType)}</td>
+                    <td data-label="Item">
+                      <Link href={`/inventory/item-master/${row.productId}`}>{row.sku}</Link>
+                      <small>{row.productName}</small>
+                    </td>
+                    <td data-label="Location">{row.warehouseCode}/{row.locationCode}</td>
+                    <td data-label="Bucket">{BUCKET_LABELS[row.bucket] ?? row.bucket}</td>
+                    <td data-label="Change" className={`inv-num ${row.quantityDelta.startsWith("-") ? "inv-neg" : "inv-pos"}`}>
+                      {row.quantityDelta.startsWith("-") ? row.quantityDelta : `+${row.quantityDelta}`} {row.unit}
+                    </td>
+                    <td data-label="Balance after" className="inv-num">{row.balanceAfter}</td>
                   </tr>
-                </thead>
-
-                <tbody>
-                  {filteredMovements.map((movement) => {
-                    const config =
-                      MOVEMENT_CONFIG[movement.type] ||
-                      MOVEMENT_CONFIG.adjustment;
-
-                    const Icon = config.icon;
-
-                    return (
-                      <tr key={movement.id}>
-                        <td>
-                          <div className="inventory-movements__type">
-                            <span
-                              className={`inventory-movements__type-icon inventory-movements__type-icon--${config.tone}`}
-                            >
-                              <Icon size={15} />
-                            </span>
-
-                            <span>
-                              {movement.typeLabel ||
-                                config.label}
-                            </span>
-                          </div>
-                        </td>
-
-                        <td>
-                          <strong>
-                            {movement.reference || "—"}
-                          </strong>
-                        </td>
-
-                        <td>
-                          <div className="inventory-movements__product">
-                            <strong>
-                              {movement.productName || "—"}
-                            </strong>
-
-                            {movement.sku && (
-                              <span>
-                                {movement.sku}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-
-                        <td>
-                          {movement.warehouseName || "—"}
-                        </td>
-
-                        <td>
-                          <span
-                            className={`inventory-movements__direction inventory-movements__direction--${movement.direction}`}
-                          >
-                            {movement.direction === "in"
-                              ? "Stock In"
-                              : movement.direction ===
-                                "out"
-                              ? "Stock Out"
-                              : "—"}
-                          </span>
-                        </td>
-
-                        <td>
-                          <strong>
-                            {movement.quantity ?? 0}
-                          </strong>
-
-                          {movement.unit && (
-                            <span className="inventory-movements__unit">
-                              {" "}
-                              {movement.unit}
-                            </span>
-                          )}
-                        </td>
-
-                        <td>
-                          {movement.userName || "—"}
-                        </td>
-
-                        <td>
-                          {movement.createdAt || "—"}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
-      </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <InventoryPager page={page} hasMore={movements.data?.hasMore} onChange={setPage} disabled={movements.loading} />
+      </section>
     </main>
   );
 }

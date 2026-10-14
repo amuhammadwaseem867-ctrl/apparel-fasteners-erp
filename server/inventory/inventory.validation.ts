@@ -147,6 +147,7 @@ export const locationQuerySchema = z.object({
 export const balanceQuerySchema = z.object({
   search: z.string().trim().max(120).default(""),
   warehouseId: optionalUuidParam,
+  warehouseType: z.enum(["GENERAL", "RAW_MATERIAL", "WIP", "FINISHED_GOODS", "QUARANTINE", "SCRAP", ""]).default(""),
   locationId: optionalUuidParam,
   productId: optionalUuidParam,
   page,
@@ -164,7 +165,7 @@ export const movementQuerySchema = z.object({
 });
 
 export const documentQuerySchema = z.object({
-  documentType: z.string().trim().max(40).default(""),
+  documentType: z.string().trim().max(200).regex(/^[A-Z_,]*$/, "Use document type codes.").default(""),
   search: z.string().trim().max(120).default(""),
   dateFrom: dateString.optional().or(z.literal("")),
   dateTo: dateString.optional().or(z.literal("")),

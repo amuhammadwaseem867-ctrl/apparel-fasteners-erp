@@ -5,6 +5,7 @@ import { getStockSummary } from "@/server/inventory/inventory.service";
 export function GET(request) {
   return runRoute(request, async () => {
     await authorizeRequest(request, "inventory:view");
-    return { data: await getStockSummary() };
+    const includeItems = new URL(request.url).searchParams.get("include") === "items";
+    return { data: await getStockSummary({ includeItems }) };
   });
 }

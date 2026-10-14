@@ -75,3 +75,37 @@ test("decimal string arithmetic is exact for stock quantities", () => {
   assert.equal(decimalSign("-0.001"), -1);
   assert.equal(decimalSign("0.000"), 0);
 });
+
+test("SKU suggestions are deterministic and keep every specification distinct", async () => {
+  const { suggestSku } = await import("../../lib/inventory/sku.js");
+  const base = { category: "Sliders", size: "#5", itemType: "DA", finish: "Antique Silver", logoType: "Plain" };
+
+  assert.equal(suggestSku(base), "SLI-5-DA-ANSI-PL");
+  assert.equal(suggestSku(base), suggestSku({ ...base }), "same input, same SKU");
+  assert.notEqual(suggestSku(base), suggestSku({ ...base, logoType: "Logo" }));
+  assert.notEqual(suggestSku(base), suggestSku({ ...base, finish: "Antique Brass" }));
+  assert.equal(suggestSku({ category: "Teeth", size: "#4.5", material: "Brass" }), "TEE-45-BRAS");
+  assert.equal(suggestSku({ category: "Sliders", size: "620 SS", finish: "Golden Brass", logoType: "Logo" }), "SLI-620SS-GOBR-LG");
+  assert.equal(suggestSku({ category: "Pin Box", size: "#5", itemType: "Pin Box", finish: "Antique Silver" }), "PIBO-5-ANSI", "type repeating the category is dropped");
+  assert.equal(suggestSku({ category: "Two Pins", itemType: "Two Pins", finish: "Antique Silver" }), "TWPI-ANSI");
+});
+
+test("the fastener catalogue keeps every required specification distinct", async () => {
+  const { buildCatalog, matchesCatalogEntry, CATEGORY_LABELS } = await import("../../lib/inventory/catalog.js");
+  const catalog = buildCatalog();
+  const keys = catalog.map((entry) => [entry.category, entry.size, entry.type, entry.material, entry.finish, entry.variant, entry.logo].join("|"));
+
+  assert.equal(new Set(keys).size, catalog.length, "no two catalogue entries share a specification");
+  assert.equal(new Set(catalog.map((entry) => entry.sku)).size, catalog.length, "catalogue SKUs are unique");
+
+  // Owner requirement spot checks.
+  assert.ok(catalog.some((entry) => entry.category === "teeth" && entry.size === "#5" && entry.type === "Y-Cut" && entry.material === "Brass"));
+  assert.ok(catalog.some((entry) => entry.category === "sliders" && entry.size === "#5 Thumb" && entry.variant === "L"));
+  assert.ok(catalog.some((entry) => entry.category === "sliders" && entry.size === "#5 Thumb" && entry.variant === "S"));
+  assert.equal(catalog.filter((entry) => entry.size === "620 SS" && entry.finish === "Antique Silver").length, 2, "Logo and Plain are separate items");
+
+  const entry = catalog.find((item) => item.category === "pin-box" && item.finish === "Gun Metal");
+  const product = { category: CATEGORY_LABELS["pin-box"], size: "5", itemType: "Pin Box", finish: "gun metal", material: null, variant: "", logoType: null };
+  assert.equal(matchesCatalogEntry(product, entry), true);
+  assert.equal(matchesCatalogEntry({ ...product, finish: "Black Oxide" }, entry), false);
+});

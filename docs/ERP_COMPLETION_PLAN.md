@@ -90,16 +90,20 @@ tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
 | 2026-10-14 | `5bac865` | Printable A4 sales order sheet; shell print CSS; company config. |
 | 2026-10-14 | `0235683` | Exact decimal money maths for sales (fixes wrong cents and overflow); unit price precision; editor text-encoding repair; test TS resolver. |
 | 2026-10-14 | `f89fc07` | Sales order CSV export (server-side, audited, formula-safe). |
-| 2026-10-14 | (this commit) | Product unit prices stored exactly (no silent 2-decimal rounding); shared unit-price formatter on all price displays. |
+| 2026-10-14 | `2933ef3` | Product unit prices stored exactly; shared unit-price formatter. |
+| 2026-10-14 | `c855e4b` | Isolated-database test runner (`npm run test:db`); auth/RBAC suite ported to Prisma 8 and passing. |
+| 2026-10-14 | `51a1cb3` | Inventory schema + migration `20261014T1134_inventory_foundation` (additive). |
+| 2026-10-14 | `eda771c` | Inventory services and API; sales status compare-and-set; reservation release on cancel. |
+| 2026-10-14 | (this commit) | Inventory UI connected; item master with catalogue coverage; printable stock slips. |
 
 ## Next step
 
-Phases 0 and 1 and the first print document are complete on this baseline.
-Everything from Phase 2 onward needs schema changes and stays paused on D-001.
-The owner also needs to confirm D-012 (sub-cent unit prices).
+Phase 3 (item master + inventory) is complete and verified on the isolated
+test database. Next: Phase 4, BOM authoring + MRP. The design is in D-004.
+It plans tables for BOM header, revision and line, and for MRP run, demand,
+requirement and planned order, reusing the decimal and ledger patterns.
 
-Remaining schema-free work, in order:
-1. Playwright E2E for login and sales orders against an isolated test
-   database. Needs a test `DATABASE_URL` from the owner, with its identity
-   verified before any run.
-2. Done: sales order list CSV export.
+Owner actions still open: push the local `D:\` work (D-001), confirm
+sub-cent prices (D-012), supply company legal details (D-013), and approve
+applying `20261014T1134_inventory_foundation` to the live database after a
+verified backup. Nothing has been applied to any live database.

@@ -449,18 +449,24 @@ async function applyOperation(tx: Tx, op: PlannedOperation): Promise<BalanceRow>
       ? balance.qualityHold
       : available(balance);
 
+  const requested = normalizeDecimalString(q);
+  const have = normalizeDecimalString(bucketAvailable);
+  const what = op.operation === "consume-reserved" || op.operation === "decrease-reserved"
+    ? "reserved"
+    : op.operation === "decrease-hold" || op.operation === "scrap-held"
+      ? "on quality hold"
+      : "available";
+
   throw new AppError(
-    INCREASES.has(op.operation)
-      ? "Not enough available stock to hold or reserve this quantity."
-      : "Not enough stock for this quantity.",
+    `Not enough stock at this location: requested ${requested}, ${what} ${have}.`,
     {
       code: "INSUFFICIENT_STOCK",
       status: 409,
       details: {
         productId: p,
         locationId: l,
-        requested: normalizeDecimalString(q),
-        available: normalizeDecimalString(bucketAvailable),
+        requested,
+        available: have,
         onHand: normalizeDecimalString(balance.onHand),
         reserved: normalizeDecimalString(balance.reserved),
         qualityHold: normalizeDecimalString(balance.qualityHold),
@@ -1095,6 +1101,17 @@ export async function listBalances(filters: BalanceQuery) {
   if (filters.locationId) {
     query = query.where({ locationId: filters.locationId });
   }
+  if (filters.warehouseType) {
+    const warehouses = await db.orm.public.Warehouse.where({ warehouseType: filters.warehouseType }).select("id").all();
+    const warehouseIds = warehouses.map((warehouse) => warehouse.id);
+    const locations = warehouseIds.length
+      ? await db.orm.public.StorageLocation.where((location) => location.warehouseId.in(warehouseIds)).select("id").all()
+      : [];
+    if (!locations.length) {
+      return { balances: [], page: filters.page, pageSize: filters.pageSize, hasMore: false };
+    }
+    query = query.where((row) => row.locationId.in(locations.map((location) => location.id)));
+  }
   if (filters.warehouseId) {
     const locations = await db.orm.public.StorageLocation.where({ warehouseId: filters.warehouseId }).select("id").all();
     const ids = locations.map((location) => location.id);
@@ -1164,7 +1181,7 @@ interface ProductStockRow {
  * Totals are reported per unit of measure: adding pieces to metres would
  * produce a meaningless number.
  */
-export async function getStockSummary() {
+export async function getStockSummary(options: { includeItems?: boolean } = {}) {
   const rows = (await db.runtime().query(db.raw.sql`
     select p.id::text as id, p.sku, p.name, p.unit, p.category,
            p."minimumStock"::text as "minimumStock",
@@ -1229,6 +1246,7 @@ export async function getStockSummary() {
       .filter((item) => item.lowStock || item.outOfStock)
       .sort((a, b) => Number(b.outOfStock) - Number(a.outOfStock) || a.sku.localeCompare(b.sku))
       .slice(0, 100),
+    ...(options.includeItems ? { items } : {}),
   };
 }
 
@@ -1289,8 +1307,12 @@ export async function listMovements(filters: MovementQuery) {
 export async function listStockDocuments(filters: DocumentQuery) {
   let query = db.orm.public.StockDocument;
 
-  if (filters.documentType) {
-    query = query.where({ documentType: filters.documentType });
+  // Accepts one type or a comma-separated list (e.g. "ADJUSTMENT,DAMAGE").
+  const types = filters.documentType.split(",").map((type) => type.trim()).filter(Boolean);
+  if (types.length === 1) {
+    query = query.where({ documentType: types[0] });
+  } else if (types.length > 1) {
+    query = query.where((document) => document.documentType.in(types));
   }
   if (filters.search) {
     const pattern = `%${filters.search}%`;
@@ -1312,8 +1334,23 @@ export async function listStockDocuments(filters: DocumentQuery) {
     .limit(filters.pageSize + 1)
     .all();
 
+  const documents = rows.slice(0, filters.pageSize);
+  const ids = documents.map((document) => document.id);
+  const movements = ids.length
+    ? await db.orm.public.StockMovement.where((row) => row.documentId.in(ids)).select("documentId", "lineNo").all()
+    : [];
+  const creatorIds = [...new Set(documents.map((document) => document.createdBy))];
+  const creators = creatorIds.length
+    ? await db.orm.public.User.where((user) => user.id.in(creatorIds)).select("id", "name").all()
+    : [];
+  const creatorNames = new Map(creators.map((user) => [user.id, user.name]));
+
   return {
-    documents: rows.slice(0, filters.pageSize),
+    documents: documents.map((document) => ({
+      ...document,
+      createdByName: creatorNames.get(document.createdBy) ?? null,
+      lineCount: new Set(movements.filter((row) => row.documentId === document.id).map((row) => row.lineNo)).size,
+    })),
     page: filters.page,
     pageSize: filters.pageSize,
     hasMore: rows.length > filters.pageSize,

@@ -19,11 +19,12 @@ committed repository.** Statuses below describe the committed code only.
 |---|---|---|---|
 | Auth / sessions / RBAC / audit | `/api/auth/{login,logout,session,change-password}` | `server/auth/*` | `erp_users`, `erp_roles`, `erp_permissions`, `erp_role_permissions`, `erp_user_roles`, `erp_user_sessions`, `erp_audit_logs` |
 | Customers | `/api/customers` | (inline route) | `erp_customers` |
-| Products | `/api/products`, `/api/products/[id]` | `server/products/*` | `erp_products` |
+| Products / item master | `/api/products`, `/api/products/[id]` (PATCH restore, DELETE ?permanent) | `server/products/*` | `erp_products` (+ specification fields, minimumStock, barcode) |
+| Inventory | `/api/inventory/{warehouses,locations,balances,summary,movements,documents,reservations}` | `server/inventory/*` | `erp_warehouses`, `erp_storage_locations`, `erp_stock_balances`, `erp_stock_documents`, `erp_stock_movements`, `erp_stock_reservations`, `erp_document_sequences` |
 | Sales orders | `/api/sales/orders`, `/api/sales/orders/[id]` | `server/sales/*` | `erp_sales_orders`, `erp_sales_order_lines` (has `productId`) |
 | Dashboard | `/api/dashboard` | `server/dashboard/*` | reads the above |
 
-There is exactly one migration: `migrations/app/20261008T1419_migration`.
+Migrations: `20261008T1419_migration` (base) → `20261014T1134_inventory_foundation` (additive; applied and verified only on the isolated test database).
 
 ## Module status
 
@@ -37,12 +38,12 @@ and reports success; data is lost on reload and never reaches the server.
 | Administration | users, roles, settings, audit | Static, banner | No user/role/audit API. Seeded RBAC exists in `server/auth/seed.ts`. |
 | Dashboard | dashboard | Working | Connected in commit `e1241ae`. Sales/customer/product KPIs only; other modules reported as not connected. |
 | Customers | sales/customers | Working | |
-| Products | products, [id], new, edit | Working | Unit price stored exactly up to 6 decimals; it was previously rounded to 2 silently (D-012). |
+| Products | products, [id], new, edit | Working | Unit price stored exactly up to 6 decimals; it was previously rounded to 2 silently (D-012). Item specification fields, deterministic SKU suggestion, restore, guarded permanent delete. |
 | Products: BOM, categories, variants, pricing, documents | 5 pages | Static | No tables. |
 | Sales orders | list, new, [id], edit, print | Working | Statuses are DRAFT / APPROVED / CANCELLED only; the New→Delivered lifecycle needs a schema change. Exact decimal totals (D-011). Printable A4 order sheet (D-013). CSV export of filtered list (D-015). |
 | Planning / MRP | 8 pages | Static, honest | No BOM or MRP tables. No-op Refresh buttons disabled with reason; shell banner. |
 | Procurement | 7 pages | Static, banner | No supplier/PR/RFQ/PO/GRN tables or API. The "productId linking failure" from the audit is not reproducible here: there is no procurement code. |
-| Inventory | 13 pages | Static, honest | Banner states the backend is missing; stock-changing actions disabled (commit `e1241ae`). |
+| Inventory | 13 pages | **Working** (12) / static (1) | Overview, stock, item master + profile, warehouses/locations, movements, transfers, adjustments, counts, reservations, finished goods and WIP (by warehouse type) are connected; printable slips. Batches & Lots remains unavailable (no batch schema). Verified in Chromium against the test DB. |
 | Production | 11 pages | Static, honest | Store mutations throw `BackendUnavailableError`; fake 350 ms refreshes removed; Refresh/Create disabled with reason; shell banner (Phase 1). |
 | Quality | 8 pages | Static, honest | Store mutations throw; create/release/refresh entry points disabled with reason; shell banner (Phase 1). |
 | Packing | 5 pages | Static, honest | Store mutations throw; New Packing Order disabled; shell banner (Phase 1). |
@@ -79,3 +80,12 @@ Banner = `ModuleAvailabilityBanner` in `AppShell`, driven by `config/moduleAvail
 - All 94 sidebar destinations have a page (no dead links).
 - `npm test` runs only DB-free tests. `tests/server/auth-rbac.test.mjs` writes to the database and is excluded.
 - ESLint: 0 errors, 22 warnings (the `app/login` error was fixed in Phase 1).
+
+## Superseded files kept on purpose
+
+The Inventory rewrite left these unreferenced. They are not deleted, so that
+pushing the owner's local copy cannot hit modify/delete conflicts. Delete
+them once the branches are reconciled:
+`app/(erp)/inventory/**/*.css` (11 old page stylesheets, plus
+`item-master/[sku]/ItemProfile.css`) and
+`components/inventory/Inventory{Activity,KpiGrid,LowStock,MovementSummary,QuickActions,StockSummary,WarehouseStatus,Workflow}.{jsx,css}`.

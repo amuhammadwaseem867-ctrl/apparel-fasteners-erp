@@ -1,374 +1,263 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  Boxes,
-  Filter,
-  Plus,
-} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
-import PageHeader from "@/components/ui/PageHeader";
-import InventoryBackendNotice, {
-  INVENTORY_BACKEND_UNAVAILABLE,
-} from "@/components/inventory/InventoryBackendNotice";
 import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
-import Select from "@/components/ui/Select";
-import EmptyState from "@/components/ui/EmptyState";
-import Badge from "@/components/ui/Badge";
+import InventoryPager from "@/components/inventory/InventoryPager";
+import useApiData, { toQuery } from "@/lib/inventory/useApiData";
+import { apiRequest } from "@/lib/api/client";
+import { CATEGORY_LABELS, buildCatalog, matchesCatalogEntry } from "@/lib/inventory/catalog";
 
-import {
-  RAW_MATERIAL_CATEGORIES,
-  TEETH_SPECS,
-  TOP_STOP_FINISHES,
-  BOTTOM_FINISHES,
-  PIN_BOX_FINISHES,
-  TWO_PIN_FINISHES,
-  SLIDER_SPECS,
-  UNITS,
-} from "@/config/items";
-
-import "./ItemMaster.css";
-
-/*
- * Item Master — master catalog of raw material specifications.
- *
- * Every unique size / material / type / finish / color /
- * variant / Logo-Plain combination is a separate, traceable
- * item. The specifications below are static master data
- * (allowed configuration); stock quantities come from the
- * backend once connected.
- */
-
-function buildCatalog() {
-  const items = [];
-
-  TEETH_SPECS.forEach((spec) => {
-    items.push({
-      sku: spec.sku,
-      category: "teeth",
-      name: `Teeth ${spec.size} ${spec.type} — ${spec.material}`,
-      size: spec.size,
-      material: spec.material,
-      type: spec.type,
-      finish: "",
-      variant: "",
-      logo: "",
-    });
-  });
-
-  Object.entries(TOP_STOP_FINISHES).forEach(([size, finishes]) => {
-    finishes.forEach((finish) => {
-      items.push({
-        sku: `TS-${size.replace(".", "")}-${finish.replace(/\s+/g, "").slice(0, 6).toUpperCase()}`,
-        category: "top-stops",
-        name: `Top Stop #${size} — ${finish}`,
-        size: `#${size}`,
-        material: "",
-        type: "Top Stop",
-        finish,
-        variant: "",
-        logo: "",
-      });
-    });
-  });
-
-  Object.entries(BOTTOM_FINISHES).forEach(([size, finishes]) => {
-    finishes.forEach((finish) => {
-      items.push({
-        sku: `BT-${size.replace(".", "")}-${finish.replace(/\s+/g, "").slice(0, 6).toUpperCase()}`,
-        category: "bottom",
-        name: `Bottom #${size} — ${finish}`,
-        size: `#${size}`,
-        material: "",
-        type: "Bottom",
-        finish,
-        variant: "",
-        logo: "",
-      });
-    });
-  });
-
-  PIN_BOX_FINISHES.forEach((finish) => {
-    items.push({
-      sku: `PB-5-${finish.replace(/\s+/g, "").slice(0, 6).toUpperCase()}`,
-      category: "pin-box",
-      name: `Pin Box #5 — ${finish}`,
-      size: "#5",
-      material: "",
-      type: "Pin Box",
-      finish,
-      variant: "",
-      logo: "",
-    });
-  });
-
-  TWO_PIN_FINISHES.forEach((finish) => {
-    items.push({
-      sku: `TP-${finish.replace(/\s+/g, "").slice(0, 6).toUpperCase()}`,
-      category: "two-pins",
-      name: `Two Pins — ${finish}`,
-      size: "",
-      material: "",
-      type: "Two Pins",
-      finish,
-      variant: "",
-      logo: "",
-    });
-  });
-
-  SLIDER_SPECS.forEach(([sizeType, finish, variant, logos]) => {
-    logos.forEach((logo) => {
-      items.push({
-        sku: `SL-${sizeType.replace(/[^\w]/g, "")}-${finish
-          .replace(/\s+/g, "")
-          .slice(0, 6)
-          .toUpperCase()}-${logo.toUpperCase()}`,
-        category: "sliders",
-        name: `Slider ${sizeType} — ${finish} — ${variant} — ${logo}`,
-        size: sizeType,
-        material: "",
-        type: "Slider",
-        finish,
-        variant,
-        logo,
-      });
-    });
-  });
-
-  return items;
-}
+import "@/components/inventory/InventoryWorkspace.css";
 
 const CATALOG = buildCatalog();
 
-export default function ItemMasterPage() {
-  const [activeCategory, setActiveCategory] = useState("teeth");
-  const [search, setSearch] = useState("");
-  const [finishFilter, setFinishFilter] = useState("all");
-  const [logoFilter, setLogoFilter] = useState("all");
+function stockBadge(stock) {
+  if (!stock) return <span className="inv-badge">No stock</span>;
+  if (stock.outOfStock) return <span className="inv-badge inv-badge--danger">Out of stock</span>;
+  if (stock.lowStock) return <span className="inv-badge inv-badge--warning">Low</span>;
+  return <span className="inv-badge inv-badge--good">OK</span>;
+}
 
-  const items = useMemo(() => {
-    return CATALOG.filter((item) => {
-      if (item.category !== activeCategory) return false;
+/* Loads every item (all pages) for catalogue coverage; bounded. */
+function useAllItems() {
+  const [state, setState] = useState({ items: null, error: "" });
 
-      if (finishFilter !== "all" && item.finish !== finishFilter) {
-        return false;
+  useEffect(() => {
+    let active = true;
+
+    (async () => {
+      const items = [];
+      for (let page = 1; page <= 50; page += 1) {
+        const result = await apiRequest(`/api/products?page=${page}&pageSize=100`);
+        items.push(...result.products);
+        if (!result.hasMore) break;
       }
+      return items;
+    })()
+      .then((items) => { if (active) setState({ items, error: "" }); })
+      .catch((cause) => { if (active) setState({ items: null, error: cause.message }); });
 
-      if (logoFilter !== "all" && item.logo !== logoFilter) {
-        return false;
-      }
+    return () => { active = false; };
+  }, []);
 
-      if (search.trim()) {
-        const value = search.trim().toLowerCase();
+  return state;
+}
 
-        const searchable = [
-          item.sku,
-          item.name,
-          item.size,
-          item.material,
-          item.type,
-          item.finish,
-          item.variant,
-          item.logo,
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
+function CatalogCoverage() {
+  const { items, error } = useAllItems();
+  const [category, setCategory] = useState("");
 
-        if (!searchable.includes(value)) return false;
-      }
+  const rows = useMemo(() => CATALOG
+    .filter((entry) => !category || entry.category === category)
+    .map((entry) => ({ entry, item: items?.find((product) => matchesCatalogEntry(product, entry)) })),
+  [items, category]);
 
-      return true;
-    });
-  }, [activeCategory, search, finishFilter, logoFilter]);
+  const missing = rows.filter((row) => !row.item).length;
 
-  const finishOptions = useMemo(() => {
-    const finishes = [
-      ...new Set(
-        CATALOG.filter((item) => item.category === activeCategory && item.finish)
-          .map((item) => item.finish)
-      ),
-    ];
-
-    return [
-      { value: "all", label: "All Finishes" },
-      ...finishes.map((finish) => ({ value: finish, label: finish })),
-    ];
-  }, [activeCategory]);
-
-  const categoryLabel =
-    RAW_MATERIAL_CATEGORIES.find((c) => c.id === activeCategory)?.label ||
-    activeCategory;
+  function createHref(entry) {
+    return `/products/new${toQuery({
+      sku: entry.sku,
+      name: entry.name,
+      category: CATEGORY_LABELS[entry.category] ?? entry.category,
+      productType: "Raw Material",
+      variant: entry.variant,
+      unit: "Pcs",
+      size: entry.size,
+      material: entry.material,
+      itemType: entry.type,
+      finish: entry.finish,
+      logoType: entry.logo,
+    })}`;
+  }
 
   return (
-    <main className="item-master">
-      <PageHeader
-        eyebrow="Materials & Inventory / Inventory"
-        title="Item Master"
-        description="Master catalog of raw materials. Every size, material, finish, color, variant and Logo/Plain combination is a separate traceable item."
-        action={
-          <Button
-            variant="primary"
-            icon={Plus}
-            disabled
-            title={INVENTORY_BACKEND_UNAVAILABLE}
-          >
-            New Item
-          </Button>
-        }
-      />
-
-      <div className="item-master__content">
-        <InventoryBackendNotice />
-
-        {/* CATEGORY TABS */}
-        <section className="item-master__tabs">
-          {RAW_MATERIAL_CATEGORIES.map((category) => (
-            <button
-              className={`item-master__tab${
-                activeCategory === category.id
-                  ? " item-master__tab--active"
-                  : ""
-              }`}
-              key={category.id}
-              type="button"
-              onClick={() => {
-                setActiveCategory(category.id);
-                setFinishFilter("all");
-                setLogoFilter("all");
-              }}
-            >
-              {category.label}
-            </button>
-          ))}
-        </section>
-
-        {/* TOOLBAR */}
-        <section className="item-master__toolbar">
-          <div className="item-master__search">
-            <Input
-              placeholder="Search by SKU, item name, size, material, type, finish, color, variant..."
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-          </div>
-
-          <div className="item-master__filters">
-            <Select
-              value={finishFilter}
-              onChange={setFinishFilter}
-              options={finishOptions}
-              fullWidth={false}
-            />
-
-            <Select
-              value={logoFilter}
-              onChange={setLogoFilter}
-              options={[
-                { value: "all", label: "Logo / Plain: All" },
-                { value: "Logo", label: "Logo" },
-                { value: "Plain", label: "Plain" },
-              ]}
-              fullWidth={false}
-            />
-
-            {(search || finishFilter !== "all" || logoFilter !== "all") && (
-              <Button
-                variant="secondary"
-                icon={Filter}
-                onClick={() => {
-                  setSearch("");
-                  setFinishFilter("all");
-                  setLogoFilter("all");
-                }}
-              >
-                Clear
-              </Button>
-            )}
-          </div>
-        </section>
-
-        {/* ITEMS */}
-        <section className="item-master__list-card">
-          {items.length === 0 ? (
-            <EmptyState
-              icon={Boxes}
-              title="No matching items"
-              description={
-                search || finishFilter !== "all" || logoFilter !== "all"
-                  ? "No items match the current filters in this category."
-                  : "This category has no items defined."
-              }
-              action={
-                search || finishFilter !== "all" || logoFilter !== "all" ? (
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      setSearch("");
-                      setFinishFilter("all");
-                      setLogoFilter("all");
-                    }}
-                  >
-                    Clear Filters
-                  </Button>
-                ) : undefined
-              }
-            />
-          ) : (
-            <div className="item-master__table-wrap">
-              <table className="item-master__table">
-                <thead>
-                  <tr>
-                    <th>SKU / Item Code</th>
-                    <th>Item Name</th>
-                    <th>Size</th>
-                    <th>Material</th>
-                    <th>Type</th>
-                    <th>Finish</th>
-                    <th>Variant</th>
-                    <th>Logo / Plain</th>
-                    <th>Stock Status</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {items.map((item) => (
-                    <tr key={item.sku}>
-                      <td>
-                        <Link
-                          href={`/inventory/item-master/${item.sku}`}
-                          className="item-master__sku-link"
-                        >
-                          {item.sku}
-                        </Link>
-                      </td>
-
-                      <td>{item.name}</td>
-                      <td>{item.size || "—"}</td>
-                      <td>{item.material || "—"}</td>
-                      <td>{item.type}</td>
-                      <td>{item.finish || "—"}</td>
-                      <td>{item.variant || "—"}</td>
-                      <td>{item.logo || "—"}</td>
-
-                      <td>
-                        <Badge variant="neutral">Backend</Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          <div className="item-master__count">
-            {items.length} specification{items.length === 1 ? "" : "s"} in{" "}
-            {categoryLabel}
-          </div>
-        </section>
+    <section className="inv-card">
+      <div className="inv-card__header">
+        <div>
+          <h2>Required fastener catalogue</h2>
+          <small>
+            Every distinct specification from the owner&apos;s requirements. Items marked missing do not exist in the item master yet.
+            Creating one opens the item form prefilled; no stock is created.
+          </small>
+        </div>
+        {items && <span className="inv-badge">{rows.length - missing} of {rows.length} created</span>}
       </div>
+      <div className="inv-toolbar">
+        <div className="inv-field">
+          <label htmlFor="cat-filter">Category</label>
+          <select id="cat-filter" value={category} onChange={(event) => setCategory(event.target.value)}>
+            <option value="">All categories</option>
+            {[...new Set(CATALOG.map((entry) => entry.category))].map((key) => (
+              <option key={key} value={key}>{CATEGORY_LABELS[key] ?? key}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      {error ? (
+        <p className="inv-state inv-state--error" role="alert">{error}</p>
+      ) : !items ? (
+        <p className="inv-state" role="status">Checking the item master…</p>
+      ) : (
+        <div className="inv-table-wrap">
+          <table className="inv-table">
+            <thead>
+              <tr><th>Specification</th><th>Size</th><th>Type</th><th>Finish</th><th>Variant / logo</th><th>Item</th></tr>
+            </thead>
+            <tbody>
+              {rows.map(({ entry, item }) => (
+                <tr key={entry.sku}>
+                  <td data-label="Specification">{entry.name}<small>{CATEGORY_LABELS[entry.category]}</small></td>
+                  <td data-label="Size">{entry.size || "—"}</td>
+                  <td data-label="Type">{[entry.type, entry.material].filter(Boolean).join(" · ") || "—"}</td>
+                  <td data-label="Finish">{entry.finish || "—"}</td>
+                  <td data-label="Variant / logo">{[entry.variant, entry.logo].filter(Boolean).join(" · ") || "—"}</td>
+                  <td data-label="Item">
+                    {item ? (
+                      <Link href={`/inventory/item-master/${item.id}`}>{item.sku}</Link>
+                    ) : (
+                      <Link href={createHref(entry)}>Create item</Link>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function ItemList() {
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [page, setPage] = useState(1);
+  const [busy, setBusy] = useState("");
+  const [error, setError] = useState("");
+  const products = useApiData(`/api/products${toQuery({ search, status, page, pageSize: 25 })}`);
+  const summary = useApiData("/api/inventory/summary?include=items");
+  const stockById = useMemo(
+    () => new Map((summary.data?.items ?? []).map((item) => [item.productId, item])),
+    [summary.data],
+  );
+  const rows = products.data?.products ?? [];
+
+  async function setArchived(item, archived) {
+    if (busy) return;
+    if (archived && !window.confirm(`Archive ${item.sku}? It stays in history and can be restored.`)) return;
+    setBusy(item.id);
+    setError("");
+    try {
+      await apiRequest(`/api/products/${item.id}`, archived
+        ? { method: "DELETE" }
+        : { method: "PATCH", body: JSON.stringify({ action: "restore" }) });
+      products.reload();
+      summary.reload();
+    } catch (cause) {
+      setError(cause.message);
+    } finally {
+      setBusy("");
+    }
+  }
+
+  return (
+    <section className="inv-card">
+      <div className="inv-toolbar">
+        <div className="inv-field">
+          <label htmlFor="im-search">Search</label>
+          <input id="im-search" type="search" value={search} placeholder="SKU, name, category or variant" onChange={(event) => { setSearch(event.target.value); setPage(1); }} />
+        </div>
+        <div className="inv-field">
+          <label htmlFor="im-status">Status</label>
+          <select id="im-status" value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }}>
+            <option value="">Active and inactive</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+            <option value="ARCHIVED">Archived</option>
+          </select>
+        </div>
+      </div>
+      {error && <p className="inv-state inv-state--error" role="alert">{error}</p>}
+      {products.error ? (
+        <p className="inv-state inv-state--error" role="alert">{products.error}</p>
+      ) : products.loading && !products.data ? (
+        <p className="inv-state" role="status">Loading items…</p>
+      ) : rows.length === 0 ? (
+        <p className="inv-state">{search || status ? "No items match these filters." : "No items yet. Create one, or start from the required catalogue."}</p>
+      ) : (
+        <div className="inv-table-wrap">
+          <table className="inv-table">
+            <thead>
+              <tr>
+                <th>SKU</th><th>Item</th><th>Specification</th><th>Unit</th>
+                <th className="inv-num">Min.</th><th className="inv-num">Available</th><th>Stock</th><th>Status</th><th />
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((item) => {
+                const stock = stockById.get(item.id);
+                return (
+                  <tr key={item.id}>
+                    <td data-label="SKU"><Link href={`/inventory/item-master/${item.id}`}>{item.sku}</Link></td>
+                    <td data-label="Item">{item.name}<small>{item.category}</small></td>
+                    <td data-label="Specification">
+                      {[item.size, item.material, item.itemType, item.finish, item.color, item.variant, item.logoType].filter(Boolean).join(" · ") || "—"}
+                    </td>
+                    <td data-label="Unit">{item.unit}</td>
+                    <td data-label="Min." className="inv-num">{item.minimumStock}</td>
+                    <td data-label="Available" className="inv-num">{stock?.tracked ? stock.available : "—"}</td>
+                    <td data-label="Stock">{stockBadge(stock?.tracked ? stock : null)}</td>
+                    <td data-label="Status"><span className="inv-badge">{item.status}</span></td>
+                    <td data-label="Actions">
+                      {item.status === "ARCHIVED" ? (
+                        <button type="button" className="inv-text-button" disabled={busy === item.id} onClick={() => setArchived(item, false)}>Restore</button>
+                      ) : (
+                        <>
+                          <Link href={`/products/${item.id}/edit`}>Edit</Link>{" "}
+                          <button type="button" className="inv-text-button" disabled={busy === item.id} onClick={() => setArchived(item, true)}>Archive</button>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <InventoryPager page={page} hasMore={products.data?.hasMore} onChange={setPage} disabled={products.loading} />
+    </section>
+  );
+}
+
+export default function ItemMasterPage() {
+  const [tab, setTab] = useState("items");
+
+  return (
+    <main className="inv-page">
+      <header className="inv-header">
+        <div>
+          <p className="inv-header__eyebrow">Inventory</p>
+          <h1>Item Master</h1>
+          <p>Every distinct size, material, type, finish, colour, variant and Logo/Plain combination is its own item and SKU, with its own stock and history.</p>
+        </div>
+        <div className="inv-header__actions">
+          <Link className="inv-link-button" href="/products/new">New item</Link>
+        </div>
+      </header>
+
+      <div className="inv-header__actions" role="tablist" aria-label="Item master views">
+        <Button variant={tab === "items" ? "primary" : "secondary"} role="tab" aria-selected={tab === "items"} onClick={() => setTab("items")}>
+          Items
+        </Button>
+        <Button variant={tab === "catalog" ? "primary" : "secondary"} role="tab" aria-selected={tab === "catalog"} onClick={() => setTab("catalog")}>
+          Catalogue coverage
+        </Button>
+      </div>
+
+      {tab === "items" ? <ItemList /> : <CatalogCoverage />}
     </main>
   );
 }
