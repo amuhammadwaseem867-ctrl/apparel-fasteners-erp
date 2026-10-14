@@ -236,10 +236,6 @@ const NAV_GROUPS = [
             href: "/production/stage-board",
           },
           {
-            label: "Work Orders",
-            href: "/production/work-orders",
-          },
-          {
             label: "Production Schedule",
             href: "/production/schedule",
           },
@@ -250,10 +246,6 @@ const NAV_GROUPS = [
           {
             label: "Material Issue",
             href: "/production/material-issue",
-          },
-          {
-            label: "Shop Floor",
-            href: "/production/shop-floor",
           },
           {
             label: "Output",

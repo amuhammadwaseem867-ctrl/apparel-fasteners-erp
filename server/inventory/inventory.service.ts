@@ -664,8 +664,31 @@ export async function postStockDocument(input: StockDocumentInput, actorId: stri
     validateLine(refs, line, index, increasing && (rule.operation !== "signed-adjustment" || positive));
   });
 
+  if (input.sourceType === "ProductionOrder" && !["MATERIAL_ISSUE", "MATERIAL_RETURN"].includes(input.documentType)) {
+    throw new AppError("Only material issues and returns can be posted against a production order.", {
+      code: "SOURCE_NOT_ALLOWED",
+      status: 400,
+    });
+  }
+
   try {
     const documentId = await db.transaction(async (tx) => {
+      if (input.sourceType === "ProductionOrder") {
+        // Shares the lock production status changes take, so an order cannot
+        // be cancelled or completed while material is being issued to it.
+        const orders = (await tx.query(db.raw.sql`
+          select status from erp_production_orders
+          where id::text = ${input.sourceId ?? ""} for share
+        `.returnsRow({ status: "pg/text@1" }).build() as never)) as unknown as Array<{ status: string }>;
+
+        if (!orders.length || !["RELEASED", "IN_PROGRESS"].includes(orders[0].status)) {
+          throw new AppError("Material can only be issued to or returned from a released or in-progress production order.", {
+            code: "PRODUCTION_ORDER_NOT_OPEN",
+            status: 409,
+          });
+        }
+      }
+
       const number = await allocateDocumentNumber(tx, rule.prefix);
       const document = await tx.orm.public.StockDocument.create({
         documentNumber: number,

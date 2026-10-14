@@ -217,6 +217,13 @@ export async function getMrpRun(id: string) {
     unit: products.get(productId)?.unit ?? null,
   });
   const decimal = (value: unknown) => normalizeDecimalString(String(value));
+  const converted = plannedOrders.length
+    ? await db.orm.public.ProductionOrder
+      .where((order) => order.plannedOrderId.in(plannedOrders.map((row) => row.id)))
+      .select("id", "orderNumber", "plannedOrderId")
+      .all()
+    : [];
+  const productionOrder = new Map(converted.map((order) => [order.plannedOrderId, order]));
 
   return {
     ...run,
@@ -234,7 +241,13 @@ export async function getMrpRun(id: string) {
       }))
       .sort((a, b) => a.lowLevelCode - b.lowLevelCode || String(a.sku).localeCompare(String(b.sku))),
     plannedOrders: plannedOrders
-      .map((row) => ({ ...row, quantity: decimal(row.quantity), ...describe(row.productId) }))
+      .map((row) => ({
+        ...row,
+        quantity: decimal(row.quantity),
+        ...describe(row.productId),
+        productionOrderId: productionOrder.get(row.id)?.id ?? null,
+        productionOrderNumber: productionOrder.get(row.id)?.orderNumber ?? null,
+      }))
       .sort((a, b) => String(a.sku).localeCompare(String(b.sku))),
   };
 }

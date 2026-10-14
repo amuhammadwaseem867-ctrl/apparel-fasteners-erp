@@ -1,174 +1,62 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Factory,
-  TriangleAlert,
-} from "lucide-react";
 
-import PageHeader from "@/components/ui/PageHeader";
-import Button from "@/components/ui/Button";
-import EmptyState from "@/components/ui/EmptyState";
-import useOrderStore from "@/lib/useOrderStore";
+import { OrderStatusBadge, PriorityBadge, ProgressBar } from "@/components/production/productionUi";
 import { PRODUCTION_STAGES } from "@/config/production";
+import useApiData from "@/lib/inventory/useApiData";
 
-import "./StageBoard.css";
+import "@/components/inventory/InventoryWorkspace.css";
+import "@/components/production/Production.css";
 
-/*
- * Stage Board — live board of all nine production stages.
- * Orders currently inside each stage are shown as cards with
- * their progress and quantities.
- */
-
+/* Active production orders (released, in progress, on hold) by their current stage. */
 export default function StageBoardPage() {
-  const { orders, stageProgress, delayed } = useOrderStore([]);
-
-  const columns = PRODUCTION_STAGES.map((stage) => {
-    const stageOrders = orders.filter(
-      (order) => order.currentStage === stage.key
-    );
-
-    const totals = stageOrders.reduce(
-      (acc, order) => {
-        const stageRecord = order.stages.find(
-          (s) => s.stageType === stage.key
-        );
-
-        return {
-          input: acc.input + (stageRecord?.inputQuantity || 0),
-          completed: acc.completed + (stageRecord?.completedQuantity || 0),
-          rejected: acc.rejected + (stageRecord?.rejectedQuantity || 0),
-          wastage: acc.wastage + (stageRecord?.wastageQuantity || 0),
-        };
-      },
-      { input: 0, completed: 0, rejected: 0, wastage: 0 }
-    );
-
-    const delayedCount = stageOrders.filter((order) => {
-      const stageRecord = order.stages.find(
-        (s) => s.stageType === stage.key
-      );
-
-      return (
-        stageRecord?.status === "in-progress" &&
-        delayed(order)
-      );
-    }).length;
-
-    return { ...stage, orders: stageOrders, totals, delayedCount };
-  });
-
-  const hasOrders = orders.length > 0;
+  const orders = useApiData("/api/production/orders?status=ACTIVE&pageSize=100");
+  const rows = orders.data?.orders ?? [];
 
   return (
-    <main className="stage-board">
-      <PageHeader
-        eyebrow="Factory Operations / Production"
-        title="Stage Board"
-        description="Live board of all nine production stages. Each order sits in exactly one stage; quantities carry forward from stage to stage."
-        action={
-          <Link href="/production/orders">
-            <Button variant="secondary" icon={Factory}>
-              Production Orders
-            </Button>
-          </Link>
-        }
-      />
+    <main className="inv-page">
+      <header className="inv-header">
+        <div>
+          <p className="inv-header__eyebrow">Production</p>
+          <h1>Stage Board</h1>
+          <p>Released, in-progress and on-hold orders in the stage they are currently at. Open an order to record output or complete its stage.</p>
+        </div>
+        <div className="inv-header__actions">
+          <button type="button" className="inv-link-button" onClick={orders.reload} disabled={orders.loading}>Refresh</button>
+          <Link className="inv-link-button" href="/production/orders">All orders</Link>
+        </div>
+      </header>
 
-      <div className="stage-board__content">
-        {!hasOrders ? (
-          <section className="stage-board__list-card">
-            <EmptyState
-              icon={Factory}
-              title="Stage board is empty"
-              description="No orders exist yet. Create an order from the Orders list, confirm it and start the first stage to see it on the board."
-              action={
-                <Link href="/sales/orders/new">
-                  <Button variant="primary">Create First Order</Button>
-                </Link>
-              }
-            />
-          </section>
-        ) : (
-          <section className="stage-board__columns">
-            {columns.map((column) => (
-              <div
-                className="stage-board__column"
-                key={column.key}
-                data-stage={column.key}
-              >
-                <div className="stage-board__column-head">
-                  <span className="stage-board__column-seq">
-                    {String(column.sequence).padStart(2, "0")}
-                  </span>
-
-                  <div className="stage-board__column-title">
-                    <strong>{column.label}</strong>
-
-                    <small>{column.department}</small>
-                  </div>
-
-                  <span className="stage-board__column-count">
-                    {column.orders.length}
-                  </span>
-                </div>
-
-                <div className="stage-board__column-qty">
-                  <span>
-                    In <b>{column.totals.input.toLocaleString()}</b>
-                  </span>
-
-                  <span>
-                    Out <b>{column.totals.completed.toLocaleString()}</b>
-                  </span>
-
-                  <span className="stage-board__qty-reject">
-                    Rej <b>{column.totals.rejected.toLocaleString()}</b>
-                  </span>
-
-                  <span className="stage-board__qty-waste">
-                    Waste <b>{column.totals.wastage.toLocaleString()}</b>
-                  </span>
-                </div>
-
-                <div className="stage-board__column-body">
-                  {column.orders.length === 0 ? (
-                    <div className="stage-board__column-empty">
-                      No orders in this stage
-                    </div>
-                  ) : (
-                    column.orders.map((order) => (
-                      <Link
-                        href={`/sales/orders/${order.id}`}
-                        className="stage-board__order-card"
-                        key={order.id}
-                      >
-                        <strong>{order.orderNumber}</strong>
-
-                        <span>{order.customerName || "—"}</span>
-
-                        <small>
-                          {order.requiredQuantity.toLocaleString()}{" "}
-                          {order.unit} · {stageProgress(order)}%
-                        </small>
-
-                        {order.status === "on-hold" && <em>On Hold</em>}
-                      </Link>
-                    ))
-                  )}
-                </div>
-
-                {column.delayedCount > 0 && (
-                  <div className="stage-board__column-delayed">
-                    <TriangleAlert size={13} strokeWidth={2} />
-                    {column.delayedCount} delayed
-                  </div>
-                )}
-              </div>
-            ))}
-          </section>
-        )}
-      </div>
+      {orders.error ? (
+        <p className="inv-state inv-state--error" role="alert">{orders.error}</p>
+      ) : !orders.data ? (
+        <p className="inv-state" role="status">Loading stage board…</p>
+      ) : (
+        <>
+          {orders.data.hasMore && <p className="inv-state" role="status">Showing the 100 most recent active orders. Use the order list filters to see the rest.</p>}
+          {rows.length === 0 && <p className="inv-state">No active production orders. Release a planned order to put it on the board.</p>}
+          <div className="prd-board">
+            {PRODUCTION_STAGES.map((stage) => {
+              const atStage = rows.filter((row) => row.currentStage === stage.key);
+              return (
+                <section key={stage.key} className="prd-board__column" aria-labelledby={`board-${stage.key}`}>
+                  <h2 id={`board-${stage.key}`}>{stage.sequence}. {stage.label} <span className="inv-badge">{atStage.length}</span></h2>
+                  {atStage.map((row) => (
+                    <Link key={row.id} className="prd-board__card" href={`/production/orders/${row.id}#stage-${stage.key}`}>
+                      <strong>{row.orderNumber}</strong>
+                      <span>{row.sku} · {row.quantity} {row.unit}</span>
+                      <span><PriorityBadge priority={row.priority} /> {row.status !== "IN_PROGRESS" && <OrderStatusBadge status={row.status} />}</span>
+                      {row.dueDate && <small>Due {row.dueDate}</small>}
+                      <ProgressBar value={row.progress} label={`${row.orderNumber} stages completed`} />
+                    </Link>
+                  ))}
+                </section>
+              );
+            })}
+          </div>
+        </>
+      )}
     </main>
   );
 }

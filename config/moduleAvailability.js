@@ -4,14 +4,13 @@
  * AppShell shows a banner on matching routes so a page that renders but
  * cannot load or save records says so. Routes with a working backend
  * (dashboard, products, BOM, sales orders, customers, inventory, MRP,
- * profile) are not listed.
+ * production, profile) are not listed.
  * Inventory pages render their own notice (InventoryBackendNotice).
  *
  * Remove an entry when that area's API and tables are in place.
  */
 
 const UNAVAILABLE_AREAS = [
-  { prefix: "/production", label: "Production" },
   { prefix: "/planning/capacity", label: "Capacity planning" },
   { prefix: "/planning/calendar", label: "Planning calendar" },
   { prefix: "/planning/production-plans", label: "Production plans" },

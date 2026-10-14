@@ -107,7 +107,7 @@ export default function MrpRunView({ run, onChanged, show = ["requirements", "or
         <section className="inv-card">
           <div className="inv-card__header">
             <h2>Planned orders</h2>
-            <small>Suggestions only. Confirming records the decision; purchase and production orders arrive with those modules.</small>
+            <small>Suggestions only. Confirm a MAKE order, then convert it to a production order (once). Purchase orders arrive with procurement.</small>
           </div>
           {run.plannedOrders.length === 0 ? (
             <p className="inv-state">No planned orders were needed.</p>
@@ -124,6 +124,11 @@ export default function MrpRunView({ run, onChanged, show = ["requirements", "or
                       <td data-label="Due">{order.dueDate ?? "—"}</td>
                       <td data-label="Status">{statusBadge(order.status)}</td>
                       <td data-label="Actions">
+                        {order.status === "CONFIRMED" && order.orderType === "MAKE" && (order.productionOrderId ? (
+                          <Link href={`/production/orders/${order.productionOrderId}`}>{order.productionOrderNumber}</Link>
+                        ) : (
+                          <Link className="inv-link-button" href={`/production/orders/new?plannedOrderId=${order.id}&productId=${order.productId}&quantity=${order.quantity}${order.dueDate ? `&dueDate=${order.dueDate}` : ""}`}>Create production order</Link>
+                        ))}
                         {order.status === "SUGGESTED" && (
                           <>
                             <Button size="small" variant="primary" disabled={busy === order.id} onClick={() => setStatus(order, "CONFIRMED")}>Confirm</Button>{" "}

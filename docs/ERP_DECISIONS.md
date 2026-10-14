@@ -34,7 +34,7 @@ Component scrap is a percentage on the component line:
 line. A parent yield, if modelled, divides the parent requirement before
 explosion, and is never combined with component scrap on the same quantity.
 
-## D-005: Stage quantity rule (proposed, Phase 5)
+## D-005: Stage quantity rule (superseded by D-021)
 
 Per stage run: `input = accepted + rejected + wastage` (all ≥ 0, decimal).
 Stage remaining = total stage input − Σ(run inputs). This is derived, never
@@ -201,3 +201,65 @@ Each run stores its assumptions with its results:
   decision only (compare-and-set, audited). Converting confirmed orders
   into production or purchase orders comes with those modules.
 - Runs are serialised by an advisory lock.
+
+## D-021: Production quantity rule and workflow (implements D-005)
+
+Rework is added to the D-005 rule. Per stage run, in the order's unit:
+`input = accepted + rejected + wastage + rework`, all >= 0 and input > 0.
+Database CHECK constraints enforce this as well as the service.
+
+- **Received.** Stage 1 receives the order quantity. Every later stage
+  receives the accepted output of the previous stage.
+- **Waiting.** `received + rework - processed`. Rework units go back into
+  the same stage's queue. This value is derived on the server and never
+  supplied by the client. A run cannot exceed it.
+- **Partial runs.** A stage can start as soon as its predecessor has
+  accepted output; it does not wait for the predecessor to complete.
+- **Completing a stage.** Only when the previous stage is complete and
+  nothing is waiting. Completion then moves the order's current stage on.
+- **Completing the order.** Completing the ninth stage (Delivered) completes
+  the order.
+- **Order status.**
+  - PLANNED → RELEASED (release).
+  - RELEASED → IN_PROGRESS when the first run is recorded.
+  - RELEASED or IN_PROGRESS → ON_HOLD, and resume returns to the held status.
+  - PLANNED or RELEASED → CANCELLED. An order with recorded work cannot be
+    cancelled; put it on hold instead.
+  - Runs and stage completion are refused unless the order is RELEASED or
+    IN_PROGRESS.
+- **Concurrency.** Every write locks the order row (`FOR UPDATE`). Concurrent
+  runs on one order are therefore serialised and can never over-consume
+  the waiting quantity (tested with 5 parallel runs).
+- **Idempotency.** Each run carries an idempotency key, unique in the
+  database. A replay returns the order without recording the run again.
+- **History.** Runs and `ProductionEvent` rows are append-only. Every change
+  also writes an audit row in the same transaction.
+- **Planned orders.** A production order can be created from a CONFIRMED
+  MAKE planned order for the same item. A unique `plannedOrderId` makes
+  that conversion happen at most once (409 on the second attempt).
+- **Sales orders.** A linked sales order must be APPROVED.
+- **Material.** The order records the item's active BOM revision when it is
+  created. The material requirement is
+  `quantity × per-unit × (1 + scrap%)`, computed exactly.
+- **Material issues.**
+  - Material issues and returns are stock documents with
+    `sourceType = "ProductionOrder"`.
+  - The inventory service accepts them only for RELEASED or IN_PROGRESS
+    orders. It takes `FOR SHARE` on the order, so a status change cannot
+    interleave.
+  - No other document type can carry that source.
+- **Permissions.**
+  - `production:view` to see orders.
+  - `production:create` to create orders.
+  - `production:update` for release, hold, resume, cancel and recording
+    runs.
+  - `production:complete` for completing stages.
+  - Please confirm this mapping together with D-019.
+
+Not implemented:
+- Capacity or machine scheduling. The schedule page lists open orders by due
+  date.
+- Automatic finished-goods receipt on completion. Post an FG receipt in
+  inventory; this is linked in Phase 6 with QC and packing.
+- Production orders are not yet MRP supply: open orders do not reduce MRP
+  net requirements. This is recorded as a known gap for the next MRP change.

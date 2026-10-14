@@ -13,6 +13,8 @@ import { STOCK_DOCUMENT_TYPES } from "@/server/inventory/stock-rules";
 /*
  * Posts one stock document (receipt, issue, transfer, adjustment, count,
  * QC hold/release/reject...) through POST /api/inventory/documents.
+ * `source` ({ sourceType, sourceId, reference }) links the document to the
+ * record it was posted for, e.g. a production order's material issue.
  *
  * The idempotency key is created when the dialog opens and reused for every
  * retry of the same submission, so a double click or a retry after a
@@ -41,11 +43,15 @@ export default function StockDocumentDialog({
   allowedTypes,
   locations = [],
   initialLine,
+  initialLines,
+  source,
 }) {
   const types = allowedTypes ?? [documentType];
   const [type, setType] = useState(documentType ?? types[0]);
-  const [lines, setLines] = useState(() => [{ ...emptyLine(), ...initialLine }]);
-  const [reference, setReference] = useState("");
+  const [lines, setLines] = useState(() => (initialLines?.length
+    ? initialLines.map((line) => ({ ...emptyLine(), ...line }))
+    : [{ ...emptyLine(), ...initialLine }]));
+  const [reference, setReference] = useState(source?.reference ?? "");
   const [reason, setReason] = useState("");
   const [notes, setNotes] = useState("");
   const [idempotencyKey] = useState(newKey);
@@ -83,6 +89,7 @@ export default function StockDocumentDialog({
           reference,
           reason,
           notes,
+          ...(source ? { sourceType: source.sourceType, sourceId: source.sourceId } : {}),
           lines: lines.map((line) => ({
             productId: line.item.id,
             locationId: line.locationId,
