@@ -74,3 +74,64 @@ export function centsToDecimalString(cents: bigint): string {
 }
 
 export const MAX_SAFE_CENTS = BigInt(Number.MAX_SAFE_INTEGER);
+
+/* Parses an exact decimal string as PostgreSQL returns numeric values. */
+export function decimalFromString(text: string): ScaledDecimal {
+  const match = /^(-)?(\d+)(?:\.(\d+))?$/.exec(text.trim());
+
+  if (!match) {
+    throw new RangeError(`Not a decimal string: ${text}`);
+  }
+
+  const [, sign, whole, fraction = ""] = match;
+  const units = BigInt(`${whole}${fraction}`) * (sign ? -1n : 1n);
+
+  return { units, scale: fraction.length };
+}
+
+function alignScales(a: ScaledDecimal, b: ScaledDecimal) {
+  const scale = Math.max(a.scale, b.scale);
+
+  return {
+    a: a.units * 10n ** BigInt(scale - a.scale),
+    b: b.units * 10n ** BigInt(scale - b.scale),
+    scale,
+  };
+}
+
+export function scaledToPlainString({ units, scale }: ScaledDecimal): string {
+  const negative = units < 0n;
+  const digits = (negative ? -units : units).toString().padStart(scale + 1, "0");
+  const whole = digits.slice(0, digits.length - scale);
+  let fraction = scale ? digits.slice(digits.length - scale) : "";
+
+  fraction = fraction.replace(/0+$/, "");
+
+  return `${negative && (whole !== "0" || fraction) ? "-" : ""}${whole}${fraction ? `.${fraction}` : ""}`;
+}
+
+/* a - b for decimal strings, exact. */
+export function subtractDecimalStrings(a: string, b: string): string {
+  const aligned = alignScales(decimalFromString(a), decimalFromString(b));
+
+  return scaledToPlainString({ units: aligned.a - aligned.b, scale: aligned.scale });
+}
+
+/* Sign of a decimal string: -1, 0 or 1. */
+export function decimalSign(text: string): -1 | 0 | 1 {
+  const { units } = decimalFromString(text);
+
+  return units === 0n ? 0 : units < 0n ? -1 : 1;
+}
+
+/* Normalises a decimal string (drops trailing zeros: "5.000" -> "5"). */
+export function normalizeDecimalString(text: string): string {
+  return scaledToPlainString(decimalFromString(text));
+}
+
+/* a + b for decimal strings, exact. */
+export function addDecimalStrings(a: string, b: string): string {
+  const aligned = alignScales(decimalFromString(a), decimalFromString(b));
+
+  return scaledToPlainString({ units: aligned.a + aligned.b, scale: aligned.scale });
+}

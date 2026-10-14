@@ -9,6 +9,7 @@ import type {
   SalesOrderQuery,
 } from "./sales.validation";
 import { calculateLineAmounts } from "./sales.validation";
+import { releaseOrderReservations } from "../inventory/inventory.service";
 import {
   centsToDecimalString,
   toPlainDecimalString,
@@ -373,6 +374,32 @@ export async function updateSalesOrder(
   const products = await validateOrderReferences(input);
   const totals = orderTotals(input);
   await db.transaction(async (tx) => {
+    // Lock the order and re-check inside the transaction: an approval or
+    // cancellation that commits after the check above must win.
+    const locked = (await tx.query(db.raw.sql`
+      select status from erp_sales_orders where id = ${id}::uuid for update
+    `.returnsRow({ status: "pg/text@1" }).build())) as unknown as Array<{ status: string }>;
+    if (locked[0]?.status !== "DRAFT") {
+      throw new AppError("Only draft sales orders can be edited.", {
+        code: "SALES_ORDER_NOT_EDITABLE",
+        status: 409,
+      });
+    }
+
+    // Editing replaces every line (new line ids). Reservations made
+    // against specific lines would be orphaned, so they must be released
+    // first.
+    const lineReservation = await tx.orm.public.StockReservation
+      .where({ salesOrderId: id, status: "ACTIVE" })
+      .where((reservation) => reservation.salesOrderLineId.isNotNull())
+      .first();
+    if (lineReservation) {
+      throw new AppError("Release this order's line reservations before editing its lines.", {
+        code: "SALES_ORDER_HAS_RESERVATIONS",
+        status: 409,
+      });
+    }
+
     await tx.orm.public.SalesOrder.where({ id }).update({
       customerId: input.customerId,
       orderDate: input.orderDate,
@@ -410,10 +437,27 @@ export async function changeSalesOrderStatus(
     });
   }
 
-  await db.orm.public.SalesOrder.where({ id }).update({
-    status,
-    updatedAt: new Date().toISOString(),
-  });
+  // Conditional on the status just read, so concurrent approve/cancel
+  // requests cannot both succeed.
+  // Raw compare-and-set: the ORM's filtered update is not atomic under
+  // concurrency (verified by tests/server/inventory.db.test.mjs).
+  const updated = (await db.runtime().query(db.raw.sql`
+    update erp_sales_orders set status = ${status}, "updatedAt" = now()
+    where id = ${id}::uuid and status = ${order.status}
+    returning id::text as id
+  `.returnsRow({ id: "pg/text@1" }).build())) as unknown as Array<{ id: string }>;
+  if (!updated.length) {
+    throw new AppError("The order was changed by someone else. Reload and try again.", {
+      code: "SALES_ORDER_STATUS_CONFLICT",
+      status: 409,
+    });
+  }
+
+  if (status === "CANCELLED") {
+    // A cancelled order must not keep stock reserved.
+    await releaseOrderReservations(id, actorId);
+  }
+
   await recordAuditEvent({
     actorId,
     action: action === "approve" ? "SALES_ORDER_APPROVED" : "SALES_ORDER_CANCELLED",

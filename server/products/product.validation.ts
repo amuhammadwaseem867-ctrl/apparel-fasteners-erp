@@ -4,6 +4,10 @@ import { toScaledDecimal } from "../core/utils/decimal";
 
 const MAX_PRICE_DECIMALS = 6;
 
+function optionalText(max: number) {
+  return z.string().trim().max(max).optional().or(z.literal(""));
+}
+
 const productFields = {
   sku: z.string().trim().min(1).max(80),
   name: z.string().trim().min(1).max(180),
@@ -22,6 +26,25 @@ const productFields = {
       `Unit price can have at most ${MAX_PRICE_DECIMALS} decimal places.`,
     ),
   status: z.enum(["ACTIVE", "INACTIVE"]),
+
+  // Item master specification. Each distinct combination is its own SKU.
+  size: optionalText(60),
+  material: optionalText(80),
+  itemType: optionalText(80),
+  finish: optionalText(80),
+  color: optionalText(80),
+  logoType: optionalText(40),
+  barcode: optionalText(120),
+  minimumStock: z
+    .number()
+    .finite()
+    .min(0)
+    .max(100000000)
+    .refine(
+      (value) => toScaledDecimal(value).scale <= 3,
+      "Minimum stock can have at most 3 decimal places.",
+    )
+    .default(0),
 };
 
 export const productInputSchema = z.object(productFields);
@@ -32,6 +55,10 @@ export const productQuerySchema = z.object({
   productType: z.string().trim().max(80).default(""),
   variant: z.string().trim().max(180).default(""),
   status: z.enum(["ACTIVE", "INACTIVE", "ARCHIVED", ""]).default(""),
+  size: z.string().trim().max(60).default(""),
+  material: z.string().trim().max(80).default(""),
+  finish: z.string().trim().max(80).default(""),
+  logoType: z.string().trim().max(40).default(""),
   page: z.coerce.number().int().min(1).max(100000).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(25),
 });

@@ -5,12 +5,12 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "test": "node --experimental-strip-types --import ./tests/support/register.mjs --test tests/server/core-foundation.test.mjs tests/server/dashboard-inventory.test.mjs tests/server/login-rate-limit.test.mjs tests/server/module-availability.test.mjs tests/server/sales-order-sheet.test.mjs tests/server/decimal-money.test.mjs tests/server/csv-export.test.mjs",
+    "test": "node --experimental-strip-types --import ./tests/support/register.mjs --test tests/server/core-foundation.test.mjs tests/server/dashboard-inventory.test.mjs tests/server/login-rate-limit.test.mjs tests/server/module-availability.test.mjs tests/server/sales-order-sheet.test.mjs tests/server/decimal-money.test.mjs tests/server/csv-export.test.mjs tests/server/stock-rules.test.mjs",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma skills sync || exit 0",
     "contract:emit": "prisma contract emit",
-    "test:db": "node --experimental-strip-types --import ./tests/support/test-database.mjs --test --test-concurrency=1 tests/server/auth-rbac.test.mjs"
+    "test:db": "node --experimental-strip-types --import ./tests/support/test-database.mjs --test --test-concurrency=1 tests/server/auth-rbac.test.mjs tests/server/inventory.db.test.mjs"
   },
   "dependencies": {
     "@prisma/orm-postgres": "^8.0.0-rc.16",

@@ -10,8 +10,18 @@ interface AuditEventInput {
   metadata?: Record<string, unknown> | null;
 }
 
-export async function recordAuditEvent(input: AuditEventInput): Promise<void> {
-  await db.orm.public.AuditLog.create({
+type AuditWriter = Pick<typeof db, "orm">;
+
+/*
+ * Pass a transaction context as `client` to write the audit row inside that
+ * transaction, so the business change and its audit event commit or roll
+ * back together.
+ */
+export async function recordAuditEvent(
+  input: AuditEventInput,
+  client: AuditWriter = db,
+): Promise<void> {
+  await client.orm.public.AuditLog.create({
     actorId: input.actorId ?? null,
     action: input.action,
     entityType: input.entityType ?? null,
