@@ -135,3 +135,38 @@ export function addDecimalStrings(a: string, b: string): string {
 
   return scaledToPlainString({ units: aligned.a + aligned.b, scale: aligned.scale });
 }
+
+/* a × b for decimal strings, exact (scales add). */
+export function multiplyDecimalStrings(a: string, b: string): string {
+  const x = decimalFromString(a);
+  const y = decimalFromString(b);
+
+  return scaledToPlainString({ units: x.units * y.units, scale: x.scale + y.scale });
+}
+
+/* -1, 0 or 1 as a < b, a = b, a > b. */
+export function compareDecimalStrings(a: string, b: string): -1 | 0 | 1 {
+  return decimalSign(subtractDecimalStrings(a, b));
+}
+
+/*
+ * Rounds a non-negative decimal string UP to `scale` decimal places
+ * (planned quantities: 2.1 pieces must be planned as 3).
+ */
+export function ceilDecimalString(text: string, scale: number): string {
+  const value = decimalFromString(text);
+
+  if (value.units < 0n) {
+    throw new RangeError("ceilDecimalString expects a non-negative value.");
+  }
+
+  if (value.scale <= scale) {
+    return scaledToPlainString(value);
+  }
+
+  const divisor = 10n ** BigInt(value.scale - scale);
+  const whole = value.units / divisor;
+  const units = value.units % divisor === 0n ? whole : whole + 1n;
+
+  return scaledToPlainString({ units, scale });
+}

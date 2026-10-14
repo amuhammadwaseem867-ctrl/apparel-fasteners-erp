@@ -48,7 +48,7 @@ import {
   type PlannedOperation,
 } from "./stock-rules";
 
-type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+export type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 interface BalanceRow {
   onHand: string;
@@ -513,7 +513,7 @@ async function writeMovements(
   }
 }
 
-async function allocateDocumentNumber(tx: Tx, prefix: string): Promise<string> {
+export async function allocateDocumentNumber(tx: Tx, prefix: string): Promise<string> {
   const year = new Date().getUTCFullYear();
   const key = `${prefix}-${year}`;
   const row = await firstRow<{ value: string }>(tx, db.raw.sql`
