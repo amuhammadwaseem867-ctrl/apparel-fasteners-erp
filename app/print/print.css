@@ -1,0 +1,310 @@
+/*
+ * Printable documents (A4). Screen view mimics the paper; print hides the
+ * toolbar and notices, repeats table headers on every page, keeps rows
+ * whole, and numbers pages.
+ */
+
+@page {
+  size: A4;
+  margin: 14mm 12mm 16mm;
+
+  @bottom-right {
+    content: "Page " counter(page) " of " counter(pages);
+    font-size: 8pt;
+    color: #555;
+  }
+}
+
+.print-doc {
+  min-height: 100vh;
+  padding: 24px 16px 48px;
+
+  background: #e9edf1;
+  color: #111;
+
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 12px;
+}
+
+.print-doc--message,
+.print-doc__state {
+  display: grid;
+  place-content: center;
+  gap: 12px;
+
+  text-align: center;
+}
+
+.print-doc__toolbar,
+.print-doc__notice,
+.print-doc__page {
+  max-width: 210mm;
+  margin: 0 auto;
+}
+
+.print-doc__toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+
+  margin-bottom: 12px;
+}
+
+.print-doc__toolbar a,
+.print-doc__toolbar button,
+.print-doc--message a {
+  padding: 8px 14px;
+
+  border: 1px solid #24344d;
+  border-radius: 6px;
+
+  background: #fff;
+  color: #24344d;
+
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+
+  cursor: pointer;
+}
+
+.print-doc__toolbar button {
+  background: #24344d;
+  color: #fff;
+}
+
+.print-doc__toolbar a:focus-visible,
+.print-doc__toolbar button:focus-visible {
+  outline: 3px solid #4c8bf5;
+  outline-offset: 2px;
+}
+
+.print-doc__notice {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+
+  border: 1px solid #c98216;
+  border-radius: 6px;
+
+  background: #fff8eb;
+}
+
+.print-doc__page {
+  padding: 14mm 12mm;
+
+  background: #fff;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.15);
+}
+
+.print-doc__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+
+  padding-bottom: 12px;
+  border-bottom: 2px solid #111;
+}
+
+.print-doc__header > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.print-doc__company {
+  font-size: 18px;
+}
+
+.print-doc__title {
+  text-align: right;
+}
+
+.print-doc__title h1 {
+  margin: 0 0 8px;
+
+  font-size: 18px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.print-doc__title dl,
+.print-doc__totals {
+  margin: 0;
+}
+
+.print-doc__title dl div,
+.print-doc__totals div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.print-doc__title dt,
+.print-doc__totals dt {
+  color: #555;
+}
+
+.print-doc__title dd,
+.print-doc__totals dd {
+  margin: 0;
+
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.print-doc__parties {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  margin: 14px 0;
+}
+
+.print-doc h2 {
+  margin: 0 0 4px;
+
+  color: #555;
+
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.print-doc__table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  font-size: 10.5px;
+}
+
+.print-doc__table thead {
+  display: table-header-group;
+}
+
+.print-doc__table th,
+.print-doc__table td {
+  padding: 5px 6px;
+
+  border: 1px solid #999;
+
+  text-align: left;
+  vertical-align: top;
+}
+
+.print-doc__table th {
+  background: #eef1f4;
+}
+
+.print-doc__table tr {
+  break-inside: avoid;
+}
+
+.print-doc__table small {
+  display: block;
+
+  color: #444;
+}
+
+.print-doc__num {
+  text-align: right !important;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.print-doc__summary {
+  display: grid;
+  grid-template-columns: 1fr 70mm;
+  gap: 18px;
+
+  margin-top: 14px;
+
+  break-inside: avoid;
+}
+
+.print-doc__notes p {
+  margin: 0;
+
+  white-space: pre-wrap;
+}
+
+.print-doc__totals {
+  display: grid;
+  gap: 4px;
+}
+
+.print-doc__grand {
+  padding-top: 4px;
+  border-top: 2px solid #111;
+
+  font-size: 13px;
+}
+
+.print-doc__signoff {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+
+  margin-top: 36px;
+
+  break-inside: avoid;
+}
+
+.print-doc__signoff div {
+  padding-top: 32px;
+  border-bottom: 1px solid #111;
+}
+
+.print-doc__signoff span {
+  display: block;
+  transform: translateY(18px);
+
+  color: #555;
+
+  font-size: 10px;
+}
+
+@media (max-width: 640px) {
+  .print-doc__header,
+  .print-doc__summary {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .print-doc__title {
+    text-align: left;
+  }
+
+  .print-doc__page {
+    padding: 16px;
+    overflow-x: auto;
+  }
+}
+
+@media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  .print-doc {
+    min-height: 0;
+    padding: 0;
+
+    background: #fff;
+  }
+
+  .print-doc__toolbar,
+  .print-doc__notice {
+    display: none;
+  }
+
+  .print-doc__page {
+    max-width: none;
+    /* Keeps the outer half of collapsed table borders inside the page box. */
+    padding: 0 1px;
+
+    box-shadow: none;
+  }
+}

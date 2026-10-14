@@ -65,8 +65,25 @@
 }
 
 @media print {
+  .erp-sidebar,
+  .erp-topbar,
+  .app-shell__mobile-overlay,
   .app-shell__availability {
-    display: none;
+    display: none !important;
+  }
+
+  .app-shell,
+  .app-shell__main {
+    background: #fff;
+  }
+
+  .app-shell__workspace {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .app-shell__content {
+    padding: 0;
   }
 }
 

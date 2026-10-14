@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "test": "node --experimental-strip-types --test tests/server/core-foundation.test.mjs tests/server/dashboard-inventory.test.mjs tests/server/login-rate-limit.test.mjs tests/server/module-availability.test.mjs",
+    "test": "node --experimental-strip-types --test tests/server/core-foundation.test.mjs tests/server/dashboard-inventory.test.mjs tests/server/login-rate-limit.test.mjs tests/server/module-availability.test.mjs tests/server/sales-order-sheet.test.mjs",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma skills sync || exit 0",

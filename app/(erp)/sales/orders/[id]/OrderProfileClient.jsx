@@ -115,6 +115,12 @@ export default function OrderProfileClient({ id }) {
             Back to orders
           </Link>
 
+          {order && (
+            <Link href={`/print/sales-orders/${encodeURIComponent(id)}`}>
+              Print order sheet
+            </Link>
+          )}
+
           {order?.status === "DRAFT" && (
             <Link href={`/sales/orders/${id}/edit`}>
               Edit order
