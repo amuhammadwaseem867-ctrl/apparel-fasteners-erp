@@ -18,6 +18,9 @@ import {
 } from "lucide-react";
 
 import PageHeader from "@/components/ui/PageHeader";
+import InventoryBackendNotice, {
+  INVENTORY_BACKEND_UNAVAILABLE,
+} from "@/components/inventory/InventoryBackendNotice";
 import Card, { StatCard } from "@/components/ui/Card";
 import EmptyState from "@/components/ui/EmptyState";
 import Button from "@/components/ui/Button";
@@ -95,7 +98,7 @@ export default function StockCountsPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [warehouse, setWarehouse] = useState("all");
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   const warehouses = useMemo(() => {
     const values = countSessions
@@ -155,14 +158,7 @@ export default function StockCountsPage() {
   }, []);
 
   function handleRefresh() {
-    setLoading(true);
-
-    /*
-      Replace this with the inventory API request later.
-    */
-    window.setTimeout(() => {
-      setLoading(false);
-    }, 400);
+    /* Disabled until an inventory API exists to refetch from. */
   }
 
   function handleExport() {
@@ -200,7 +196,8 @@ export default function StockCountsPage() {
             <Button
               variant="secondary"
               onClick={handleRefresh}
-              disabled={loading}
+              disabled
+              title={INVENTORY_BACKEND_UNAVAILABLE}
             >
               <RefreshCw
                 size={16}
@@ -212,6 +209,8 @@ export default function StockCountsPage() {
             <Button
               variant="primary"
               onClick={handleCreateCount}
+              disabled
+              title={INVENTORY_BACKEND_UNAVAILABLE}
             >
               <Plus size={16} />
               New Stock Count
@@ -219,6 +218,8 @@ export default function StockCountsPage() {
           </div>
         }
       />
+
+      <InventoryBackendNotice className="stock-counts-notice" />
 
       <section className="stock-counts-stats">
         <StatCard
@@ -339,6 +340,8 @@ export default function StockCountsPage() {
               <Button
                 variant="primary"
                 onClick={handleCreateCount}
+                disabled
+                title={INVENTORY_BACKEND_UNAVAILABLE}
               >
                 <Plus size={16} />
                 New Stock Count

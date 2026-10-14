@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 
 import PageHeader from "@/components/ui/PageHeader";
+import InventoryBackendNotice from "@/components/inventory/InventoryBackendNotice";
 import Input from "@/components/ui/Input";
 import EmptyState from "@/components/ui/EmptyState";
 
@@ -32,6 +33,8 @@ export default function ReservationsPage() {
       />
 
       <div className="inv-reservations__content">
+        <InventoryBackendNotice />
+
         <section className="inv-reservations__toolbar">
           <div className="inv-reservations__search">
             <Input

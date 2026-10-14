@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 
 import PageHeader from "@/components/ui/PageHeader";
+import InventoryBackendNotice from "@/components/inventory/InventoryBackendNotice";
 import Input from "@/components/ui/Input";
 import EmptyState from "@/components/ui/EmptyState";
 import { RAW_MATERIAL_CATEGORIES } from "@/config/items";
@@ -31,6 +32,8 @@ export default function FinishedGoodsPage() {
       />
 
       <div className="fg-stock__content">
+        <InventoryBackendNotice />
+
         <section className="fg-stock__notice">
           <div className="fg-stock__notice-icon">
             <PackageCheck size={17} strokeWidth={1.8} />

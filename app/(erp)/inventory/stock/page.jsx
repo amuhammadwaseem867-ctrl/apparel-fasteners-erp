@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import PageHeader from "@/components/ui/PageHeader";
+import InventoryBackendNotice from "@/components/inventory/InventoryBackendNotice";
 import Button from "@/components/ui/Button";
 
 import "./Stock.css";
@@ -130,6 +131,8 @@ export default function StockPage() {
       />
 
       <div className="inventory-stock__content">
+        <InventoryBackendNotice />
+
         {/* ------------------------------------------------
             SUMMARY
         ------------------------------------------------ */}

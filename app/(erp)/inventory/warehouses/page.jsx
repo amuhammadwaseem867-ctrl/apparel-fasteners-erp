@@ -13,6 +13,9 @@ import {
 } from "lucide-react";
 
 import PageHeader from "@/components/ui/PageHeader";
+import InventoryBackendNotice, {
+  INVENTORY_BACKEND_UNAVAILABLE,
+} from "@/components/inventory/InventoryBackendNotice";
 import Button from "@/components/ui/Button";
 
 import "./Warehouses.css";
@@ -113,6 +116,8 @@ export default function WarehousesPage() {
             <Button
               variant="primary"
               onClick={handleAddWarehouse}
+              disabled
+              title={INVENTORY_BACKEND_UNAVAILABLE}
             >
               <Plus size={15} />
               Add Warehouse
@@ -122,6 +127,8 @@ export default function WarehousesPage() {
       />
 
       <div className="inventory-warehouses__content">
+        <InventoryBackendNotice />
+
         {/* ------------------------------------------------
             SUMMARY
         ------------------------------------------------ */}
@@ -266,6 +273,8 @@ export default function WarehousesPage() {
               <Button
                 variant="primary"
                 onClick={handleAddWarehouse}
+                disabled
+                title={INVENTORY_BACKEND_UNAVAILABLE}
               >
                 <Plus size={15} />
                 Add Warehouse

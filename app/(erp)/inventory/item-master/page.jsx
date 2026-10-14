@@ -9,12 +9,14 @@ import {
 } from "lucide-react";
 
 import PageHeader from "@/components/ui/PageHeader";
+import InventoryBackendNotice, {
+  INVENTORY_BACKEND_UNAVAILABLE,
+} from "@/components/inventory/InventoryBackendNotice";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import EmptyState from "@/components/ui/EmptyState";
 import Badge from "@/components/ui/Badge";
-import { useToast } from "@/components/ui/ToastProvider";
 
 import {
   RAW_MATERIAL_CATEGORIES,
@@ -141,8 +143,6 @@ function buildCatalog() {
 const CATALOG = buildCatalog();
 
 export default function ItemMasterPage() {
-  const toast = useToast();
-
   const [activeCategory, setActiveCategory] = useState("teeth");
   const [search, setSearch] = useState("");
   const [finishFilter, setFinishFilter] = useState("all");
@@ -212,13 +212,8 @@ export default function ItemMasterPage() {
           <Button
             variant="primary"
             icon={Plus}
-            onClick={() =>
-              toast.info({
-                title: "New item",
-                message:
-                  "Item creation opens once the inventory backend is connected.",
-              })
-            }
+            disabled
+            title={INVENTORY_BACKEND_UNAVAILABLE}
           >
             New Item
           </Button>
@@ -226,6 +221,8 @@ export default function ItemMasterPage() {
       />
 
       <div className="item-master__content">
+        <InventoryBackendNotice />
+
         {/* CATEGORY TABS */}
         <section className="item-master__tabs">
           {RAW_MATERIAL_CATEGORIES.map((category) => (

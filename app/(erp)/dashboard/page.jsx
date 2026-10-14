@@ -1,106 +1,126 @@
 "use client";
 
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import {
   AlertTriangle,
-  Boxes,
+  Ban,
   CheckCircle2,
   Clock3,
-  Factory,
-  PackageCheck,
+  FilePen,
+  Package,
+  RefreshCw,
   ShoppingCart,
-  Truck,
+  Users,
 } from "lucide-react";
 
-import { PRODUCTION_STAGES } from "@/config/production";
+import Alert from "@/components/ui/Alert";
+import { apiRequest } from "@/lib/api/client";
+import {
+  DASHBOARD_PERIODS,
+  DEFAULT_DASHBOARD_PERIOD,
+  formatAmount,
+  formatCount,
+  toDashboardView,
+} from "@/lib/dashboard/dashboardView";
 
 import "./Dashboard.css";
 
 /*
- * Command Center Dashboard — factory KPIs.
+ * Command Center Dashboard.
  *
- * All KPI values are backend-ready placeholders (0).
- * No mock business data. When the backend is connected the
- * values come from the reporting aggregates:
- *
- * Orders: active, per-stage, QC waiting, packing, delivered,
- * delayed/overdue, due soon, completion percentage.
- * Inventory: total/available/reserved stock, WIP, low stock,
- * out-of-stock, incoming material, issued to production,
- * consumption, finished goods.
+ * All values come from GET /api/dashboard
+ * (server/dashboard/dashboard.service.ts). Only KPIs the API returns are
+ * shown; modules the API reports as not connected are listed instead of
+ * being displayed as zero.
  */
 
-const ZERO = 0;
+function StatCard({ icon: Icon, label, value, note, tone }) {
+  return (
+    <article
+      className={`dashboard__stat${tone ? ` dashboard__stat--${tone}` : ""}`}
+    >
+      <div className="dashboard__stat-top">
+        <div className="dashboard__stat-icon">
+          <Icon size={18} />
+        </div>
+      </div>
 
-const orderStats = [
-  {
-    label: "Total Active Orders",
-    value: ZERO,
-    icon: ShoppingCart,
-    note: "open customer orders",
-  },
-  {
-    label: "In Production",
-    value: ZERO,
-    icon: Factory,
-    note: "orders on the stage board",
-  },
-  {
-    label: "Orders Waiting for QC",
-    value: ZERO,
-    icon: CheckCircle2,
-    note: "final inspection queue",
-  },
-  {
-    label: "Orders in Packing",
-    value: ZERO,
-    icon: PackageCheck,
-    note: "packing in progress",
-  },
-  {
-    label: "Orders Delivered",
-    value: ZERO,
-    icon: Truck,
-    note: "lifetime delivered",
-  },
-];
+      <div className="dashboard__stat-value">{value}</div>
 
-const alertStats = [
-  {
-    label: "Delayed / Overdue Orders",
-    value: ZERO,
-    icon: AlertTriangle,
-    note: "past expected completion",
-    tone: "warning",
-  },
-  {
-    label: "Orders Due Soon",
-    value: ZERO,
-    icon: Clock3,
-    note: "due within 7 days",
-    tone: "info",
-  },
-];
+      <div className="dashboard__stat-label">{label}</div>
 
-const stageCounts = PRODUCTION_STAGES.map((stage) => ({
-  ...stage,
-  count: ZERO,
-  quantity: ZERO,
-}));
+      {note && <div className="dashboard__stat-note">{note}</div>}
+    </article>
+  );
+}
 
-const inventoryStats = [
-  { label: "Total Stock", value: ZERO, note: "all warehouses" },
-  { label: "Available Stock", value: ZERO, note: "current minus reserved" },
-  { label: "Reserved Stock", value: ZERO, note: "against orders" },
-  { label: "WIP", value: ZERO, note: "material inside production" },
-  { label: "Low Stock Alerts", value: ZERO, note: "below minimum level", tone: "warning" },
-  { label: "Out-of-Stock Alerts", value: ZERO, note: "zero stock items", tone: "danger" },
-  { label: "Incoming Material", value: ZERO, note: "open purchase orders" },
-  { label: "Issued to Production", value: ZERO, note: "period material issue" },
-  { label: "Material Consumption", value: ZERO, note: "period consumption" },
-  { label: "Finished Goods", value: ZERO, note: "ready for delivery" },
-];
+function formatDate(value) {
+  if (!value) {
+    return "—";
+  }
+
+  return String(value).slice(0, 10);
+}
+
+function formatDateTime(value) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  return Number.isNaN(date.getTime())
+    ? ""
+    : date.toLocaleString("en-US", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+}
 
 export default function DashboardPage() {
+  const [period, setPeriod] = useState(DEFAULT_DASHBOARD_PERIOD);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [refresh, setRefresh] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+
+    async function load() {
+      setLoading(true);
+      setError("");
+
+      try {
+        const value = await apiRequest(
+          `/api/dashboard?period=${encodeURIComponent(period)}`,
+        );
+
+        if (active) {
+          setData(value);
+        }
+      } catch (cause) {
+        if (active) {
+          setError(cause?.message || "Unable to load the dashboard.");
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    load();
+
+    return () => {
+      active = false;
+    };
+  }, [period, refresh]);
+
+  const view = data ? toDashboardView(data) : null;
+  const kpis = view?.kpis;
+
   return (
     <div className="dashboard">
       <section className="dashboard__header">
@@ -110,154 +130,312 @@ export default function DashboardPage() {
           <h2>Command Center</h2>
 
           <p>
-            A live view of orders, production stages, inventory,
-            quality, packing and dispatch.
+            Sales orders, customers and products from the ERP database.
+            {view?.period &&
+              ` Period: ${view.period.dateFrom} to ${view.period.dateTo}.`}
           </p>
         </div>
 
         <div className="dashboard__header-actions">
-          <button type="button" className="dashboard__date">
+          <label className="dashboard__date">
             <Clock3 size={16} />
 
-            <span>Command Center</span>
+            <span className="dashboard__sr-only">Period</span>
+
+            <select
+              className="dashboard__period-select"
+              value={period}
+              disabled={loading}
+              onChange={(event) => setPeriod(event.target.value)}
+            >
+              {DASHBOARD_PERIODS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <button
+            type="button"
+            className="dashboard__date"
+            disabled={loading}
+            onClick={() => setRefresh((current) => current + 1)}
+          >
+            <RefreshCw size={16} />
+
+            <span>{loading ? "Loading..." : "Refresh"}</span>
           </button>
         </div>
       </section>
 
-      <section className="dashboard__stats">
-        {orderStats.map((stat) => {
-          const Icon = stat.icon;
+      {error && (
+        <div className="dashboard__message">
+          <Alert
+            variant="danger"
+            title="Dashboard could not be loaded"
+            action={{
+              label: "Try again",
+              onClick: () => setRefresh((current) => current + 1),
+            }}
+          >
+            {error}
+          </Alert>
+        </div>
+      )}
 
-          return (
-            <article className="dashboard__stat" key={stat.label}>
-              <div className="dashboard__stat-top">
-                <div className="dashboard__stat-icon">
-                  <Icon size={18} />
-                </div>
-              </div>
-
-              <div className="dashboard__stat-value">{stat.value}</div>
-
-              <div className="dashboard__stat-label">{stat.label}</div>
-
-              <div className="dashboard__stat-note">{stat.note}</div>
-            </article>
-          );
-        })}
-      </section>
-
-      <section className="dashboard__stats dashboard__stats--alerts">
-        {alertStats.map((stat) => {
-          const Icon = stat.icon;
-
-          return (
+      {loading && !view && (
+        <section
+          className="dashboard__stats"
+          aria-busy="true"
+          aria-label="Loading dashboard"
+        >
+          {Array.from({ length: 4 }, (_, index) => (
             <article
-              className={`dashboard__stat dashboard__stat--${stat.tone}`}
-              key={stat.label}
+              className="dashboard__stat dashboard__stat--loading"
+              key={index}
             >
-              <div className="dashboard__stat-top">
-                <div className="dashboard__stat-icon">
-                  <Icon size={18} />
+              <div className="dashboard__skeleton dashboard__skeleton--icon" />
+              <div className="dashboard__skeleton dashboard__skeleton--value" />
+              <div className="dashboard__skeleton dashboard__skeleton--label" />
+            </article>
+          ))}
+        </section>
+      )}
+
+      {view && (
+        <>
+          {view.isEmpty && (
+            <div className="dashboard__message">
+              <Alert variant="info" title="No sales activity in this period">
+                No sales orders were placed in the selected period and no
+                recent activity is recorded. Choose a longer period or{" "}
+                <Link href="/sales/orders/new">create a sales order</Link>.
+              </Alert>
+            </div>
+          )}
+
+          <section
+            className="dashboard__stats"
+            aria-busy={loading}
+          >
+            <StatCard
+              icon={ShoppingCart}
+              label="Sales Orders"
+              value={formatCount(kpis.totalOrders)}
+              note="placed in period, all statuses"
+            />
+
+            <StatCard
+              icon={CheckCircle2}
+              label="Approved Order Value"
+              value={formatAmount(kpis.approvedSales)}
+              note={`${formatCount(kpis.approvedOrders)} approved orders`}
+            />
+
+            <StatCard
+              icon={FilePen}
+              label="Draft Order Value"
+              value={formatAmount(kpis.draftSales)}
+              note={`${formatCount(kpis.draftOrders)} draft orders`}
+            />
+
+            <StatCard
+              icon={Ban}
+              label="Cancelled Order Value"
+              value={formatAmount(kpis.cancelledSales)}
+              note={`${formatCount(kpis.cancelledOrders)} cancelled orders`}
+            />
+          </section>
+
+          <section className="dashboard__stats">
+            <StatCard
+              icon={AlertTriangle}
+              label="Overdue Draft Orders"
+              value={formatCount(kpis.overdueOrders)}
+              note="placed in period, delivery date passed"
+              tone="warning"
+            />
+
+            <StatCard
+              icon={Clock3}
+              label="Orders Due Soon"
+              value={formatCount(kpis.dueSoonOrders)}
+              note="placed in period, due within 7 days"
+              tone="info"
+            />
+
+            <StatCard
+              icon={Users}
+              label="Active Customers"
+              value={formatCount(kpis.activeCustomers)}
+              note="customer master, status active"
+            />
+
+            <StatCard
+              icon={Package}
+              label="Products"
+              value={formatCount(kpis.activeProducts)}
+              note="product master, not archived"
+            />
+          </section>
+
+          <div className="dashboard__grid dashboard__grid--bottom">
+            <section className="dashboard__panel">
+              <div className="dashboard__panel-header">
+                <div>
+                  <span className="dashboard__panel-kicker">Sales</span>
+
+                  <h3>Recent Sales Orders</h3>
+                </div>
+
+                <Link className="dashboard__text-button" href="/sales/orders">
+                  View all
+                </Link>
+              </div>
+
+              {view.recentOrders.length ? (
+                <div className="dashboard__table-wrap">
+                  <table className="dashboard__table">
+                    <thead>
+                      <tr>
+                        <th>Order</th>
+                        <th>Customer</th>
+                        <th>Order date</th>
+                        <th>Delivery</th>
+                        <th>Status</th>
+                        <th className="dashboard__num">Lines</th>
+                        <th className="dashboard__num">Total</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {view.recentOrders.map((order) => (
+                        <tr key={order.id}>
+                          <td>
+                            <Link href={`/sales/orders/${encodeURIComponent(order.id)}`}>
+                              {order.orderNumber}
+                            </Link>
+                          </td>
+                          <td>{order.customerName}</td>
+                          <td>{formatDate(order.orderDate)}</td>
+                          <td>{formatDate(order.deliveryDate)}</td>
+                          <td>
+                            <span
+                              className={`dashboard__status dashboard__status--${String(order.status).toLowerCase()}`}
+                            >
+                              {order.status}
+                            </span>
+                          </td>
+                          <td className="dashboard__num">
+                            {formatCount(order.items)}
+                          </td>
+                          <td className="dashboard__num">
+                            {formatAmount(order.totalAmount)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="dashboard__panel-empty">
+                  No sales orders have been created yet.
+                </p>
+              )}
+            </section>
+
+            <section className="dashboard__panel">
+              <div className="dashboard__panel-header">
+                <div>
+                  <span className="dashboard__panel-kicker">Sales</span>
+
+                  <h3>Orders by Status</h3>
                 </div>
               </div>
 
-              <div className="dashboard__stat-value">{stat.value}</div>
+              {view.orderStatus.length ? (
+                <div className="dashboard__table-wrap">
+                  <table className="dashboard__table">
+                    <thead>
+                      <tr>
+                        <th>Status</th>
+                        <th className="dashboard__num">Orders</th>
+                        <th className="dashboard__num">Value</th>
+                      </tr>
+                    </thead>
 
-              <div className="dashboard__stat-label">{stat.label}</div>
-
-              <div className="dashboard__stat-note">{stat.note}</div>
-            </article>
-          );
-        })}
-
-        <article className="dashboard__stat">
-          <div className="dashboard__stat-top">
-            <div className="dashboard__stat-icon">
-              <Factory size={18} />
-            </div>
+                    <tbody>
+                      {view.orderStatus.map((row) => (
+                        <tr key={row.status}>
+                          <td>{row.status}</td>
+                          <td className="dashboard__num">
+                            {formatCount(row.count)}
+                          </td>
+                          <td className="dashboard__num">
+                            {formatAmount(row.amount)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="dashboard__panel-empty">
+                  No status breakdown returned for this period.
+                </p>
+              )}
+            </section>
           </div>
 
-          <div className="dashboard__stat-value">0%</div>
+          <section className="dashboard__panel">
+            <div className="dashboard__panel-header">
+              <div>
+                <span className="dashboard__panel-kicker">Audit trail</span>
 
-          <div className="dashboard__stat-label">
-            Production Completion
-          </div>
-
-          <div className="dashboard__stat-note">
-            average across active orders
-          </div>
-        </article>
-      </section>
-
-      {/* STAGE DISTRIBUTION */}
-      <section className="dashboard__panel">
-        <div className="dashboard__panel-header">
-          <div>
-            <span className="dashboard__panel-kicker">Manufacturing</span>
-
-            <h3>Orders by Production Stage</h3>
-          </div>
-        </div>
-
-        <div className="dashboard__stage-grid">
-          {stageCounts.map((stage) => (
-            <div className="dashboard__stage" key={stage.key}>
-              <span className="dashboard__stage-seq">
-                {String(stage.sequence).padStart(2, "0")}
-              </span>
-
-              <div className="dashboard__stage-copy">
-                <strong>{stage.label}</strong>
-
-                <span>
-                  {stage.count} orders ·{" "}
-                  {stage.quantity.toLocaleString()} qty
-                </span>
+                <h3>Recent Activity</h3>
               </div>
             </div>
-          ))}
-        </div>
-      </section>
 
-      {/* INVENTORY VISIBILITY */}
-      <section className="dashboard__panel">
-        <div className="dashboard__panel-header">
-          <div>
-            <span className="dashboard__panel-kicker">Inventory</span>
+            {view.activity.length ? (
+              <div className="dashboard__activity">
+                {view.activity.map((entry) => (
+                  <div className="dashboard__activity-item" key={entry.id}>
+                    <span className="dashboard__activity-dot" />
 
-            <h3>Inventory Visibility</h3>
-          </div>
-        </div>
+                    <div className="dashboard__activity-content">
+                      <strong>{entry.action}</strong>
 
-        <div className="dashboard__inventory-grid">
-          {inventoryStats.map((stat) => (
-            <div
-              className={`dashboard__inventory-item${stat.tone ? ` dashboard__inventory-item--${stat.tone}` : ""
-                }`}
-              key={stat.label}
-            >
-              <strong>{stat.value.toLocaleString()}</strong>
+                      <span>
+                        {entry.entityType}
+                        {entry.entityId ? ` · ${entry.entityId}` : ""}
+                      </span>
+                    </div>
 
-              <span>{stat.label}</span>
+                    <time dateTime={entry.createdAt}>
+                      {formatDateTime(entry.createdAt)}
+                    </time>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="dashboard__panel-empty">
+                No audit activity has been recorded yet.
+              </p>
+            )}
+          </section>
 
-              <small>{stat.note}</small>
+          {view.unavailableModules.length > 0 && (
+            <div className="dashboard__message">
+              <Alert variant="neutral" title="Not yet reported by the backend">
+                {view.unavailableModules.join(", ")} KPIs are not available
+                from the dashboard API yet, so they are not shown. They will
+                appear here once those modules are connected to the database.
+              </Alert>
             </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="dashboard__health">
-        <div className="dashboard__health-indicator">
-          <span className="dashboard__health-dot" />
-
-          <strong>Awaiting backend connection</strong>
-        </div>
-
-        <span>
-          Dashboard KPIs will populate once the ERP database and
-          reporting backend are connected.
-        </span>
-      </section>
+          )}
+        </>
+      )}
     </div>
   );
 }

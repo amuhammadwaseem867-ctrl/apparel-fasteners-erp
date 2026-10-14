@@ -15,6 +15,9 @@ import {
 } from "lucide-react";
 
 import PageHeader from "@/components/ui/PageHeader";
+import InventoryBackendNotice, {
+  INVENTORY_BACKEND_UNAVAILABLE,
+} from "@/components/inventory/InventoryBackendNotice";
 import Button from "@/components/ui/Button";
 
 import "./Adjustments.css";
@@ -139,6 +142,8 @@ export default function AdjustmentsPage() {
             <Button
               variant="primary"
               onClick={handleNewAdjustment}
+              disabled
+              title={INVENTORY_BACKEND_UNAVAILABLE}
             >
               <Plus size={15} />
               New Adjustment
@@ -148,6 +153,8 @@ export default function AdjustmentsPage() {
       />
 
       <div className="inventory-adjustments__content">
+        <InventoryBackendNotice />
+
         {/* SUMMARY */}
 
         <section className="inventory-adjustments__summary">
@@ -293,6 +300,8 @@ export default function AdjustmentsPage() {
               <Button
                 variant="primary"
                 onClick={handleNewAdjustment}
+                disabled
+                title={INVENTORY_BACKEND_UNAVAILABLE}
               >
                 <Plus size={15} />
                 New Adjustment

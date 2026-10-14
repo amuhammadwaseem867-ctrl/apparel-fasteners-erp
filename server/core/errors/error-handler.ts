@@ -1,4 +1,5 @@
 import { AppError } from "./app-error";
+import { DATABASE_SCHEMA_OUTDATED, getSchemaMismatch } from "./database-errors";
 import { logger } from "../logger/logger";
 import { failureResponse, type ApiFailure } from "../response/api-response";
 
@@ -15,6 +16,25 @@ export function handleApiError(
     return {
       status: error.status,
       body: failureResponse(error.code, error.message, error.details),
+    };
+  }
+
+  const schemaMismatch = getSchemaMismatch(error);
+
+  if (schemaMismatch) {
+    logger.error("Database schema is behind the application contract", {
+      requestId: requestId ?? null,
+      sqlState: schemaMismatch.sqlState ?? null,
+      table: schemaMismatch.table ?? null,
+      column: schemaMismatch.column ?? null,
+    });
+
+    return {
+      status: DATABASE_SCHEMA_OUTDATED.status,
+      body: failureResponse(
+        DATABASE_SCHEMA_OUTDATED.code,
+        DATABASE_SCHEMA_OUTDATED.message,
+      ),
     };
   }
 

@@ -14,10 +14,10 @@ import {
 } from "lucide-react";
 
 import PageHeader from "@/components/ui/PageHeader";
+import InventoryBackendNotice, {
+  INVENTORY_BACKEND_UNAVAILABLE,
+} from "@/components/inventory/InventoryBackendNotice";
 import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
-import Modal from "@/components/ui/Modal";
-import { useToast } from "@/components/ui/ToastProvider";
 
 import "./Transfers.css";
 
@@ -59,25 +59,14 @@ const STATUS_CONFIG = {
 };
 
 export default function TransfersPage() {
-  const toast = useToast();
-
   /*
-   * Backend-ready.
-   * Transfer records will come from the API later.
+   * No inventory transfer API exists yet, so there are no transfer
+   * records to load. Records must never be created client-side only.
    */
-  const [transfers, setTransfers] = useState([]);
+  const transfers = useMemo(() => [], []);
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
-  const [transferOpen, setTransferOpen] = useState(false);
-  const [transferForm, setTransferForm] = useState({
-    reference: "",
-    itemName: "",
-    quantity: "",
-    sourceWarehouse: "",
-    destinationWarehouse: "",
-    unit: "Pcs",
-  });
   const [loading] = useState(false);
 
 
@@ -115,31 +104,8 @@ export default function TransfersPage() {
     return;
   };
 
-  const handleNewTransfer = () => setTransferOpen(true);
-
-  const handleCreateTransfer = () => {
-    if (!transferForm.reference.trim() || !transferForm.itemName.trim() || !transferForm.quantity || !transferForm.sourceWarehouse.trim() || !transferForm.destinationWarehouse.trim()) {
-      return;
-    }
-
-    const transfer = {
-      id: `tr-${Date.now()}`,
-      reference: transferForm.reference.trim(),
-      sourceWarehouse: transferForm.sourceWarehouse.trim(),
-      destinationWarehouse: transferForm.destinationWarehouse.trim(),
-      itemName: transferForm.itemName.trim(),
-      itemCount: 1,
-      quantity: Number(transferForm.quantity),
-      unit: transferForm.unit,
-      status: "pending",
-      requestedBy: "Current User",
-      createdAt: new Date().toISOString().slice(0, 10),
-    };
-
-    setTransfers((current) => [transfer, ...current]);
-    setTransferOpen(false);
-    setTransferForm({ reference: "", itemName: "", quantity: "", sourceWarehouse: "", destinationWarehouse: "", unit: "Pcs" });
-    toast.success({ title: "Transfer created", message: transfer.reference + " is pending." });
+  const handleNewTransfer = () => {
+    /* Disabled until an inventory transfer API exists. */
   };
 
   const totalItems = transfers.reduce(
@@ -186,6 +152,8 @@ export default function TransfersPage() {
             <Button
               variant="primary"
               onClick={handleNewTransfer}
+              disabled
+              title={INVENTORY_BACKEND_UNAVAILABLE}
             >
               <ArrowLeftRight size={15} />
               New Transfer
@@ -195,6 +163,8 @@ export default function TransfersPage() {
       />
 
       <div className="inventory-transfers__content">
+        <InventoryBackendNotice />
+
         {/* ------------------------------------------------
             SUMMARY
         ------------------------------------------------ */}
@@ -333,6 +303,8 @@ export default function TransfersPage() {
               <Button
                 variant="primary"
                 onClick={handleNewTransfer}
+                disabled
+                title={INVENTORY_BACKEND_UNAVAILABLE}
               >
                 <ArrowLeftRight size={15} />
                 New Transfer
@@ -481,36 +453,6 @@ export default function TransfersPage() {
           </div>
         </section>
       </div>
-      {/* NEW TRANSFER MODAL */}
-
-      <Modal
-        open={transferOpen}
-        onClose={() => setTransferOpen(false)}
-        title="New Stock Transfer"
-        description="Move inventory between warehouses."
-      >
-        <div className="inventory-transfers__form">
-          <Input label="Reference *" placeholder="e.g. TR-2026-001" value={transferForm.reference}
-            onChange={(event) => setTransferForm((f) => ({ ...f, reference: event.target.value }))}
-          />
-          <Input label="Item *" placeholder="e.g. Teeth #5 Brass" value={transferForm.itemName}
-            onChange={(event) => setTransferForm((f) => ({ ...f, itemName: event.target.value }))}
-          />
-          <Input label="Quantity *" type="number" min="1" value={transferForm.quantity}
-            onChange={(event) => setTransferForm((f) => ({ ...f, quantity: event.target.value }))}
-          />
-          <Input label="From Warehouse *" value={transferForm.sourceWarehouse}
-            onChange={(event) => setTransferForm((f) => ({ ...f, sourceWarehouse: event.target.value }))}
-          />
-          <Input label="To Warehouse *" value={transferForm.destinationWarehouse}
-            onChange={(event) => setTransferForm((f) => ({ ...f, destinationWarehouse: event.target.value }))}
-          />
-          <div className="inventory-transfers__form-actions">
-            <Button variant="secondary" onClick={() => setTransferOpen(false)}>Cancel</Button>
-            <Button variant="primary" disabled={!transferForm.reference.trim() || !transferForm.itemName.trim() || !transferForm.quantity || !transferForm.sourceWarehouse.trim() || !transferForm.destinationWarehouse.trim()} onClick={handleCreateTransfer}>Create Transfer</Button>
-          </div>
-        </div>
-      </Modal>
     </main>
   );
 }

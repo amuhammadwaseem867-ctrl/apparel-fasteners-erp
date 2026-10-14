@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
 
+import InventoryBackendNotice from "@/components/inventory/InventoryBackendNotice";
+
 import InventoryKpiGrid from "@/components/inventory/InventoryKpiGrid";
 import InventoryStockSummary from "@/components/inventory/InventoryStockSummary";
 import InventoryQuickActions from "@/components/inventory/InventoryQuickActions";
@@ -23,10 +25,8 @@ export default function InventoryPage() {
   const [loading] = useState(false);
 
   /*
-   * Backend-ready state.
-   *
-   * No mock records are intentionally provided here.
-   * These values will later come from the inventory API.
+   * No inventory API exists yet (see InventoryBackendNotice), so there
+   * are no records to load. No mock records are provided.
    */
   const inventory = {
     kpis: {},
@@ -112,6 +112,8 @@ export default function InventoryPage() {
       />
 
       <div className="inventory-dashboard__content">
+        <InventoryBackendNotice />
+
         {/* ------------------------------------------------
             KPI OVERVIEW
         ------------------------------------------------ */}

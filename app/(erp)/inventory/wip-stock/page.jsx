@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 
 import PageHeader from "@/components/ui/PageHeader";
+import InventoryBackendNotice from "@/components/inventory/InventoryBackendNotice";
 import Input from "@/components/ui/Input";
 import EmptyState from "@/components/ui/EmptyState";
 import { PRODUCTION_STAGES } from "@/config/production";
@@ -42,6 +43,8 @@ export default function WipStockPage() {
       />
 
       <div className="wip-stock__content">
+        <InventoryBackendNotice />
+
         <section className="wip-stock__flow">
           <div className="wip-stock__flow-track">
             <span className="wip-stock__flow-node">Warehouse</span>

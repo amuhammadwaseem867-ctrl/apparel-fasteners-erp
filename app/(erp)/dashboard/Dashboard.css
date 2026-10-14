@@ -998,3 +998,159 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* -------------------------------------------------------
+   API-CONNECTED STATES
+------------------------------------------------------- */
+
+.dashboard__sr-only {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  overflow: hidden;
+
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.dashboard__period-select {
+  border: 0;
+
+  background: transparent;
+  color: inherit;
+
+  font: inherit;
+
+  cursor: pointer;
+}
+
+.dashboard__date:disabled,
+.dashboard__period-select:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.dashboard__message {
+  margin-bottom: 18px;
+}
+
+.dashboard__panel-empty {
+  margin: 0;
+  padding: 18px;
+
+  color: var(--af-text-muted);
+
+  font-size: 12px;
+}
+
+.dashboard__table-wrap {
+  overflow-x: auto;
+}
+
+.dashboard__table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  font-size: 12px;
+}
+
+.dashboard__table th,
+.dashboard__table td {
+  padding: 10px 18px;
+
+  border-bottom: 1px solid #edf0f2;
+
+  text-align: left;
+  white-space: nowrap;
+}
+
+.dashboard__table th {
+  color: var(--af-text-muted);
+
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dashboard__table td {
+  color: var(--af-text);
+}
+
+.dashboard__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.dashboard__table a {
+  color: var(--af-navy);
+
+  font-weight: 700;
+}
+
+.dashboard__num {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.dashboard__status {
+  display: inline-block;
+
+  padding: 2px 8px;
+
+  border-radius: 999px;
+
+  background: var(--af-surface-soft);
+  color: var(--af-text-secondary);
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dashboard__status--approved {
+  color: var(--af-success);
+}
+
+.dashboard__status--cancelled {
+  color: var(--af-danger);
+}
+
+.dashboard__skeleton {
+  border-radius: 6px;
+
+  background: var(--af-surface-soft);
+
+  animation: dashboard-pulse 1.2s ease-in-out infinite;
+}
+
+.dashboard__skeleton--icon {
+  width: 34px;
+  height: 34px;
+}
+
+.dashboard__skeleton--value {
+  width: 60%;
+  height: 25px;
+
+  margin-top: 17px;
+}
+
+.dashboard__skeleton--label {
+  width: 80%;
+  height: 12px;
+
+  margin-top: 9px;
+}
+
+@keyframes dashboard-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard__skeleton {
+    animation: none;
+  }
+}

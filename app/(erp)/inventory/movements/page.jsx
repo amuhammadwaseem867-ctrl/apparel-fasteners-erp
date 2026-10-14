@@ -14,6 +14,9 @@ import {
 } from "lucide-react";
 
 import PageHeader from "@/components/ui/PageHeader";
+import InventoryBackendNotice, {
+  INVENTORY_BACKEND_UNAVAILABLE,
+} from "@/components/inventory/InventoryBackendNotice";
 import Button from "@/components/ui/Button";
 
 import "./Movements.css";
@@ -172,7 +175,8 @@ export default function MovementsPage() {
             <Button
               variant="secondary"
               onClick={handleRefresh}
-              disabled={loading}
+              disabled
+              title={INVENTORY_BACKEND_UNAVAILABLE}
             >
               <RefreshCw size={15} />
               Refresh
@@ -194,6 +198,8 @@ export default function MovementsPage() {
       />
 
       <div className="inventory-movements__content">
+        <InventoryBackendNotice />
+
         {/* ------------------------------------------------
             SUMMARY
         ------------------------------------------------ */}

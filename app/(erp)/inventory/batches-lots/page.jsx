@@ -14,6 +14,9 @@ import {
 } from "lucide-react";
 
 import PageHeader from "@/components/ui/PageHeader";
+import InventoryBackendNotice, {
+  INVENTORY_BACKEND_UNAVAILABLE,
+} from "@/components/inventory/InventoryBackendNotice";
 import Button from "@/components/ui/Button";
 
 import "./BatchesLots.css";
@@ -134,6 +137,8 @@ export default function BatchesLotsPage() {
             <Button
               variant="primary"
               onClick={handleAddBatch}
+              disabled
+              title={INVENTORY_BACKEND_UNAVAILABLE}
             >
               <Package size={15} />
               Add Batch
@@ -143,6 +148,8 @@ export default function BatchesLotsPage() {
       />
 
       <div className="inventory-batches__content">
+        <InventoryBackendNotice />
+
         {/* SUMMARY */}
 
         <section className="inventory-batches__summary">
@@ -287,6 +294,8 @@ export default function BatchesLotsPage() {
               <Button
                 variant="primary"
                 onClick={handleAddBatch}
+                disabled
+                title={INVENTORY_BACKEND_UNAVAILABLE}
               >
                 <Package size={15} />
                 Add Batch
