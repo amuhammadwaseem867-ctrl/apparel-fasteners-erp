@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { apiRequest } from "@/lib/api/client";
+import {
+  centsToDecimalString,
+  divideRoundHalfUp,
+  multiplyToCents,
+} from "@/server/core/utils/decimal";
 import "./OrderEditor.css";
 
 const emptySubscribe = () => () => {};
@@ -14,23 +19,45 @@ function todayISO() {
 }
 
 function moneyFromCents(cents) {
-  return (cents / 100).toFixed(2);
+  return centsToDecimalString(BigInt(cents));
 }
 
+function previewNumber(value) {
+  const number = Number(value || 0);
+  return Number.isFinite(number) && number >= 0 ? number : 0;
+}
+
+function previewPercent(value) {
+  const number = previewNumber(value);
+  return Number.isInteger(number) ? number : 0;
+}
+
+/*
+ * Live preview of the server's calculation (server/sales/sales.validation
+ * calculateLineAmounts): same exact decimal arithmetic and half-up
+ * rounding, so the preview matches the saved totals to the cent.
+ * Invalid entries preview as 0; the server rejects them on save.
+ */
 function lineAmounts(line) {
-  const grossCents = Math.round(Number(line.quantity || 0) * Number(line.unitPrice || 0) * 100);
-  const discountCents = Math.round(grossCents * Number(line.discountPercent || 0) / 100);
-  const taxCents = Math.round((grossCents - discountCents) * Number(line.taxPercent || 0) / 100);
-  return {
-    grossCents,
-    discountCents,
-    taxCents,
-    totalCents: grossCents - discountCents + taxCents,
-  };
-}
+  const grossCents = multiplyToCents(
+    previewNumber(line.quantity),
+    previewNumber(line.unitPrice),
+  );
+  const discountCents = divideRoundHalfUp(
+    grossCents * BigInt(previewPercent(line.discountPercent)),
+    100n,
+  );
+  const taxCents = divideRoundHalfUp(
+    (grossCents - discountCents) * BigInt(previewPercent(line.taxPercent)),
+    100n,
+  );
 
-function lineAmount(line) {
-  return lineAmounts(line).totalCents / 100;
+  return {
+    grossCents: Number(grossCents),
+    discountCents: Number(discountCents),
+    taxCents: Number(taxCents),
+    totalCents: Number(grossCents - discountCents + taxCents),
+  };
 }
 
 function createKey() {
@@ -261,7 +288,7 @@ export default function OrderEditor({ orderId }) {
     }
   }
 
-  if (loading) return <main className="order-editor"><p role="status">Loading sales orderâ€¦</p></main>;
+  if (loading) return <main className="order-editor"><p role="status">Loading sales order…</p></main>;
 
   return (
     <main className="order-editor">
@@ -291,7 +318,7 @@ export default function OrderEditor({ orderId }) {
               <select required value={customerId} onChange={(event) => setCustomerId(event.target.value)}>
                 <option value="">Select a customer</option>
                 {customers.map((customer) => (
-                  <option key={customer.id} value={customer.id}>{customer.code} â€” {customer.name}</option>
+                  <option key={customer.id} value={customer.id}>{customer.code} — {customer.name}</option>
                 ))}
               </select>
               {customerError && <small className="order-editor__inline-error">{customerError}</small>}
@@ -337,14 +364,14 @@ export default function OrderEditor({ orderId }) {
                       <strong>{line.productName}</strong>
                       {line.customerReference && <small>{line.customerReference}</small>}
                     </td>
-                    <td>{line.skuReference || "â€”"}</td>
-                    <td>{[line.category, line.variant].filter(Boolean).join(" / ") || "â€”"}</td>
+                    <td>{line.skuReference || "—"}</td>
+                    <td>{[line.category, line.variant].filter(Boolean).join(" / ") || "—"}</td>
                     <td><input className="order-editor__number" aria-label={`Quantity for ${line.productName}`} type="number" min="0.001" step="0.001" required value={line.quantity} onChange={(event) => updateLine(line.key, "quantity", event.target.value)} /></td>
                     <td>{line.unit}</td>
-                    <td><input className="order-editor__number" aria-label={`Unit price for ${line.productName}`} type="number" min="0" step="0.01" required value={line.unitPrice} onChange={(event) => updateLine(line.key, "unitPrice", event.target.value)} /></td>
+                    <td><input className="order-editor__number" aria-label={`Unit price for ${line.productName}`} type="number" min="0" step="any" required value={line.unitPrice} onChange={(event) => updateLine(line.key, "unitPrice", event.target.value)} /></td>
                     <td><input className="order-editor__percent" aria-label={`Discount percentage for ${line.productName}`} type="number" min="0" max="100" step="1" value={line.discountPercent} onChange={(event) => updateLine(line.key, "discountPercent", event.target.value)} /></td>
                     <td><input className="order-editor__percent" aria-label={`Tax percentage for ${line.productName}`} type="number" min="0" max="100" step="1" value={line.taxPercent} onChange={(event) => updateLine(line.key, "taxPercent", event.target.value)} /></td>
-                    <td className="order-editor__numeric">{lineAmount(line).toFixed(2)}</td>
+                    <td className="order-editor__numeric">{moneyFromCents(lineAmounts(line).totalCents)}</td>
                     <td><button className="order-editor__remove" type="button" aria-label={`Remove ${line.productName}`} onClick={() => setLines((current) => current.filter((item) => item.key !== line.key))}>Remove</button></td>
                   </tr>
                 ))}
@@ -365,26 +392,26 @@ export default function OrderEditor({ orderId }) {
 
         <footer className="order-editor__footer">
           <Link href="/sales/orders">Cancel</Link>
-          <button type="submit" disabled={saving || !customerId}>{saving ? "Savingâ€¦" : editing ? "Save order" : "Create sales order"}</button>
+          <button type="submit" disabled={saving || !customerId}>{saving ? "Saving…" : editing ? "Save order" : "Create sales order"}</button>
         </footer>
       </form>
 
       {selectorOpen && (
         <div className="order-editor__overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectorOpen(false); }}>
           <section className="order-editor__dialog" role="dialog" aria-modal="true" aria-labelledby="product-selector-title">
-            <header><div><h2 id="product-selector-title">Add product</h2><p>Choose an active catalog product or add an order-only custom item.</p></div><button type="button" aria-label="Close product selector" onClick={() => setSelectorOpen(false)}>Ã—</button></header>
+            <header><div><h2 id="product-selector-title">Add product</h2><p>Choose an active catalog product or add an order-only custom item.</p></div><button type="button" aria-label="Close product selector" onClick={() => setSelectorOpen(false)}>×</button></header>
             <div className="order-editor__product-filters">
               <input autoFocus type="search" placeholder="Search product, SKU, category or variant" value={productSearch} onChange={(event) => setProductSearch(event.target.value)} />
               <input placeholder="Filter category" value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)} />
               <input placeholder="Filter variant" value={variantFilter} onChange={(event) => setVariantFilter(event.target.value)} />
             </div>
             <div className="order-editor__product-list">
-              {productsLoading && <p role="status">Searching catalogâ€¦</p>}
+              {productsLoading && <p role="status">Searching catalog…</p>}
               {!productsLoading && productError && <p role="alert" className="order-editor__inline-error">{productError}</p>}
               {!productsLoading && !productError && products.length === 0 && <p>No active catalog products found.</p>}
               {!productsLoading && products.map((product) => (
                 <div className="order-editor__product-option" key={product.id}>
-                  <div><strong>{product.sku}</strong><span>{product.name}</span><small>{product.category}{product.variant ? ` Â· ${product.variant}` : ""} Â· {product.unit} Â· Stock not configured</small></div>
+                  <div><strong>{product.sku}</strong><span>{product.name}</span><small>{product.category}{product.variant ? ` · ${product.variant}` : ""} · {product.unit} · Stock not configured</small></div>
                   <div className="order-editor__product-price"><strong>{Number(product.unitPrice).toFixed(2)}</strong><button type="button" onClick={() => addCatalogProduct(product)}>Add</button></div>
                 </div>
               ))}
@@ -397,7 +424,7 @@ export default function OrderEditor({ orderId }) {
       {customOpen && (
         <div className="order-editor__overlay" role="presentation">
           <form className="order-editor__dialog order-editor__custom-dialog" onSubmit={addCustomProduct} role="dialog" aria-modal="true" aria-labelledby="custom-product-title">
-            <header><div><h2 id="custom-product-title">Add custom order item</h2><p>This item belongs only to this order and will not create a catalog product.</p></div><button type="button" aria-label="Close custom item form" onClick={() => setCustomOpen(false)}>Ã—</button></header>
+            <header><div><h2 id="custom-product-title">Add custom order item</h2><p>This item belongs only to this order and will not create a catalog product.</p></div><button type="button" aria-label="Close custom item form" onClick={() => setCustomOpen(false)}>×</button></header>
             <div className="order-editor__custom-fields">
               {[
                 ["productName", "Product name / description", true],
@@ -409,7 +436,7 @@ export default function OrderEditor({ orderId }) {
                 ["quantity", "Quantity", true],
                 ["unitPrice", "Unit price", true],
               ].map(([key, label, required]) => (
-                <label key={key}><span>{label}{required ? " *" : ""}</span><input required={required} type={key === "quantity" || key === "unitPrice" ? "number" : "text"} min={key === "quantity" || key === "unitPrice" ? "0" : undefined} step={key === "quantity" ? "0.001" : key === "unitPrice" ? "0.01" : undefined} value={custom[key]} onChange={(event) => setCustom((current) => ({ ...current, [key]: event.target.value }))} /></label>
+                <label key={key}><span>{label}{required ? " *" : ""}</span><input required={required} type={key === "quantity" || key === "unitPrice" ? "number" : "text"} min={key === "quantity" || key === "unitPrice" ? "0" : undefined} step={key === "quantity" ? "0.001" : key === "unitPrice" ? "any" : undefined} value={custom[key]} onChange={(event) => setCustom((current) => ({ ...current, [key]: event.target.value }))} /></label>
               ))}
               <label className="order-editor__notes"><span>Notes / specification</span><textarea rows="3" maxLength="1000" value={custom.notes} onChange={(event) => setCustom((current) => ({ ...current, notes: event.target.value }))} /></label>
             </div>

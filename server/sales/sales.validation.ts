@@ -1,16 +1,29 @@
 ﻿import { z } from "zod";
 
+import {
+  MAX_SAFE_CENTS,
+  divideRoundHalfUp,
+  multiplyToCents,
+  toScaledDecimal,
+} from "../core/utils/decimal";
+
 const positiveQuantity = z
   .number()
   .finite()
   .positive()
   .max(100000000);
 
+const MAX_PRICE_DECIMALS = 6;
+
 const nonNegativePrice = z
   .number()
   .finite()
   .min(0)
-  .max(100000000);
+  .max(100000000)
+  .refine(
+    (value) => toScaledDecimal(value).scale <= MAX_PRICE_DECIMALS,
+    `Unit price can have at most ${MAX_PRICE_DECIMALS} decimal places.`,
+  );
 
 const percentage = z
   .number()
@@ -113,7 +126,31 @@ export const salesOrderInputSchema = z
         "Delivery date cannot be earlier than the order date.",
       path: ["deliveryDate"],
     },
-  );
+  )
+  .superRefine((input, context) => {
+    let orderCents = 0n;
+
+    input.lines.forEach((line, index) => {
+      const amounts = calculateLineAmountsExact(line);
+      orderCents += amounts.grossCents + amounts.taxCents;
+
+      if (amounts.grossCents > MAX_SAFE_CENTS) {
+        context.addIssue({
+          code: "custom",
+          message: "Quantity × unit price is too large for one order line.",
+          path: ["lines", index, "unitPrice"],
+        });
+      }
+    });
+
+    if (orderCents > MAX_SAFE_CENTS) {
+      context.addIssue({
+        code: "custom",
+        message: "The order total is too large.",
+        path: ["lines"],
+      });
+    }
+  });
 
 export const salesOrderQuerySchema = z.object({
   search: z
@@ -195,33 +232,52 @@ export type SalesOrderQuery =
 export type CustomerInput =
   z.infer<typeof customerInputSchema>;
 
-export function calculateLineAmounts(input: {
+/*
+ * Line amounts in whole cents, computed exactly (see core/utils/decimal):
+ * gross = quantity × unit price, rounded half up to the cent; the discount
+ * applies to gross; tax applies to gross minus discount. Each step rounds
+ * half up to the cent.
+ */
+export function calculateLineAmountsExact(input: {
   quantity: number;
   unitPrice: number;
   discountPercent: number;
   taxPercent: number;
 }) {
-  const grossCents = Math.round(
-    input.quantity * input.unitPrice * 100,
+  const grossCents = multiplyToCents(input.quantity, input.unitPrice);
+  const discountCents = divideRoundHalfUp(
+    grossCents * BigInt(input.discountPercent),
+    100n,
   );
-
-  const discountCents = Math.round(
-    (grossCents * input.discountPercent) / 100,
-  );
-
-  const taxCents = Math.round(
-    ((grossCents - discountCents) *
-      input.taxPercent) /
-      100,
+  const taxCents = divideRoundHalfUp(
+    (grossCents - discountCents) * BigInt(input.taxPercent),
+    100n,
   );
 
   return {
     grossCents,
     discountCents,
     taxCents,
-    totalCents:
-      grossCents -
-      discountCents +
-      taxCents,
+    totalCents: grossCents - discountCents + taxCents,
+  };
+}
+
+export function calculateLineAmounts(input: {
+  quantity: number;
+  unitPrice: number;
+  discountPercent: number;
+  taxPercent: number;
+}) {
+  const exact = calculateLineAmountsExact(input);
+
+  if (exact.grossCents > MAX_SAFE_CENTS || exact.totalCents > MAX_SAFE_CENTS) {
+    throw new RangeError("Line amount exceeds the supported range.");
+  }
+
+  return {
+    grossCents: Number(exact.grossCents),
+    discountCents: Number(exact.discountCents),
+    taxCents: Number(exact.taxCents),
+    totalCents: Number(exact.totalCents),
   };
 }

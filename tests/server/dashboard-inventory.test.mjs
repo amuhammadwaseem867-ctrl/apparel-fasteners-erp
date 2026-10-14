@@ -96,3 +96,28 @@ test("inventory pages do not fabricate records or success messages without a bac
     assert.doesNotMatch(source, /id: `[a-z]+-\$\{Date\.now\(\)\}`/, `${page} creates client-only records`);
   }
 });
+
+test("the API error handler returns the schema-outdated envelope for a missing column", async () => {
+  const { handleApiError } = await import("../../server/core/errors/error-handler.ts");
+  const original = console.error;
+  console.error = () => {};
+
+  try {
+    const handled = handleApiError(sqlQueryError("42703", { column: "productId" }), "req-1");
+
+    assert.equal(handled.status, 503);
+    assert.deepEqual(handled.body, {
+      success: false,
+      error: {
+        code: DATABASE_SCHEMA_OUTDATED.code,
+        message: DATABASE_SCHEMA_OUTDATED.message,
+      },
+    });
+
+    const generic = handleApiError(sqlQueryError("23505"));
+    assert.equal(generic.status, 500);
+    assert.equal(generic.body.error.code, "INTERNAL_SERVER_ERROR");
+  } finally {
+    console.error = original;
+  }
+});

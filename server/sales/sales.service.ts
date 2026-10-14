@@ -9,9 +9,13 @@ import type {
   SalesOrderQuery,
 } from "./sales.validation";
 import { calculateLineAmounts } from "./sales.validation";
+import {
+  centsToDecimalString,
+  toPlainDecimalString,
+} from "../core/utils/decimal";
 
 function money(cents: number) {
-  return (cents / 100).toFixed(2);
+  return centsToDecimalString(BigInt(cents));
 }
 
 function cleanOptional(value: string | undefined) {
@@ -92,8 +96,8 @@ function lineSnapshot(
       category: product.category,
       variant: product.variant,
       unit: product.unit,
-      quantity: String(line.quantity),
-      unitPrice: line.unitPrice.toFixed(2),
+      quantity: toPlainDecimalString(line.quantity),
+      unitPrice: toPlainDecimalString(line.unitPrice),
       discountPercent: line.discountPercent,
       taxPercent: line.taxPercent,
       lineTotal: money(calculateLineAmounts(line).totalCents),
@@ -110,8 +114,8 @@ function lineSnapshot(
     category: cleanOptional(line.category),
     variant: cleanOptional(line.variant),
     unit: line.unit,
-    quantity: String(line.quantity),
-    unitPrice: line.unitPrice.toFixed(2),
+    quantity: toPlainDecimalString(line.quantity),
+    unitPrice: toPlainDecimalString(line.unitPrice),
     discountPercent: line.discountPercent,
     taxPercent: line.taxPercent,
     lineTotal: money(calculateLineAmounts(line).totalCents),

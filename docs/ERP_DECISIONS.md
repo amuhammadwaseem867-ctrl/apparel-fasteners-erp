@@ -77,3 +77,46 @@ reuse when APIs exist. `lib/useInventoryStore.js` was unused and deleted.
 is wrapped in try/catch so blocked storage cannot turn a successful login into
 an error. Verified in Chromium: no hydration warnings, restore after reload,
 typing overrides, and unchecking works.
+
+## D-011: Exact decimal money arithmetic
+
+`server/core/utils/decimal.ts` converts each number through its shortest
+decimal string to a scaled BigInt, so `quantity × unit price`, discounts and
+tax are exact and round half up to the cent. This replaced floating-point
+maths that produced wrong cents. For example, 3 × 1.005 gave 3.01 instead of
+3.02, and 1 × 1.005 gave 1.00 instead of 1.01. The order editor preview uses
+the same module, so the preview matches the saved totals.
+
+Lines or orders beyond `Number.MAX_SAFE_INTEGER` cents are rejected by
+validation (400) instead of overflowing. Existing orders keep their stored
+totals; an order is recalculated only when it is next saved.
+
+## D-012: Unit price precision (please confirm)
+
+Previously the editor allowed only whole cents, while the API stored prices
+rounded to 2 decimals but computed line totals from the unrounded price. The
+stored order could therefore disagree with itself.
+
+The decision now in place: unit prices are stored exactly as entered, up to
+6 decimal places (validated server-side). The editor accepts sub-cent prices,
+which are common for per-piece fastener components. **Owner to confirm**
+whether sub-cent prices should be allowed. If not, the rule changes to a
+2-decimal limit enforced in both the editor and the server, never silent
+rounding.
+
+## D-013: Printable documents
+
+Documents live under `/print/...`, outside the ERP shell, behind the same
+session check, and load data through the normal permission-checked API. A4
+print CSS repeats table headers, keeps rows whole and numbers pages. The
+document title follows the record status, so a draft never prints as a
+confirmation. `config/company.js` holds only the trading name. The legal
+name, address and tax registration are deliberately empty until the owner
+provides them.
+
+## D-014: Test resolver for TypeScript imports
+
+`tests/support/ts-resolve.mjs` (loaded by `npm test`) retries relative
+imports with `.ts`, so tests can import server modules that use
+extensionless imports, as Next.js does. Test-only; application resolution
+is unchanged.
