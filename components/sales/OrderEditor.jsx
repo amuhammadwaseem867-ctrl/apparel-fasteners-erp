@@ -11,6 +11,7 @@ import {
   multiplyToCents,
 } from "@/server/core/utils/decimal";
 import "./OrderEditor.css";
+import { formatUnitPrice } from "@/lib/formatters/formatters";
 
 const emptySubscribe = () => () => {};
 
@@ -412,7 +413,7 @@ export default function OrderEditor({ orderId }) {
               {!productsLoading && products.map((product) => (
                 <div className="order-editor__product-option" key={product.id}>
                   <div><strong>{product.sku}</strong><span>{product.name}</span><small>{product.category}{product.variant ? ` · ${product.variant}` : ""} · {product.unit} · Stock not configured</small></div>
-                  <div className="order-editor__product-price"><strong>{Number(product.unitPrice).toFixed(2)}</strong><button type="button" onClick={() => addCatalogProduct(product)}>Add</button></div>
+                  <div className="order-editor__product-price"><strong>{formatUnitPrice(product.unitPrice)}</strong><button type="button" onClick={() => addCatalogProduct(product)}>Add</button></div>
                 </div>
               ))}
             </div>

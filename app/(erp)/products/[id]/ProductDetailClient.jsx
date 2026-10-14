@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { apiRequest } from "@/lib/api/client";
 import "../ProductMaster.css";
+import { formatUnitPrice } from "@/lib/formatters/formatters";
 
 export default function ProductDetailClient({ id }) {
   const [product, setProduct] = useState(null);
@@ -43,7 +44,7 @@ export default function ProductDetailClient({ id }) {
             <div><dt>Product type</dt><dd>{product.productType}</dd></div>
             <div><dt>Variant</dt><dd>{product.variant || "—"}</dd></div>
             <div><dt>Unit</dt><dd>{product.unit}</dd></div>
-            <div><dt>Unit price</dt><dd>{Number(product.unitPrice).toFixed(2)}</dd></div>
+            <div><dt>Unit price</dt><dd>{formatUnitPrice(product.unitPrice)}</dd></div>
             <div><dt>Status</dt><dd>{product.status}</dd></div>
             <div><dt>Stock</dt><dd>Not configured</dd></div>
             <div className="product-master__detail-wide"><dt>Description</dt><dd>{product.description || "—"}</dd></div>

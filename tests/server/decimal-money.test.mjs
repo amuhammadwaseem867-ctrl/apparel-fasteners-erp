@@ -100,3 +100,14 @@ test("unit prices keep sub-cent precision up to six decimal places and reject mo
   assert.equal(tooPrecise.success, false);
   assert.ok(tooPrecise.error.issues.some((issue) => /at most 6 decimal places/.test(issue.message)));
 });
+
+test("product unit prices follow the same precision rule as order lines", async () => {
+  const { productInputSchema } = await import("../../server/products/product.validation.ts");
+  const product = (unitPrice) => productInputSchema.safeParse({
+    sku: "SLD-5-DA", name: "Slider #5 DA", category: "Sliders", productType: "Component",
+    unit: "Pcs", unitPrice, status: "ACTIVE",
+  });
+
+  assert.equal(product(0.035).success, true);
+  assert.equal(product(0.0351251).success, false);
+});

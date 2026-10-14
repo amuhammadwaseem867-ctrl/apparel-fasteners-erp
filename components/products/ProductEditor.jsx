@@ -120,7 +120,7 @@ export default function ProductEditor({ productId }) {
                 required
                 type={type}
                 min={type === "number" ? "0" : undefined}
-                step={type === "number" ? "0.01" : undefined}
+                step={type === "number" ? "any" : undefined}
                 value={form[key]}
                 onChange={(event) => setField(key, event.target.value)}
               />

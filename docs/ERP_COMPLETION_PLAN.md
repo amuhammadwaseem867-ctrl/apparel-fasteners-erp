@@ -89,7 +89,8 @@ tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
 | 2026-10-14 | `0a2d6e8` | Phase 1: fake persistence removed; module availability banner; login effect fix; tests added. |
 | 2026-10-14 | `5bac865` | Printable A4 sales order sheet; shell print CSS; company config. |
 | 2026-10-14 | `0235683` | Exact decimal money maths for sales (fixes wrong cents and overflow); unit price precision; editor text-encoding repair; test TS resolver. |
-| 2026-10-14 | (this commit) | Sales order CSV export (server-side, audited, formula-safe). |
+| 2026-10-14 | `f89fc07` | Sales order CSV export (server-side, audited, formula-safe). |
+| 2026-10-14 | (this commit) | Product unit prices stored exactly (no silent 2-decimal rounding); shared unit-price formatter on all price displays. |
 
 ## Next step
 

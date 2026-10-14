@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+import { toScaledDecimal } from "../core/utils/decimal";
+
+const MAX_PRICE_DECIMALS = 6;
+
 const productFields = {
   sku: z.string().trim().min(1).max(80),
   name: z.string().trim().min(1).max(180),
@@ -8,7 +12,15 @@ const productFields = {
   productType: z.string().trim().min(1).max(80),
   variant: z.string().trim().max(180).optional().or(z.literal("")),
   unit: z.string().trim().min(1).max(40),
-  unitPrice: z.number().finite().min(0).max(100000000),
+  unitPrice: z
+    .number()
+    .finite()
+    .min(0)
+    .max(100000000)
+    .refine(
+      (value) => toScaledDecimal(value).scale <= MAX_PRICE_DECIMALS,
+      `Unit price can have at most ${MAX_PRICE_DECIMALS} decimal places.`,
+    ),
   status: z.enum(["ACTIVE", "INACTIVE"]),
 };
 

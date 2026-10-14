@@ -37,7 +37,7 @@ and reports success; data is lost on reload and never reaches the server.
 | Administration | users, roles, settings, audit | Static, banner | No user/role/audit API. Seeded RBAC exists in `server/auth/seed.ts`. |
 | Dashboard | dashboard | Working | Connected in commit `e1241ae`. Sales/customer/product KPIs only; other modules reported as not connected. |
 | Customers | sales/customers | Working | |
-| Products | products, [id], new, edit | Working | |
+| Products | products, [id], new, edit | Working | Unit price stored exactly up to 6 decimals; it was previously rounded to 2 silently (D-012). |
 | Products: BOM, categories, variants, pricing, documents | 5 pages | Static | No tables. |
 | Sales orders | list, new, [id], edit, print | Working | Statuses are DRAFT / APPROVED / CANCELLED only; the New→Delivered lifecycle needs a schema change. Exact decimal totals (D-011). Printable A4 order sheet (D-013). CSV export of filtered list (D-015). |
 | Planning / MRP | 8 pages | Static, honest | No BOM or MRP tables. No-op Refresh buttons disabled with reason; shell banner. |

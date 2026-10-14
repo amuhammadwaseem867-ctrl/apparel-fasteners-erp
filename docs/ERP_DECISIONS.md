@@ -104,6 +104,11 @@ whether sub-cent prices should be allowed. If not, the rule changes to a
 2-decimal limit enforced in both the editor and the server, never silent
 rounding.
 
+The same rule applies to product unit prices (`server/products`). These were
+also silently stored rounded to 2 decimals. Unit prices display with 2–6
+decimals everywhere (`lib/formatters/formatters.js`): product detail,
+editor product picker, order profile and printed sheet.
+
 ## D-013: Printable documents
 
 Documents live under `/print/...`, outside the ERP shell, behind the same

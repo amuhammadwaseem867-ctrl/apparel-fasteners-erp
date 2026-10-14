@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { apiRequest } from "@/lib/api/client";
 import "../SalesOrders.css";
 import "./OrderProfile.css";
+import { formatUnitPrice } from "@/lib/formatters/formatters";
 
 function amount(value) {
   const number = Number(value);
@@ -316,7 +317,7 @@ export default function OrderProfileClient({ id }) {
                       </td>
 
                       <td className="order-detail__money">
-                        {amount(line.unitPrice)}
+                        {formatUnitPrice(line.unitPrice)}
                       </td>
 
                       <td className="order-detail__number">

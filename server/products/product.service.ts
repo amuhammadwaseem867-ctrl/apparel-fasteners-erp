@@ -4,6 +4,7 @@ import { db } from "../core/database/client";
 import { AppError } from "../core/errors/app-error";
 import { recordAuditEvent } from "../auth/audit.service";
 import type { ProductInput, ProductQuery } from "./product.validation";
+import { toPlainDecimalString } from "../core/utils/decimal";
 
 function toProductInput(input: ProductInput) {
   return {
@@ -14,7 +15,7 @@ function toProductInput(input: ProductInput) {
     productType: input.productType,
     variant: input.variant || null,
     unit: input.unit,
-    unitPrice: input.unitPrice.toFixed(2),
+    unitPrice: toPlainDecimalString(input.unitPrice),
     status: input.status,
   };
 }
