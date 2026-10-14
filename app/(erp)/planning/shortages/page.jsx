@@ -19,6 +19,9 @@ import EmptyState from "@/components/ui/EmptyState";
 import { useToast } from "@/components/ui/ToastProvider";
 
 import "./Shortages.css";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("Planning and MRP");
 
 const PRIORITY_CONFIG = {
   critical: {
@@ -182,6 +185,8 @@ export default function ShortagesPage() {
             size="md"
             icon={RefreshCw}
             onClick={handleRefresh}
+            disabled
+            title={UNAVAILABLE_REASON}
           >
             Refresh
           </Button>

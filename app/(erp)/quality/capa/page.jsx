@@ -12,6 +12,9 @@ import EmptyState from "@/components/ui/EmptyState";
 import { useToast } from "@/components/ui/ToastProvider";
 
 import useQualityStore from "@/lib/useQualityStore";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("Quality control");
 
 export default function CAPAPage() {
   const toast = useToast();
@@ -68,12 +71,8 @@ export default function CAPAPage() {
             <Button
               variant="secondary"
               icon={RefreshCcw}
-              onClick={() =>
-                toast.info({
-                  title: "Refreshed",
-                  message: "CAPA list refreshed.",
-                })
-              }
+              disabled
+              title={UNAVAILABLE_REASON}
             >
               Refresh actions
             </Button>
@@ -81,7 +80,7 @@ export default function CAPAPage() {
             <Button
               variant="primary"
               icon={ClipboardList}
-              onClick={() => setCreateOpen(true)}
+              onClick={() => setCreateOpen(true)} disabled title={UNAVAILABLE_REASON}
             >
               Create CAPA
             </Button>
@@ -116,7 +115,7 @@ export default function CAPAPage() {
               <Button
                 variant="primary"
                 icon={ClipboardList}
-                onClick={() => setCreateOpen(true)}
+                onClick={() => setCreateOpen(true)} disabled title={UNAVAILABLE_REASON}
               >
                 Create CAPA
               </Button>

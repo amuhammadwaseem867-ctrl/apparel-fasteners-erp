@@ -60,6 +60,16 @@
   padding: 28px 30px 40px;
 }
 
+.app-shell__availability {
+  margin-bottom: 20px;
+}
+
+@media print {
+  .app-shell__availability {
+    display: none;
+  }
+}
+
 /* =========================================
    MOBILE OVERLAY
 ========================================= */

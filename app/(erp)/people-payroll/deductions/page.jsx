@@ -17,6 +17,9 @@ import { DEDUCTION_STATUSES, DEDUCTION_TYPES } from "@/config/people-payroll";
 
 import "../shared.css";
 import "./deductions.css";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("People and payroll");
 
 const EMPTY_FORM = {
   employeeId: "",
@@ -177,7 +180,7 @@ export default function DeductionsPage() {
 
   return (
     <main className="pp-page">
-      <PageHeader eyebrow="DEDUCTIONS" title="Deductions" description="Manage payroll deductions, attendance deductions, recoveries and other adjustments." action={<Button variant="primary" icon={Plus} onClick={openCreate}>Add Deduction</Button>} />
+      <PageHeader eyebrow="DEDUCTIONS" title="Deductions" description="Manage payroll deductions, attendance deductions, recoveries and other adjustments." action={<Button variant="primary" icon={Plus} onClick={openCreate} disabled title={UNAVAILABLE_REASON}>Add Deduction</Button>} />
 
       <div className="pp-toolbar pp-toolbar--stacked">
         <div className="pp-toolbar__field pp-toolbar__field--search"><Input label="Search" search clearable value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search employee, reason or notes..." /></div>
@@ -194,7 +197,7 @@ export default function DeductionsPage() {
       <section className="pp-panel">
         <div className="pp-panel__head"><h2 className="pp-panel__title">Deduction Register</h2></div>
         {!filtered.length ? (
-          <div className="pp-empty"><EmptyState icon={CircleMinus} title={store.deductions.length ? "No deductions match your filters" : "No deductions found"} description={store.deductions.length ? "Adjust your search or filter values." : "Deductions will appear here once connected or entered."} action={!store.deductions.length ? <Button variant="primary" icon={Plus} onClick={openCreate}>Add Deduction</Button> : null} /></div>
+          <div className="pp-empty"><EmptyState icon={CircleMinus} title={store.deductions.length ? "No deductions match your filters" : "No deductions found"} description={store.deductions.length ? "Adjust your search or filter values." : "Deductions will appear here once connected or entered."} action={!store.deductions.length ? <Button variant="primary" icon={Plus} onClick={openCreate} disabled title={UNAVAILABLE_REASON}>Add Deduction</Button> : null} /></div>
         ) : (
           <div className="pp-table-wrap"><table className="pp-table">
             <thead><tr><th>Employee</th><th>Deduction Type</th><th>Payroll Period</th><th>Amount</th><th>Reason</th><th>Effective Date</th><th>Status</th><th>Actions</th></tr></thead>

@@ -21,6 +21,9 @@ import PlanningProductionPlans from "@/components/planning/PlanningProductionPla
 import PlanningActivity from "@/components/planning/PlanningActivity";
 
 import "./PlanningDashboard.css";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("Planning and MRP");
 
 export default function PlanningPage() {
   const router = useRouter();
@@ -78,6 +81,8 @@ export default function PlanningPage() {
               size="md"
               icon={RefreshCw}
               onClick={handleRefresh}
+              disabled
+              title={UNAVAILABLE_REASON}
             >
               Refresh
             </Button>

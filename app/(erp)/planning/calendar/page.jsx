@@ -21,6 +21,9 @@ import Input from "@/components/ui/Input";
 import EmptyState from "@/components/ui/EmptyState";
 
 import "./PlanningCalendar.css";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("Planning and MRP");
 
 const EVENT_TYPES = {
   production: {
@@ -276,6 +279,8 @@ export default function PlanningCalendarPage() {
             size="md"
             icon={RefreshCw}
             onClick={handleRefresh}
+            disabled
+            title={UNAVAILABLE_REASON}
           >
             Refresh
           </Button>

@@ -14,6 +14,9 @@ import Input from "@/components/ui/Input";
 import EmptyState from "@/components/ui/EmptyState";
 
 import "./MaterialRequirements.css";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("Planning and MRP");
 
 export default function MaterialRequirementsPage() {
   const [search, setSearch] = useState("");
@@ -96,6 +99,8 @@ export default function MaterialRequirementsPage() {
               size="md"
               icon={RefreshCw}
               onClick={handleRefresh}
+              disabled
+              title={UNAVAILABLE_REASON}
             >
               Refresh
             </Button>

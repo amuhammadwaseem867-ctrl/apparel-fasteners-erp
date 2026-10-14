@@ -34,22 +34,22 @@ and reports success; data is lost on reload and never reaches the server.
 | Module | Pages | Status | Notes |
 |---|---|---|---|
 | Authentication | login, profile | Working | Login rate limiting hardened in this session (per-IP + bounded store). Still per-instance memory. |
-| Administration | users, roles, settings, audit | Static | No user/role/audit API. Seeded RBAC exists in `server/auth/seed.ts`. |
+| Administration | users, roles, settings, audit | Static, banner | No user/role/audit API. Seeded RBAC exists in `server/auth/seed.ts`. |
 | Dashboard | dashboard | Working | Connected in commit `e1241ae`. Sales/customer/product KPIs only; other modules reported as not connected. |
 | Customers | sales/customers | Working | |
 | Products | products, [id], new, edit | Working | |
 | Products: BOM, categories, variants, pricing, documents | 5 pages | Static | No tables. |
 | Sales orders | list, new, [id], edit | Working | Statuses are DRAFT / APPROVED / CANCELLED only. Required New→Delivered lifecycle needs a schema change. |
-| Planning / MRP | 8 pages | Static | No BOM or MRP tables. |
-| Procurement | 7 pages | Static | No supplier/PR/RFQ/PO/GRN tables or API. The "productId linking failure" from the audit is not reproducible here: there is no procurement code. |
+| Planning / MRP | 8 pages | Static, honest | No BOM or MRP tables. No-op Refresh buttons disabled with reason; shell banner. |
+| Procurement | 7 pages | Static, banner | No supplier/PR/RFQ/PO/GRN tables or API. The "productId linking failure" from the audit is not reproducible here: there is no procurement code. |
 | Inventory | 13 pages | Static, honest | Banner states the backend is missing; stock-changing actions disabled (commit `e1241ae`). |
-| Production | 11 pages | **Fake persistence** | `lib/useOrderStore.js` (orders, stage-board). |
-| Quality | 8 pages | **Fake persistence** | `lib/useQualityStore.js` + success toasts (inspections, final, ncr, capa). |
-| Packing | 5 pages | **Fake persistence** | `lib/useFulfillmentStore.js` (packing/orders). |
-| Dispatch | 5 pages | **Fake persistence** | `lib/useFulfillmentStore.js` (shipments, ready, dispatch, delivered). |
-| Finance | 11 pages | **Fake persistence** | `components/finance/FinanceWorkspace.jsx` success toasts. |
-| People & Payroll | 11 pages | **Fake persistence** | `lib/usePeoplePayrollStore.js`, mounted app-wide in `app/(erp)/layout.jsx`. Salary data held in browser memory. |
-| Reports | 17 pages | Static | No reporting API beyond the dashboard. |
+| Production | 11 pages | Static, honest | Store mutations throw `BackendUnavailableError`; fake 350 ms refreshes removed; Refresh/Create disabled with reason; shell banner (Phase 1). |
+| Quality | 8 pages | Static, honest | Store mutations throw; create/release/refresh entry points disabled with reason; shell banner (Phase 1). |
+| Packing | 5 pages | Static, honest | Store mutations throw; New Packing Order disabled; shell banner (Phase 1). |
+| Dispatch | 5 pages | Static, honest | Store mutations throw (row actions only appear with records, which cannot exist); shell banner (Phase 1). |
+| Finance | 11 pages | Static, honest | Workspace no longer stores records in page state; save/confirm/report report "not saved"; add/transaction/generate disabled; shell banner (Phase 1). |
+| People & Payroll | 11 pages | Static, honest | All 34 store mutations (incl. floating-point `computePayrollEntry`) throw; create/import/period buttons disabled; shell banner (Phase 1). |
+| Reports | 17 pages | Static, banner | No reporting API beyond the dashboard. |
 | Gate passes | none | Missing | No pages, no tables. |
 | Printing / export | none | Missing | No print layouts or print CSS. |
 
@@ -67,8 +67,14 @@ and reports success; data is lost on reload and never reaches the server.
 | Missing login rate limiting | Partly wrong: per-email lockout existed. It lacked a per-IP limit and had an unbounded store. **Fixed** in this session. |
 | Leftover test route | Confirmed (`app/test-route`). **Removed** in this session. |
 
+Banner = `ModuleAvailabilityBanner` in `AppShell`, driven by `config/moduleAvailability.js`.
+
 ## Other verified facts
+
+- **No page keeps business records in browser state any more** (Phase 1). Guarded by `tests/server/module-availability.test.mjs`.
+- Missing asset: `app/login/page.jsx` references `/logo in navy.png`, which was never committed (404 on the login page). It exists only in the owner's local copy.
+- Unused components: `components/products/ProductDocuments.jsx`, `ProductVariants.jsx` and `ProductImageUpload.jsx` are imported nowhere.
 
 - All 94 sidebar destinations have a page (no dead links).
 - `npm test` runs only DB-free tests. `tests/server/auth-rbac.test.mjs` writes to the database and is excluded.
-- ESLint baseline: 1 error (`app/login/page.jsx`, setState in effect) and 22 warnings.
+- ESLint: 0 errors, 22 warnings (the `app/login` error was fixed in Phase 1).

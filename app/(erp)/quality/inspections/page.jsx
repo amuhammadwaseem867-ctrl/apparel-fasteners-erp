@@ -15,6 +15,9 @@ import { useToast } from "@/components/ui/ToastProvider";
 import useQualityStore from "@/lib/useQualityStore";
 
 import { PRODUCTION_STAGES } from "@/config/production";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("Quality control");
 
 const INSPECTION_TYPES = [
   { value: "incoming", label: "Incoming" },
@@ -121,7 +124,7 @@ export default function InspectionsPage() {
             <Button
               variant="primary"
               icon={Plus}
-              onClick={() => setCreateOpen(true)}
+              onClick={() => setCreateOpen(true)} disabled title={UNAVAILABLE_REASON}
             >
               New Inspection
             </Button>
@@ -182,7 +185,7 @@ export default function InspectionsPage() {
                 <Button
                   variant="primary"
                   icon={Plus}
-                  onClick={() => setCreateOpen(true)}
+                  onClick={() => setCreateOpen(true)} disabled title={UNAVAILABLE_REASON}
                 >
                   New Inspection
                 </Button>

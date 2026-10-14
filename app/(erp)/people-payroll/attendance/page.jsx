@@ -18,6 +18,9 @@ import { ATTENDANCE_STATUSES, DEPARTMENTS, getDepartmentLabel } from "@/config/p
 
 import "../shared.css";
 import "./attendance.css";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("People and payroll");
 
 const PAGE_SIZE = 10;
 
@@ -518,10 +521,10 @@ export default function AttendancePage() {
         description="Monitor employee attendance, working hours, shifts and overtime."
         action={
           <div className="pp-toolbar__actions">
-            <Button variant="secondary" icon={Upload} onClick={() => { setImportFiles([]); setImportOpen(true); }}>
+            <Button variant="secondary" icon={Upload} onClick={() => { setImportFiles([]); setImportOpen(true); }} disabled title={UNAVAILABLE_REASON}>
               Import Attendance
             </Button>
-            <Button variant="primary" icon={Plus} onClick={openCreate}>
+            <Button variant="primary" icon={Plus} onClick={openCreate} disabled title={UNAVAILABLE_REASON}>
               Record Attendance
             </Button>
           </div>
@@ -650,7 +653,7 @@ export default function AttendancePage() {
               }
               action={
                 !hasAttendanceData ? (
-                  <Button variant="primary" icon={Plus} onClick={openCreate}>
+                  <Button variant="primary" icon={Plus} onClick={openCreate} disabled title={UNAVAILABLE_REASON}>
                     Record Attendance
                   </Button>
                 ) : null

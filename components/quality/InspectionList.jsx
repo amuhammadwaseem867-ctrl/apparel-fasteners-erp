@@ -15,6 +15,9 @@ import { useToast } from "@/components/ui/ToastProvider";
 import useQualityStore from "@/lib/useQualityStore";
 
 import { PRODUCTION_STAGES } from "@/config/production";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("Quality control");
 
 /*
  * InspectionList — shared, working inspection list used by
@@ -182,7 +185,7 @@ export default function InspectionList({
             }
             action={
               source.length === 0 ? (
-                <Button variant="primary" icon={Plus} onClick={() => setCreateOpen(true)}>
+                <Button variant="primary" icon={Plus} onClick={() => setCreateOpen(true)} disabled title={UNAVAILABLE_REASON}>
                   New Inspection
                 </Button>
               ) : (
@@ -343,7 +346,7 @@ function PageHeaderActions({ title, description, onCreate, onReset }) {
             Reset
           </Button>
 
-          <Button variant="primary" icon={Plus} onClick={onCreate}>
+          <Button variant="primary" icon={Plus} onClick={onCreate} disabled title={UNAVAILABLE_REASON}>
             New Inspection
           </Button>
         </div>

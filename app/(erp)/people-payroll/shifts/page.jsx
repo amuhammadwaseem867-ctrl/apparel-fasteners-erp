@@ -17,6 +17,9 @@ import { SHIFT_STATUSES } from "@/config/people-payroll";
 
 import "../shared.css";
 import "./shifts.css";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("People and payroll");
 
 const EMPTY_FORM = {
   code: "",
@@ -179,7 +182,7 @@ export default function ShiftsPage() {
         eyebrow="SHIFTS"
         title="Shifts"
         description="Manage working shifts, timings, breaks and attendance rules."
-        action={<Button variant="primary" icon={Plus} onClick={openCreate}>Add Shift</Button>}
+        action={<Button variant="primary" icon={Plus} onClick={openCreate} disabled title={UNAVAILABLE_REASON}>Add Shift</Button>}
       />
 
       <div className="pp-toolbar">
@@ -206,7 +209,7 @@ export default function ShiftsPage() {
               icon={Clock3}
               title={(store.shifts || []).length ? "No shifts match your filters" : "No shifts configured"}
               description={(store.shifts || []).length ? "Adjust your search or status filter." : "Shifts will appear here once configured."}
-              action={!store.shifts.length ? <Button variant="primary" icon={Plus} onClick={openCreate}>Add Shift</Button> : null}
+              action={!store.shifts.length ? <Button variant="primary" icon={Plus} onClick={openCreate} disabled title={UNAVAILABLE_REASON}>Add Shift</Button> : null}
             />
           </div>
         ) : (

@@ -23,6 +23,9 @@ import {
 
 import "../shared.css";
 import "./payroll.css";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("People and payroll");
 
 const EMPTY_FORM = { periodName: "", startDate: "", endDate: "", paymentDate: "", status: "draft", notes: "" };
 const WORKFLOW = ["Attendance", "Overtime", "Leave / Absence", "Allowances", "Deductions", "Salary Calculation", "Payroll Review", "Approval", "Payslip", "Payroll History"];
@@ -205,7 +208,7 @@ export default function PayrollPage() {
         title="Payroll"
         description="Process employee payroll through attendance, overtime, allowances and deductions."
         action={<div className="pp-toolbar__actions">
-          <Button variant="secondary" icon={Plus} onClick={() => { setForm(EMPTY_FORM); setErrors({}); setPeriodFormOpen(true); }}>Create Payroll Period</Button>
+          <Button variant="secondary" icon={Plus} onClick={() => { setForm(EMPTY_FORM); setErrors({}); setPeriodFormOpen(true); }} disabled title={UNAVAILABLE_REASON}>Create Payroll Period</Button>
           <Button variant="secondary" onClick={handleProcessPeriod} disabled={!selectedPeriod || selectedPeriod.status !== "draft"}>Process Payroll</Button>
           <Button variant="primary" onClick={handleReviewPeriod} disabled={!selectedPeriod || selectedPeriod.status !== "processing"}>Review Payroll</Button>
         </div>}
@@ -224,10 +227,10 @@ export default function PayrollPage() {
       <section className="pp-panel">
         <div className="pp-panel__head">
           <h2 className="pp-panel__title">Payroll Periods</h2>
-          <Button variant="secondary" icon={Plus} onClick={() => { setForm(EMPTY_FORM); setErrors({}); setPeriodFormOpen(true); }}>Create Payroll Period</Button>
+          <Button variant="secondary" icon={Plus} onClick={() => { setForm(EMPTY_FORM); setErrors({}); setPeriodFormOpen(true); }} disabled title={UNAVAILABLE_REASON}>Create Payroll Period</Button>
         </div>
         {!store.payrollPeriods.length ? (
-          <div className="pp-empty"><EmptyState icon={CalendarRange} title="No payroll periods" description="Create a payroll period to begin the payroll workflow." action={<Button variant="primary" icon={Plus} onClick={() => setPeriodFormOpen(true)}>Create Payroll Period</Button>} /></div>
+          <div className="pp-empty"><EmptyState icon={CalendarRange} title="No payroll periods" description="Create a payroll period to begin the payroll workflow." action={<Button variant="primary" icon={Plus} onClick={() => setPeriodFormOpen(true)} disabled title={UNAVAILABLE_REASON}>Create Payroll Period</Button>} /></div>
         ) : (
           <div className="pr-periods">
             {store.payrollPeriods.map((period) => (

@@ -52,3 +52,28 @@ success message. (Inventory: commit `e1241ae`. Other modules: Phase 1.)
 
 A development page that rendered "Route is working", with no links to it. It
 was flagged by the audit and is recoverable from git history.
+
+## D-008: One availability map for areas without a backend
+
+`config/moduleAvailability.js` lists the route prefixes with no API or tables.
+`components/layout/ModuleAvailabilityBanner.jsx` (rendered by `AppShell`)
+shows a warning on those routes, so ~100 pages are covered without per-page
+edits. The banner is hidden in print. Remove an entry when its backend lands.
+Inventory keeps its own per-page notice (commit `e1241ae`).
+
+## D-009: Client stores refuse mutations
+
+`lib/useQualityStore.js`, `useFulfillmentStore.js`, `useOrderStore.js` and
+`usePeoplePayrollStore.js` keep their read shape (empty lists, derived
+helpers), but every mutation is `unavailableAction(...)` from
+`lib/backendUnavailable.js` and throws `BackendUnavailableError`. Entry-point
+buttons are disabled with the reason as their tooltip. Page forms are kept for
+reuse when APIs exist. `lib/useInventoryStore.js` was unused and deleted.
+
+## D-010: Login remembered-email without setState in an effect
+
+`app/login/page.jsx` reads the remembered email with `useSyncExternalStore`
+(server snapshot `""`), and the user's own edits take precedence. Storage access
+is wrapped in try/catch so blocked storage cannot turn a successful login into
+an error. Verified in Chromium: no hydration warnings, restore after reload,
+typing overrides, and unchecking works.

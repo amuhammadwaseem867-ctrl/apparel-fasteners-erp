@@ -17,6 +17,9 @@ import { ADVANCE_LOAN_STATUSES } from "@/config/people-payroll";
 
 import "../shared.css";
 import "./advances-loans.css";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("People and payroll");
 
 const TYPES = [
   { value: "salary-advance", label: "Salary Advance" },
@@ -239,7 +242,7 @@ export default function AdvancesLoansPage() {
 
   return (
     <main className="pp-page">
-      <PageHeader eyebrow="ADVANCES & LOANS" title="Advances & Loans" description="Manage employee salary advances, loans, repayments and outstanding balances." action={<Button variant="primary" icon={Plus} onClick={openCreate}>New Advance / Loan</Button>} />
+      <PageHeader eyebrow="ADVANCES & LOANS" title="Advances & Loans" description="Manage employee salary advances, loans, repayments and outstanding balances." action={<Button variant="primary" icon={Plus} onClick={openCreate} disabled title={UNAVAILABLE_REASON}>New Advance / Loan</Button>} />
 
       <div className="pp-toolbar pp-toolbar--stacked">
         <div className="pp-toolbar__field pp-toolbar__field--search"><Input label="Search" search clearable value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search employee or remarks..." /></div>
@@ -255,7 +258,7 @@ export default function AdvancesLoansPage() {
       <section className="pp-panel">
         <div className="pp-panel__head"><h2 className="pp-panel__title">Advances & Loans Register</h2></div>
         {!filtered.length ? (
-          <div className="pp-empty"><EmptyState icon={Banknote} title={store.advancesLoans.length ? "No advances or loans match your filters" : "No advances or loans found"} description={store.advancesLoans.length ? "Adjust your search or filter values." : "Advance and loan requests will appear here once connected or submitted."} action={!store.advancesLoans.length ? <Button variant="primary" icon={Plus} onClick={openCreate}>New Advance / Loan</Button> : null} /></div>
+          <div className="pp-empty"><EmptyState icon={Banknote} title={store.advancesLoans.length ? "No advances or loans match your filters" : "No advances or loans found"} description={store.advancesLoans.length ? "Adjust your search or filter values." : "Advance and loan requests will appear here once connected or submitted."} action={!store.advancesLoans.length ? <Button variant="primary" icon={Plus} onClick={openCreate} disabled title={UNAVAILABLE_REASON}>New Advance / Loan</Button> : null} /></div>
         ) : (
           <div className="pp-table-wrap"><table className="pp-table">
             <thead><tr><th>Employee</th><th>Type</th><th>Request Date</th><th>Amount</th><th>Installment</th><th>Installments</th><th>Outstanding Balance</th><th>Status</th><th>Actions</th></tr></thead>

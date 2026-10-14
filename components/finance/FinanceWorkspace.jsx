@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ArrowDownUp,
   Eye,
@@ -17,6 +17,14 @@ import FilterPanel from "@/components/ui/FilterPanel";
 import Modal, { ConfirmModal } from "@/components/ui/Modal";
 import Table from "@/components/ui/Tables";
 import { useToast } from "@/components/ui/ToastProvider";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+/*
+ * There is no finance API or database table yet. Records are never kept
+ * in page state: saving, status changes and report generation report that
+ * the backend is unavailable, and the buttons that start them are disabled.
+ */
+const UNAVAILABLE_REASON = backendUnavailableReason("Finance");
 
 const emptyFilters = (fields = []) => Object.fromEntries(fields.map((field) => [field.key, ""]));
 const empty = (value) => value === undefined || value === null || value === "";
@@ -53,8 +61,8 @@ function fieldOptions(field, accounts) {
 
 export default function FinanceWorkspace({ config }) {
   const toast = useToast();
-  const [records, setRecords] = useState([]);
-  const [transactions, setTransactions] = useState([]);
+  const [records] = useState([]);
+  const [transactions] = useState([]);
   const [filters, setFilters] = useState(() => emptyFilters(config.filters));
   const [search, setSearch] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
@@ -62,12 +70,10 @@ export default function FinanceWorkspace({ config }) {
   const [mode, setMode] = useState("add");
   const [form, setForm] = useState({});
   const [errors, setErrors] = useState({});
-  const [saving, setSaving] = useState(false);
-  const savingRef = useRef(false);
+  const saving = false;
   const [detail, setDetail] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
-  const [confirmLoading, setConfirmLoading] = useState(false);
-  const confirmRef = useRef(false);
+  const confirmLoading = false;
   const [report, setReport] = useState(null);
   const [section, setSection] = useState("accounts");
 
@@ -158,52 +164,10 @@ export default function FinanceWorkspace({ config }) {
     return Object.keys(nextErrors).length === 0;
   }
 
-  async function saveForm(event) {
+  function saveForm(event) {
     event.preventDefault();
-    if (savingRef.current || !validate()) return;
-    savingRef.current = true;
-    setSaving(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 250));
-    const nowId = form.id || `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-    if (mode === "payment" && config.invoice) {
-      const amount = Number(form.amount);
-      setRecords((current) => current.map((item) => {
-        if (item.id !== form.id) return item;
-        const paid = (Number(item.paid) || 0) + amount;
-        return { ...item, paid, balance: Math.max(0, Number(item.total) - paid), status: paid >= Number(item.total) ? "Paid" : "Partially Paid" };
-      }));
-    } else if (mode === "payment" && config.readOnly) {
-      setTransactions((current) => [...current, { ...form, id: nowId, status: "Recorded" }]);
-    } else if (config.cashBank && mode === "transaction") {
-      setTransactions((current) => [{ ...form, id: nowId, status: "Recorded", balance: "" }, ...current]);
-    } else if (mode === "edit") {
-      setRecords((current) => current.map((item) => {
-        if (item.id !== form.id) return item;
-        if (!config.invoice) {
-          const updated = { ...form };
-          if (updated.attachment) updated.attachmentName = updated.attachment.name;
-          delete updated.attachment;
-          return updated;
-        }
-        const total = invoiceTotal(form);
-        return { ...form, total, balance: Math.max(0, total - Number(item.paid || 0)), paid: Number(item.paid || 0) };
-      }));
-    } else {
-      const record = { ...form, id: nowId };
-      if (config.invoice) {
-        const total = invoiceTotal(form);
-        Object.assign(record, { number: form.number || `INV-${nowId}`, total, paid: 0, balance: total, status: "Draft" });
-      }
-      else if (!record.status) record.status = ["income", "expenses", "payments"].includes(config.slug) ? "Recorded" : "Draft";
-      if (record.attachment) record.attachmentName = record.attachment.name;
-      delete record.attachment;
-      setRecords((current) => [record, ...current]);
-    }
-    savingRef.current = false;
-    setSaving(false);
-    setFormOpen(false);
-    setForm({});
-    toast.success({ title: mode === "edit" ? "Changes saved" : "Record saved", message: "The record is available in this page's frontend state." });
+    if (!validate()) return;
+    toast.error({ title: "Not saved", message: UNAVAILABLE_REASON });
   }
 
   function requestAction(action, record) {
@@ -231,17 +195,9 @@ export default function FinanceWorkspace({ config }) {
     if (prompts[action]) setConfirmation({ ...prompts[action], action, record });
   }
 
-  async function confirmAction() {
-    if (!confirmation || confirmRef.current) return;
-    confirmRef.current = true;
-    setConfirmLoading(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 200));
-    const { action, record, status } = confirmation;
-    setRecords((current) => current.map((item) => item.id === record.id ? { ...item, status } : item));
+  function confirmAction() {
     setConfirmation(null);
-    confirmRef.current = false;
-    setConfirmLoading(false);
-    toast.success({ title: status === "Cancelled" ? "Record cancelled" : status === "Issued" ? "Invoice issued" : `Account ${status.toLowerCase()}` });
+    toast.error({ title: "Not changed", message: UNAVAILABLE_REASON });
   }
 
   function renderActionButton(action, record) {
@@ -304,9 +260,8 @@ export default function FinanceWorkspace({ config }) {
       setErrors((current) => ({ ...current, type: "Report Type is required." }));
       return;
     }
-    setReport({ title: form.type || "Financial Report", filters: { ...form }, generatedAt: new Date().toLocaleString() });
     setErrors({});
-    toast.success({ title: "Report generated", message: "The report view was refreshed. No reporting data is currently connected." });
+    toast.error({ title: "Report not generated", message: UNAVAILABLE_REASON });
   }
 
   if (config.report) {
@@ -316,7 +271,7 @@ export default function FinanceWorkspace({ config }) {
         <section className="finance-report-filters">
           {config.fields.map((field) => renderField(field, form, updateField, errors, [], false))}
           <div className="finance-report-actions">
-            <Button icon={FileText} onClick={doGenerateReport}>Generate Report</Button>
+            <Button icon={FileText} onClick={doGenerateReport} disabled title={UNAVAILABLE_REASON}>Generate Report</Button>
             <Button variant="secondary" icon={X} onClick={() => { setForm(formBlank(config.fields)); setErrors({}); setReport(null); }}>Clear Filters</Button>
           </div>
         </section>
@@ -335,8 +290,8 @@ export default function FinanceWorkspace({ config }) {
   return (
     <main className={`finance-workspace finance-workspace--${config.slug}`}>
       <PageHeader eyebrow="FINANCE" title={config.title} description={config.description}>
-        {config.addLabel && <Button icon={Plus} onClick={() => openForm("add")}>{config.addLabel}</Button>}
-        {config.secondaryLabel && <Button variant="secondary" icon={ArrowDownUp} onClick={() => openForm("transaction")}>{config.secondaryLabel}</Button>}
+        {config.addLabel && <Button icon={Plus} onClick={() => openForm("add")} disabled title={UNAVAILABLE_REASON}>{config.addLabel}</Button>}
+        {config.secondaryLabel && <Button variant="secondary" icon={ArrowDownUp} onClick={() => openForm("transaction")} disabled title={UNAVAILABLE_REASON}>{config.secondaryLabel}</Button>}
       </PageHeader>
 
       {config.kpis && <section className="finance-kpi-grid">{config.kpis.map((label) => <div className="finance-kpi-card" key={label}><span>{label}</span><strong>—</strong><small>Awaiting connected accounting data</small></div>)}</section>}

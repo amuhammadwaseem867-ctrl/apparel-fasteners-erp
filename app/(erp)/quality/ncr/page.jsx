@@ -13,6 +13,9 @@ import EmptyState from "@/components/ui/EmptyState";
 import { useToast } from "@/components/ui/ToastProvider";
 
 import useQualityStore from "@/lib/useQualityStore";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("Quality control");
 
 export default function NCRPage() {
   const toast = useToast();
@@ -69,7 +72,7 @@ export default function NCRPage() {
           <Button
             variant="primary"
             icon={FileWarning}
-            onClick={() => setCreateOpen(true)}
+            onClick={() => setCreateOpen(true)} disabled title={UNAVAILABLE_REASON}
           >
             Raise NCR
           </Button>
@@ -103,7 +106,7 @@ export default function NCRPage() {
               <Button
                 variant="primary"
                 icon={FileWarning}
-                onClick={() => setCreateOpen(true)}
+                onClick={() => setCreateOpen(true)} disabled title={UNAVAILABLE_REASON}
               >
                 Raise NCR
               </Button>

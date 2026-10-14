@@ -25,6 +25,9 @@ import {
 
 import "../shared.css";
 import "./employees.css";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("People and payroll");
 
 const PAGE_SIZE = 10;
 
@@ -189,7 +192,7 @@ export default function EmployeesPage() {
         description="Manage employee records, assignments and employment status."
         action={
           <div className="pp-toolbar__actions">
-            <Button variant="primary" icon={Plus} onClick={openCreate}>
+            <Button variant="primary" icon={Plus} onClick={openCreate} disabled title={UNAVAILABLE_REASON}>
               Add Employee
             </Button>
           </div>
@@ -296,7 +299,7 @@ export default function EmployeesPage() {
                     Clear Filters
                   </Button>
                 ) : (
-                  <Button variant="primary" icon={Plus} onClick={openCreate}>
+                  <Button variant="primary" icon={Plus} onClick={openCreate} disabled title={UNAVAILABLE_REASON}>
                     Add Employee
                   </Button>
                 )

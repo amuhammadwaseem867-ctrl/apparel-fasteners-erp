@@ -11,6 +11,9 @@ import Input from "@/components/ui/Input";
 import { useToast } from "@/components/ui/ToastProvider";
 
 import useQualityStore from "@/lib/useQualityStore";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("Quality control");
 
 /*
  * Final Inspection — the last quality gate before packing
@@ -82,7 +85,7 @@ export default function FinalInspectionPage() {
           <Button
             variant="primary"
             icon={PackageCheck}
-            onClick={() => setReleaseOpen(true)}
+            onClick={() => setReleaseOpen(true)} disabled title={UNAVAILABLE_REASON}
           >
             Complete release
           </Button>

@@ -17,6 +17,9 @@ import { DEPARTMENTS } from "@/config/people-payroll";
 
 import "../shared.css";
 import "./departments.css";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("People and payroll");
 
 const EMPTY_FORM = { code: "", name: "", description: "", head: "", status: "active" };
 
@@ -108,7 +111,7 @@ export default function DepartmentsPage() {
         description="Organize the factory into departments and manage their status."
         action={
           <div className="pp-toolbar__actions">
-            <Button variant="primary" icon={Plus} onClick={openCreate}>
+            <Button variant="primary" icon={Plus} onClick={openCreate} disabled title={UNAVAILABLE_REASON}>
               Add Department
             </Button>
           </div>
@@ -144,7 +147,7 @@ export default function DepartmentsPage() {
               title={search ? "No departments found" : "No departments yet"}
               description={search ? "No departments match your search." : "Departments you create will appear here."}
               action={
-                <Button variant="primary" icon={Plus} onClick={openCreate}>
+                <Button variant="primary" icon={Plus} onClick={openCreate} disabled title={UNAVAILABLE_REASON}>
                   Add Department
                 </Button>
               }

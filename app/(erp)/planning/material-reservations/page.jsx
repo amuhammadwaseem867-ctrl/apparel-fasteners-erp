@@ -18,6 +18,9 @@ import Input from "@/components/ui/Input";
 import EmptyState from "@/components/ui/EmptyState";
 
 import "./MaterialReservations.css";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("Planning and MRP");
 
 const STATUS_CONFIG = {
   reserved: {
@@ -122,6 +125,8 @@ export default function MaterialReservationsPage() {
               size="md"
               icon={RefreshCw}
               onClick={handleRefresh}
+              disabled
+              title={UNAVAILABLE_REASON}
             >
               Refresh
             </Button>

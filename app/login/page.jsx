@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -14,26 +14,48 @@ import {
 
 import "./login.css";
 
+const SAVED_EMAIL_KEY = "erp_login_email";
+
+function subscribeToNothing() {
+  return () => {};
+}
+
+function readSavedEmail() {
+  try {
+    return window.localStorage.getItem(SAVED_EMAIL_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function readNoSavedEmail() {
+  return "";
+}
+
 export default function LoginPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
+  /*
+   * The remembered email lives in localStorage, which only exists in the
+   * browser. useSyncExternalStore renders "" on the server and the saved
+   * value after hydration without a setState inside an effect. Once the
+   * user edits a field, their value (non-null) takes precedence.
+   */
+  const savedEmail = useSyncExternalStore(
+    subscribeToNothing,
+    readSavedEmail,
+    readNoSavedEmail,
+  );
+
+  const [emailInput, setEmail] = useState(null);
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMeInput, setRememberMe] = useState(null);
+
+  const email = emailInput ?? savedEmail;
+  const rememberMe = rememberMeInput ?? Boolean(savedEmail);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    const savedEmail = window.localStorage.getItem(
-      "erp_login_email",
-    );
-
-    if (savedEmail) {
-      setEmail(savedEmail);
-      setRememberMe(true);
-    }
-  }, []);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -78,13 +100,18 @@ export default function LoginPage() {
         );
       }
 
-      if (rememberMe) {
-        window.localStorage.setItem(
-          "erp_login_email",
-          email.trim().toLowerCase(),
-        );
-      } else {
-        window.localStorage.removeItem("erp_login_email");
+      try {
+        if (rememberMe) {
+          window.localStorage.setItem(
+            SAVED_EMAIL_KEY,
+            email.trim().toLowerCase(),
+          );
+        } else {
+          window.localStorage.removeItem(SAVED_EMAIL_KEY);
+        }
+      } catch {
+        // Storage can be unavailable (private mode, blocked site data).
+        // Remembering the email is a convenience; the login succeeded.
       }
 
       router.replace("/administration");

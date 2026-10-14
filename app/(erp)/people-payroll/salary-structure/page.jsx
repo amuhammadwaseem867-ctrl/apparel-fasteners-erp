@@ -17,6 +17,9 @@ import { SALARY_STRUCTURE_STATUSES } from "@/config/people-payroll";
 
 import "../shared.css";
 import "./salary-structure.css";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("People and payroll");
 
 const EMPTY_FORM = {
   name: "",
@@ -183,7 +186,7 @@ export default function SalaryStructurePage() {
 
   return (
     <main className="pp-page">
-      <PageHeader eyebrow="SALARY STRUCTURE" title="Salary Structure" description="Define employee compensation structures, allowances, overtime and deductions." action={<Button variant="primary" icon={Plus} onClick={openCreate}>Add Salary Structure</Button>} />
+      <PageHeader eyebrow="SALARY STRUCTURE" title="Salary Structure" description="Define employee compensation structures, allowances, overtime and deductions." action={<Button variant="primary" icon={Plus} onClick={openCreate} disabled title={UNAVAILABLE_REASON}>Add Salary Structure</Button>} />
 
       <div className="pp-toolbar pp-toolbar--stacked">
         <div className="pp-toolbar__field pp-toolbar__field--search"><Input label="Search" search clearable value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search structure or employee/group..." /></div>
@@ -197,7 +200,7 @@ export default function SalaryStructurePage() {
       <section className="pp-panel">
         <div className="pp-panel__head"><h2 className="pp-panel__title">Compensation Structures</h2></div>
         {!filtered.length ? (
-          <div className="pp-empty"><EmptyState icon={CircleDollarSign} title={store.salaryStructures.length ? "No salary structures match your filters" : "No salary structures configured"} description={store.salaryStructures.length ? "Adjust your search or filter values." : "Salary structures will appear here once configured."} action={!store.salaryStructures.length ? <Button variant="primary" icon={Plus} onClick={openCreate}>Add Salary Structure</Button> : null} /></div>
+          <div className="pp-empty"><EmptyState icon={CircleDollarSign} title={store.salaryStructures.length ? "No salary structures match your filters" : "No salary structures configured"} description={store.salaryStructures.length ? "Adjust your search or filter values." : "Salary structures will appear here once configured."} action={!store.salaryStructures.length ? <Button variant="primary" icon={Plus} onClick={openCreate} disabled title={UNAVAILABLE_REASON}>Add Salary Structure</Button> : null} /></div>
         ) : (
           <div className="pp-table-wrap"><table className="pp-table">
             <thead><tr><th>Structure Name</th><th>Employee / Group</th><th>Basic Salary</th><th>Allowances</th><th>Overtime Rule</th><th>Deductions</th><th>Effective From</th><th>Effective To</th><th>Status</th><th>Actions</th></tr></thead>

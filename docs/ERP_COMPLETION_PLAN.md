@@ -44,7 +44,7 @@ tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
 | Phase | Scope | Needs schema change | Acceptance |
 |---|---|---|---|
 | 0 | Baseline, docs, safe fixes | No | **Done** (this session): docs; test route removed; login limiter hardened. |
-| 1 | Stabilize existing working modules | No | Dashboard connected (**done**). Remove fake-persistence success paths in Production, Quality, Packing, Dispatch, Finance and Payroll pages, replacing them with honest "not available" states (same pattern as Inventory). Fix the `app/login` lint error. |
+| 1 | Stabilize existing working modules | No | **Done.** Dashboard connected; fake persistence removed from Production, Quality, Packing, Dispatch, Finance and Payroll; shell banner on every area without a backend; no-op refresh buttons disabled; `app/login` lint error fixed (verified in Chromium). |
 | 2 | Reconcile contract and migrations | Yes (plan only until authorized) | One migration graph containing the owner's local work. Live DB status verified read-only (`prisma migration status`). Pending migrations reviewed op-by-op. Backup verified. Owner authorizes apply. |
 | 3 | Item master + inventory ledger | Yes | Item/variant model covering every fastener spec in the owner's requirements (deterministic SKUs); warehouses/locations; append-only movement ledger with source document/line, idempotency key and per-item row locking; balances derived or maintained transactionally; Inventory pages connected. |
 | 4 | BOM + MRP | Yes | BOM revisions with approval, cycle detection, single scrap convention (D-004). MRP runs stored with inputs, BOM revision and results; deterministic decimal maths; planned orders require explicit confirmation. |
@@ -78,18 +78,21 @@ tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
 3. Login limiter is per-instance memory until Phase 8.
 4. `x-forwarded-for` is trusted for the client IP. That is correct behind
    Vercel's proxy but spoofable if the app is exposed directly.
-5. Fake-persistence pages mislead users until Phase 1 is finished.
+5. Missing `public/logo in navy.png` (local-only asset).
 
 ## Work log
 
 | Date | Commit | Change |
 |---|---|---|
 | 2026-10-14 | `e1241ae` | Dashboard connected; inventory pages made honest; schema-mismatch errors → 503 `DATABASE_SCHEMA_OUTDATED`. |
-| 2026-10-14 | (this commit) | Phase 0 docs; `app/test-route` removed; login limiter per-IP + bounded; tests added. |
+| 2026-10-14 | `45b265d` | Phase 0 docs; `app/test-route` removed; login limiter per-IP + bounded; tests added. |
+| 2026-10-14 | (this commit) | Phase 1: fake persistence removed; module availability banner; login effect fix; tests added. |
 
 ## Next step
 
-Owner decision on D-001. If the local work is pushed: pull it, re-verify this
-plan against it, then Phase 1 (remove fake persistence) and Phase 2 (migration
-reconciliation, plan only). If not: Phase 1 can proceed on this baseline
-regardless, since it changes no schema.
+Phase 1 is complete on this baseline. Everything from Phase 2 onward changes the
+database schema and stays paused on D-001 (push the local `D:\` work, or
+confirm GitHub is the source of truth). Schema-free work still available:
+print CSS and layouts for the documents that already have data (sales order
+sheet), and Playwright E2E for login and sales orders against an isolated test
+database once one is provided.

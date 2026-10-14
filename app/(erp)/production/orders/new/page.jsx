@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import {
   Plus,
   Save,
@@ -12,6 +13,9 @@ import { PRODUCTION_STAGES } from "@/config/production";
 import { UNITS } from "@/config/items";
 
 import "./ProductionOrderForm.css";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("Production");
 
 /*
  * New Production Order — created from a confirmed sales order.
@@ -25,6 +29,8 @@ import "./ProductionOrderForm.css";
  */
 
 export default function NewProductionOrderPage() {
+  const router = useRouter();
+
   return (
     <main className="prod-order-form">
       <PageHeader
@@ -168,9 +174,11 @@ export default function NewProductionOrderPage() {
         </section>
 
         <section className="prod-order-form__actions">
-          <Button variant="secondary">Cancel</Button>
+          <Button variant="secondary" onClick={() => router.push("/production/orders")}>
+            Cancel
+          </Button>
 
-          <Button variant="primary" icon={Save} disabled>
+          <Button variant="primary" icon={Save} disabled title={UNAVAILABLE_REASON}>
             Create Production Order
           </Button>
         </section>

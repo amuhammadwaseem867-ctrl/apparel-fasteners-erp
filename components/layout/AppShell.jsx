@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
+import ModuleAvailabilityBanner from "./ModuleAvailabilityBanner";
 
 import "./AppShell.css";
 
@@ -37,6 +38,8 @@ export default function AppShell({ children }) {
 
         <main className="app-shell__main">
           <div className="app-shell__content">
+            <ModuleAvailabilityBanner />
+
             {children}
           </div>
         </main>

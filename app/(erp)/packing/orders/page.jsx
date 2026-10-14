@@ -17,6 +17,9 @@ import useFulfillmentStore from "@/lib/useFulfillmentStore";
 import { UNITS } from "@/config/items";
 
 import "../PackingPages.css";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("Packing");
 
 /*
  * Packing Orders — QC-approved quantities released for packing.
@@ -154,7 +157,7 @@ export default function PackingOrdersPage() {
           <Button
             variant="primary"
             icon={Plus}
-            onClick={() => setCreateOpen(true)}
+            onClick={() => setCreateOpen(true)} disabled title={UNAVAILABLE_REASON}
           >
             New Packing Order
           </Button>
@@ -204,7 +207,7 @@ export default function PackingOrdersPage() {
                   <Button
                     variant="primary"
                     icon={Plus}
-                    onClick={() => setCreateOpen(true)}
+                    onClick={() => setCreateOpen(true)} disabled title={UNAVAILABLE_REASON}
                   >
                     New Packing Order
                   </Button>

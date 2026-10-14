@@ -18,6 +18,9 @@ import { DEPARTMENTS, LEAVE_STATUSES, LEAVE_TYPES, getDepartmentLabel } from "@/
 
 import "../shared.css";
 import "./leave.css";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("People and payroll");
 
 const EMPTY_FORM = {
   employeeId: "",
@@ -209,7 +212,7 @@ export default function LeavePage() {
         eyebrow="LEAVE MANAGEMENT"
         title="Leave Management"
         description="Manage employee leave requests, approvals and leave history."
-        action={<Button variant="primary" icon={Plus} onClick={openCreate}>Request Leave</Button>}
+        action={<Button variant="primary" icon={Plus} onClick={openCreate} disabled title={UNAVAILABLE_REASON}>Request Leave</Button>}
       />
 
       <div className="pp-toolbar pp-toolbar--stacked">
@@ -244,7 +247,7 @@ export default function LeavePage() {
               icon={CalendarDays}
               title="No leave requests found"
               description={store.leaveRequests.length ? "No requests match the selected filters." : "Leave requests will appear here once connected or submitted."}
-              action={!store.leaveRequests.length ? <Button variant="primary" icon={Plus} onClick={openCreate}>Request Leave</Button> : null}
+              action={!store.leaveRequests.length ? <Button variant="primary" icon={Plus} onClick={openCreate} disabled title={UNAVAILABLE_REASON}>Request Leave</Button> : null}
             />
           </div>
         ) : (

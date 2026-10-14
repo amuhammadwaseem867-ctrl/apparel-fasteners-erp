@@ -14,6 +14,9 @@ import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
 
 import "./WorkOrders.css";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("Production");
 
 const STATUS_OPTIONS = [
   { value: "all", label: "All Statuses" },
@@ -93,8 +96,6 @@ export default function WorkOrdersPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [priority, setPriority] = useState("all");
-  const [refreshing, setRefreshing] = useState(false);
-
   /*
    * Backend will replace this array.
    *
@@ -149,18 +150,8 @@ export default function WorkOrdersPage() {
     });
   }, [search, status, priority]);
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-
-    /*
-     * API refresh will be implemented during backend phase.
-     */
-
-    await new Promise((resolve) =>
-      setTimeout(resolve, 350)
-    );
-
-    setRefreshing(false);
+  const handleRefresh = () => {
+    /* Disabled until a production API exists to refresh from. */
   };
 
   const hasFilters =
@@ -262,8 +253,9 @@ export default function WorkOrdersPage() {
             variant="secondary"
             size="md"
             icon={RefreshCw}
-            loading={refreshing}
             onClick={handleRefresh}
+            disabled
+            title={UNAVAILABLE_REASON}
           >
             Refresh
           </Button>

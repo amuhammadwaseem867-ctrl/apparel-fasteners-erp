@@ -15,6 +15,9 @@ import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
 
 import "./MaterialIssue.css";
+import { backendUnavailableReason } from "@/lib/backendUnavailable";
+
+const UNAVAILABLE_REASON = backendUnavailableReason("Production");
 
 const STATUS_OPTIONS = [
   { value: "all", label: "All Statuses" },
@@ -46,8 +49,6 @@ const STATUS_CONFIG = {
 export default function MaterialIssuePage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
-  const [refreshing, setRefreshing] = useState(false);
-
   /*
    * Backend-ready structure:
    *
@@ -105,18 +106,8 @@ export default function MaterialIssuePage() {
     });
   }, [search, status]);
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-
-    /*
-     * API refresh will be connected during backend integration.
-     */
-
-    await new Promise((resolve) =>
-      setTimeout(resolve, 350)
-    );
-
-    setRefreshing(false);
+  const handleRefresh = () => {
+    /* Disabled until a production API exists to refresh from. */
   };
 
   const clearFilters = () => {
@@ -182,8 +173,9 @@ export default function MaterialIssuePage() {
           <Button
             variant="secondary"
             icon={RefreshCw}
-            loading={refreshing}
             onClick={handleRefresh}
+            disabled
+            title={UNAVAILABLE_REASON}
           >
             Refresh
           </Button>
