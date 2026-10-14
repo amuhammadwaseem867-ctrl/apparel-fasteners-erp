@@ -53,10 +53,9 @@ test("valid login succeeds, invalid login fails, and disabled users are blocked"
     },
   );
 
-  await db.user.update({
-    where: { id: user.id },
-    data: { status: "DISABLED" },
-  });
+  await db.orm.public.User
+    .where({ id: user.id })
+    .update({ status: "DISABLED" });
 
   await assert.rejects(
     async () => loginUser({ email, password }),
@@ -88,13 +87,11 @@ test("session creation, validation, expiration, revocation, and logout all work"
   assert.equal(freshSession.id, freshValidation.session.id);
 
   const expiredToken = createSessionToken();
-  await db.userSession.create({
-    data: {
-      userId: user.id,
-      tokenHash: hashSessionToken(expiredToken),
-      expiresAt: new Date(Date.now() - 60000).toISOString(),
-      lastUsedAt: new Date().toISOString(),
-    },
+  await db.orm.public.UserSession.create({
+    userId: user.id,
+    tokenHash: hashSessionToken(expiredToken),
+    expiresAt: new Date(Date.now() - 60000).toISOString(),
+    lastUsedAt: new Date().toISOString(),
   });
   assert.equal(await validateSessionToken(expiredToken), null);
 
