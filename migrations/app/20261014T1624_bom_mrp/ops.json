@@ -1,0 +1,1172 @@
+[
+  {
+    "id": "table.erp_bom_lines",
+    "label": "Create table \"erp_bom_lines\"",
+    "summary": "Creates table \"erp_bom_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_bom_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_bom_lines\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_bom_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_bom_lines\"",
+        "sql": "CREATE TABLE \"public\".\"erp_bom_lines\" (\n  \"bomId\" uuid NOT NULL,\n  \"componentId\" uuid NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"lineNo\" int4 NOT NULL,\n  \"notes\" text,\n  \"quantity\" numeric NOT NULL,\n  \"scrapPercent\" numeric DEFAULT '0'::numeric NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_bom_lines_quantity_positive_fc510296\" CHECK (\"quantity\" > 0),\n  CONSTRAINT \"erp_bom_lines_scrap_range_d81a53cf\" CHECK (\"scrapPercent\" >= 0 AND \"scrapPercent\" < 100)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_bom_lines\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_bom_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_boms",
+    "label": "Create table \"erp_boms\"",
+    "summary": "Creates table \"erp_boms\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_boms"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_boms\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_boms\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_boms\"",
+        "sql": "CREATE TABLE \"public\".\"erp_boms\" (\n  \"approvedAt\" timestamptz,\n  \"approvedBy\" uuid,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"effectiveFrom\" text,\n  \"id\" uuid NOT NULL,\n  \"isActive\" bool DEFAULT false NOT NULL,\n  \"notes\" text,\n  \"productId\" uuid NOT NULL,\n  \"revision\" int4 NOT NULL,\n  \"status\" text DEFAULT 'DRAFT' NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_boms_active_is_approved_18756da6\" CHECK (NOT \"isActive\" OR \"status\" = 'APPROVED'),\n  CONSTRAINT \"erp_boms_revision_positive_6165c89f\" CHECK (\"revision\" >= 1),\n  CONSTRAINT \"erp_boms_status_dc1330ee\" CHECK (\"status\" IN ('DRAFT', 'APPROVED', 'OBSOLETE'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_boms\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_boms\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_mrp_demands",
+    "label": "Create table \"erp_mrp_demands\"",
+    "summary": "Creates table \"erp_mrp_demands\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_mrp_demands"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_mrp_demands\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_demands\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_mrp_demands\"",
+        "sql": "CREATE TABLE \"public\".\"erp_mrp_demands\" (\n  \"dueDate\" text,\n  \"id\" uuid NOT NULL,\n  \"orderNumber\" text NOT NULL,\n  \"productId\" uuid NOT NULL,\n  \"quantity\" numeric NOT NULL,\n  \"runId\" uuid NOT NULL,\n  \"salesOrderId\" uuid NOT NULL,\n  \"salesOrderLineId\" uuid NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_mrp_demands\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_demands\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_mrp_planned_orders",
+    "label": "Create table \"erp_mrp_planned_orders\"",
+    "summary": "Creates table \"erp_mrp_planned_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_mrp_planned_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_mrp_planned_orders\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_planned_orders\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_mrp_planned_orders\"",
+        "sql": "CREATE TABLE \"public\".\"erp_mrp_planned_orders\" (\n  \"confirmedAt\" timestamptz,\n  \"confirmedBy\" uuid,\n  \"dueDate\" text,\n  \"id\" uuid NOT NULL,\n  \"orderType\" text NOT NULL,\n  \"productId\" uuid NOT NULL,\n  \"quantity\" numeric NOT NULL,\n  \"runId\" uuid NOT NULL,\n  \"status\" text DEFAULT 'SUGGESTED' NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_mrp_planned_orders_quantity_positive_fc510296\" CHECK (\"quantity\" > 0),\n  CONSTRAINT \"erp_mrp_planned_orders_status_d57f47da\" CHECK (\"status\" IN ('SUGGESTED', 'CONFIRMED', 'CANCELLED')),\n  CONSTRAINT \"erp_mrp_planned_orders_type_1ef73df2\" CHECK (\"orderType\" IN ('MAKE', 'BUY'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_mrp_planned_orders\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_planned_orders\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_mrp_requirements",
+    "label": "Create table \"erp_mrp_requirements\"",
+    "summary": "Creates table \"erp_mrp_requirements\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_mrp_requirements"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_mrp_requirements\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_requirements\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_mrp_requirements\"",
+        "sql": "CREATE TABLE \"public\".\"erp_mrp_requirements\" (\n  \"allocatedStock\" numeric NOT NULL,\n  \"availableStock\" numeric NOT NULL,\n  \"bomId\" uuid,\n  \"bomRevision\" int4,\n  \"grossRequirement\" numeric NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"lowLevelCode\" int4 NOT NULL,\n  \"netRequirement\" numeric NOT NULL,\n  \"plannedQuantity\" numeric NOT NULL,\n  \"productId\" uuid NOT NULL,\n  \"runId\" uuid NOT NULL,\n  \"supplyType\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_mrp_requirements_supply_type_257b3fb3\" CHECK (\"supplyType\" IN ('MAKE', 'BUY'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_mrp_requirements\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_requirements\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_mrp_runs",
+    "label": "Create table \"erp_mrp_runs\"",
+    "summary": "Creates table \"erp_mrp_runs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_mrp_runs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_mrp_runs\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_runs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_mrp_runs\"",
+        "sql": "CREATE TABLE \"public\".\"erp_mrp_runs\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"demandCount\" int4 DEFAULT 0 NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"parameters\" text NOT NULL,\n  \"plannedCount\" int4 DEFAULT 0 NOT NULL,\n  \"runNumber\" text NOT NULL,\n  \"status\" text DEFAULT 'COMPLETED' NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_mrp_runs\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_runs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_bom_lines.erp_bom_lines_bomId_componentId_key",
+    "label": "Add unique constraint on \"erp_bom_lines\" (bomId, componentId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_bom_lines_bomId_componentId_key",
+        "table": "erp_bom_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_bom_lines_bomId_componentId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_bom_lines_bomId_componentId_key",
+          "public",
+          "\"public\".\"erp_bom_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_bom_lines_bomId_componentId_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_bom_lines\" ADD CONSTRAINT \"erp_bom_lines_bomId_componentId_key\" UNIQUE (\"bomId\", \"componentId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_bom_lines_bomId_componentId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_bom_lines_bomId_componentId_key",
+          "public",
+          "\"public\".\"erp_bom_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_bom_lines.erp_bom_lines_bomId_lineNo_key",
+    "label": "Add unique constraint on \"erp_bom_lines\" (bomId, lineNo)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_bom_lines_bomId_lineNo_key",
+        "table": "erp_bom_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_bom_lines_bomId_lineNo_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_bom_lines_bomId_lineNo_key",
+          "public",
+          "\"public\".\"erp_bom_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_bom_lines_bomId_lineNo_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_bom_lines\" ADD CONSTRAINT \"erp_bom_lines_bomId_lineNo_key\" UNIQUE (\"bomId\", \"lineNo\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_bom_lines_bomId_lineNo_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_bom_lines_bomId_lineNo_key",
+          "public",
+          "\"public\".\"erp_bom_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_boms.erp_boms_productId_revision_key",
+    "label": "Add unique constraint on \"erp_boms\" (productId, revision)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_boms_productId_revision_key",
+        "table": "erp_boms"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_boms_productId_revision_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_boms_productId_revision_key",
+          "public",
+          "\"public\".\"erp_boms\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_boms_productId_revision_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_boms\" ADD CONSTRAINT \"erp_boms_productId_revision_key\" UNIQUE (\"productId\", \"revision\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_boms_productId_revision_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_boms_productId_revision_key",
+          "public",
+          "\"public\".\"erp_boms\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_mrp_requirements.erp_mrp_requirements_runId_productId_key",
+    "label": "Add unique constraint on \"erp_mrp_requirements\" (runId, productId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_mrp_requirements_runId_productId_key",
+        "table": "erp_mrp_requirements"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_mrp_requirements_runId_productId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_mrp_requirements_runId_productId_key",
+          "public",
+          "\"public\".\"erp_mrp_requirements\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_mrp_requirements_runId_productId_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_mrp_requirements\" ADD CONSTRAINT \"erp_mrp_requirements_runId_productId_key\" UNIQUE (\"runId\", \"productId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_mrp_requirements_runId_productId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_mrp_requirements_runId_productId_key",
+          "public",
+          "\"public\".\"erp_mrp_requirements\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_mrp_runs.erp_mrp_runs_runNumber_key",
+    "label": "Add unique constraint on \"erp_mrp_runs\" (runNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_mrp_runs_runNumber_key",
+        "table": "erp_mrp_runs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_mrp_runs_runNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_mrp_runs_runNumber_key",
+          "public",
+          "\"public\".\"erp_mrp_runs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_mrp_runs_runNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_mrp_runs\" ADD CONSTRAINT \"erp_mrp_runs_runNumber_key\" UNIQUE (\"runNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_mrp_runs_runNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_mrp_runs_runNumber_key",
+          "public",
+          "\"public\".\"erp_mrp_runs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_bom_lines.erp_bom_lines_bomId_idx_7a62fe8b",
+    "label": "Create index \"erp_bom_lines_bomId_idx_7a62fe8b\" on \"erp_bom_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_bom_lines_bomId_idx_7a62fe8b",
+        "table": "erp_bom_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_bom_lines_bomId_idx_7a62fe8b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_bom_lines_bomId_idx_7a62fe8b\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_bom_lines_bomId_idx_7a62fe8b\"",
+        "sql": "CREATE INDEX \"erp_bom_lines_bomId_idx_7a62fe8b\" ON \"public\".\"erp_bom_lines\" (\"bomId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_bom_lines_bomId_idx_7a62fe8b\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_bom_lines_bomId_idx_7a62fe8b\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_bom_lines.erp_bom_lines_componentId_idx_34539a70",
+    "label": "Create index \"erp_bom_lines_componentId_idx_34539a70\" on \"erp_bom_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_bom_lines_componentId_idx_34539a70",
+        "table": "erp_bom_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_bom_lines_componentId_idx_34539a70\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_bom_lines_componentId_idx_34539a70\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_bom_lines_componentId_idx_34539a70\"",
+        "sql": "CREATE INDEX \"erp_bom_lines_componentId_idx_34539a70\" ON \"public\".\"erp_bom_lines\" (\"componentId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_bom_lines_componentId_idx_34539a70\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_bom_lines_componentId_idx_34539a70\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_boms.erp_boms_one_active_per_product_c9dc9844",
+    "label": "Create index \"erp_boms_one_active_per_product_c9dc9844\" on \"erp_boms\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_boms_one_active_per_product_c9dc9844",
+        "table": "erp_boms"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_boms_one_active_per_product_c9dc9844\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_boms_one_active_per_product_c9dc9844\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_boms_one_active_per_product_c9dc9844\"",
+        "sql": "CREATE UNIQUE INDEX \"erp_boms_one_active_per_product_c9dc9844\" ON \"public\".\"erp_boms\" (\"productId\") WHERE (\"isActive\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_boms_one_active_per_product_c9dc9844\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_boms_one_active_per_product_c9dc9844\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_mrp_demands.erp_mrp_demands_runId_idx_a6016437",
+    "label": "Create index \"erp_mrp_demands_runId_idx_a6016437\" on \"erp_mrp_demands\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_mrp_demands_runId_idx_a6016437",
+        "table": "erp_mrp_demands"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_mrp_demands_runId_idx_a6016437\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_demands_runId_idx_a6016437\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_mrp_demands_runId_idx_a6016437\"",
+        "sql": "CREATE INDEX \"erp_mrp_demands_runId_idx_a6016437\" ON \"public\".\"erp_mrp_demands\" (\"runId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_mrp_demands_runId_idx_a6016437\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_demands_runId_idx_a6016437\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_mrp_planned_orders.erp_mrp_planned_orders_productId_idx_5858600a",
+    "label": "Create index \"erp_mrp_planned_orders_productId_idx_5858600a\" on \"erp_mrp_planned_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_mrp_planned_orders_productId_idx_5858600a",
+        "table": "erp_mrp_planned_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_mrp_planned_orders_productId_idx_5858600a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_planned_orders_productId_idx_5858600a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_mrp_planned_orders_productId_idx_5858600a\"",
+        "sql": "CREATE INDEX \"erp_mrp_planned_orders_productId_idx_5858600a\" ON \"public\".\"erp_mrp_planned_orders\" (\"productId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_mrp_planned_orders_productId_idx_5858600a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_planned_orders_productId_idx_5858600a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_mrp_planned_orders.erp_mrp_planned_orders_runId_idx_a6016437",
+    "label": "Create index \"erp_mrp_planned_orders_runId_idx_a6016437\" on \"erp_mrp_planned_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_mrp_planned_orders_runId_idx_a6016437",
+        "table": "erp_mrp_planned_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_mrp_planned_orders_runId_idx_a6016437\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_planned_orders_runId_idx_a6016437\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_mrp_planned_orders_runId_idx_a6016437\"",
+        "sql": "CREATE INDEX \"erp_mrp_planned_orders_runId_idx_a6016437\" ON \"public\".\"erp_mrp_planned_orders\" (\"runId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_mrp_planned_orders_runId_idx_a6016437\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_planned_orders_runId_idx_a6016437\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_mrp_planned_orders.erp_mrp_planned_orders_status_idx_e98638ab",
+    "label": "Create index \"erp_mrp_planned_orders_status_idx_e98638ab\" on \"erp_mrp_planned_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_mrp_planned_orders_status_idx_e98638ab",
+        "table": "erp_mrp_planned_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_mrp_planned_orders_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_planned_orders_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_mrp_planned_orders_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"erp_mrp_planned_orders_status_idx_e98638ab\" ON \"public\".\"erp_mrp_planned_orders\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_mrp_planned_orders_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_planned_orders_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_mrp_requirements.erp_mrp_requirements_productId_idx_5858600a",
+    "label": "Create index \"erp_mrp_requirements_productId_idx_5858600a\" on \"erp_mrp_requirements\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_mrp_requirements_productId_idx_5858600a",
+        "table": "erp_mrp_requirements"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_mrp_requirements_productId_idx_5858600a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_requirements_productId_idx_5858600a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_mrp_requirements_productId_idx_5858600a\"",
+        "sql": "CREATE INDEX \"erp_mrp_requirements_productId_idx_5858600a\" ON \"public\".\"erp_mrp_requirements\" (\"productId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_mrp_requirements_productId_idx_5858600a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_requirements_productId_idx_5858600a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_mrp_requirements.erp_mrp_requirements_runId_idx_a6016437",
+    "label": "Create index \"erp_mrp_requirements_runId_idx_a6016437\" on \"erp_mrp_requirements\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_mrp_requirements_runId_idx_a6016437",
+        "table": "erp_mrp_requirements"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_mrp_requirements_runId_idx_a6016437\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_requirements_runId_idx_a6016437\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_mrp_requirements_runId_idx_a6016437\"",
+        "sql": "CREATE INDEX \"erp_mrp_requirements_runId_idx_a6016437\" ON \"public\".\"erp_mrp_requirements\" (\"runId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_mrp_requirements_runId_idx_a6016437\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_requirements_runId_idx_a6016437\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_mrp_runs.erp_mrp_runs_createdAt_idx_9575dbd7",
+    "label": "Create index \"erp_mrp_runs_createdAt_idx_9575dbd7\" on \"erp_mrp_runs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_mrp_runs_createdAt_idx_9575dbd7",
+        "table": "erp_mrp_runs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_mrp_runs_createdAt_idx_9575dbd7\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_runs_createdAt_idx_9575dbd7\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_mrp_runs_createdAt_idx_9575dbd7\"",
+        "sql": "CREATE INDEX \"erp_mrp_runs_createdAt_idx_9575dbd7\" ON \"public\".\"erp_mrp_runs\" (\"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_mrp_runs_createdAt_idx_9575dbd7\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_mrp_runs_createdAt_idx_9575dbd7\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_bom_lines.erp_bom_lines_bomId_fkey",
+    "label": "Add foreign key \"erp_bom_lines_bomId_fkey\" on \"erp_bom_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_bom_lines_bomId_fkey",
+        "table": "erp_bom_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_bom_lines_bomId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_bom_lines_bomId_fkey",
+          "public",
+          "\"public\".\"erp_bom_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_bom_lines_bomId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_bom_lines\"\nADD CONSTRAINT \"erp_bom_lines_bomId_fkey\"\nFOREIGN KEY (\"bomId\")\nREFERENCES \"public\".\"erp_boms\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_bom_lines_bomId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_bom_lines_bomId_fkey",
+          "public",
+          "\"public\".\"erp_bom_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_bom_lines.erp_bom_lines_componentId_fkey",
+    "label": "Add foreign key \"erp_bom_lines_componentId_fkey\" on \"erp_bom_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_bom_lines_componentId_fkey",
+        "table": "erp_bom_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_bom_lines_componentId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_bom_lines_componentId_fkey",
+          "public",
+          "\"public\".\"erp_bom_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_bom_lines_componentId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_bom_lines\"\nADD CONSTRAINT \"erp_bom_lines_componentId_fkey\"\nFOREIGN KEY (\"componentId\")\nREFERENCES \"public\".\"erp_products\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_bom_lines_componentId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_bom_lines_componentId_fkey",
+          "public",
+          "\"public\".\"erp_bom_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_boms.erp_boms_productId_fkey",
+    "label": "Add foreign key \"erp_boms_productId_fkey\" on \"erp_boms\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_boms_productId_fkey",
+        "table": "erp_boms"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_boms_productId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_boms_productId_fkey",
+          "public",
+          "\"public\".\"erp_boms\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_boms_productId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_boms\"\nADD CONSTRAINT \"erp_boms_productId_fkey\"\nFOREIGN KEY (\"productId\")\nREFERENCES \"public\".\"erp_products\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_boms_productId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_boms_productId_fkey",
+          "public",
+          "\"public\".\"erp_boms\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_mrp_demands.erp_mrp_demands_runId_fkey",
+    "label": "Add foreign key \"erp_mrp_demands_runId_fkey\" on \"erp_mrp_demands\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_mrp_demands_runId_fkey",
+        "table": "erp_mrp_demands"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_mrp_demands_runId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_mrp_demands_runId_fkey",
+          "public",
+          "\"public\".\"erp_mrp_demands\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_mrp_demands_runId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_mrp_demands\"\nADD CONSTRAINT \"erp_mrp_demands_runId_fkey\"\nFOREIGN KEY (\"runId\")\nREFERENCES \"public\".\"erp_mrp_runs\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_mrp_demands_runId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_mrp_demands_runId_fkey",
+          "public",
+          "\"public\".\"erp_mrp_demands\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_mrp_planned_orders.erp_mrp_planned_orders_runId_fkey",
+    "label": "Add foreign key \"erp_mrp_planned_orders_runId_fkey\" on \"erp_mrp_planned_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_mrp_planned_orders_runId_fkey",
+        "table": "erp_mrp_planned_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_mrp_planned_orders_runId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_mrp_planned_orders_runId_fkey",
+          "public",
+          "\"public\".\"erp_mrp_planned_orders\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_mrp_planned_orders_runId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_mrp_planned_orders\"\nADD CONSTRAINT \"erp_mrp_planned_orders_runId_fkey\"\nFOREIGN KEY (\"runId\")\nREFERENCES \"public\".\"erp_mrp_runs\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_mrp_planned_orders_runId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_mrp_planned_orders_runId_fkey",
+          "public",
+          "\"public\".\"erp_mrp_planned_orders\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_mrp_planned_orders.erp_mrp_planned_orders_productId_fkey",
+    "label": "Add foreign key \"erp_mrp_planned_orders_productId_fkey\" on \"erp_mrp_planned_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_mrp_planned_orders_productId_fkey",
+        "table": "erp_mrp_planned_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_mrp_planned_orders_productId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_mrp_planned_orders_productId_fkey",
+          "public",
+          "\"public\".\"erp_mrp_planned_orders\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_mrp_planned_orders_productId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_mrp_planned_orders\"\nADD CONSTRAINT \"erp_mrp_planned_orders_productId_fkey\"\nFOREIGN KEY (\"productId\")\nREFERENCES \"public\".\"erp_products\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_mrp_planned_orders_productId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_mrp_planned_orders_productId_fkey",
+          "public",
+          "\"public\".\"erp_mrp_planned_orders\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_mrp_requirements.erp_mrp_requirements_runId_fkey",
+    "label": "Add foreign key \"erp_mrp_requirements_runId_fkey\" on \"erp_mrp_requirements\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_mrp_requirements_runId_fkey",
+        "table": "erp_mrp_requirements"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_mrp_requirements_runId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_mrp_requirements_runId_fkey",
+          "public",
+          "\"public\".\"erp_mrp_requirements\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_mrp_requirements_runId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_mrp_requirements\"\nADD CONSTRAINT \"erp_mrp_requirements_runId_fkey\"\nFOREIGN KEY (\"runId\")\nREFERENCES \"public\".\"erp_mrp_runs\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_mrp_requirements_runId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_mrp_requirements_runId_fkey",
+          "public",
+          "\"public\".\"erp_mrp_requirements\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_mrp_requirements.erp_mrp_requirements_productId_fkey",
+    "label": "Add foreign key \"erp_mrp_requirements_productId_fkey\" on \"erp_mrp_requirements\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_mrp_requirements_productId_fkey",
+        "table": "erp_mrp_requirements"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_mrp_requirements_productId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_mrp_requirements_productId_fkey",
+          "public",
+          "\"public\".\"erp_mrp_requirements\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_mrp_requirements_productId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_mrp_requirements\"\nADD CONSTRAINT \"erp_mrp_requirements_productId_fkey\"\nFOREIGN KEY (\"productId\")\nREFERENCES \"public\".\"erp_products\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_mrp_requirements_productId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_mrp_requirements_productId_fkey",
+          "public",
+          "\"public\".\"erp_mrp_requirements\""
+        ]
+      }
+    ]
+  }
+]

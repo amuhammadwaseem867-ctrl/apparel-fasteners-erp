@@ -178,6 +178,10 @@ model Product {
   stockBalances     StockBalance[]
   stockMovements    StockMovement[]
   stockReservations StockReservation[]
+  boms              Bom[]
+  bomComponentLines BomLine[]
+  mrpRequirements   MrpRequirement[]
+  mrpPlannedOrders  MrpPlannedOrder[]
 
   @@index([name])
   @@index([category])
@@ -387,4 +391,140 @@ model DocumentSequence {
 
   @@check(expression: "\"nextValue\" >= 1", name: "erp_document_sequences_positive")
   @@map("erp_document_sequences")
+}
+
+
+// ---------------------------------------------------------------------------
+// Bill of materials and MRP (Phase 4)
+//
+// - A BOM belongs to a parent item and has numbered revisions. Only DRAFT
+//   revisions are edited; approved ones are copied into a new draft. At most
+//   one revision per item is active (partial unique index).
+// - BomLine quantity is per ONE unit of the parent, in the component's unit.
+//   scrapPercent is applied once: gross = net x (1 + scrap / 100).
+// - MRP runs are stored with their demand, per-item requirements and the
+//   planned orders they suggested, so a historical plan stays explainable.
+// ---------------------------------------------------------------------------
+
+model Bom {
+  id            Uuid              @id @default(uuid())
+  productId     Uuid
+  revision      Int
+  status        String            @default("DRAFT")
+  isActive      Boolean           @default(false)
+  effectiveFrom String?
+  notes         String?
+  createdBy     Uuid
+  approvedBy    Uuid?
+  approvedAt    TimestamptzString?
+  createdAt     TimestamptzString @default(now())
+  updatedAt     TimestamptzString @default(now())
+
+  product Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
+  lines   BomLine[]
+
+  @@unique([productId, revision])
+  @@index([productId], where: "\"isActive\"", unique: true, name: "erp_boms_one_active_per_product")
+  @@check(expression: "\"revision\" >= 1", name: "erp_boms_revision_positive")
+  @@check(expression: "\"status\" IN ('DRAFT', 'APPROVED', 'OBSOLETE')", name: "erp_boms_status")
+  @@check(expression: "NOT \"isActive\" OR \"status\" = 'APPROVED'", name: "erp_boms_active_is_approved")
+  @@map("erp_boms")
+}
+
+model BomLine {
+  id           Uuid    @id @default(uuid())
+  bomId        Uuid
+  lineNo       Int
+  componentId  Uuid
+  quantity     Decimal
+  scrapPercent Decimal @default(0)
+  notes        String?
+
+  bom       Bom     @relation(fields: [bomId], references: [id], onDelete: Restrict)
+  component Product @relation(fields: [componentId], references: [id], onDelete: Restrict)
+
+  @@unique([bomId, componentId])
+  @@unique([bomId, lineNo])
+  @@index([componentId])
+  @@check(expression: "\"quantity\" > 0", name: "erp_bom_lines_quantity_positive")
+  @@check(expression: "\"scrapPercent\" >= 0 AND \"scrapPercent\" < 100", name: "erp_bom_lines_scrap_range")
+  @@map("erp_bom_lines")
+}
+
+model MrpRun {
+  id           Uuid              @id @default(uuid())
+  runNumber    String            @unique
+  status       String            @default("COMPLETED")
+  parameters   String
+  demandCount  Int               @default(0)
+  plannedCount Int               @default(0)
+  createdBy    Uuid
+  createdAt    TimestamptzString @default(now())
+
+  demands       MrpDemand[]
+  requirements  MrpRequirement[]
+  plannedOrders MrpPlannedOrder[]
+
+  @@index([createdAt])
+  @@map("erp_mrp_runs")
+}
+
+model MrpDemand {
+  id               Uuid    @id @default(uuid())
+  runId            Uuid
+  salesOrderId     Uuid
+  salesOrderLineId Uuid
+  orderNumber      String
+  productId        Uuid
+  quantity         Decimal
+  dueDate          String?
+
+  run MrpRun @relation(fields: [runId], references: [id], onDelete: Restrict)
+
+  @@index([runId])
+  @@map("erp_mrp_demands")
+}
+
+model MrpRequirement {
+  id                Uuid    @id @default(uuid())
+  runId             Uuid
+  productId         Uuid
+  lowLevelCode      Int
+  grossRequirement  Decimal
+  allocatedStock    Decimal
+  availableStock    Decimal
+  netRequirement    Decimal
+  plannedQuantity   Decimal
+  supplyType        String
+  bomId             Uuid?
+  bomRevision       Int?
+
+  run     MrpRun  @relation(fields: [runId], references: [id], onDelete: Restrict)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([runId, productId])
+  @@check(expression: "\"supplyType\" IN ('MAKE', 'BUY')", name: "erp_mrp_requirements_supply_type")
+  @@map("erp_mrp_requirements")
+}
+
+model MrpPlannedOrder {
+  id          Uuid               @id @default(uuid())
+  runId       Uuid
+  productId   Uuid
+  orderType   String
+  quantity    Decimal
+  dueDate     String?
+  status      String             @default("SUGGESTED")
+  confirmedBy Uuid?
+  confirmedAt TimestamptzString?
+
+  run     MrpRun  @relation(fields: [runId], references: [id], onDelete: Restrict)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([runId])
+  @@index([status])
+  @@check(expression: "\"quantity\" > 0", name: "erp_mrp_planned_orders_quantity_positive")
+  @@check(expression: "\"orderType\" IN ('MAKE', 'BUY')", name: "erp_mrp_planned_orders_type")
+  @@check(expression: "\"status\" IN ('SUGGESTED', 'CONFIRMED', 'CANCELLED')", name: "erp_mrp_planned_orders_status")
+  @@map("erp_mrp_planned_orders")
 }
