@@ -39,7 +39,7 @@ and reports success; data is lost on reload and never reaches the server.
 | Customers | sales/customers | Working | |
 | Products | products, [id], new, edit | Working | |
 | Products: BOM, categories, variants, pricing, documents | 5 pages | Static | No tables. |
-| Sales orders | list, new, [id], edit, print | Working | Statuses are DRAFT / APPROVED / CANCELLED only; the New→Delivered lifecycle needs a schema change. Exact decimal totals (D-011). Printable A4 order sheet (D-013). |
+| Sales orders | list, new, [id], edit, print | Working | Statuses are DRAFT / APPROVED / CANCELLED only; the New→Delivered lifecycle needs a schema change. Exact decimal totals (D-011). Printable A4 order sheet (D-013). CSV export of filtered list (D-015). |
 | Planning / MRP | 8 pages | Static, honest | No BOM or MRP tables. No-op Refresh buttons disabled with reason; shell banner. |
 | Procurement | 7 pages | Static, banner | No supplier/PR/RFQ/PO/GRN tables or API. The "productId linking failure" from the audit is not reproducible here: there is no procurement code. |
 | Inventory | 13 pages | Static, honest | Banner states the backend is missing; stock-changing actions disabled (commit `e1241ae`). |
@@ -51,7 +51,7 @@ and reports success; data is lost on reload and never reaches the server.
 | People & Payroll | 11 pages | Static, honest | All 34 store mutations (incl. floating-point `computePayrollEntry`) throw; create/import/period buttons disabled; shell banner (Phase 1). |
 | Reports | 17 pages | Static, banner | No reporting API beyond the dashboard. |
 | Gate passes | none | Missing | No pages, no tables. |
-| Printing / export | sales order sheet | Partial | `/print/sales-orders/[id]`, plus shell print CSS. Other documents depend on their modules' data. No Excel/PDF export yet; PDF comes from the browser's print dialog. |
+| Printing / export | sales order sheet | Partial | `/print/sales-orders/[id]`, plus shell print CSS. Other documents depend on their modules' data. Sales order list CSV export (Excel-compatible). PDF comes from the browser's print dialog. |
 
 ## Audit findings re-verified
 

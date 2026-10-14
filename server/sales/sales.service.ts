@@ -299,6 +299,36 @@ export async function listSalesOrders(filters: SalesOrderQuery) {
   };
 }
 
+export const SALES_ORDER_EXPORT_LIMIT = 10000;
+
+/*
+ * All orders matching the list filters, for export. Pages through the same
+ * query as the list so the export matches what the user filtered. Refuses
+ * rather than truncates when the result is larger than the export limit.
+ */
+export async function exportSalesOrders(
+  filters: Omit<SalesOrderQuery, "page" | "pageSize">,
+) {
+  const pageSize = 100;
+  const rows: Awaited<ReturnType<typeof listSalesOrders>>["orders"] = [];
+
+  for (let page = 1; ; page += 1) {
+    const result = await listSalesOrders({ ...filters, page, pageSize });
+    rows.push(...result.orders);
+
+    if (rows.length > SALES_ORDER_EXPORT_LIMIT) {
+      throw new AppError(
+        `More than ${SALES_ORDER_EXPORT_LIMIT} orders match these filters. Narrow the date range or filters and export again.`,
+        { code: "EXPORT_TOO_LARGE", status: 422 },
+      );
+    }
+
+    if (!result.hasMore) {
+      return rows;
+    }
+  }
+}
+
 export async function createSalesOrder(input: SalesOrderInput, actorId: string) {
   const products = await validateOrderReferences(input);
   const totals = orderTotals(input);

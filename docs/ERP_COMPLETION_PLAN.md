@@ -88,7 +88,8 @@ tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
 | 2026-10-14 | `45b265d` | Phase 0 docs; `app/test-route` removed; login limiter per-IP + bounded; tests added. |
 | 2026-10-14 | `0a2d6e8` | Phase 1: fake persistence removed; module availability banner; login effect fix; tests added. |
 | 2026-10-14 | `5bac865` | Printable A4 sales order sheet; shell print CSS; company config. |
-| 2026-10-14 | (this commit) | Exact decimal money maths for sales (fixes wrong cents and overflow); unit price precision; editor text-encoding repair; test TS resolver. |
+| 2026-10-14 | `0235683` | Exact decimal money maths for sales (fixes wrong cents and overflow); unit price precision; editor text-encoding repair; test TS resolver. |
+| 2026-10-14 | (this commit) | Sales order CSV export (server-side, audited, formula-safe). |
 
 ## Next step
 
@@ -100,4 +101,4 @@ Remaining schema-free work, in order:
 1. Playwright E2E for login and sales orders against an isolated test
    database. Needs a test `DATABASE_URL` from the owner, with its identity
    verified before any run.
-2. Sales order list CSV export (real data; follows the list filters).
+2. Done: sales order list CSV export.

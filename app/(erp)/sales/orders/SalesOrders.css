@@ -94,6 +94,47 @@
   border-color: #12334b;
 }
 
+.order-list__header-actions {
+  flex: 0 0 auto;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.order-list__secondary {
+  min-height: 38px;
+
+  padding: 0 16px;
+
+  border: 1px solid #183f5c;
+  border-radius: 5px;
+
+  background: #ffffff;
+  color: #183f5c;
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.order-list__secondary:hover:not(:disabled) {
+  background: #eef3f7;
+}
+
+.order-list__secondary:focus-visible,
+.order-list__primary:focus-visible {
+  outline: 3px solid #4c8bf5;
+  outline-offset: 2px;
+}
+
+.order-list__secondary:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
 /* =========================================================
    FILTERS
    ========================================================= */
@@ -774,6 +815,15 @@
   }
 
   .order-list__primary {
+    width: 100%;
+  }
+
+  .order-list__header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .order-list__secondary {
     width: 100%;
   }
 

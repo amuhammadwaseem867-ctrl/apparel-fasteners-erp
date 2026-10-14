@@ -120,3 +120,14 @@ provides them.
 imports with `.ts`, so tests can import server modules that use
 extensionless imports, as Next.js does. Test-only; application resolution
 is unchanged.
+
+## D-015: Data exports
+
+Exports are generated server-side (`GET /api/sales/orders/export`) with the
+same permission and filter validation as the list, and every export writes
+a `SALES_ORDERS_EXPORTED` audit event with its filters and row count. Above
+10,000 rows the export is refused (422) with a request to narrow the
+filters; it never silently truncates. CSV follows RFC 4180, starts with a
+UTF-8 BOM for Excel, and neutralises spreadsheet formulas in text fields
+(`server/core/utils/csv.ts`). CSV was chosen over a native .xlsx library to
+avoid a new dependency; Excel opens it directly.

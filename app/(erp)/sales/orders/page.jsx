@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { apiRequest } from "@/lib/api/client";
+import { apiRequest, downloadFile } from "@/lib/api/client";
 import "./SalesOrders.css";
 
 const PAGE_SIZE = 25;
@@ -34,6 +34,7 @@ export default function OrdersPage() {
   const [actionBusy, setActionBusy] = useState("");
   const [error, setError] = useState("");
   const [refresh, setRefresh] = useState(0);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -146,6 +147,30 @@ export default function OrdersPage() {
     }
   }
 
+  async function exportOrders() {
+    if (exporting) {
+      return;
+    }
+
+    setExporting(true);
+    setError("");
+
+    const params = new URLSearchParams(
+      Object.entries(filters).filter(([, value]) => value),
+    );
+
+    try {
+      await downloadFile(
+        `/api/sales/orders/export?${params.toString()}`,
+        "sales-orders.csv",
+      );
+    } catch (cause) {
+      setError(cause?.message || "Unable to export sales orders.");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   const orders = result?.orders ?? [];
 
   return (
@@ -164,12 +189,24 @@ export default function OrdersPage() {
           </span>
         </div>
 
-        <Link
-          className="order-list__primary"
-          href="/sales/orders/new"
-        >
-          + New sales order
-        </Link>
+        <div className="order-list__header-actions">
+          <button
+            type="button"
+            className="order-list__secondary"
+            disabled={exporting}
+            onClick={exportOrders}
+            title="Download all orders matching the current filters as CSV"
+          >
+            {exporting ? "Exporting..." : "Export CSV"}
+          </button>
+
+          <Link
+            className="order-list__primary"
+            href="/sales/orders/new"
+          >
+            + New sales order
+          </Link>
+        </div>
       </header>
 
       <section
