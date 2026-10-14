@@ -5,6 +5,7 @@ import { AppError } from "../core/errors/app-error";
 import { handleApiError } from "../core/errors/error-handler";
 import { logger } from "../core/logger/logger";
 import { recordAuditEvent } from "./audit.service";
+import { createLoginRateLimiter } from "./login-rate-limit";
 import { resolveUserAccess } from "./authorization.service";
 import {
   createUserSchema,
@@ -24,60 +25,19 @@ import {
   validateSessionToken,
 } from "./session.service";
 
-const failedLoginAttempts = new Map<
-  string,
-  {
-    count: number;
-    lastAttemptAt: number;
-  }
->();
-
-const LOCKOUT_MS = 5 * 60 * 1000;
-const MAX_ATTEMPTS = 5;
+const loginRateLimiter = createLoginRateLimiter();
 
 function fingerprintEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
-function registerFailedAttempt(email: string): void {
-  const key = fingerprintEmail(email);
-
-  const entry =
-    failedLoginAttempts.get(key) ?? {
-      count: 0,
-      lastAttemptAt: 0,
-    };
-
-  const count = entry.count + 1;
-
-  failedLoginAttempts.set(key, {
-    count,
-    lastAttemptAt: Date.now(),
-  });
-
-  if (count >= MAX_ATTEMPTS) {
+function registerFailedAttempt(email: string, ip?: string | null): void {
+  if (loginRateLimiter.registerFailure(email, ip)) {
     logger.warn("Authentication lockout triggered.", {
-      email: key,
+      email,
+      ip: ip ?? null,
     });
   }
-}
-
-function isRateLimited(email: string): boolean {
-  const key = fingerprintEmail(email);
-  const entry = failedLoginAttempts.get(key);
-
-  if (!entry) {
-    return false;
-  }
-
-  const elapsed = Date.now() - entry.lastAttemptAt;
-
-  if (elapsed > LOCKOUT_MS) {
-    failedLoginAttempts.delete(key);
-    return false;
-  }
-
-  return entry.count >= MAX_ATTEMPTS;
 }
 
 export async function createUser(
@@ -181,7 +141,9 @@ export async function loginUser(
   const validPayload = loginSchema.parse(payload);
   const email = fingerprintEmail(validPayload.email);
 
-  if (isRateLimited(email)) {
+  const ip = sessionMetadata?.ip ?? null;
+
+  if (loginRateLimiter.isLimited(email, ip)) {
     throw new AppError(
       "Authentication temporarily locked. Please try again later.",
       {
@@ -196,7 +158,7 @@ export async function loginUser(
     .first();
 
   if (!user || !verifyPassword(validPayload.password, user.passwordHash)) {
-    registerFailedAttempt(email);
+    registerFailedAttempt(email, ip);
 
     await recordAuditEvent({
       action: "LOGIN_FAILURE",
@@ -216,7 +178,7 @@ export async function loginUser(
   }
 
   if (user.status !== "ACTIVE") {
-    registerFailedAttempt(email);
+    registerFailedAttempt(email, ip);
 
     await recordAuditEvent({
       action: "LOGIN_FAILURE",
@@ -236,7 +198,7 @@ export async function loginUser(
     });
   }
 
-  failedLoginAttempts.delete(email);
+  loginRateLimiter.registerSuccess(email);
 
   const sessionToken = createSessionToken();
 

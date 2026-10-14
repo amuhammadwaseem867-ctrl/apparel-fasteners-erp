@@ -1,0 +1,95 @@
+# ERP Completion Plan
+
+Status source: `docs/ERP_MODULE_STATUS.md`. Decisions: `docs/ERP_DECISIONS.md`.
+
+## 0. Blocking prerequisite: one source of truth
+
+The owner's local copy (`D:\apparel-fasteners-erp`) contains unpushed work:
+an MRP Phase 1 migration, procurement and inventory services, and contract
+changes. GitHub (and therefore every cloud session) has none of it.
+
+Building the schema-dependent phases from the GitHub baseline would create a
+second, competing contract and migration graph. Prisma 8 migrations are chained
+by contract hash (`migrations/snapshots/<hash>`), so two independent graphs
+cannot be merged by hand without re-planning migrations. It would also break the
+rule against a second inventory implementation.
+
+**Required before Phase 2 onward:** the owner commits and pushes the local work
+(or confirms it should be discarded), and Claude's GitHub access is restored so
+work can be pushed. See D-001.
+
+## Dependency graph
+
+```
+Auth/RBAC/Audit ──┬─> Admin (users, roles, settings, audit review)
+                  │
+Item master ──────┼─> Inventory ledger ──┬─> Goods receipt <── Procurement (PR→RFQ→PO)
+(products, SKUs,  │   (warehouses,        ├─> Reservations <── Sales order lifecycle
+ fastener specs)  │    locations,         ├─> Material issue/return <── Production stages (9)
+                  │    movements)         ├─> QC holds <── Quality inspections
+                  │                       └─> FG receipt / dispatch <── Packing → Dispatch → Delivery
+                  │
+                  └─> BOM ──> MRP (demand = sales orders; supply = stock + open POs)
+
+Sales orders + Dispatch ──> Invoicing ──> Finance reports / costing
+Employees/Departments ──> Production assignment, Payroll, Gate passes
+Everything ──> Reports, Printing/Export, Dashboard KPIs
+```
+
+## Phases
+
+Each phase ends with: safe checks green (tsc, lint at or below baseline, DB-free
+tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
+
+| Phase | Scope | Needs schema change | Acceptance |
+|---|---|---|---|
+| 0 | Baseline, docs, safe fixes | No | **Done** (this session): docs; test route removed; login limiter hardened. |
+| 1 | Stabilize existing working modules | No | Dashboard connected (**done**). Remove fake-persistence success paths in Production, Quality, Packing, Dispatch, Finance and Payroll pages, replacing them with honest "not available" states (same pattern as Inventory). Fix the `app/login` lint error. |
+| 2 | Reconcile contract and migrations | Yes (plan only until authorized) | One migration graph containing the owner's local work. Live DB status verified read-only (`prisma migration status`). Pending migrations reviewed op-by-op. Backup verified. Owner authorizes apply. |
+| 3 | Item master + inventory ledger | Yes | Item/variant model covering every fastener spec in the owner's requirements (deterministic SKUs); warehouses/locations; append-only movement ledger with source document/line, idempotency key and per-item row locking; balances derived or maintained transactionally; Inventory pages connected. |
+| 4 | BOM + MRP | Yes | BOM revisions with approval, cycle detection, single scrap convention (D-004). MRP runs stored with inputs, BOM revision and results; deterministic decimal maths; planned orders require explicit confirmation. |
+| 5 | Production: 9 stages | Yes | Stage runs with quantity rule `input = accepted + rejected + wastage` (D-005); server-enforced order; partial runs; holds/rework; append-only history. |
+| 6 | QC, packing, dispatch, delivery | Yes | QC gates packing; holds block stock availability; dispatch cannot exceed approved FG; partial deliveries. |
+| 7 | Finance | Yes | Invoices with explicit tax configuration (no invented rates); credit notes instead of deletion. Not described as a full ledger. |
+| 8 | HR, payroll, admin, gate passes | Yes | Least-privilege payroll access; user/role admin over existing RBAC tables; gate passes. Durable login limiter (shared store). |
+| 9 | Print/export, UI polish, E2E | Partly | Print CSS + document layouts; real CSV/XLSX export; Playwright E2E against an isolated test DB. |
+
+## Migration dependencies
+
+- Phase 2 gates phases 3–8. None of them can be built correctly until the
+  contract baseline is the owner's real one.
+- The sales order lifecycle (New … Delivered) needs a status change on
+  `erp_sales_orders`. It is part of Phase 5/6, not a standalone migration.
+- No migration is applied to any live database without: verified origin and
+  target, full op review, a verified backup, and explicit owner authorization.
+
+## Testing strategy
+
+- DB-free unit tests (`npm test`) for pure rules: quantities, transitions, SKU
+  generation, BOM cycles, MRP maths, rate limiting, error mapping.
+- DB integration tests only against an isolated database whose identity is
+  checked before running (`tests/server/auth-rbac.test.mjs` pattern, gated).
+- E2E (Playwright, Chromium available in the cloud container) after Phase 3.
+
+## Unresolved risks
+
+1. Divergent baselines (section 0). Highest risk.
+2. Live DB state unknown: there is no DB access from the cloud environment.
+3. Login limiter is per-instance memory until Phase 8.
+4. `x-forwarded-for` is trusted for the client IP. That is correct behind
+   Vercel's proxy but spoofable if the app is exposed directly.
+5. Fake-persistence pages mislead users until Phase 1 is finished.
+
+## Work log
+
+| Date | Commit | Change |
+|---|---|---|
+| 2026-10-14 | `e1241ae` | Dashboard connected; inventory pages made honest; schema-mismatch errors → 503 `DATABASE_SCHEMA_OUTDATED`. |
+| 2026-10-14 | (this commit) | Phase 0 docs; `app/test-route` removed; login limiter per-IP + bounded; tests added. |
+
+## Next step
+
+Owner decision on D-001. If the local work is pushed: pull it, re-verify this
+plan against it, then Phase 1 (remove fake persistence) and Phase 2 (migration
+reconciliation, plan only). If not: Phase 1 can proceed on this baseline
+regardless, since it changes no schema.
