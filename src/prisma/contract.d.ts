@@ -18,9 +18,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'eaef2dc450786c9586d2cce23a2c72fdd635e2ebf263df14df44e5cf85c7d427'>;
+  StorageHashBase<'fe44d181b57784cb63bc1565012cf6ece90ff2ec5d4aa39175b71ddc8e44153e'>;
 export type ExecutionHash =
-  ExecutionHashBase<'ff8f049884c92bfd350796f16478292929de63231658c1dbe15663a1ac6302f6'>;
+  ExecutionHashBase<'09874efeabf7ffbd7b7ac37f78fb2e74d14859a7e800ab741c975e24a7e03048'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -359,6 +359,72 @@ export type FieldOutputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly variant: CodecTypes['pg/text@1']['output'] | null;
     };
+    readonly ProductionEvent: {
+      readonly actorId: CodecTypes['pg/uuid@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly details: CodecTypes['pg/text@1']['output'] | null;
+      readonly eventType: CodecTypes['pg/text@1']['output'];
+      readonly fromValue: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly productionOrderId: CodecTypes['pg/uuid@1']['output'];
+      readonly stageKey: CodecTypes['pg/text@1']['output'] | null;
+      readonly toValue: CodecTypes['pg/text@1']['output'] | null;
+    };
+    readonly ProductionOrder: {
+      readonly bomId: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly bomRevision: CodecTypes['pg/int4@1']['output'] | null;
+      readonly completedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['output'];
+      readonly currentStage: CodecTypes['pg/text@1']['output'] | null;
+      readonly dueDate: CodecTypes['pg/text@1']['output'] | null;
+      readonly holdFromStatus: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'] | null;
+      readonly orderNumber: CodecTypes['pg/text@1']['output'];
+      readonly plannedOrderId: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly priority: CodecTypes['pg/text@1']['output'];
+      readonly productId: CodecTypes['pg/uuid@1']['output'];
+      readonly quantity: CodecTypes['pg/numeric@1']['output'];
+      readonly salesOrderId: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly salesOrderLineId: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly unit: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
+    readonly ProductionStage: {
+      readonly acceptedQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly completedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly department: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly processedQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly productionOrderId: CodecTypes['pg/uuid@1']['output'];
+      readonly rejectedQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly responsibleName: CodecTypes['pg/text@1']['output'] | null;
+      readonly reworkQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly sequence: CodecTypes['pg/int4@1']['output'];
+      readonly stageKey: CodecTypes['pg/text@1']['output'];
+      readonly startedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly wastageQuantity: CodecTypes['pg/numeric@1']['output'];
+    };
+    readonly ProductionStageRun: {
+      readonly acceptedQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly idempotencyKey: CodecTypes['pg/text@1']['output'];
+      readonly inputQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly operatorName: CodecTypes['pg/text@1']['output'] | null;
+      readonly recordedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly recordedBy: CodecTypes['pg/uuid@1']['output'];
+      readonly rejectedQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly remarks: CodecTypes['pg/text@1']['output'] | null;
+      readonly reworkQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly runNo: CodecTypes['pg/int4@1']['output'];
+      readonly stageId: CodecTypes['pg/uuid@1']['output'];
+      readonly wastageQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly workstation: CodecTypes['pg/text@1']['output'] | null;
+    };
     readonly Role: {
       readonly code: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -639,6 +705,72 @@ export type FieldInputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly variant: CodecTypes['pg/text@1']['input'] | null;
     };
+    readonly ProductionEvent: {
+      readonly actorId: CodecTypes['pg/uuid@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly details: CodecTypes['pg/text@1']['input'] | null;
+      readonly eventType: CodecTypes['pg/text@1']['input'];
+      readonly fromValue: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly productionOrderId: CodecTypes['pg/uuid@1']['input'];
+      readonly stageKey: CodecTypes['pg/text@1']['input'] | null;
+      readonly toValue: CodecTypes['pg/text@1']['input'] | null;
+    };
+    readonly ProductionOrder: {
+      readonly bomId: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly bomRevision: CodecTypes['pg/int4@1']['input'] | null;
+      readonly completedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['input'];
+      readonly currentStage: CodecTypes['pg/text@1']['input'] | null;
+      readonly dueDate: CodecTypes['pg/text@1']['input'] | null;
+      readonly holdFromStatus: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'] | null;
+      readonly orderNumber: CodecTypes['pg/text@1']['input'];
+      readonly plannedOrderId: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly priority: CodecTypes['pg/text@1']['input'];
+      readonly productId: CodecTypes['pg/uuid@1']['input'];
+      readonly quantity: CodecTypes['pg/numeric@1']['input'];
+      readonly salesOrderId: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly salesOrderLineId: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly unit: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly ProductionStage: {
+      readonly acceptedQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly completedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly department: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly processedQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly productionOrderId: CodecTypes['pg/uuid@1']['input'];
+      readonly rejectedQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly responsibleName: CodecTypes['pg/text@1']['input'] | null;
+      readonly reworkQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly sequence: CodecTypes['pg/int4@1']['input'];
+      readonly stageKey: CodecTypes['pg/text@1']['input'];
+      readonly startedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly wastageQuantity: CodecTypes['pg/numeric@1']['input'];
+    };
+    readonly ProductionStageRun: {
+      readonly acceptedQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly idempotencyKey: CodecTypes['pg/text@1']['input'];
+      readonly inputQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly operatorName: CodecTypes['pg/text@1']['input'] | null;
+      readonly recordedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly recordedBy: CodecTypes['pg/uuid@1']['input'];
+      readonly rejectedQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly remarks: CodecTypes['pg/text@1']['input'] | null;
+      readonly reworkQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly runNo: CodecTypes['pg/int4@1']['input'];
+      readonly stageId: CodecTypes['pg/uuid@1']['input'];
+      readonly wastageQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly workstation: CodecTypes['pg/text@1']['input'] | null;
+    };
     readonly Role: {
       readonly code: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
@@ -896,6 +1028,72 @@ export type StorageColumnTypes = {
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly module: CodecTypes['pg/text@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
+    };
+    readonly erp_production_events: {
+      readonly actorId: CodecTypes['pg/uuid@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly details: CodecTypes['pg/text@1']['output'] | null;
+      readonly eventType: CodecTypes['pg/text@1']['output'];
+      readonly fromValue: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly productionOrderId: CodecTypes['pg/uuid@1']['output'];
+      readonly stageKey: CodecTypes['pg/text@1']['output'] | null;
+      readonly toValue: CodecTypes['pg/text@1']['output'] | null;
+    };
+    readonly erp_production_orders: {
+      readonly bomId: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly bomRevision: CodecTypes['pg/int4@1']['output'] | null;
+      readonly completedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['output'];
+      readonly currentStage: CodecTypes['pg/text@1']['output'] | null;
+      readonly dueDate: CodecTypes['pg/text@1']['output'] | null;
+      readonly holdFromStatus: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'] | null;
+      readonly orderNumber: CodecTypes['pg/text@1']['output'];
+      readonly plannedOrderId: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly priority: CodecTypes['pg/text@1']['output'];
+      readonly productId: CodecTypes['pg/uuid@1']['output'];
+      readonly quantity: CodecTypes['pg/numeric@1']['output'];
+      readonly salesOrderId: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly salesOrderLineId: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly unit: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
+    readonly erp_production_stage_runs: {
+      readonly acceptedQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly idempotencyKey: CodecTypes['pg/text@1']['output'];
+      readonly inputQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly operatorName: CodecTypes['pg/text@1']['output'] | null;
+      readonly recordedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly recordedBy: CodecTypes['pg/uuid@1']['output'];
+      readonly rejectedQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly remarks: CodecTypes['pg/text@1']['output'] | null;
+      readonly reworkQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly runNo: CodecTypes['pg/int4@1']['output'];
+      readonly stageId: CodecTypes['pg/uuid@1']['output'];
+      readonly wastageQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly workstation: CodecTypes['pg/text@1']['output'] | null;
+    };
+    readonly erp_production_stages: {
+      readonly acceptedQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly completedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly department: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly processedQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly productionOrderId: CodecTypes['pg/uuid@1']['output'];
+      readonly rejectedQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly responsibleName: CodecTypes['pg/text@1']['output'] | null;
+      readonly reworkQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly sequence: CodecTypes['pg/int4@1']['output'];
+      readonly stageKey: CodecTypes['pg/text@1']['output'];
+      readonly startedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly wastageQuantity: CodecTypes['pg/numeric@1']['output'];
     };
     readonly erp_products: {
       readonly barcode: CodecTypes['pg/text@1']['output'] | null;
@@ -1176,6 +1374,72 @@ export type StorageColumnInputTypes = {
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly module: CodecTypes['pg/text@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
+    };
+    readonly erp_production_events: {
+      readonly actorId: CodecTypes['pg/uuid@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly details: CodecTypes['pg/text@1']['input'] | null;
+      readonly eventType: CodecTypes['pg/text@1']['input'];
+      readonly fromValue: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly productionOrderId: CodecTypes['pg/uuid@1']['input'];
+      readonly stageKey: CodecTypes['pg/text@1']['input'] | null;
+      readonly toValue: CodecTypes['pg/text@1']['input'] | null;
+    };
+    readonly erp_production_orders: {
+      readonly bomId: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly bomRevision: CodecTypes['pg/int4@1']['input'] | null;
+      readonly completedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['input'];
+      readonly currentStage: CodecTypes['pg/text@1']['input'] | null;
+      readonly dueDate: CodecTypes['pg/text@1']['input'] | null;
+      readonly holdFromStatus: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'] | null;
+      readonly orderNumber: CodecTypes['pg/text@1']['input'];
+      readonly plannedOrderId: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly priority: CodecTypes['pg/text@1']['input'];
+      readonly productId: CodecTypes['pg/uuid@1']['input'];
+      readonly quantity: CodecTypes['pg/numeric@1']['input'];
+      readonly salesOrderId: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly salesOrderLineId: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly unit: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly erp_production_stage_runs: {
+      readonly acceptedQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly idempotencyKey: CodecTypes['pg/text@1']['input'];
+      readonly inputQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly operatorName: CodecTypes['pg/text@1']['input'] | null;
+      readonly recordedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly recordedBy: CodecTypes['pg/uuid@1']['input'];
+      readonly rejectedQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly remarks: CodecTypes['pg/text@1']['input'] | null;
+      readonly reworkQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly runNo: CodecTypes['pg/int4@1']['input'];
+      readonly stageId: CodecTypes['pg/uuid@1']['input'];
+      readonly wastageQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly workstation: CodecTypes['pg/text@1']['input'] | null;
+    };
+    readonly erp_production_stages: {
+      readonly acceptedQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly completedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly department: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly processedQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly productionOrderId: CodecTypes['pg/uuid@1']['input'];
+      readonly rejectedQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly responsibleName: CodecTypes['pg/text@1']['input'] | null;
+      readonly reworkQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly sequence: CodecTypes['pg/int4@1']['input'];
+      readonly stageKey: CodecTypes['pg/text@1']['input'];
+      readonly startedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly wastageQuantity: CodecTypes['pg/numeric@1']['input'];
     };
     readonly erp_products: {
       readonly barcode: CodecTypes['pg/text@1']['input'] | null;
@@ -1506,6 +1770,7 @@ export namespace Models {
     boms: public_Bom[];
     mrpPlannedOrders: public_MrpPlannedOrder[];
     mrpRequirements: public_MrpRequirement[];
+    productionOrders: public_ProductionOrder[];
     salesOrderLines: public_SalesOrderLine[];
     stockBalances: public_StockBalance[];
     stockMovements: public_StockMovement[];
@@ -1515,10 +1780,88 @@ export namespace Models {
       | 'boms'
       | 'mrpPlannedOrders'
       | 'mrpRequirements'
+      | 'productionOrders'
       | 'salesOrderLines'
       | 'stockBalances'
       | 'stockMovements'
       | 'stockReservations';
+  };
+  export type public_ProductionEvent = {
+    actorId: CodecTypes['pg/uuid@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    details: CodecTypes['pg/text@1']['output'] | null;
+    eventType: CodecTypes['pg/text@1']['output'];
+    fromValue: CodecTypes['pg/text@1']['output'] | null;
+    id: CodecTypes['pg/uuid@1']['output'];
+    productionOrderId: CodecTypes['pg/uuid@1']['output'];
+    stageKey: CodecTypes['pg/text@1']['output'] | null;
+    toValue: CodecTypes['pg/text@1']['output'] | null;
+    productionOrder: public_ProductionOrder;
+    readonly [RelationKeys]?: 'productionOrder';
+  };
+  export type public_ProductionOrder = {
+    bomId: CodecTypes['pg/uuid@1']['output'] | null;
+    bomRevision: CodecTypes['pg/int4@1']['output'] | null;
+    completedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    createdBy: CodecTypes['pg/uuid@1']['output'];
+    currentStage: CodecTypes['pg/text@1']['output'] | null;
+    dueDate: CodecTypes['pg/text@1']['output'] | null;
+    holdFromStatus: CodecTypes['pg/text@1']['output'] | null;
+    id: CodecTypes['pg/uuid@1']['output'];
+    notes: CodecTypes['pg/text@1']['output'] | null;
+    orderNumber: CodecTypes['pg/text@1']['output'];
+    plannedOrderId: CodecTypes['pg/uuid@1']['output'] | null;
+    priority: CodecTypes['pg/text@1']['output'];
+    productId: CodecTypes['pg/uuid@1']['output'];
+    quantity: CodecTypes['pg/numeric@1']['output'];
+    salesOrderId: CodecTypes['pg/uuid@1']['output'] | null;
+    salesOrderLineId: CodecTypes['pg/uuid@1']['output'] | null;
+    status: CodecTypes['pg/text@1']['output'];
+    unit: CodecTypes['pg/text@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    events: public_ProductionEvent[];
+    product: public_Product;
+    stages: public_ProductionStage[];
+    readonly [RelationKeys]?: 'events' | 'product' | 'stages';
+  };
+  export type public_ProductionStage = {
+    acceptedQuantity: CodecTypes['pg/numeric@1']['output'];
+    completedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+    department: CodecTypes['pg/text@1']['output'] | null;
+    id: CodecTypes['pg/uuid@1']['output'];
+    processedQuantity: CodecTypes['pg/numeric@1']['output'];
+    productionOrderId: CodecTypes['pg/uuid@1']['output'];
+    rejectedQuantity: CodecTypes['pg/numeric@1']['output'];
+    responsibleName: CodecTypes['pg/text@1']['output'] | null;
+    reworkQuantity: CodecTypes['pg/numeric@1']['output'];
+    sequence: CodecTypes['pg/int4@1']['output'];
+    stageKey: CodecTypes['pg/text@1']['output'];
+    startedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+    status: CodecTypes['pg/text@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    wastageQuantity: CodecTypes['pg/numeric@1']['output'];
+    productionOrder: public_ProductionOrder;
+    runs: public_ProductionStageRun[];
+    readonly [RelationKeys]?: 'productionOrder' | 'runs';
+  };
+  export type public_ProductionStageRun = {
+    acceptedQuantity: CodecTypes['pg/numeric@1']['output'];
+    id: CodecTypes['pg/uuid@1']['output'];
+    idempotencyKey: CodecTypes['pg/text@1']['output'];
+    inputQuantity: CodecTypes['pg/numeric@1']['output'];
+    operatorName: CodecTypes['pg/text@1']['output'] | null;
+    recordedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    recordedBy: CodecTypes['pg/uuid@1']['output'];
+    rejectedQuantity: CodecTypes['pg/numeric@1']['output'];
+    remarks: CodecTypes['pg/text@1']['output'] | null;
+    reworkQuantity: CodecTypes['pg/numeric@1']['output'];
+    runNo: CodecTypes['pg/int4@1']['output'];
+    stageId: CodecTypes['pg/uuid@1']['output'];
+    wastageQuantity: CodecTypes['pg/numeric@1']['output'];
+    workstation: CodecTypes['pg/text@1']['output'] | null;
+    stage: public_ProductionStage;
+    readonly [RelationKeys]?: 'stage';
   };
   export type public_Role = {
     code: CodecTypes['pg/text@1']['output'];
@@ -1724,6 +2067,10 @@ export declare const models: {
     MrpRun: Models.public_MrpRun;
     Permission: Models.public_Permission;
     Product: Models.public_Product;
+    ProductionEvent: Models.public_ProductionEvent;
+    ProductionOrder: Models.public_ProductionOrder;
+    ProductionStage: Models.public_ProductionStage;
+    ProductionStageRun: Models.public_ProductionStageRun;
     Role: Models.public_Role;
     RolePermission: Models.public_RolePermission;
     SalesOrder: Models.public_SalesOrder;
@@ -2576,6 +2923,548 @@ type ContractBase = Omit<
               uniques: readonly [{ readonly columns: readonly ['code'] }];
               indexes: readonly [];
               foreignKeys: readonly [];
+            };
+            readonly erp_production_events: {
+              columns: {
+                readonly actorId: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly details: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly eventType: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly fromValue: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly productionOrderId: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly stageKey: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly toValue: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'erp_production_events_productionOrderId_createdAt_idx_81e7ba11';
+                  readonly prefix: 'erp_production_events_productionOrderId_createdAt_idx';
+                  readonly columns: readonly ['productionOrderId', 'createdAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'erp_production_events_productionOrderId_idx_6ada58cc';
+                  readonly prefix: 'erp_production_events_productionOrderId_idx';
+                  readonly columns: readonly ['productionOrderId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_production_events';
+                    readonly columns: readonly ['productionOrderId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_production_orders';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly erp_production_orders: {
+              columns: {
+                readonly bomId: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly bomRevision: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly completedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly createdBy: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly currentStage: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly dueDate: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly holdFromStatus: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly notes: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly orderNumber: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly plannedOrderId: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly priority: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'NORMAL'>;
+                  };
+                  readonly many: false;
+                };
+                readonly productId: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly quantity: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly salesOrderId: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly salesOrderLineId: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly status: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'PLANNED'>;
+                  };
+                  readonly many: false;
+                };
+                readonly unit: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['orderNumber'] },
+                { readonly columns: readonly ['plannedOrderId'] },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'erp_production_orders_dueDate_idx_fb527616';
+                  readonly prefix: 'erp_production_orders_dueDate_idx';
+                  readonly columns: readonly ['dueDate'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'erp_production_orders_productId_idx_5858600a';
+                  readonly prefix: 'erp_production_orders_productId_idx';
+                  readonly columns: readonly ['productId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'erp_production_orders_salesOrderId_idx_0f1a116c';
+                  readonly prefix: 'erp_production_orders_salesOrderId_idx';
+                  readonly columns: readonly ['salesOrderId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'erp_production_orders_status_idx_e98638ab';
+                  readonly prefix: 'erp_production_orders_status_idx';
+                  readonly columns: readonly ['status'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_production_orders';
+                    readonly columns: readonly ['productId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_products';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly erp_production_stage_runs: {
+              columns: {
+                readonly acceptedQuantity: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly idempotencyKey: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly inputQuantity: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly operatorName: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly recordedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly recordedBy: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly rejectedQuantity: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly remarks: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly reworkQuantity: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly runNo: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly stageId: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly wastageQuantity: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly workstation: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['idempotencyKey'] },
+                { readonly columns: readonly ['stageId', 'runNo'] },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'erp_production_stage_runs_stageId_idx_43a99835';
+                  readonly prefix: 'erp_production_stage_runs_stageId_idx';
+                  readonly columns: readonly ['stageId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_production_stage_runs';
+                    readonly columns: readonly ['stageId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_production_stages';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly erp_production_stages: {
+              columns: {
+                readonly acceptedQuantity: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly completedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly department: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly processedQuantity: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly productionOrderId: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly rejectedQuantity: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly responsibleName: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly reworkQuantity: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly sequence: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly stageKey: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly startedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly status: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'PENDING'>;
+                  };
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly wastageQuantity: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['productionOrderId', 'stageKey'] },
+                { readonly columns: readonly ['productionOrderId', 'sequence'] },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'erp_production_stages_productionOrderId_idx_6ada58cc';
+                  readonly prefix: 'erp_production_stages_productionOrderId_idx';
+                  readonly columns: readonly ['productionOrderId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_production_stages';
+                    readonly columns: readonly ['productionOrderId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_production_orders';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
             };
             readonly erp_products: {
               columns: {
@@ -4136,6 +5025,22 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'Permission';
     };
+    readonly erp_production_events: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'ProductionEvent';
+    };
+    readonly erp_production_orders: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'ProductionOrder';
+    };
+    readonly erp_production_stage_runs: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'ProductionStageRun';
+    };
+    readonly erp_production_stages: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'ProductionStage';
+    };
     readonly erp_products: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'Product';
@@ -5044,6 +5949,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['productId'];
                 };
               };
+              readonly productionOrders: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ProductionOrder';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['productId'];
+                };
+              };
               readonly salesOrderLines: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -5113,6 +6029,449 @@ type ContractBase = Omit<
                 readonly unitPrice: { readonly column: 'unitPrice' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
                 readonly variant: { readonly column: 'variant' };
+              };
+            };
+          };
+          readonly ProductionEvent: {
+            readonly fields: {
+              readonly actorId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly details: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly eventType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly fromValue: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly productionOrderId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly stageKey: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly toValue: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly productionOrder: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ProductionOrder';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['productionOrderId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'erp_production_events';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly actorId: { readonly column: 'actorId' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly details: { readonly column: 'details' };
+                readonly eventType: { readonly column: 'eventType' };
+                readonly fromValue: { readonly column: 'fromValue' };
+                readonly id: { readonly column: 'id' };
+                readonly productionOrderId: { readonly column: 'productionOrderId' };
+                readonly stageKey: { readonly column: 'stageKey' };
+                readonly toValue: { readonly column: 'toValue' };
+              };
+            };
+          };
+          readonly ProductionOrder: {
+            readonly fields: {
+              readonly bomId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly bomRevision: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly completedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly createdBy: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly currentStage: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly dueDate: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly holdFromStatus: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly notes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly orderNumber: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly plannedOrderId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly priority: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly productId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly quantity: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly salesOrderId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly salesOrderLineId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly unit: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly events: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ProductionEvent';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['productionOrderId'];
+                };
+              };
+              readonly product: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Product';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['productId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly stages: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ProductionStage';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['productionOrderId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'erp_production_orders';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly bomId: { readonly column: 'bomId' };
+                readonly bomRevision: { readonly column: 'bomRevision' };
+                readonly completedAt: { readonly column: 'completedAt' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly createdBy: { readonly column: 'createdBy' };
+                readonly currentStage: { readonly column: 'currentStage' };
+                readonly dueDate: { readonly column: 'dueDate' };
+                readonly holdFromStatus: { readonly column: 'holdFromStatus' };
+                readonly id: { readonly column: 'id' };
+                readonly notes: { readonly column: 'notes' };
+                readonly orderNumber: { readonly column: 'orderNumber' };
+                readonly plannedOrderId: { readonly column: 'plannedOrderId' };
+                readonly priority: { readonly column: 'priority' };
+                readonly productId: { readonly column: 'productId' };
+                readonly quantity: { readonly column: 'quantity' };
+                readonly salesOrderId: { readonly column: 'salesOrderId' };
+                readonly salesOrderLineId: { readonly column: 'salesOrderLineId' };
+                readonly status: { readonly column: 'status' };
+                readonly unit: { readonly column: 'unit' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly ProductionStage: {
+            readonly fields: {
+              readonly acceptedQuantity: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly completedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly department: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly processedQuantity: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly productionOrderId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly rejectedQuantity: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly responsibleName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly reworkQuantity: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly sequence: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly stageKey: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly startedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly wastageQuantity: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+            };
+            readonly relations: {
+              readonly productionOrder: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ProductionOrder';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['productionOrderId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly runs: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ProductionStageRun';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['stageId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'erp_production_stages';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly acceptedQuantity: { readonly column: 'acceptedQuantity' };
+                readonly completedAt: { readonly column: 'completedAt' };
+                readonly department: { readonly column: 'department' };
+                readonly id: { readonly column: 'id' };
+                readonly processedQuantity: { readonly column: 'processedQuantity' };
+                readonly productionOrderId: { readonly column: 'productionOrderId' };
+                readonly rejectedQuantity: { readonly column: 'rejectedQuantity' };
+                readonly responsibleName: { readonly column: 'responsibleName' };
+                readonly reworkQuantity: { readonly column: 'reworkQuantity' };
+                readonly sequence: { readonly column: 'sequence' };
+                readonly stageKey: { readonly column: 'stageKey' };
+                readonly startedAt: { readonly column: 'startedAt' };
+                readonly status: { readonly column: 'status' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly wastageQuantity: { readonly column: 'wastageQuantity' };
+              };
+            };
+          };
+          readonly ProductionStageRun: {
+            readonly fields: {
+              readonly acceptedQuantity: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly idempotencyKey: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly inputQuantity: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly operatorName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly recordedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly recordedBy: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly rejectedQuantity: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly remarks: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly reworkQuantity: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly runNo: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly stageId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly wastageQuantity: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly workstation: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly stage: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ProductionStage';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['stageId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'erp_production_stage_runs';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly acceptedQuantity: { readonly column: 'acceptedQuantity' };
+                readonly id: { readonly column: 'id' };
+                readonly idempotencyKey: { readonly column: 'idempotencyKey' };
+                readonly inputQuantity: { readonly column: 'inputQuantity' };
+                readonly operatorName: { readonly column: 'operatorName' };
+                readonly recordedAt: { readonly column: 'recordedAt' };
+                readonly recordedBy: { readonly column: 'recordedBy' };
+                readonly rejectedQuantity: { readonly column: 'rejectedQuantity' };
+                readonly remarks: { readonly column: 'remarks' };
+                readonly reworkQuantity: { readonly column: 'reworkQuantity' };
+                readonly runNo: { readonly column: 'runNo' };
+                readonly stageId: { readonly column: 'stageId' };
+                readonly wastageQuantity: { readonly column: 'wastageQuantity' };
+                readonly workstation: { readonly column: 'workstation' };
               };
             };
           };
@@ -6362,6 +7721,38 @@ type ContractBase = Omit<
           readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'erp_permissions';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'erp_production_events';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'erp_production_orders';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'erp_production_stage_runs';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'erp_production_stages';
             readonly field: 'id';
             readonly namespace: 'public';
           };

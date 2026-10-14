@@ -1,0 +1,890 @@
+[
+  {
+    "id": "table.erp_production_events",
+    "label": "Create table \"erp_production_events\"",
+    "summary": "Creates table \"erp_production_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_production_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_production_events\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_production_events\"",
+        "sql": "CREATE TABLE \"public\".\"erp_production_events\" (\n  \"actorId\" uuid NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"details\" text,\n  \"eventType\" text NOT NULL,\n  \"fromValue\" text,\n  \"id\" uuid NOT NULL,\n  \"productionOrderId\" uuid NOT NULL,\n  \"stageKey\" text,\n  \"toValue\" text,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_production_events\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_production_orders",
+    "label": "Create table \"erp_production_orders\"",
+    "summary": "Creates table \"erp_production_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_production_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_production_orders\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_orders\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_production_orders\"",
+        "sql": "CREATE TABLE \"public\".\"erp_production_orders\" (\n  \"bomId\" uuid,\n  \"bomRevision\" int4,\n  \"completedAt\" timestamptz,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"currentStage\" text,\n  \"dueDate\" text,\n  \"holdFromStatus\" text,\n  \"id\" uuid NOT NULL,\n  \"notes\" text,\n  \"orderNumber\" text NOT NULL,\n  \"plannedOrderId\" uuid,\n  \"priority\" text DEFAULT 'NORMAL' NOT NULL,\n  \"productId\" uuid NOT NULL,\n  \"quantity\" numeric NOT NULL,\n  \"salesOrderId\" uuid,\n  \"salesOrderLineId\" uuid,\n  \"status\" text DEFAULT 'PLANNED' NOT NULL,\n  \"unit\" text NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_production_orders_priority_72dbae57\" CHECK (\"priority\" IN ('LOW', 'NORMAL', 'HIGH', 'URGENT')),\n  CONSTRAINT \"erp_production_orders_quantity_positive_fc510296\" CHECK (\"quantity\" > 0),\n  CONSTRAINT \"erp_production_orders_status_83d7023d\" CHECK (\"status\" IN ('PLANNED', 'RELEASED', 'IN_PROGRESS', 'ON_HOLD', 'COMPLETED', 'CANCELLED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_production_orders\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_orders\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_production_stage_runs",
+    "label": "Create table \"erp_production_stage_runs\"",
+    "summary": "Creates table \"erp_production_stage_runs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_production_stage_runs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_production_stage_runs\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_stage_runs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_production_stage_runs\"",
+        "sql": "CREATE TABLE \"public\".\"erp_production_stage_runs\" (\n  \"acceptedQuantity\" numeric NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"inputQuantity\" numeric NOT NULL,\n  \"operatorName\" text,\n  \"recordedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"recordedBy\" uuid NOT NULL,\n  \"rejectedQuantity\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"remarks\" text,\n  \"reworkQuantity\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"runNo\" int4 NOT NULL,\n  \"stageId\" uuid NOT NULL,\n  \"wastageQuantity\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"workstation\" text,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_production_stage_runs_balance_d739712f\" CHECK (\"inputQuantity\" = \"acceptedQuantity\" + \"rejectedQuantity\" + \"wastageQuantity\" + \"reworkQuantity\"),\n  CONSTRAINT \"erp_production_stage_runs_quantities_14455bea\" CHECK (\"inputQuantity\" > 0 AND \"acceptedQuantity\" >= 0 AND \"rejectedQuantity\" >= 0 AND \"wastageQuantity\" >= 0 AND \"reworkQuantity\" >= 0)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_production_stage_runs\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_stage_runs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_production_stages",
+    "label": "Create table \"erp_production_stages\"",
+    "summary": "Creates table \"erp_production_stages\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_production_stages"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_production_stages\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_stages\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_production_stages\"",
+        "sql": "CREATE TABLE \"public\".\"erp_production_stages\" (\n  \"acceptedQuantity\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"completedAt\" timestamptz,\n  \"department\" text,\n  \"id\" uuid NOT NULL,\n  \"processedQuantity\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"productionOrderId\" uuid NOT NULL,\n  \"rejectedQuantity\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"responsibleName\" text,\n  \"reworkQuantity\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"sequence\" int4 NOT NULL,\n  \"stageKey\" text NOT NULL,\n  \"startedAt\" timestamptz,\n  \"status\" text DEFAULT 'PENDING' NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"wastageQuantity\" numeric DEFAULT '0'::numeric NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_production_stages_balance_12ff3e15\" CHECK (\"processedQuantity\" = \"acceptedQuantity\" + \"rejectedQuantity\" + \"wastageQuantity\" + \"reworkQuantity\"),\n  CONSTRAINT \"erp_production_stages_nonnegative_6dcf757b\" CHECK (\"acceptedQuantity\" >= 0 AND \"rejectedQuantity\" >= 0 AND \"wastageQuantity\" >= 0 AND \"reworkQuantity\" >= 0),\n  CONSTRAINT \"erp_production_stages_sequence_857ff137\" CHECK (\"sequence\" BETWEEN 1 AND 9),\n  CONSTRAINT \"erp_production_stages_status_c95d195d\" CHECK (\"status\" IN ('PENDING', 'IN_PROGRESS', 'COMPLETED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_production_stages\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_stages\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_production_orders.erp_production_orders_orderNumber_key",
+    "label": "Add unique constraint on \"erp_production_orders\" (orderNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_production_orders_orderNumber_key",
+        "table": "erp_production_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_production_orders_orderNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_orders_orderNumber_key",
+          "public",
+          "\"public\".\"erp_production_orders\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_production_orders_orderNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_production_orders\" ADD CONSTRAINT \"erp_production_orders_orderNumber_key\" UNIQUE (\"orderNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_production_orders_orderNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_orders_orderNumber_key",
+          "public",
+          "\"public\".\"erp_production_orders\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_production_orders.erp_production_orders_plannedOrderId_key",
+    "label": "Add unique constraint on \"erp_production_orders\" (plannedOrderId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_production_orders_plannedOrderId_key",
+        "table": "erp_production_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_production_orders_plannedOrderId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_orders_plannedOrderId_key",
+          "public",
+          "\"public\".\"erp_production_orders\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_production_orders_plannedOrderId_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_production_orders\" ADD CONSTRAINT \"erp_production_orders_plannedOrderId_key\" UNIQUE (\"plannedOrderId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_production_orders_plannedOrderId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_orders_plannedOrderId_key",
+          "public",
+          "\"public\".\"erp_production_orders\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_production_stage_runs.erp_production_stage_runs_idempotencyKey_key",
+    "label": "Add unique constraint on \"erp_production_stage_runs\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_production_stage_runs_idempotencyKey_key",
+        "table": "erp_production_stage_runs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_production_stage_runs_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_stage_runs_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_production_stage_runs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_production_stage_runs_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_production_stage_runs\" ADD CONSTRAINT \"erp_production_stage_runs_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_production_stage_runs_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_stage_runs_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_production_stage_runs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_production_stage_runs.erp_production_stage_runs_stageId_runNo_key",
+    "label": "Add unique constraint on \"erp_production_stage_runs\" (stageId, runNo)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_production_stage_runs_stageId_runNo_key",
+        "table": "erp_production_stage_runs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_production_stage_runs_stageId_runNo_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_stage_runs_stageId_runNo_key",
+          "public",
+          "\"public\".\"erp_production_stage_runs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_production_stage_runs_stageId_runNo_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_production_stage_runs\" ADD CONSTRAINT \"erp_production_stage_runs_stageId_runNo_key\" UNIQUE (\"stageId\", \"runNo\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_production_stage_runs_stageId_runNo_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_stage_runs_stageId_runNo_key",
+          "public",
+          "\"public\".\"erp_production_stage_runs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_production_stages.erp_production_stages_productionOrderId_stageKey_key",
+    "label": "Add unique constraint on \"erp_production_stages\" (productionOrderId, stageKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_production_stages_productionOrderId_stageKey_key",
+        "table": "erp_production_stages"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_production_stages_productionOrderId_stageKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_stages_productionOrderId_stageKey_key",
+          "public",
+          "\"public\".\"erp_production_stages\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_production_stages_productionOrderId_stageKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_production_stages\" ADD CONSTRAINT \"erp_production_stages_productionOrderId_stageKey_key\" UNIQUE (\"productionOrderId\", \"stageKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_production_stages_productionOrderId_stageKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_stages_productionOrderId_stageKey_key",
+          "public",
+          "\"public\".\"erp_production_stages\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_production_stages.erp_production_stages_productionOrderId_sequence_key",
+    "label": "Add unique constraint on \"erp_production_stages\" (productionOrderId, sequence)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_production_stages_productionOrderId_sequence_key",
+        "table": "erp_production_stages"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_production_stages_productionOrderId_sequence_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_stages_productionOrderId_sequence_key",
+          "public",
+          "\"public\".\"erp_production_stages\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_production_stages_productionOrderId_sequence_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_production_stages\" ADD CONSTRAINT \"erp_production_stages_productionOrderId_sequence_key\" UNIQUE (\"productionOrderId\", \"sequence\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_production_stages_productionOrderId_sequence_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_stages_productionOrderId_sequence_key",
+          "public",
+          "\"public\".\"erp_production_stages\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_production_events.erp_production_events_productionOrderId_createdAt_idx_81e7ba11",
+    "label": "Create index \"erp_production_events_productionOrderId_createdAt_idx_81e7ba11\" on \"erp_production_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_production_events_productionOrderId_createdAt_idx_81e7ba11",
+        "table": "erp_production_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_production_events_productionOrderId_createdAt_idx_81e7ba11\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_events_productionOrderId_createdAt_idx_81e7ba11\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_production_events_productionOrderId_createdAt_idx_81e7ba11\"",
+        "sql": "CREATE INDEX \"erp_production_events_productionOrderId_createdAt_idx_81e7ba11\" ON \"public\".\"erp_production_events\" (\"productionOrderId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_production_events_productionOrderId_createdAt_idx_81e7ba11\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_events_productionOrderId_createdAt_idx_81e7ba11\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_production_events.erp_production_events_productionOrderId_idx_6ada58cc",
+    "label": "Create index \"erp_production_events_productionOrderId_idx_6ada58cc\" on \"erp_production_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_production_events_productionOrderId_idx_6ada58cc",
+        "table": "erp_production_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_production_events_productionOrderId_idx_6ada58cc\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_events_productionOrderId_idx_6ada58cc\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_production_events_productionOrderId_idx_6ada58cc\"",
+        "sql": "CREATE INDEX \"erp_production_events_productionOrderId_idx_6ada58cc\" ON \"public\".\"erp_production_events\" (\"productionOrderId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_production_events_productionOrderId_idx_6ada58cc\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_events_productionOrderId_idx_6ada58cc\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_production_orders.erp_production_orders_dueDate_idx_fb527616",
+    "label": "Create index \"erp_production_orders_dueDate_idx_fb527616\" on \"erp_production_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_production_orders_dueDate_idx_fb527616",
+        "table": "erp_production_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_production_orders_dueDate_idx_fb527616\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_orders_dueDate_idx_fb527616\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_production_orders_dueDate_idx_fb527616\"",
+        "sql": "CREATE INDEX \"erp_production_orders_dueDate_idx_fb527616\" ON \"public\".\"erp_production_orders\" (\"dueDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_production_orders_dueDate_idx_fb527616\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_orders_dueDate_idx_fb527616\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_production_orders.erp_production_orders_productId_idx_5858600a",
+    "label": "Create index \"erp_production_orders_productId_idx_5858600a\" on \"erp_production_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_production_orders_productId_idx_5858600a",
+        "table": "erp_production_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_production_orders_productId_idx_5858600a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_orders_productId_idx_5858600a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_production_orders_productId_idx_5858600a\"",
+        "sql": "CREATE INDEX \"erp_production_orders_productId_idx_5858600a\" ON \"public\".\"erp_production_orders\" (\"productId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_production_orders_productId_idx_5858600a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_orders_productId_idx_5858600a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_production_orders.erp_production_orders_salesOrderId_idx_0f1a116c",
+    "label": "Create index \"erp_production_orders_salesOrderId_idx_0f1a116c\" on \"erp_production_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_production_orders_salesOrderId_idx_0f1a116c",
+        "table": "erp_production_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_production_orders_salesOrderId_idx_0f1a116c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_orders_salesOrderId_idx_0f1a116c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_production_orders_salesOrderId_idx_0f1a116c\"",
+        "sql": "CREATE INDEX \"erp_production_orders_salesOrderId_idx_0f1a116c\" ON \"public\".\"erp_production_orders\" (\"salesOrderId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_production_orders_salesOrderId_idx_0f1a116c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_orders_salesOrderId_idx_0f1a116c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_production_orders.erp_production_orders_status_idx_e98638ab",
+    "label": "Create index \"erp_production_orders_status_idx_e98638ab\" on \"erp_production_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_production_orders_status_idx_e98638ab",
+        "table": "erp_production_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_production_orders_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_orders_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_production_orders_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"erp_production_orders_status_idx_e98638ab\" ON \"public\".\"erp_production_orders\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_production_orders_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_orders_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_production_stage_runs.erp_production_stage_runs_stageId_idx_43a99835",
+    "label": "Create index \"erp_production_stage_runs_stageId_idx_43a99835\" on \"erp_production_stage_runs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_production_stage_runs_stageId_idx_43a99835",
+        "table": "erp_production_stage_runs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_production_stage_runs_stageId_idx_43a99835\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_stage_runs_stageId_idx_43a99835\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_production_stage_runs_stageId_idx_43a99835\"",
+        "sql": "CREATE INDEX \"erp_production_stage_runs_stageId_idx_43a99835\" ON \"public\".\"erp_production_stage_runs\" (\"stageId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_production_stage_runs_stageId_idx_43a99835\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_stage_runs_stageId_idx_43a99835\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_production_stages.erp_production_stages_productionOrderId_idx_6ada58cc",
+    "label": "Create index \"erp_production_stages_productionOrderId_idx_6ada58cc\" on \"erp_production_stages\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_production_stages_productionOrderId_idx_6ada58cc",
+        "table": "erp_production_stages"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_production_stages_productionOrderId_idx_6ada58cc\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_stages_productionOrderId_idx_6ada58cc\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_production_stages_productionOrderId_idx_6ada58cc\"",
+        "sql": "CREATE INDEX \"erp_production_stages_productionOrderId_idx_6ada58cc\" ON \"public\".\"erp_production_stages\" (\"productionOrderId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_production_stages_productionOrderId_idx_6ada58cc\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_stages_productionOrderId_idx_6ada58cc\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_production_events.erp_production_events_productionOrderId_fkey",
+    "label": "Add foreign key \"erp_production_events_productionOrderId_fkey\" on \"erp_production_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_production_events_productionOrderId_fkey",
+        "table": "erp_production_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_production_events_productionOrderId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_events_productionOrderId_fkey",
+          "public",
+          "\"public\".\"erp_production_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_production_events_productionOrderId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_production_events\"\nADD CONSTRAINT \"erp_production_events_productionOrderId_fkey\"\nFOREIGN KEY (\"productionOrderId\")\nREFERENCES \"public\".\"erp_production_orders\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_production_events_productionOrderId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_events_productionOrderId_fkey",
+          "public",
+          "\"public\".\"erp_production_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_production_orders.erp_production_orders_productId_fkey",
+    "label": "Add foreign key \"erp_production_orders_productId_fkey\" on \"erp_production_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_production_orders_productId_fkey",
+        "table": "erp_production_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_production_orders_productId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_orders_productId_fkey",
+          "public",
+          "\"public\".\"erp_production_orders\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_production_orders_productId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_production_orders\"\nADD CONSTRAINT \"erp_production_orders_productId_fkey\"\nFOREIGN KEY (\"productId\")\nREFERENCES \"public\".\"erp_products\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_production_orders_productId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_orders_productId_fkey",
+          "public",
+          "\"public\".\"erp_production_orders\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_production_stage_runs.erp_production_stage_runs_stageId_fkey",
+    "label": "Add foreign key \"erp_production_stage_runs_stageId_fkey\" on \"erp_production_stage_runs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_production_stage_runs_stageId_fkey",
+        "table": "erp_production_stage_runs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_production_stage_runs_stageId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_stage_runs_stageId_fkey",
+          "public",
+          "\"public\".\"erp_production_stage_runs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_production_stage_runs_stageId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_production_stage_runs\"\nADD CONSTRAINT \"erp_production_stage_runs_stageId_fkey\"\nFOREIGN KEY (\"stageId\")\nREFERENCES \"public\".\"erp_production_stages\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_production_stage_runs_stageId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_stage_runs_stageId_fkey",
+          "public",
+          "\"public\".\"erp_production_stage_runs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_production_stages.erp_production_stages_productionOrderId_fkey",
+    "label": "Add foreign key \"erp_production_stages_productionOrderId_fkey\" on \"erp_production_stages\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_production_stages_productionOrderId_fkey",
+        "table": "erp_production_stages"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_production_stages_productionOrderId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_stages_productionOrderId_fkey",
+          "public",
+          "\"public\".\"erp_production_stages\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_production_stages_productionOrderId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_production_stages\"\nADD CONSTRAINT \"erp_production_stages_productionOrderId_fkey\"\nFOREIGN KEY (\"productionOrderId\")\nREFERENCES \"public\".\"erp_production_orders\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_production_stages_productionOrderId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_stages_productionOrderId_fkey",
+          "public",
+          "\"public\".\"erp_production_stages\""
+        ]
+      }
+    ]
+  }
+]

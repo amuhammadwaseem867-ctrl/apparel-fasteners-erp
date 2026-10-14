@@ -182,6 +182,7 @@ model Product {
   bomComponentLines BomLine[]
   mrpRequirements   MrpRequirement[]
   mrpPlannedOrders  MrpPlannedOrder[]
+  productionOrders  ProductionOrder[]
 
   @@index([name])
   @@index([category])
@@ -527,4 +528,123 @@ model MrpPlannedOrder {
   @@check(expression: "\"orderType\" IN ('MAKE', 'BUY')", name: "erp_mrp_planned_orders_type")
   @@check(expression: "\"status\" IN ('SUGGESTED', 'CONFIRMED', 'CANCELLED')", name: "erp_mrp_planned_orders_status")
   @@map("erp_mrp_planned_orders")
+}
+
+
+// ---------------------------------------------------------------------------
+// Production (Phase 5): production orders and the nine-stage workflow.
+//
+// Quantity rule per stage (all in the production order's unit):
+//   received  = order quantity (stage 1) or accepted output of the
+//               previous stage
+//   processed = accepted + rejected + wastage + rework   (CHECK)
+//   available = received + rework - processed            (never < 0)
+// Rework units return to the same stage's queue. A stage completes only
+// when the previous stage is complete and nothing is left in its queue.
+// Stage runs and events are append-only history.
+// ---------------------------------------------------------------------------
+
+model ProductionOrder {
+  id               Uuid               @id @default(uuid())
+  orderNumber      String             @unique
+  productId        Uuid
+  quantity         Decimal
+  unit             String
+  salesOrderId     Uuid?
+  salesOrderLineId Uuid?
+  plannedOrderId   Uuid?              @unique
+  bomId            Uuid?
+  bomRevision      Int?
+  priority         String             @default("NORMAL")
+  status           String             @default("PLANNED")
+  holdFromStatus   String?
+  currentStage     String?
+  dueDate          String?
+  notes            String?
+  createdBy        Uuid
+  createdAt        TimestamptzString  @default(now())
+  updatedAt        TimestamptzString  @default(now())
+  completedAt      TimestamptzString?
+
+  product Product           @relation(fields: [productId], references: [id], onDelete: Restrict)
+  stages  ProductionStage[]
+  events  ProductionEvent[]
+
+  @@index([status])
+  @@index([salesOrderId])
+  @@index([dueDate])
+  @@check(expression: "\"quantity\" > 0", name: "erp_production_orders_quantity_positive")
+  @@check(expression: "\"status\" IN ('PLANNED', 'RELEASED', 'IN_PROGRESS', 'ON_HOLD', 'COMPLETED', 'CANCELLED')", name: "erp_production_orders_status")
+  @@check(expression: "\"priority\" IN ('LOW', 'NORMAL', 'HIGH', 'URGENT')", name: "erp_production_orders_priority")
+  @@map("erp_production_orders")
+}
+
+model ProductionStage {
+  id                Uuid               @id @default(uuid())
+  productionOrderId Uuid
+  stageKey          String
+  sequence          Int
+  status            String             @default("PENDING")
+  processedQuantity Decimal            @default(0)
+  acceptedQuantity  Decimal            @default(0)
+  rejectedQuantity  Decimal            @default(0)
+  wastageQuantity   Decimal            @default(0)
+  reworkQuantity    Decimal            @default(0)
+  department        String?
+  responsibleName   String?
+  startedAt         TimestamptzString?
+  completedAt       TimestamptzString?
+  updatedAt         TimestamptzString  @default(now())
+
+  productionOrder ProductionOrder      @relation(fields: [productionOrderId], references: [id], onDelete: Restrict)
+  runs            ProductionStageRun[]
+
+  @@unique([productionOrderId, stageKey])
+  @@unique([productionOrderId, sequence])
+  @@check(expression: "\"sequence\" BETWEEN 1 AND 9", name: "erp_production_stages_sequence")
+  @@check(expression: "\"status\" IN ('PENDING', 'IN_PROGRESS', 'COMPLETED')", name: "erp_production_stages_status")
+  @@check(expression: "\"acceptedQuantity\" >= 0 AND \"rejectedQuantity\" >= 0 AND \"wastageQuantity\" >= 0 AND \"reworkQuantity\" >= 0", name: "erp_production_stages_nonnegative")
+  @@check(expression: "\"processedQuantity\" = \"acceptedQuantity\" + \"rejectedQuantity\" + \"wastageQuantity\" + \"reworkQuantity\"", name: "erp_production_stages_balance")
+  @@map("erp_production_stages")
+}
+
+model ProductionStageRun {
+  id               Uuid              @id @default(uuid())
+  stageId          Uuid
+  runNo            Int
+  inputQuantity    Decimal
+  acceptedQuantity Decimal
+  rejectedQuantity Decimal           @default(0)
+  wastageQuantity  Decimal           @default(0)
+  reworkQuantity   Decimal           @default(0)
+  operatorName     String?
+  workstation      String?
+  remarks          String?
+  idempotencyKey   String            @unique
+  recordedBy       Uuid
+  recordedAt       TimestamptzString @default(now())
+
+  stage ProductionStage @relation(fields: [stageId], references: [id], onDelete: Restrict)
+
+  @@unique([stageId, runNo])
+  @@check(expression: "\"inputQuantity\" > 0 AND \"acceptedQuantity\" >= 0 AND \"rejectedQuantity\" >= 0 AND \"wastageQuantity\" >= 0 AND \"reworkQuantity\" >= 0", name: "erp_production_stage_runs_quantities")
+  @@check(expression: "\"inputQuantity\" = \"acceptedQuantity\" + \"rejectedQuantity\" + \"wastageQuantity\" + \"reworkQuantity\"", name: "erp_production_stage_runs_balance")
+  @@map("erp_production_stage_runs")
+}
+
+model ProductionEvent {
+  id                Uuid              @id @default(uuid())
+  productionOrderId Uuid
+  stageKey          String?
+  eventType         String
+  fromValue         String?
+  toValue           String?
+  details           String?
+  actorId           Uuid
+  createdAt         TimestamptzString @default(now())
+
+  productionOrder ProductionOrder @relation(fields: [productionOrderId], references: [id], onDelete: Restrict)
+
+  @@index([productionOrderId, createdAt])
+  @@map("erp_production_events")
 }
