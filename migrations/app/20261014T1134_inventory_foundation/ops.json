@@ -1,0 +1,1907 @@
+[
+  {
+    "id": "table.erp_document_sequences",
+    "label": "Create table \"erp_document_sequences\"",
+    "summary": "Creates table \"erp_document_sequences\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_document_sequences"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_document_sequences\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_document_sequences\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_document_sequences\"",
+        "sql": "CREATE TABLE \"public\".\"erp_document_sequences\" (\n  \"key\" text NOT NULL,\n  \"nextValue\" int4 DEFAULT 1 NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"key\"),\n  CONSTRAINT \"erp_document_sequences_positive_bbe83fe1\" CHECK (\"nextValue\" >= 1)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_document_sequences\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_document_sequences\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_stock_balances",
+    "label": "Create table \"erp_stock_balances\"",
+    "summary": "Creates table \"erp_stock_balances\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_stock_balances"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_stock_balances\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_balances\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_stock_balances\"",
+        "sql": "CREATE TABLE \"public\".\"erp_stock_balances\" (\n  \"id\" uuid NOT NULL,\n  \"locationId\" uuid NOT NULL,\n  \"onHand\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"productId\" uuid NOT NULL,\n  \"qualityHold\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"reserved\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_stock_balances_committed_within_on_hand_166a2f1f\" CHECK (\"reserved\" + \"qualityHold\" <= \"onHand\"),\n  CONSTRAINT \"erp_stock_balances_nonnegative_222ff375\" CHECK (\"onHand\" >= 0 AND \"reserved\" >= 0 AND \"qualityHold\" >= 0)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_stock_balances\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_balances\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_stock_documents",
+    "label": "Create table \"erp_stock_documents\"",
+    "summary": "Creates table \"erp_stock_documents\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_stock_documents"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_stock_documents\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_documents\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_stock_documents\"",
+        "sql": "CREATE TABLE \"public\".\"erp_stock_documents\" (\n  \"createdBy\" uuid NOT NULL,\n  \"documentNumber\" text NOT NULL,\n  \"documentType\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"notes\" text,\n  \"postedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"reason\" text,\n  \"reference\" text,\n  \"sourceId\" text,\n  \"sourceType\" text,\n  \"status\" text DEFAULT 'POSTED' NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_stock_documents\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_documents\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_stock_movements",
+    "label": "Create table \"erp_stock_movements\"",
+    "summary": "Creates table \"erp_stock_movements\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_stock_movements"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_stock_movements\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_movements\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_stock_movements\"",
+        "sql": "CREATE TABLE \"public\".\"erp_stock_movements\" (\n  \"balanceAfter\" numeric NOT NULL,\n  \"bucket\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"documentId\" uuid NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"lineNo\" int4 NOT NULL,\n  \"locationId\" uuid NOT NULL,\n  \"movementType\" text NOT NULL,\n  \"productId\" uuid NOT NULL,\n  \"quantityDelta\" numeric NOT NULL,\n  \"reservationId\" uuid,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_stock_movements_bucket_14b4945d\" CHECK (\"bucket\" IN ('ON_HAND', 'RESERVED', 'QUALITY_HOLD')),\n  CONSTRAINT \"erp_stock_movements_nonzero_db56c395\" CHECK (\"quantityDelta\" <> 0)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_stock_movements\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_movements\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_stock_reservations",
+    "label": "Create table \"erp_stock_reservations\"",
+    "summary": "Creates table \"erp_stock_reservations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_stock_reservations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_stock_reservations\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_reservations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_stock_reservations\"",
+        "sql": "CREATE TABLE \"public\".\"erp_stock_reservations\" (\n  \"consumedQuantity\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"locationId\" uuid NOT NULL,\n  \"notes\" text,\n  \"productId\" uuid NOT NULL,\n  \"quantity\" numeric NOT NULL,\n  \"releasedQuantity\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"salesOrderId\" uuid,\n  \"salesOrderLineId\" uuid,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_stock_reservations_quantities_f930339d\" CHECK (\"quantity\" > 0 AND \"consumedQuantity\" >= 0 AND \"releasedQuantity\" >= 0 AND \"consumedQuantity\" + \"releasedQuantity\" <= \"quantity\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_stock_reservations\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_reservations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_storage_locations",
+    "label": "Create table \"erp_storage_locations\"",
+    "summary": "Creates table \"erp_storage_locations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_storage_locations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_storage_locations\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_storage_locations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_storage_locations\"",
+        "sql": "CREATE TABLE \"public\".\"erp_storage_locations\" (\n  \"code\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"name\" text NOT NULL,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"warehouseId\" uuid NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_storage_locations\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_storage_locations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_warehouses",
+    "label": "Create table \"erp_warehouses\"",
+    "summary": "Creates table \"erp_warehouses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_warehouses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_warehouses\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_warehouses\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_warehouses\"",
+        "sql": "CREATE TABLE \"public\".\"erp_warehouses\" (\n  \"address\" text,\n  \"code\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"name\" text NOT NULL,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"warehouseType\" text DEFAULT 'GENERAL' NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_warehouses\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_warehouses\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_products.barcode",
+    "label": "Add column \"barcode\" to \"erp_products\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "barcode",
+        "table": "erp_products"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"barcode\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_products",
+          "barcode"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"barcode\"",
+        "sql": "ALTER TABLE \"public\".\"erp_products\" ADD COLUMN \"barcode\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"barcode\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_products",
+          "barcode"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_products.color",
+    "label": "Add column \"color\" to \"erp_products\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "color",
+        "table": "erp_products"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"color\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_products",
+          "color"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"color\"",
+        "sql": "ALTER TABLE \"public\".\"erp_products\" ADD COLUMN \"color\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"color\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_products",
+          "color"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_products.finish",
+    "label": "Add column \"finish\" to \"erp_products\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "finish",
+        "table": "erp_products"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"finish\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_products",
+          "finish"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"finish\"",
+        "sql": "ALTER TABLE \"public\".\"erp_products\" ADD COLUMN \"finish\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"finish\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_products",
+          "finish"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_products.itemType",
+    "label": "Add column \"itemType\" to \"erp_products\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "itemType",
+        "table": "erp_products"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"itemType\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_products",
+          "itemType"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"itemType\"",
+        "sql": "ALTER TABLE \"public\".\"erp_products\" ADD COLUMN \"itemType\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"itemType\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_products",
+          "itemType"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_products.logoType",
+    "label": "Add column \"logoType\" to \"erp_products\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "logoType",
+        "table": "erp_products"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"logoType\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_products",
+          "logoType"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"logoType\"",
+        "sql": "ALTER TABLE \"public\".\"erp_products\" ADD COLUMN \"logoType\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"logoType\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_products",
+          "logoType"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_products.material",
+    "label": "Add column \"material\" to \"erp_products\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "material",
+        "table": "erp_products"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"material\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_products",
+          "material"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"material\"",
+        "sql": "ALTER TABLE \"public\".\"erp_products\" ADD COLUMN \"material\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"material\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_products",
+          "material"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_products.minimumStock",
+    "label": "Add column \"minimumStock\" to \"erp_products\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "minimumStock",
+        "table": "erp_products"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"minimumStock\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_products",
+          "minimumStock"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"minimumStock\"",
+        "sql": "ALTER TABLE \"public\".\"erp_products\" ADD COLUMN \"minimumStock\" numeric DEFAULT '0'::numeric NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"minimumStock\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_products",
+          "minimumStock"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_products.size",
+    "label": "Add column \"size\" to \"erp_products\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "size",
+        "table": "erp_products"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"size\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_products",
+          "size"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"size\"",
+        "sql": "ALTER TABLE \"public\".\"erp_products\" ADD COLUMN \"size\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"size\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_products",
+          "size"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.erp_products.erp_products_minimum_stock_nonnegative_99e3bb6c",
+    "label": "Add check constraint \"erp_products_minimum_stock_nonnegative_99e3bb6c\" on \"erp_products\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "erp_products_minimum_stock_nonnegative_99e3bb6c",
+        "table": "erp_products"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_products_minimum_stock_nonnegative_99e3bb6c\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_products_minimum_stock_nonnegative_99e3bb6c",
+          "public",
+          "\"public\".\"erp_products\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"erp_products_minimum_stock_nonnegative_99e3bb6c\"",
+        "sql": "ALTER TABLE \"public\".\"erp_products\" ADD CONSTRAINT \"erp_products_minimum_stock_nonnegative_99e3bb6c\" CHECK (\"minimumStock\" >= 0)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_products_minimum_stock_nonnegative_99e3bb6c\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_products_minimum_stock_nonnegative_99e3bb6c",
+          "public",
+          "\"public\".\"erp_products\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_products.erp_products_barcode_key",
+    "label": "Add unique constraint on \"erp_products\" (barcode)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_products_barcode_key",
+        "table": "erp_products"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_products_barcode_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_products_barcode_key",
+          "public",
+          "\"public\".\"erp_products\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_products_barcode_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_products\" ADD CONSTRAINT \"erp_products_barcode_key\" UNIQUE (\"barcode\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_products_barcode_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_products_barcode_key",
+          "public",
+          "\"public\".\"erp_products\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_stock_balances.erp_stock_balances_productId_locationId_key",
+    "label": "Add unique constraint on \"erp_stock_balances\" (productId, locationId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_stock_balances_productId_locationId_key",
+        "table": "erp_stock_balances"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_stock_balances_productId_locationId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_balances_productId_locationId_key",
+          "public",
+          "\"public\".\"erp_stock_balances\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_stock_balances_productId_locationId_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_stock_balances\" ADD CONSTRAINT \"erp_stock_balances_productId_locationId_key\" UNIQUE (\"productId\", \"locationId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_stock_balances_productId_locationId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_balances_productId_locationId_key",
+          "public",
+          "\"public\".\"erp_stock_balances\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_stock_documents.erp_stock_documents_documentNumber_key",
+    "label": "Add unique constraint on \"erp_stock_documents\" (documentNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_stock_documents_documentNumber_key",
+        "table": "erp_stock_documents"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_stock_documents_documentNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_documents_documentNumber_key",
+          "public",
+          "\"public\".\"erp_stock_documents\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_stock_documents_documentNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_stock_documents\" ADD CONSTRAINT \"erp_stock_documents_documentNumber_key\" UNIQUE (\"documentNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_stock_documents_documentNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_documents_documentNumber_key",
+          "public",
+          "\"public\".\"erp_stock_documents\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_stock_documents.erp_stock_documents_idempotencyKey_key",
+    "label": "Add unique constraint on \"erp_stock_documents\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_stock_documents_idempotencyKey_key",
+        "table": "erp_stock_documents"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_stock_documents_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_documents_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_stock_documents\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_stock_documents_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_stock_documents\" ADD CONSTRAINT \"erp_stock_documents_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_stock_documents_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_documents_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_stock_documents\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_stock_movements.erp_stock_movements_documentId_lineNo_bucket_key",
+    "label": "Add unique constraint on \"erp_stock_movements\" (documentId, lineNo, bucket)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_stock_movements_documentId_lineNo_bucket_key",
+        "table": "erp_stock_movements"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_stock_movements_documentId_lineNo_bucket_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_movements_documentId_lineNo_bucket_key",
+          "public",
+          "\"public\".\"erp_stock_movements\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_stock_movements_documentId_lineNo_bucket_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_stock_movements\" ADD CONSTRAINT \"erp_stock_movements_documentId_lineNo_bucket_key\" UNIQUE (\"documentId\", \"lineNo\", \"bucket\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_stock_movements_documentId_lineNo_bucket_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_movements_documentId_lineNo_bucket_key",
+          "public",
+          "\"public\".\"erp_stock_movements\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_storage_locations.erp_storage_locations_warehouseId_code_key",
+    "label": "Add unique constraint on \"erp_storage_locations\" (warehouseId, code)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_storage_locations_warehouseId_code_key",
+        "table": "erp_storage_locations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_storage_locations_warehouseId_code_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_storage_locations_warehouseId_code_key",
+          "public",
+          "\"public\".\"erp_storage_locations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_storage_locations_warehouseId_code_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_storage_locations\" ADD CONSTRAINT \"erp_storage_locations_warehouseId_code_key\" UNIQUE (\"warehouseId\", \"code\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_storage_locations_warehouseId_code_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_storage_locations_warehouseId_code_key",
+          "public",
+          "\"public\".\"erp_storage_locations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_warehouses.erp_warehouses_code_key",
+    "label": "Add unique constraint on \"erp_warehouses\" (code)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_warehouses_code_key",
+        "table": "erp_warehouses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_warehouses_code_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_warehouses_code_key",
+          "public",
+          "\"public\".\"erp_warehouses\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_warehouses_code_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_warehouses\" ADD CONSTRAINT \"erp_warehouses_code_key\" UNIQUE (\"code\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_warehouses_code_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_warehouses_code_key",
+          "public",
+          "\"public\".\"erp_warehouses\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_stock_balances.erp_stock_balances_locationId_idx_7aae3038",
+    "label": "Create index \"erp_stock_balances_locationId_idx_7aae3038\" on \"erp_stock_balances\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_stock_balances_locationId_idx_7aae3038",
+        "table": "erp_stock_balances"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_stock_balances_locationId_idx_7aae3038\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_balances_locationId_idx_7aae3038\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_stock_balances_locationId_idx_7aae3038\"",
+        "sql": "CREATE INDEX \"erp_stock_balances_locationId_idx_7aae3038\" ON \"public\".\"erp_stock_balances\" (\"locationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_stock_balances_locationId_idx_7aae3038\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_balances_locationId_idx_7aae3038\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_stock_balances.erp_stock_balances_productId_idx_5858600a",
+    "label": "Create index \"erp_stock_balances_productId_idx_5858600a\" on \"erp_stock_balances\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_stock_balances_productId_idx_5858600a",
+        "table": "erp_stock_balances"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_stock_balances_productId_idx_5858600a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_balances_productId_idx_5858600a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_stock_balances_productId_idx_5858600a\"",
+        "sql": "CREATE INDEX \"erp_stock_balances_productId_idx_5858600a\" ON \"public\".\"erp_stock_balances\" (\"productId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_stock_balances_productId_idx_5858600a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_balances_productId_idx_5858600a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_stock_documents.erp_stock_documents_documentType_idx_e4b68595",
+    "label": "Create index \"erp_stock_documents_documentType_idx_e4b68595\" on \"erp_stock_documents\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_stock_documents_documentType_idx_e4b68595",
+        "table": "erp_stock_documents"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_stock_documents_documentType_idx_e4b68595\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_documents_documentType_idx_e4b68595\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_stock_documents_documentType_idx_e4b68595\"",
+        "sql": "CREATE INDEX \"erp_stock_documents_documentType_idx_e4b68595\" ON \"public\".\"erp_stock_documents\" (\"documentType\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_stock_documents_documentType_idx_e4b68595\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_documents_documentType_idx_e4b68595\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_stock_documents.erp_stock_documents_postedAt_idx_5420e095",
+    "label": "Create index \"erp_stock_documents_postedAt_idx_5420e095\" on \"erp_stock_documents\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_stock_documents_postedAt_idx_5420e095",
+        "table": "erp_stock_documents"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_stock_documents_postedAt_idx_5420e095\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_documents_postedAt_idx_5420e095\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_stock_documents_postedAt_idx_5420e095\"",
+        "sql": "CREATE INDEX \"erp_stock_documents_postedAt_idx_5420e095\" ON \"public\".\"erp_stock_documents\" (\"postedAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_stock_documents_postedAt_idx_5420e095\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_documents_postedAt_idx_5420e095\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_stock_documents.erp_stock_documents_sourceType_sourceId_idx_9b8c3bc3",
+    "label": "Create index \"erp_stock_documents_sourceType_sourceId_idx_9b8c3bc3\" on \"erp_stock_documents\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_stock_documents_sourceType_sourceId_idx_9b8c3bc3",
+        "table": "erp_stock_documents"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_stock_documents_sourceType_sourceId_idx_9b8c3bc3\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_documents_sourceType_sourceId_idx_9b8c3bc3\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_stock_documents_sourceType_sourceId_idx_9b8c3bc3\"",
+        "sql": "CREATE INDEX \"erp_stock_documents_sourceType_sourceId_idx_9b8c3bc3\" ON \"public\".\"erp_stock_documents\" (\"sourceType\", \"sourceId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_stock_documents_sourceType_sourceId_idx_9b8c3bc3\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_documents_sourceType_sourceId_idx_9b8c3bc3\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_stock_movements.erp_stock_movements_documentId_idx_825ef746",
+    "label": "Create index \"erp_stock_movements_documentId_idx_825ef746\" on \"erp_stock_movements\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_stock_movements_documentId_idx_825ef746",
+        "table": "erp_stock_movements"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_stock_movements_documentId_idx_825ef746\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_movements_documentId_idx_825ef746\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_stock_movements_documentId_idx_825ef746\"",
+        "sql": "CREATE INDEX \"erp_stock_movements_documentId_idx_825ef746\" ON \"public\".\"erp_stock_movements\" (\"documentId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_stock_movements_documentId_idx_825ef746\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_movements_documentId_idx_825ef746\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_stock_movements.erp_stock_movements_locationId_idx_7aae3038",
+    "label": "Create index \"erp_stock_movements_locationId_idx_7aae3038\" on \"erp_stock_movements\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_stock_movements_locationId_idx_7aae3038",
+        "table": "erp_stock_movements"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_stock_movements_locationId_idx_7aae3038\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_movements_locationId_idx_7aae3038\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_stock_movements_locationId_idx_7aae3038\"",
+        "sql": "CREATE INDEX \"erp_stock_movements_locationId_idx_7aae3038\" ON \"public\".\"erp_stock_movements\" (\"locationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_stock_movements_locationId_idx_7aae3038\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_movements_locationId_idx_7aae3038\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_stock_movements.erp_stock_movements_movementType_idx_5c6c79d2",
+    "label": "Create index \"erp_stock_movements_movementType_idx_5c6c79d2\" on \"erp_stock_movements\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_stock_movements_movementType_idx_5c6c79d2",
+        "table": "erp_stock_movements"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_stock_movements_movementType_idx_5c6c79d2\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_movements_movementType_idx_5c6c79d2\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_stock_movements_movementType_idx_5c6c79d2\"",
+        "sql": "CREATE INDEX \"erp_stock_movements_movementType_idx_5c6c79d2\" ON \"public\".\"erp_stock_movements\" (\"movementType\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_stock_movements_movementType_idx_5c6c79d2\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_movements_movementType_idx_5c6c79d2\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_stock_movements.erp_stock_movements_productId_createdAt_idx_58d1a09b",
+    "label": "Create index \"erp_stock_movements_productId_createdAt_idx_58d1a09b\" on \"erp_stock_movements\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_stock_movements_productId_createdAt_idx_58d1a09b",
+        "table": "erp_stock_movements"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_stock_movements_productId_createdAt_idx_58d1a09b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_movements_productId_createdAt_idx_58d1a09b\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_stock_movements_productId_createdAt_idx_58d1a09b\"",
+        "sql": "CREATE INDEX \"erp_stock_movements_productId_createdAt_idx_58d1a09b\" ON \"public\".\"erp_stock_movements\" (\"productId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_stock_movements_productId_createdAt_idx_58d1a09b\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_movements_productId_createdAt_idx_58d1a09b\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_stock_movements.erp_stock_movements_productId_idx_5858600a",
+    "label": "Create index \"erp_stock_movements_productId_idx_5858600a\" on \"erp_stock_movements\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_stock_movements_productId_idx_5858600a",
+        "table": "erp_stock_movements"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_stock_movements_productId_idx_5858600a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_movements_productId_idx_5858600a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_stock_movements_productId_idx_5858600a\"",
+        "sql": "CREATE INDEX \"erp_stock_movements_productId_idx_5858600a\" ON \"public\".\"erp_stock_movements\" (\"productId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_stock_movements_productId_idx_5858600a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_movements_productId_idx_5858600a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_stock_reservations.erp_stock_reservations_locationId_idx_7aae3038",
+    "label": "Create index \"erp_stock_reservations_locationId_idx_7aae3038\" on \"erp_stock_reservations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_stock_reservations_locationId_idx_7aae3038",
+        "table": "erp_stock_reservations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_stock_reservations_locationId_idx_7aae3038\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_reservations_locationId_idx_7aae3038\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_stock_reservations_locationId_idx_7aae3038\"",
+        "sql": "CREATE INDEX \"erp_stock_reservations_locationId_idx_7aae3038\" ON \"public\".\"erp_stock_reservations\" (\"locationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_stock_reservations_locationId_idx_7aae3038\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_reservations_locationId_idx_7aae3038\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_stock_reservations.erp_stock_reservations_productId_idx_5858600a",
+    "label": "Create index \"erp_stock_reservations_productId_idx_5858600a\" on \"erp_stock_reservations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_stock_reservations_productId_idx_5858600a",
+        "table": "erp_stock_reservations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_stock_reservations_productId_idx_5858600a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_reservations_productId_idx_5858600a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_stock_reservations_productId_idx_5858600a\"",
+        "sql": "CREATE INDEX \"erp_stock_reservations_productId_idx_5858600a\" ON \"public\".\"erp_stock_reservations\" (\"productId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_stock_reservations_productId_idx_5858600a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_reservations_productId_idx_5858600a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_stock_reservations.erp_stock_reservations_salesOrderId_idx_0f1a116c",
+    "label": "Create index \"erp_stock_reservations_salesOrderId_idx_0f1a116c\" on \"erp_stock_reservations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_stock_reservations_salesOrderId_idx_0f1a116c",
+        "table": "erp_stock_reservations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_stock_reservations_salesOrderId_idx_0f1a116c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_reservations_salesOrderId_idx_0f1a116c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_stock_reservations_salesOrderId_idx_0f1a116c\"",
+        "sql": "CREATE INDEX \"erp_stock_reservations_salesOrderId_idx_0f1a116c\" ON \"public\".\"erp_stock_reservations\" (\"salesOrderId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_stock_reservations_salesOrderId_idx_0f1a116c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_reservations_salesOrderId_idx_0f1a116c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_stock_reservations.erp_stock_reservations_status_idx_e98638ab",
+    "label": "Create index \"erp_stock_reservations_status_idx_e98638ab\" on \"erp_stock_reservations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_stock_reservations_status_idx_e98638ab",
+        "table": "erp_stock_reservations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_stock_reservations_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_reservations_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_stock_reservations_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"erp_stock_reservations_status_idx_e98638ab\" ON \"public\".\"erp_stock_reservations\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_stock_reservations_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_stock_reservations_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_storage_locations.erp_storage_locations_warehouseId_idx_8ff93e70",
+    "label": "Create index \"erp_storage_locations_warehouseId_idx_8ff93e70\" on \"erp_storage_locations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_storage_locations_warehouseId_idx_8ff93e70",
+        "table": "erp_storage_locations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_storage_locations_warehouseId_idx_8ff93e70\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_storage_locations_warehouseId_idx_8ff93e70\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_storage_locations_warehouseId_idx_8ff93e70\"",
+        "sql": "CREATE INDEX \"erp_storage_locations_warehouseId_idx_8ff93e70\" ON \"public\".\"erp_storage_locations\" (\"warehouseId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_storage_locations_warehouseId_idx_8ff93e70\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_storage_locations_warehouseId_idx_8ff93e70\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_warehouses.erp_warehouses_status_idx_e98638ab",
+    "label": "Create index \"erp_warehouses_status_idx_e98638ab\" on \"erp_warehouses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_warehouses_status_idx_e98638ab",
+        "table": "erp_warehouses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_warehouses_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_warehouses_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_warehouses_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"erp_warehouses_status_idx_e98638ab\" ON \"public\".\"erp_warehouses\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_warehouses_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_warehouses_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_stock_balances.erp_stock_balances_productId_fkey",
+    "label": "Add foreign key \"erp_stock_balances_productId_fkey\" on \"erp_stock_balances\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_stock_balances_productId_fkey",
+        "table": "erp_stock_balances"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_stock_balances_productId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_balances_productId_fkey",
+          "public",
+          "\"public\".\"erp_stock_balances\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_stock_balances_productId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_stock_balances\"\nADD CONSTRAINT \"erp_stock_balances_productId_fkey\"\nFOREIGN KEY (\"productId\")\nREFERENCES \"public\".\"erp_products\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_stock_balances_productId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_balances_productId_fkey",
+          "public",
+          "\"public\".\"erp_stock_balances\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_stock_balances.erp_stock_balances_locationId_fkey",
+    "label": "Add foreign key \"erp_stock_balances_locationId_fkey\" on \"erp_stock_balances\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_stock_balances_locationId_fkey",
+        "table": "erp_stock_balances"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_stock_balances_locationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_balances_locationId_fkey",
+          "public",
+          "\"public\".\"erp_stock_balances\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_stock_balances_locationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_stock_balances\"\nADD CONSTRAINT \"erp_stock_balances_locationId_fkey\"\nFOREIGN KEY (\"locationId\")\nREFERENCES \"public\".\"erp_storage_locations\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_stock_balances_locationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_balances_locationId_fkey",
+          "public",
+          "\"public\".\"erp_stock_balances\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_stock_movements.erp_stock_movements_documentId_fkey",
+    "label": "Add foreign key \"erp_stock_movements_documentId_fkey\" on \"erp_stock_movements\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_stock_movements_documentId_fkey",
+        "table": "erp_stock_movements"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_stock_movements_documentId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_movements_documentId_fkey",
+          "public",
+          "\"public\".\"erp_stock_movements\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_stock_movements_documentId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_stock_movements\"\nADD CONSTRAINT \"erp_stock_movements_documentId_fkey\"\nFOREIGN KEY (\"documentId\")\nREFERENCES \"public\".\"erp_stock_documents\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_stock_movements_documentId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_movements_documentId_fkey",
+          "public",
+          "\"public\".\"erp_stock_movements\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_stock_movements.erp_stock_movements_productId_fkey",
+    "label": "Add foreign key \"erp_stock_movements_productId_fkey\" on \"erp_stock_movements\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_stock_movements_productId_fkey",
+        "table": "erp_stock_movements"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_stock_movements_productId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_movements_productId_fkey",
+          "public",
+          "\"public\".\"erp_stock_movements\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_stock_movements_productId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_stock_movements\"\nADD CONSTRAINT \"erp_stock_movements_productId_fkey\"\nFOREIGN KEY (\"productId\")\nREFERENCES \"public\".\"erp_products\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_stock_movements_productId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_movements_productId_fkey",
+          "public",
+          "\"public\".\"erp_stock_movements\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_stock_movements.erp_stock_movements_locationId_fkey",
+    "label": "Add foreign key \"erp_stock_movements_locationId_fkey\" on \"erp_stock_movements\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_stock_movements_locationId_fkey",
+        "table": "erp_stock_movements"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_stock_movements_locationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_movements_locationId_fkey",
+          "public",
+          "\"public\".\"erp_stock_movements\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_stock_movements_locationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_stock_movements\"\nADD CONSTRAINT \"erp_stock_movements_locationId_fkey\"\nFOREIGN KEY (\"locationId\")\nREFERENCES \"public\".\"erp_storage_locations\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_stock_movements_locationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_movements_locationId_fkey",
+          "public",
+          "\"public\".\"erp_stock_movements\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_stock_reservations.erp_stock_reservations_productId_fkey",
+    "label": "Add foreign key \"erp_stock_reservations_productId_fkey\" on \"erp_stock_reservations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_stock_reservations_productId_fkey",
+        "table": "erp_stock_reservations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_stock_reservations_productId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_reservations_productId_fkey",
+          "public",
+          "\"public\".\"erp_stock_reservations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_stock_reservations_productId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_stock_reservations\"\nADD CONSTRAINT \"erp_stock_reservations_productId_fkey\"\nFOREIGN KEY (\"productId\")\nREFERENCES \"public\".\"erp_products\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_stock_reservations_productId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_reservations_productId_fkey",
+          "public",
+          "\"public\".\"erp_stock_reservations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_stock_reservations.erp_stock_reservations_locationId_fkey",
+    "label": "Add foreign key \"erp_stock_reservations_locationId_fkey\" on \"erp_stock_reservations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_stock_reservations_locationId_fkey",
+        "table": "erp_stock_reservations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_stock_reservations_locationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_reservations_locationId_fkey",
+          "public",
+          "\"public\".\"erp_stock_reservations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_stock_reservations_locationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_stock_reservations\"\nADD CONSTRAINT \"erp_stock_reservations_locationId_fkey\"\nFOREIGN KEY (\"locationId\")\nREFERENCES \"public\".\"erp_storage_locations\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_stock_reservations_locationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_stock_reservations_locationId_fkey",
+          "public",
+          "\"public\".\"erp_stock_reservations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_storage_locations.erp_storage_locations_warehouseId_fkey",
+    "label": "Add foreign key \"erp_storage_locations_warehouseId_fkey\" on \"erp_storage_locations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_storage_locations_warehouseId_fkey",
+        "table": "erp_storage_locations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_storage_locations_warehouseId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_storage_locations_warehouseId_fkey",
+          "public",
+          "\"public\".\"erp_storage_locations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_storage_locations_warehouseId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_storage_locations\"\nADD CONSTRAINT \"erp_storage_locations_warehouseId_fkey\"\nFOREIGN KEY (\"warehouseId\")\nREFERENCES \"public\".\"erp_warehouses\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_storage_locations_warehouseId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_storage_locations_warehouseId_fkey",
+          "public",
+          "\"public\".\"erp_storage_locations\""
+        ]
+      }
+    ]
+  }
+]
