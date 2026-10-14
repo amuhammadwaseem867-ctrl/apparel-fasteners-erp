@@ -94,16 +94,24 @@ tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
 | 2026-10-14 | `c855e4b` | Isolated-database test runner (`npm run test:db`); auth/RBAC suite ported to Prisma 8 and passing. |
 | 2026-10-14 | `51a1cb3` | Inventory schema + migration `20261014T1134_inventory_foundation` (additive). |
 | 2026-10-14 | `eda771c` | Inventory services and API; sales status compare-and-set; reservation release on cancel. |
-| 2026-10-14 | (this commit) | Inventory UI connected; item master with catalogue coverage; printable stock slips. |
+| 2026-10-14 | `e94120e` | Inventory UI connected; item master with catalogue coverage; printable stock slips. |
+| 2026-10-14 | `65bb6e3` | Dashboard shows live inventory position. |
+| 2026-10-14 | `168ee97` | BOM/MRP schema + migration `20261014T1624_bom_mrp` (additive). |
+| 2026-10-14 | `010b97a` | MRP engine, BOM and MRP services, planning API. |
+| 2026-10-14 | (this commit) | BOM and MRP screens connected. |
 
 ## Next step
 
-Phase 3 (item master + inventory) is complete and verified on the isolated
-test database. Next: Phase 4, BOM authoring + MRP. The design is in D-004.
-It plans tables for BOM header, revision and line, and for MRP run, demand,
-requirement and planned order, reusing the decimal and ledger patterns.
+Phases 3 and 4 are complete and verified on the isolated test database.
+Next: Phase 5, production orders and the nine-stage workflow (D-005 quantity
+rule). This includes production orders created from confirmed MAKE planned
+orders, stage runs with input/accepted/rejected/wastage quantities, material
+issue against production orders through the stock ledger, and an
+append-only stage history.
 
 Owner actions still open: push the local `D:\` work (D-001), confirm
-sub-cent prices (D-012), supply company legal details (D-013), and approve
-applying `20261014T1134_inventory_foundation` to the live database after a
-verified backup. Nothing has been applied to any live database.
+sub-cent prices (D-012), supply company legal details (D-013), confirm the
+production permission mapping (D-019), and approve applying migrations
+`20261014T1134_inventory_foundation` and `20261014T1624_bom_mrp` to the live
+database after a verified backup. Nothing has been applied to any live
+database.

@@ -27,7 +27,7 @@ table and column are logged server-side, not returned to the client.
 - Per-instance memory remains a known limitation until a shared store exists
   (Phase 8, needs a table).
 
-## D-004: Scrap/yield convention for BOM (proposed, Phase 4)
+## D-004: Scrap/yield convention for BOM (implemented, Phase 4)
 
 Component scrap is a percentage on the component line:
 `gross = net × (1 + scrap%)`. It is applied exactly once, at explosion of that
@@ -178,3 +178,26 @@ serve as compare-and-set. Concurrency-sensitive transitions (stock buckets,
 reservations, sales status) use raw conditional `UPDATE ... RETURNING` via
 `db.raw.sql\`...\`.returnsRow(...).build()` (`.build()` is required). Multi-row
 deletes use `deleteAll()`.
+
+## D-019: BOM and MRP permissions (please confirm)
+
+No new permissions were seeded. Mapping: `production:view` to see BOMs and
+MRP runs; `production:create` to create or edit draft BOMs, create
+revisions, and run MRP; `production:update` to approve, activate or obsolete
+BOMs and to confirm or cancel planned orders. Admin roles have all of these.
+Production managers can therefore approve their own BOMs. If approval must
+be separated from authoring, a dedicated `bom:approve` permission can be
+added to the seed.
+
+## D-020: MRP scope and assumptions
+
+Each run stores its assumptions with its results:
+- Demand is approved-order catalogue lines within an optional horizon.
+- Delivered quantities are not subtracted, because there is no dispatch
+  module yet.
+- Supply is unreserved, non-held stock plus stock reserved for the
+  demanded orders. There are no scheduled receipts yet (no procurement).
+- Planned MAKE/BUY orders are suggestions. Confirming one records the
+  decision only (compare-and-set, audited). Converting confirmed orders
+  into production or purchase orders comes with those modules.
+- Runs are serialised by an advisory lock.

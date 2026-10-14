@@ -19,7 +19,9 @@ test("routes without a backend get a banner; connected routes do not", () => {
 
   assert.equal(getModuleAvailability("/quality/ncr")?.label, "Quality control");
   assert.equal(getModuleAvailability("/people-payroll/payroll")?.label, "People and payroll");
-  assert.equal(getModuleAvailability("/products/bom")?.label, "Bill of materials");
+  assert.equal(getModuleAvailability("/products/bom"), null, "BOM authoring is connected");
+  assert.equal(getModuleAvailability("/planning/mrp-runs"), null, "MRP is connected");
+  assert.equal(getModuleAvailability("/planning/capacity")?.label, "Capacity planning");
   assert.equal(getModuleAvailability("/administration/users")?.label, "Administration");
   assert.match(getModuleAvailability("/reports/orders")?.message, /Dashboard and Sales pages/);
   assert.equal(getModuleAvailability("/productionx"), null, "prefix must match a whole path segment");
