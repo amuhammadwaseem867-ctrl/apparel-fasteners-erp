@@ -69,6 +69,10 @@ test("dashboard view uses API values and never substitutes zeros for missing KPI
   assert.equal(formatAmount(view.kpis.draftSales), "100.00");
   assert.equal("totalSales" in view.kpis, false, "totalSales mixes cancelled value and is not shown");
   assert.deepEqual(view.unavailableModules, ["Inventory", "Production"]);
+  assert.equal(view.inventory, null, "no inventory block unless the API returns one");
+  const withStock = toDashboardView({ inventory: { itemCount: 3, trackedItemCount: 2, lowStockCount: 1, outOfStockCount: 0, totalsByUnit: [{ unit: "Pcs", onHand: "5" }] } });
+  assert.equal(withStock.inventory.lowStockCount, 1);
+  assert.equal(withStock.inventory.totalsByUnit[0].unit, "Pcs");
   assert.equal(view.isEmpty, false);
 });
 

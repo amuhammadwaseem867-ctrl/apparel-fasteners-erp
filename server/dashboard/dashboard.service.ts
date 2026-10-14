@@ -1,4 +1,5 @@
 import { db } from "../core/database/client";
+import { getStockSummary } from "../inventory/inventory.service";
 
 export type DashboardPeriod =
   | "today"
@@ -301,16 +302,31 @@ export async function getDashboard(
       createdAt: audit.createdAt,
     })),
 
+    // Counts and per-unit totals only; quantities in different units are
+    // never added together.
+    inventory: await inventorySnapshot(),
+
     modules: {
       customers: true,
       products: true,
       sales: true,
-      inventory: false,
+      inventory: true,
       procurement: false,
       production: false,
       quality: false,
       dispatch: false,
       finance: false,
     },
+  };
+}
+async function inventorySnapshot() {
+  const summary = await getStockSummary();
+
+  return {
+    itemCount: summary.itemCount,
+    trackedItemCount: summary.trackedItemCount,
+    lowStockCount: summary.lowStockCount,
+    outOfStockCount: summary.outOfStockCount,
+    totalsByUnit: summary.totalsByUnit,
   };
 }

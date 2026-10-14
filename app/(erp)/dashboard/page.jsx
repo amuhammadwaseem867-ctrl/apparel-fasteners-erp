@@ -130,7 +130,7 @@ export default function DashboardPage() {
           <h2>Command Center</h2>
 
           <p>
-            Sales orders, customers and products from the ERP database.
+            Sales orders, customers, products and inventory from the ERP database.
             {view?.period &&
               ` Period: ${view.period.dateFrom} to ${view.period.dateTo}.`}
           </p>
@@ -424,6 +424,43 @@ export default function DashboardPage() {
               </p>
             )}
           </section>
+
+          {view.inventory && (
+            <section className="dashboard__panel">
+              <div className="dashboard__panel-header">
+                <div>
+                  <span className="dashboard__panel-kicker">Inventory</span>
+                  <h3>Stock Position</h3>
+                </div>
+                <Link className="dashboard__text-button" href="/inventory">Open inventory</Link>
+              </div>
+              <div className="dashboard__stats" style={{ padding: 18, marginBottom: 0 }}>
+                <StatCard icon={Package} label="Items with stock records" value={formatCount(view.inventory.trackedItemCount)} note={`${formatCount(view.inventory.itemCount)} items in master`} />
+                <StatCard icon={AlertTriangle} label="Low stock" value={formatCount(view.inventory.lowStockCount)} note="available below minimum" tone="warning" />
+                <StatCard icon={Ban} label="Out of stock" value={formatCount(view.inventory.outOfStockCount)} note="nothing available" tone="danger" />
+              </div>
+              {view.inventory.totalsByUnit.length ? (
+                <div className="dashboard__table-wrap">
+                  <table className="dashboard__table">
+                    <thead><tr><th>Unit</th><th className="dashboard__num">On hand</th><th className="dashboard__num">Reserved</th><th className="dashboard__num">QC hold</th><th className="dashboard__num">Available</th></tr></thead>
+                    <tbody>
+                      {view.inventory.totalsByUnit.map((total) => (
+                        <tr key={total.unit}>
+                          <td>{total.unit}</td>
+                          <td className="dashboard__num">{total.onHand}</td>
+                          <td className="dashboard__num">{total.reserved}</td>
+                          <td className="dashboard__num">{total.qualityHold}</td>
+                          <td className="dashboard__num">{total.available}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="dashboard__panel-empty">No stock has been posted yet.</p>
+              )}
+            </section>
+          )}
 
           {view.unavailableModules.length > 0 && (
             <div className="dashboard__message">
