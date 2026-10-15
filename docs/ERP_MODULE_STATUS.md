@@ -31,7 +31,7 @@ committed repository.** Statuses below describe the committed code only.
 | Sales orders | `/api/sales/orders`, `/api/sales/orders/[id]` | `server/sales/*` | `erp_sales_orders`, `erp_sales_order_lines` (has `productId`) |
 | Dashboard | `/api/dashboard` | `server/dashboard/*` | reads the above |
 
-Migrations: `20261008T1419_migration` (base) → `20261014T1134_inventory_foundation` → `20261014T1624_bom_mrp` → `20261014T1640_production_stages` → `20261015T1506_quality_packing_dispatch` → `20261015T1605_invoicing_receivables` (all additive; applied and verified only on the isolated test database).
+Migrations: `20261008T1419_migration` (base) → `20261014T1134_inventory_foundation` → `20261014T1624_bom_mrp` → `20261014T1640_production_stages` → `20261015T1506_quality_packing_dispatch` → `20261015T1605_invoicing_receivables` → `20261015T1641_login_attempt_counters` (all additive; applied and verified only on the isolated test database).
 
 ## Module status
 
@@ -41,7 +41,7 @@ and reports success; data is lost on reload and never reaches the server.
 
 | Module | Pages | Status | Notes |
 |---|---|---|---|
-| Authentication | login, profile | Working | Login rate limiting hardened in this session (per-IP + bounded store). Still per-instance memory. |
+| Authentication | login, profile | Working | Login rate limiting per email and per IP, shared by all instances in the database (D-025). |
 | Administration | users, roles, settings, audit | **Working** (3) / reference (1) | Users (create, edit roles, enable/disable, password reset), roles (custom roles with permissions; system roles read-only), and audit log (filters) are connected, with lockout protection (D-024). Settings is a read-only reference page (banner). Verified in Chromium against the test DB. |
 | Dashboard | dashboard | Working | Connected in commit `e1241ae`. Sales/customer/product KPIs only; other modules reported as not connected. |
 | Customers | sales/customers | Working | |

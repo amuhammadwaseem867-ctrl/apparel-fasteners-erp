@@ -44,6 +44,10 @@
       "model": "Invoice",
       "namespace": "public"
     },
+    "erp_login_attempt_counters": {
+      "model": "LoginAttemptCounter",
+      "namespace": "public"
+    },
     "erp_mrp_demands": {
       "model": "MrpDemand",
       "namespace": "public"
@@ -1705,6 +1709,57 @@
               },
               "namespaceId": "public",
               "table": "erp_invoice_lines"
+            }
+          },
+          "LoginAttemptCounter": {
+            "fields": {
+              "count": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "key": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "windowStart": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "count": {
+                  "column": "count"
+                },
+                "key": {
+                  "column": "key"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "windowStart": {
+                  "column": "windowStart"
+                }
+              },
+              "namespaceId": "public",
+              "table": "erp_login_attempt_counters"
             }
           },
           "MrpDemand": {
@@ -7613,6 +7668,58 @@
                 }
               ]
             },
+            "erp_login_attempt_counters": {
+              "checks": [
+                {
+                  "expression": "\"count\" > 0",
+                  "name": "erp_login_attempt_counters_count_positive_e5a6c4f8",
+                  "prefix": "erp_login_attempt_counters_count_positive"
+                }
+              ],
+              "columns": {
+                "count": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "key": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "windowStart": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [
+                {
+                  "columns": [
+                    "windowStart"
+                  ],
+                  "name": "erp_login_attempt_counters_windowStart_idx_4944f72a",
+                  "prefix": "erp_login_attempt_counters_windowStart_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "key"
+                ]
+              },
+              "uniques": []
+            },
             "erp_mrp_demands": {
               "columns": {
                 "dueDate": {
@@ -11353,7 +11460,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "4e61fb4318099bcdfa31b4c022febbc8c69cf67ee658f9487e2d2b191104bfe6"
+    "storageHash": "8f46377bb2b97a99a4da64c442a3da1c14332f5185e59134653f729a6f5f34d0"
   },
   "execution": {
     "executionHash": "1a26ee2488d3b6099acbd384bf3765688e3b2eefd6171a144efeec87d3af8799",

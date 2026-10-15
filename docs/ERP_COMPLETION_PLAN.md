@@ -75,7 +75,7 @@ tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
 
 1. Divergent baselines (section 0). Highest risk.
 2. Live DB state unknown: there is no DB access from the cloud environment.
-3. Login limiter is per-instance memory until Phase 8.
+3. ~~Login limiter is per-instance memory~~ Resolved by D-025 (shared database counters).
 4. `x-forwarded-for` is trusted for the client IP. That is correct behind
    Vercel's proxy but spoofable if the app is exposed directly.
 5. Missing `public/logo in navy.png` (local-only asset).
@@ -108,7 +108,8 @@ tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
 | 2026-10-15 | `80b05a5` | Invoicing, credit notes, receipts and receivables services and API. |
 | 2026-10-15 | `bb524f5` | Finance screens; invoice, credit note and receipt prints. |
 | 2026-10-15 | `2e78acd` | Administration services and API; disabled roles grant nothing; lockout protection. |
-| 2026-10-15 | (this commit) | Administration screens: users, roles, audit log. |
+| 2026-10-15 | `d8c557b` | Administration screens: users, roles, audit log. |
+| 2026-10-15 | (this commit) | Login limiter shared across instances; migration `20261015T1641_login_attempt_counters` (additive). |
 
 ## Next step
 

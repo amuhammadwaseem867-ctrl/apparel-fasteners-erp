@@ -1,0 +1,80 @@
+[
+  {
+    "id": "table.erp_login_attempt_counters",
+    "label": "Create table \"erp_login_attempt_counters\"",
+    "summary": "Creates table \"erp_login_attempt_counters\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_login_attempt_counters"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_login_attempt_counters\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_login_attempt_counters\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_login_attempt_counters\"",
+        "sql": "CREATE TABLE \"public\".\"erp_login_attempt_counters\" (\n  \"count\" int4 NOT NULL,\n  \"key\" text NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"windowStart\" timestamptz NOT NULL,\n  PRIMARY KEY (\"key\"),\n  CONSTRAINT \"erp_login_attempt_counters_count_positive_e5a6c4f8\" CHECK (\"count\" > 0)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_login_attempt_counters\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_login_attempt_counters\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_login_attempt_counters.erp_login_attempt_counters_windowStart_idx_4944f72a",
+    "label": "Create index \"erp_login_attempt_counters_windowStart_idx_4944f72a\" on \"erp_login_attempt_counters\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_login_attempt_counters_windowStart_idx_4944f72a",
+        "table": "erp_login_attempt_counters"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_login_attempt_counters_windowStart_idx_4944f72a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_login_attempt_counters_windowStart_idx_4944f72a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_login_attempt_counters_windowStart_idx_4944f72a\"",
+        "sql": "CREATE INDEX \"erp_login_attempt_counters_windowStart_idx_4944f72a\" ON \"public\".\"erp_login_attempt_counters\" (\"windowStart\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_login_attempt_counters_windowStart_idx_4944f72a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_login_attempt_counters_windowStart_idx_4944f72a\""
+        ]
+      }
+    ]
+  }
+]

@@ -950,3 +950,17 @@ model CustomerReceipt {
   @@check(expression: "\"method\" IN ('CASH', 'BANK_TRANSFER', 'CHEQUE', 'CARD', 'OTHER')", name: "erp_customer_receipts_method")
   @@map("erp_customer_receipts")
 }
+
+/// Failed-login counters shared by every server instance (D-025). `key` is
+/// a SHA-256 hash of "email:<address>" or "ip:<address>", so raw emails and
+/// IP addresses are not stored. Rows older than the window are discarded.
+model LoginAttemptCounter {
+  key         String            @id
+  count       Int
+  windowStart TimestamptzString
+  updatedAt   TimestamptzString @default(now())
+
+  @@index([windowStart])
+  @@check(expression: "\"count\" > 0", name: "erp_login_attempt_counters_count_positive")
+  @@map("erp_login_attempt_counters")
+}

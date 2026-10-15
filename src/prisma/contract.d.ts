@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'4e61fb4318099bcdfa31b4c022febbc8c69cf67ee658f9487e2d2b191104bfe6'>;
+  StorageHashBase<'8f46377bb2b97a99a4da64c442a3da1c14332f5185e59134653f729a6f5f34d0'>;
 export type ExecutionHash =
   ExecutionHashBase<'1a26ee2488d3b6099acbd384bf3765688e3b2eefd6171a144efeec87d3af8799'>;
 export type ProfileHash =
@@ -365,6 +365,12 @@ export type FieldOutputTypes = {
       readonly taxPercent: CodecTypes['pg/int4@1']['output'];
       readonly unit: CodecTypes['pg/text@1']['output'];
       readonly unitPrice: CodecTypes['pg/numeric@1']['output'];
+    };
+    readonly LoginAttemptCounter: {
+      readonly count: CodecTypes['pg/int4@1']['output'];
+      readonly key: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly windowStart: CodecTypes['pg/timestamptz-string@1']['output'];
     };
     readonly MrpDemand: {
       readonly dueDate: CodecTypes['pg/text@1']['output'] | null;
@@ -881,6 +887,12 @@ export type FieldInputTypes = {
       readonly unit: CodecTypes['pg/text@1']['input'];
       readonly unitPrice: CodecTypes['pg/numeric@1']['input'];
     };
+    readonly LoginAttemptCounter: {
+      readonly count: CodecTypes['pg/int4@1']['input'];
+      readonly key: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly windowStart: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
     readonly MrpDemand: {
       readonly dueDate: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
@@ -1396,6 +1408,12 @@ export type StorageColumnTypes = {
       readonly taxTotal: CodecTypes['pg/numeric@1']['output'];
       readonly totalAmount: CodecTypes['pg/numeric@1']['output'];
     };
+    readonly erp_login_attempt_counters: {
+      readonly count: CodecTypes['pg/int4@1']['output'];
+      readonly key: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly windowStart: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
     readonly erp_mrp_demands: {
       readonly dueDate: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
@@ -1910,6 +1928,12 @@ export type StorageColumnInputTypes = {
       readonly subtotal: CodecTypes['pg/numeric@1']['input'];
       readonly taxTotal: CodecTypes['pg/numeric@1']['input'];
       readonly totalAmount: CodecTypes['pg/numeric@1']['input'];
+    };
+    readonly erp_login_attempt_counters: {
+      readonly count: CodecTypes['pg/int4@1']['input'];
+      readonly key: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly windowStart: CodecTypes['pg/timestamptz-string@1']['input'];
     };
     readonly erp_mrp_demands: {
       readonly dueDate: CodecTypes['pg/text@1']['input'] | null;
@@ -2454,6 +2478,13 @@ export namespace Models {
     invoice: public_Invoice;
     readonly [RelationKeys]?: 'creditLines' | 'invoice';
   };
+  export type public_LoginAttemptCounter = {
+    count: CodecTypes['pg/int4@1']['output'];
+    key: CodecTypes['pg/text@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    windowStart: CodecTypes['pg/timestamptz-string@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
   export type public_MrpDemand = {
     dueDate: CodecTypes['pg/text@1']['output'] | null;
     id: CodecTypes['pg/uuid@1']['output'];
@@ -2955,6 +2986,7 @@ export declare const models: {
     DocumentSequence: Models.public_DocumentSequence;
     Invoice: Models.public_Invoice;
     InvoiceLine: Models.public_InvoiceLine;
+    LoginAttemptCounter: Models.public_LoginAttemptCounter;
     MrpDemand: Models.public_MrpDemand;
     MrpPlannedOrder: Models.public_MrpPlannedOrder;
     MrpRequirement: Models.public_MrpRequirement;
@@ -4068,6 +4100,46 @@ type ContractBase = Omit<
                   };
                 },
               ];
+            };
+            readonly erp_login_attempt_counters: {
+              columns: {
+                readonly count: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly key: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly windowStart: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['key'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'erp_login_attempt_counters_windowStart_idx_4944f72a';
+                  readonly prefix: 'erp_login_attempt_counters_windowStart_idx';
+                  readonly columns: readonly ['windowStart'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [];
             };
             readonly erp_mrp_demands: {
               columns: {
@@ -7310,6 +7382,10 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'Invoice';
     };
+    readonly erp_login_attempt_counters: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'LoginAttemptCounter';
+    };
     readonly erp_mrp_demands: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'MrpDemand';
@@ -8337,6 +8413,43 @@ type ContractBase = Omit<
                 readonly taxPercent: { readonly column: 'taxPercent' };
                 readonly unit: { readonly column: 'unit' };
                 readonly unitPrice: { readonly column: 'unitPrice' };
+              };
+            };
+          };
+          readonly LoginAttemptCounter: {
+            readonly fields: {
+              readonly count: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly key: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly windowStart: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'erp_login_attempt_counters';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly count: { readonly column: 'count' };
+                readonly key: { readonly column: 'key' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly windowStart: { readonly column: 'windowStart' };
               };
             };
           };

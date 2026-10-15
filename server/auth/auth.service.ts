@@ -5,7 +5,7 @@ import { AppError } from "../core/errors/app-error";
 import { handleApiError } from "../core/errors/error-handler";
 import { logger } from "../core/logger/logger";
 import { recordAuditEvent } from "./audit.service";
-import { createLoginRateLimiter } from "./login-rate-limit";
+import { createDatabaseLoginRateLimiter } from "./login-rate-limit.db";
 import { resolveUserAccess } from "./authorization.service";
 import {
   createUserSchema,
@@ -25,14 +25,15 @@ import {
   validateSessionToken,
 } from "./session.service";
 
-const loginRateLimiter = createLoginRateLimiter();
+// Shared by every server instance and kept across restarts (D-025).
+const loginRateLimiter = createDatabaseLoginRateLimiter();
 
 function fingerprintEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
-function registerFailedAttempt(email: string, ip?: string | null): void {
-  if (loginRateLimiter.registerFailure(email, ip)) {
+async function registerFailedAttempt(email: string, ip?: string | null): Promise<void> {
+  if (await loginRateLimiter.registerFailure(email, ip)) {
     logger.warn("Authentication lockout triggered.", {
       email,
       ip: ip ?? null,
@@ -143,7 +144,7 @@ export async function loginUser(
 
   const ip = sessionMetadata?.ip ?? null;
 
-  if (loginRateLimiter.isLimited(email, ip)) {
+  if (await loginRateLimiter.isLimited(email, ip)) {
     throw new AppError(
       "Authentication temporarily locked. Please try again later.",
       {
@@ -158,7 +159,7 @@ export async function loginUser(
     .first();
 
   if (!user || !verifyPassword(validPayload.password, user.passwordHash)) {
-    registerFailedAttempt(email, ip);
+    await registerFailedAttempt(email, ip);
 
     await recordAuditEvent({
       action: "LOGIN_FAILURE",
@@ -178,7 +179,7 @@ export async function loginUser(
   }
 
   if (user.status !== "ACTIVE") {
-    registerFailedAttempt(email, ip);
+    await registerFailedAttempt(email, ip);
 
     await recordAuditEvent({
       action: "LOGIN_FAILURE",
@@ -198,7 +199,7 @@ export async function loginUser(
     });
   }
 
-  loginRateLimiter.registerSuccess(email);
+  await loginRateLimiter.registerSuccess(email);
 
   const sessionToken = createSessionToken();
 

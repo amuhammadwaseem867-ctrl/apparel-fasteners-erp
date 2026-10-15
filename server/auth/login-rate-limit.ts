@@ -4,9 +4,9 @@
  * Failures are counted per email (stops guessing one account's password)
  * and per client IP (stops one client trying many accounts). The store is
  * in process memory and bounded in size, so a flood of distinct emails or
- * IPs cannot grow it without limit. It is per server instance: on a
- * multi-instance deployment each instance counts separately, which needs
- * a shared store (database table) to close fully.
+ * IPs cannot grow it without limit. Login uses the database-backed
+ * limiter in login-rate-limit.db.ts (shared by all instances, D-025); this
+ * in-memory version defines the policy defaults and is kept for unit tests.
  *
  * This module has no imports so it can be tested directly.
  */

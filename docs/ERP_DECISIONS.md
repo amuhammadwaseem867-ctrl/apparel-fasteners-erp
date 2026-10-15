@@ -431,3 +431,21 @@ users, roles, role permissions and the audit log.
 **System settings**
 - Still a read-only reference page. There are no editable system settings
   yet.
+
+## D-025: Login rate limiting shared across instances
+
+Failed logins are counted per email (5 per 15 minutes) and per client IP
+(20 per 15 minutes) in `erp_login_attempt_counters`.
+- **Shared and durable.** Each failure is one atomic upsert, so every
+  server instance shares the counters and they survive restarts. This
+  closes the per-instance gap noted in Phase 0.
+- **Privacy.** Keys are SHA-256 hashes of `email:<address>` or
+  `ip:<address>`, so raw emails and IPs are not stored.
+- **Housekeeping.** Expired rows are deleted on each failure.
+- **Success.** A successful login clears the account counter but not the IP
+  counter.
+- **Proxy caveat.** The client IP still comes from `x-forwarded-for`. That
+  is correct behind the hosting proxy, but spoofable if the app is exposed
+  directly (Phase 0 risk 4).
+- **Memory limiter.** The in-memory limiter now only defines the policy
+  defaults and keeps its unit tests.
