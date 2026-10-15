@@ -1,0 +1,1373 @@
+[
+  {
+    "id": "table.erp_credit_note_lines",
+    "label": "Create table \"erp_credit_note_lines\"",
+    "summary": "Creates table \"erp_credit_note_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_credit_note_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_credit_note_lines\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_credit_note_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_credit_note_lines\"",
+        "sql": "CREATE TABLE \"public\".\"erp_credit_note_lines\" (\n  \"creditNoteId\" uuid NOT NULL,\n  \"discountAmount\" numeric NOT NULL,\n  \"grossAmount\" numeric NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"invoiceLineId\" uuid NOT NULL,\n  \"lineTotal\" numeric NOT NULL,\n  \"quantity\" numeric NOT NULL,\n  \"taxAmount\" numeric NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_credit_note_lines_quantity_fc510296\" CHECK (\"quantity\" > 0),\n  CONSTRAINT \"erp_credit_note_lines_total_ae91d4e0\" CHECK (\"lineTotal\" = \"grossAmount\" - \"discountAmount\" + \"taxAmount\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_credit_note_lines\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_credit_note_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_credit_notes",
+    "label": "Create table \"erp_credit_notes\"",
+    "summary": "Creates table \"erp_credit_notes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_credit_notes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_credit_notes\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_credit_notes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_credit_notes\"",
+        "sql": "CREATE TABLE \"public\".\"erp_credit_notes\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"creditDate\" text NOT NULL,\n  \"creditNumber\" text NOT NULL,\n  \"customerId\" uuid NOT NULL,\n  \"discountTotal\" numeric NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"invoiceId\" uuid NOT NULL,\n  \"reason\" text NOT NULL,\n  \"subtotal\" numeric NOT NULL,\n  \"taxTotal\" numeric NOT NULL,\n  \"totalAmount\" numeric NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_credit_notes_total_6e09d01c\" CHECK (\"totalAmount\" > 0 AND \"totalAmount\" = \"subtotal\" - \"discountTotal\" + \"taxTotal\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_credit_notes\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_credit_notes\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_customer_receipts",
+    "label": "Create table \"erp_customer_receipts\"",
+    "summary": "Creates table \"erp_customer_receipts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_customer_receipts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_customer_receipts\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_customer_receipts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_customer_receipts\"",
+        "sql": "CREATE TABLE \"public\".\"erp_customer_receipts\" (\n  \"amount\" numeric NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"customerId\" uuid NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"invoiceId\" uuid NOT NULL,\n  \"method\" text NOT NULL,\n  \"notes\" text,\n  \"receiptDate\" text NOT NULL,\n  \"receiptNumber\" text NOT NULL,\n  \"reference\" text,\n  \"status\" text DEFAULT 'POSTED' NOT NULL,\n  \"voidReason\" text,\n  \"voidedAt\" timestamptz,\n  \"voidedBy\" uuid,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_customer_receipts_amount_positive_ed0d10ac\" CHECK (\"amount\" > 0),\n  CONSTRAINT \"erp_customer_receipts_method_582524af\" CHECK (\"method\" IN ('CASH', 'BANK_TRANSFER', 'CHEQUE', 'CARD', 'OTHER')),\n  CONSTRAINT \"erp_customer_receipts_status_12d53be9\" CHECK (\"status\" IN ('POSTED', 'VOIDED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_customer_receipts\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_customer_receipts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_invoice_lines",
+    "label": "Create table \"erp_invoice_lines\"",
+    "summary": "Creates table \"erp_invoice_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_invoice_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_invoice_lines\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_invoice_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_invoice_lines\"",
+        "sql": "CREATE TABLE \"public\".\"erp_invoice_lines\" (\n  \"description\" text NOT NULL,\n  \"discountAmount\" numeric NOT NULL,\n  \"discountPercent\" int4 NOT NULL,\n  \"grossAmount\" numeric NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"invoiceId\" uuid NOT NULL,\n  \"lineNo\" int4 NOT NULL,\n  \"lineTotal\" numeric NOT NULL,\n  \"productId\" uuid,\n  \"quantity\" numeric NOT NULL,\n  \"salesOrderLineId\" uuid,\n  \"taxAmount\" numeric NOT NULL,\n  \"taxPercent\" int4 NOT NULL,\n  \"unit\" text NOT NULL,\n  \"unitPrice\" numeric NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_invoice_lines_percents_01abab9f\" CHECK (\"discountPercent\" BETWEEN 0 AND 100 AND \"taxPercent\" BETWEEN 0 AND 100),\n  CONSTRAINT \"erp_invoice_lines_quantity_3b6690a7\" CHECK (\"quantity\" > 0 AND \"unitPrice\" >= 0),\n  CONSTRAINT \"erp_invoice_lines_total_ae91d4e0\" CHECK (\"lineTotal\" = \"grossAmount\" - \"discountAmount\" + \"taxAmount\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_invoice_lines\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_invoice_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_invoices",
+    "label": "Create table \"erp_invoices\"",
+    "summary": "Creates table \"erp_invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_invoices\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_invoices\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_invoices\"",
+        "sql": "CREATE TABLE \"public\".\"erp_invoices\" (\n  \"cancelReason\" text,\n  \"cancelledAt\" timestamptz,\n  \"cancelledBy\" uuid,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"customerId\" uuid NOT NULL,\n  \"discountTotal\" numeric NOT NULL,\n  \"dueDate\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"invoiceDate\" text NOT NULL,\n  \"invoiceNumber\" text NOT NULL,\n  \"issuedAt\" timestamptz,\n  \"issuedBy\" uuid,\n  \"notes\" text,\n  \"salesOrderId\" uuid NOT NULL,\n  \"shipmentId\" uuid NOT NULL,\n  \"status\" text DEFAULT 'DRAFT' NOT NULL,\n  \"subtotal\" numeric NOT NULL,\n  \"taxTotal\" numeric NOT NULL,\n  \"totalAmount\" numeric NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_invoices_nonnegative_1ad4ee5d\" CHECK (\"subtotal\" >= 0 AND \"discountTotal\" >= 0 AND \"taxTotal\" >= 0),\n  CONSTRAINT \"erp_invoices_status_c484ea39\" CHECK (\"status\" IN ('DRAFT', 'ISSUED', 'CANCELLED')),\n  CONSTRAINT \"erp_invoices_total_afde76ef\" CHECK (\"totalAmount\" = \"subtotal\" - \"discountTotal\" + \"taxTotal\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_invoices\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_invoices\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_credit_note_lines.erp_credit_note_lines_creditNoteId_invoiceLineId_key",
+    "label": "Add unique constraint on \"erp_credit_note_lines\" (creditNoteId, invoiceLineId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_credit_note_lines_creditNoteId_invoiceLineId_key",
+        "table": "erp_credit_note_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_credit_note_lines_creditNoteId_invoiceLineId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_credit_note_lines_creditNoteId_invoiceLineId_key",
+          "public",
+          "\"public\".\"erp_credit_note_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_credit_note_lines_creditNoteId_invoiceLineId_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_credit_note_lines\" ADD CONSTRAINT \"erp_credit_note_lines_creditNoteId_invoiceLineId_key\" UNIQUE (\"creditNoteId\", \"invoiceLineId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_credit_note_lines_creditNoteId_invoiceLineId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_credit_note_lines_creditNoteId_invoiceLineId_key",
+          "public",
+          "\"public\".\"erp_credit_note_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_credit_notes.erp_credit_notes_creditNumber_key",
+    "label": "Add unique constraint on \"erp_credit_notes\" (creditNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_credit_notes_creditNumber_key",
+        "table": "erp_credit_notes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_credit_notes_creditNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_credit_notes_creditNumber_key",
+          "public",
+          "\"public\".\"erp_credit_notes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_credit_notes_creditNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_credit_notes\" ADD CONSTRAINT \"erp_credit_notes_creditNumber_key\" UNIQUE (\"creditNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_credit_notes_creditNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_credit_notes_creditNumber_key",
+          "public",
+          "\"public\".\"erp_credit_notes\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_credit_notes.erp_credit_notes_idempotencyKey_key",
+    "label": "Add unique constraint on \"erp_credit_notes\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_credit_notes_idempotencyKey_key",
+        "table": "erp_credit_notes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_credit_notes_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_credit_notes_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_credit_notes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_credit_notes_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_credit_notes\" ADD CONSTRAINT \"erp_credit_notes_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_credit_notes_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_credit_notes_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_credit_notes\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_customer_receipts.erp_customer_receipts_receiptNumber_key",
+    "label": "Add unique constraint on \"erp_customer_receipts\" (receiptNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_customer_receipts_receiptNumber_key",
+        "table": "erp_customer_receipts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_customer_receipts_receiptNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_customer_receipts_receiptNumber_key",
+          "public",
+          "\"public\".\"erp_customer_receipts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_customer_receipts_receiptNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_customer_receipts\" ADD CONSTRAINT \"erp_customer_receipts_receiptNumber_key\" UNIQUE (\"receiptNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_customer_receipts_receiptNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_customer_receipts_receiptNumber_key",
+          "public",
+          "\"public\".\"erp_customer_receipts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_customer_receipts.erp_customer_receipts_idempotencyKey_key",
+    "label": "Add unique constraint on \"erp_customer_receipts\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_customer_receipts_idempotencyKey_key",
+        "table": "erp_customer_receipts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_customer_receipts_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_customer_receipts_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_customer_receipts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_customer_receipts_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_customer_receipts\" ADD CONSTRAINT \"erp_customer_receipts_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_customer_receipts_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_customer_receipts_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_customer_receipts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_invoice_lines.erp_invoice_lines_invoiceId_lineNo_key",
+    "label": "Add unique constraint on \"erp_invoice_lines\" (invoiceId, lineNo)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_invoice_lines_invoiceId_lineNo_key",
+        "table": "erp_invoice_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_invoice_lines_invoiceId_lineNo_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_invoice_lines_invoiceId_lineNo_key",
+          "public",
+          "\"public\".\"erp_invoice_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_invoice_lines_invoiceId_lineNo_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_invoice_lines\" ADD CONSTRAINT \"erp_invoice_lines_invoiceId_lineNo_key\" UNIQUE (\"invoiceId\", \"lineNo\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_invoice_lines_invoiceId_lineNo_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_invoice_lines_invoiceId_lineNo_key",
+          "public",
+          "\"public\".\"erp_invoice_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_invoices.erp_invoices_invoiceNumber_key",
+    "label": "Add unique constraint on \"erp_invoices\" (invoiceNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_invoices_invoiceNumber_key",
+        "table": "erp_invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_invoices_invoiceNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_invoices_invoiceNumber_key",
+          "public",
+          "\"public\".\"erp_invoices\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_invoices_invoiceNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_invoices\" ADD CONSTRAINT \"erp_invoices_invoiceNumber_key\" UNIQUE (\"invoiceNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_invoices_invoiceNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_invoices_invoiceNumber_key",
+          "public",
+          "\"public\".\"erp_invoices\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_invoices.erp_invoices_idempotencyKey_key",
+    "label": "Add unique constraint on \"erp_invoices\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_invoices_idempotencyKey_key",
+        "table": "erp_invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_invoices_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_invoices_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_invoices\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_invoices_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_invoices\" ADD CONSTRAINT \"erp_invoices_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_invoices_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_invoices_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_invoices\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_credit_note_lines.erp_credit_note_lines_creditNoteId_idx_2a875364",
+    "label": "Create index \"erp_credit_note_lines_creditNoteId_idx_2a875364\" on \"erp_credit_note_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_credit_note_lines_creditNoteId_idx_2a875364",
+        "table": "erp_credit_note_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_credit_note_lines_creditNoteId_idx_2a875364\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_credit_note_lines_creditNoteId_idx_2a875364\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_credit_note_lines_creditNoteId_idx_2a875364\"",
+        "sql": "CREATE INDEX \"erp_credit_note_lines_creditNoteId_idx_2a875364\" ON \"public\".\"erp_credit_note_lines\" (\"creditNoteId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_credit_note_lines_creditNoteId_idx_2a875364\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_credit_note_lines_creditNoteId_idx_2a875364\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_credit_note_lines.erp_credit_note_lines_invoiceLineId_idx_1805647d",
+    "label": "Create index \"erp_credit_note_lines_invoiceLineId_idx_1805647d\" on \"erp_credit_note_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_credit_note_lines_invoiceLineId_idx_1805647d",
+        "table": "erp_credit_note_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_credit_note_lines_invoiceLineId_idx_1805647d\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_credit_note_lines_invoiceLineId_idx_1805647d\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_credit_note_lines_invoiceLineId_idx_1805647d\"",
+        "sql": "CREATE INDEX \"erp_credit_note_lines_invoiceLineId_idx_1805647d\" ON \"public\".\"erp_credit_note_lines\" (\"invoiceLineId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_credit_note_lines_invoiceLineId_idx_1805647d\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_credit_note_lines_invoiceLineId_idx_1805647d\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_credit_notes.erp_credit_notes_customerId_idx_b2a8a46c",
+    "label": "Create index \"erp_credit_notes_customerId_idx_b2a8a46c\" on \"erp_credit_notes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_credit_notes_customerId_idx_b2a8a46c",
+        "table": "erp_credit_notes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_credit_notes_customerId_idx_b2a8a46c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_credit_notes_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_credit_notes_customerId_idx_b2a8a46c\"",
+        "sql": "CREATE INDEX \"erp_credit_notes_customerId_idx_b2a8a46c\" ON \"public\".\"erp_credit_notes\" (\"customerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_credit_notes_customerId_idx_b2a8a46c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_credit_notes_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_credit_notes.erp_credit_notes_invoiceId_idx_d5c4f70e",
+    "label": "Create index \"erp_credit_notes_invoiceId_idx_d5c4f70e\" on \"erp_credit_notes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_credit_notes_invoiceId_idx_d5c4f70e",
+        "table": "erp_credit_notes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_credit_notes_invoiceId_idx_d5c4f70e\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_credit_notes_invoiceId_idx_d5c4f70e\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_credit_notes_invoiceId_idx_d5c4f70e\"",
+        "sql": "CREATE INDEX \"erp_credit_notes_invoiceId_idx_d5c4f70e\" ON \"public\".\"erp_credit_notes\" (\"invoiceId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_credit_notes_invoiceId_idx_d5c4f70e\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_credit_notes_invoiceId_idx_d5c4f70e\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_customer_receipts.erp_customer_receipts_customerId_idx_b2a8a46c",
+    "label": "Create index \"erp_customer_receipts_customerId_idx_b2a8a46c\" on \"erp_customer_receipts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_customer_receipts_customerId_idx_b2a8a46c",
+        "table": "erp_customer_receipts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_customer_receipts_customerId_idx_b2a8a46c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_customer_receipts_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_customer_receipts_customerId_idx_b2a8a46c\"",
+        "sql": "CREATE INDEX \"erp_customer_receipts_customerId_idx_b2a8a46c\" ON \"public\".\"erp_customer_receipts\" (\"customerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_customer_receipts_customerId_idx_b2a8a46c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_customer_receipts_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_customer_receipts.erp_customer_receipts_invoiceId_idx_d5c4f70e",
+    "label": "Create index \"erp_customer_receipts_invoiceId_idx_d5c4f70e\" on \"erp_customer_receipts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_customer_receipts_invoiceId_idx_d5c4f70e",
+        "table": "erp_customer_receipts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_customer_receipts_invoiceId_idx_d5c4f70e\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_customer_receipts_invoiceId_idx_d5c4f70e\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_customer_receipts_invoiceId_idx_d5c4f70e\"",
+        "sql": "CREATE INDEX \"erp_customer_receipts_invoiceId_idx_d5c4f70e\" ON \"public\".\"erp_customer_receipts\" (\"invoiceId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_customer_receipts_invoiceId_idx_d5c4f70e\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_customer_receipts_invoiceId_idx_d5c4f70e\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_customer_receipts.erp_customer_receipts_invoiceId_status_idx_7d5bfaf7",
+    "label": "Create index \"erp_customer_receipts_invoiceId_status_idx_7d5bfaf7\" on \"erp_customer_receipts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_customer_receipts_invoiceId_status_idx_7d5bfaf7",
+        "table": "erp_customer_receipts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_customer_receipts_invoiceId_status_idx_7d5bfaf7\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_customer_receipts_invoiceId_status_idx_7d5bfaf7\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_customer_receipts_invoiceId_status_idx_7d5bfaf7\"",
+        "sql": "CREATE INDEX \"erp_customer_receipts_invoiceId_status_idx_7d5bfaf7\" ON \"public\".\"erp_customer_receipts\" (\"invoiceId\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_customer_receipts_invoiceId_status_idx_7d5bfaf7\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_customer_receipts_invoiceId_status_idx_7d5bfaf7\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_customer_receipts.erp_customer_receipts_receiptDate_idx_4c5b18d1",
+    "label": "Create index \"erp_customer_receipts_receiptDate_idx_4c5b18d1\" on \"erp_customer_receipts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_customer_receipts_receiptDate_idx_4c5b18d1",
+        "table": "erp_customer_receipts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_customer_receipts_receiptDate_idx_4c5b18d1\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_customer_receipts_receiptDate_idx_4c5b18d1\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_customer_receipts_receiptDate_idx_4c5b18d1\"",
+        "sql": "CREATE INDEX \"erp_customer_receipts_receiptDate_idx_4c5b18d1\" ON \"public\".\"erp_customer_receipts\" (\"receiptDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_customer_receipts_receiptDate_idx_4c5b18d1\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_customer_receipts_receiptDate_idx_4c5b18d1\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_invoice_lines.erp_invoice_lines_invoiceId_idx_d5c4f70e",
+    "label": "Create index \"erp_invoice_lines_invoiceId_idx_d5c4f70e\" on \"erp_invoice_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_invoice_lines_invoiceId_idx_d5c4f70e",
+        "table": "erp_invoice_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_invoice_lines_invoiceId_idx_d5c4f70e\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_invoice_lines_invoiceId_idx_d5c4f70e\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_invoice_lines_invoiceId_idx_d5c4f70e\"",
+        "sql": "CREATE INDEX \"erp_invoice_lines_invoiceId_idx_d5c4f70e\" ON \"public\".\"erp_invoice_lines\" (\"invoiceId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_invoice_lines_invoiceId_idx_d5c4f70e\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_invoice_lines_invoiceId_idx_d5c4f70e\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_invoices.erp_invoices_customerId_idx_b2a8a46c",
+    "label": "Create index \"erp_invoices_customerId_idx_b2a8a46c\" on \"erp_invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_invoices_customerId_idx_b2a8a46c",
+        "table": "erp_invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_invoices_customerId_idx_b2a8a46c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_invoices_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_invoices_customerId_idx_b2a8a46c\"",
+        "sql": "CREATE INDEX \"erp_invoices_customerId_idx_b2a8a46c\" ON \"public\".\"erp_invoices\" (\"customerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_invoices_customerId_idx_b2a8a46c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_invoices_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_invoices.erp_invoices_customerId_status_idx_2986b558",
+    "label": "Create index \"erp_invoices_customerId_status_idx_2986b558\" on \"erp_invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_invoices_customerId_status_idx_2986b558",
+        "table": "erp_invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_invoices_customerId_status_idx_2986b558\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_invoices_customerId_status_idx_2986b558\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_invoices_customerId_status_idx_2986b558\"",
+        "sql": "CREATE INDEX \"erp_invoices_customerId_status_idx_2986b558\" ON \"public\".\"erp_invoices\" (\"customerId\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_invoices_customerId_status_idx_2986b558\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_invoices_customerId_status_idx_2986b558\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_invoices.erp_invoices_dueDate_idx_fb527616",
+    "label": "Create index \"erp_invoices_dueDate_idx_fb527616\" on \"erp_invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_invoices_dueDate_idx_fb527616",
+        "table": "erp_invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_invoices_dueDate_idx_fb527616\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_invoices_dueDate_idx_fb527616\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_invoices_dueDate_idx_fb527616\"",
+        "sql": "CREATE INDEX \"erp_invoices_dueDate_idx_fb527616\" ON \"public\".\"erp_invoices\" (\"dueDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_invoices_dueDate_idx_fb527616\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_invoices_dueDate_idx_fb527616\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_invoices.erp_invoices_one_per_shipment_03148691",
+    "label": "Create index \"erp_invoices_one_per_shipment_03148691\" on \"erp_invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_invoices_one_per_shipment_03148691",
+        "table": "erp_invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_invoices_one_per_shipment_03148691\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_invoices_one_per_shipment_03148691\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_invoices_one_per_shipment_03148691\"",
+        "sql": "CREATE UNIQUE INDEX \"erp_invoices_one_per_shipment_03148691\" ON \"public\".\"erp_invoices\" (\"shipmentId\") WHERE (\"status\" <> 'CANCELLED')",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_invoices_one_per_shipment_03148691\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_invoices_one_per_shipment_03148691\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_invoices.erp_invoices_salesOrderId_idx_0f1a116c",
+    "label": "Create index \"erp_invoices_salesOrderId_idx_0f1a116c\" on \"erp_invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_invoices_salesOrderId_idx_0f1a116c",
+        "table": "erp_invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_invoices_salesOrderId_idx_0f1a116c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_invoices_salesOrderId_idx_0f1a116c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_invoices_salesOrderId_idx_0f1a116c\"",
+        "sql": "CREATE INDEX \"erp_invoices_salesOrderId_idx_0f1a116c\" ON \"public\".\"erp_invoices\" (\"salesOrderId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_invoices_salesOrderId_idx_0f1a116c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_invoices_salesOrderId_idx_0f1a116c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_credit_note_lines.erp_credit_note_lines_creditNoteId_fkey",
+    "label": "Add foreign key \"erp_credit_note_lines_creditNoteId_fkey\" on \"erp_credit_note_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_credit_note_lines_creditNoteId_fkey",
+        "table": "erp_credit_note_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_credit_note_lines_creditNoteId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_credit_note_lines_creditNoteId_fkey",
+          "public",
+          "\"public\".\"erp_credit_note_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_credit_note_lines_creditNoteId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_credit_note_lines\"\nADD CONSTRAINT \"erp_credit_note_lines_creditNoteId_fkey\"\nFOREIGN KEY (\"creditNoteId\")\nREFERENCES \"public\".\"erp_credit_notes\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_credit_note_lines_creditNoteId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_credit_note_lines_creditNoteId_fkey",
+          "public",
+          "\"public\".\"erp_credit_note_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_credit_note_lines.erp_credit_note_lines_invoiceLineId_fkey",
+    "label": "Add foreign key \"erp_credit_note_lines_invoiceLineId_fkey\" on \"erp_credit_note_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_credit_note_lines_invoiceLineId_fkey",
+        "table": "erp_credit_note_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_credit_note_lines_invoiceLineId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_credit_note_lines_invoiceLineId_fkey",
+          "public",
+          "\"public\".\"erp_credit_note_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_credit_note_lines_invoiceLineId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_credit_note_lines\"\nADD CONSTRAINT \"erp_credit_note_lines_invoiceLineId_fkey\"\nFOREIGN KEY (\"invoiceLineId\")\nREFERENCES \"public\".\"erp_invoice_lines\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_credit_note_lines_invoiceLineId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_credit_note_lines_invoiceLineId_fkey",
+          "public",
+          "\"public\".\"erp_credit_note_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_credit_notes.erp_credit_notes_invoiceId_fkey",
+    "label": "Add foreign key \"erp_credit_notes_invoiceId_fkey\" on \"erp_credit_notes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_credit_notes_invoiceId_fkey",
+        "table": "erp_credit_notes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_credit_notes_invoiceId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_credit_notes_invoiceId_fkey",
+          "public",
+          "\"public\".\"erp_credit_notes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_credit_notes_invoiceId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_credit_notes\"\nADD CONSTRAINT \"erp_credit_notes_invoiceId_fkey\"\nFOREIGN KEY (\"invoiceId\")\nREFERENCES \"public\".\"erp_invoices\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_credit_notes_invoiceId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_credit_notes_invoiceId_fkey",
+          "public",
+          "\"public\".\"erp_credit_notes\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_customer_receipts.erp_customer_receipts_invoiceId_fkey",
+    "label": "Add foreign key \"erp_customer_receipts_invoiceId_fkey\" on \"erp_customer_receipts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_customer_receipts_invoiceId_fkey",
+        "table": "erp_customer_receipts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_customer_receipts_invoiceId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_customer_receipts_invoiceId_fkey",
+          "public",
+          "\"public\".\"erp_customer_receipts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_customer_receipts_invoiceId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_customer_receipts\"\nADD CONSTRAINT \"erp_customer_receipts_invoiceId_fkey\"\nFOREIGN KEY (\"invoiceId\")\nREFERENCES \"public\".\"erp_invoices\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_customer_receipts_invoiceId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_customer_receipts_invoiceId_fkey",
+          "public",
+          "\"public\".\"erp_customer_receipts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_invoice_lines.erp_invoice_lines_invoiceId_fkey",
+    "label": "Add foreign key \"erp_invoice_lines_invoiceId_fkey\" on \"erp_invoice_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_invoice_lines_invoiceId_fkey",
+        "table": "erp_invoice_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_invoice_lines_invoiceId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_invoice_lines_invoiceId_fkey",
+          "public",
+          "\"public\".\"erp_invoice_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_invoice_lines_invoiceId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_invoice_lines\"\nADD CONSTRAINT \"erp_invoice_lines_invoiceId_fkey\"\nFOREIGN KEY (\"invoiceId\")\nREFERENCES \"public\".\"erp_invoices\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_invoice_lines_invoiceId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_invoice_lines_invoiceId_fkey",
+          "public",
+          "\"public\".\"erp_invoice_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_invoices.erp_invoices_customerId_fkey",
+    "label": "Add foreign key \"erp_invoices_customerId_fkey\" on \"erp_invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_invoices_customerId_fkey",
+        "table": "erp_invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_invoices_customerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_invoices_customerId_fkey",
+          "public",
+          "\"public\".\"erp_invoices\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_invoices_customerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_invoices\"\nADD CONSTRAINT \"erp_invoices_customerId_fkey\"\nFOREIGN KEY (\"customerId\")\nREFERENCES \"public\".\"erp_customers\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_invoices_customerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_invoices_customerId_fkey",
+          "public",
+          "\"public\".\"erp_invoices\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_invoices.erp_invoices_salesOrderId_fkey",
+    "label": "Add foreign key \"erp_invoices_salesOrderId_fkey\" on \"erp_invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_invoices_salesOrderId_fkey",
+        "table": "erp_invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_invoices_salesOrderId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_invoices_salesOrderId_fkey",
+          "public",
+          "\"public\".\"erp_invoices\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_invoices_salesOrderId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_invoices\"\nADD CONSTRAINT \"erp_invoices_salesOrderId_fkey\"\nFOREIGN KEY (\"salesOrderId\")\nREFERENCES \"public\".\"erp_sales_orders\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_invoices_salesOrderId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_invoices_salesOrderId_fkey",
+          "public",
+          "\"public\".\"erp_invoices\""
+        ]
+      }
+    ]
+  }
+]

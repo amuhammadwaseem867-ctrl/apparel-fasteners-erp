@@ -144,6 +144,7 @@ model Customer {
   updatedAt TimestamptzString @default(now())
 
   salesOrders SalesOrder[]
+  invoices    Invoice[]
 
   @@index([name])
   @@map("erp_customers")
@@ -213,6 +214,7 @@ model SalesOrder {
   customer Customer          @relation(fields: [customerId], references: [id], onDelete: Restrict)
   lines    SalesOrderLine[]
   shipments Shipment[]
+  invoices  Invoice[]
 
   @@index([customerId])
   @@index([status])
@@ -799,4 +801,152 @@ model ShipmentLine {
   @@index([packingListId])
   @@check(expression: "\"quantity\" > 0", name: "erp_shipment_lines_quantity_positive")
   @@map("erp_shipment_lines")
+}
+
+// Phase 7: invoicing and receivables (see docs/ERP_DECISIONS.md D-023).
+// Amounts are exact decimals in whole cents; nothing is deleted: invoices
+// are corrected by credit notes, receipts by voiding.
+
+/// A customer invoice for one dispatched shipment. Prices, discounts and tax
+/// come from the approved sales order lines; nothing is invented.
+model Invoice {
+  id             Uuid               @id @default(uuid())
+  invoiceNumber  String             @unique
+  customerId     Uuid
+  salesOrderId   Uuid
+  shipmentId     Uuid
+  invoiceDate    String
+  dueDate        String
+  status         String             @default("DRAFT")
+  subtotal       Decimal
+  discountTotal  Decimal
+  taxTotal       Decimal
+  totalAmount    Decimal
+  notes          String?
+  idempotencyKey String             @unique
+  createdBy      Uuid
+  createdAt      TimestamptzString  @default(now())
+  issuedBy       Uuid?
+  issuedAt       TimestamptzString?
+  cancelledBy    Uuid?
+  cancelledAt    TimestamptzString?
+  cancelReason   String?
+
+  customer    Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  salesOrder  SalesOrder    @relation(fields: [salesOrderId], references: [id], onDelete: Restrict)
+  lines       InvoiceLine[]
+  creditNotes CreditNote[]
+  receipts    CustomerReceipt[]
+
+  @@index([customerId, status])
+  @@index([salesOrderId])
+  @@index([dueDate])
+  @@index([shipmentId], where: "\"status\" <> 'CANCELLED'", unique: true, name: "erp_invoices_one_per_shipment")
+  @@check(expression: "\"status\" IN ('DRAFT', 'ISSUED', 'CANCELLED')", name: "erp_invoices_status")
+  @@check(expression: "\"subtotal\" >= 0 AND \"discountTotal\" >= 0 AND \"taxTotal\" >= 0", name: "erp_invoices_nonnegative")
+  @@check(expression: "\"totalAmount\" = \"subtotal\" - \"discountTotal\" + \"taxTotal\"", name: "erp_invoices_total")
+  @@map("erp_invoices")
+}
+
+model InvoiceLine {
+  id               Uuid    @id @default(uuid())
+  invoiceId        Uuid
+  lineNo           Int
+  productId        Uuid?
+  salesOrderLineId Uuid?
+  description      String
+  unit             String
+  quantity         Decimal
+  unitPrice        Decimal
+  discountPercent  Int
+  taxPercent       Int
+  grossAmount      Decimal
+  discountAmount   Decimal
+  taxAmount        Decimal
+  lineTotal        Decimal
+
+  invoice     Invoice          @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  creditLines CreditNoteLine[]
+
+  @@unique([invoiceId, lineNo])
+  @@check(expression: "\"quantity\" > 0 AND \"unitPrice\" >= 0", name: "erp_invoice_lines_quantity")
+  @@check(expression: "\"discountPercent\" BETWEEN 0 AND 100 AND \"taxPercent\" BETWEEN 0 AND 100", name: "erp_invoice_lines_percents")
+  @@check(expression: "\"lineTotal\" = \"grossAmount\" - \"discountAmount\" + \"taxAmount\"", name: "erp_invoice_lines_total")
+  @@map("erp_invoice_lines")
+}
+
+/// Credits part or all of an issued invoice (returns, price corrections).
+/// Credit notes are final; they reduce what the customer owes.
+model CreditNote {
+  id             Uuid              @id @default(uuid())
+  creditNumber   String            @unique
+  invoiceId      Uuid
+  customerId     Uuid
+  creditDate     String
+  reason         String
+  subtotal       Decimal
+  discountTotal  Decimal
+  taxTotal       Decimal
+  totalAmount    Decimal
+  idempotencyKey String            @unique
+  createdBy      Uuid
+  createdAt      TimestamptzString @default(now())
+
+  invoice Invoice          @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  lines   CreditNoteLine[]
+
+  @@index([invoiceId])
+  @@index([customerId])
+  @@check(expression: "\"totalAmount\" > 0 AND \"totalAmount\" = \"subtotal\" - \"discountTotal\" + \"taxTotal\"", name: "erp_credit_notes_total")
+  @@map("erp_credit_notes")
+}
+
+model CreditNoteLine {
+  id             Uuid    @id @default(uuid())
+  creditNoteId   Uuid
+  invoiceLineId  Uuid
+  quantity       Decimal
+  grossAmount    Decimal
+  discountAmount Decimal
+  taxAmount      Decimal
+  lineTotal      Decimal
+
+  creditNote  CreditNote  @relation(fields: [creditNoteId], references: [id], onDelete: Restrict)
+  invoiceLine InvoiceLine @relation(fields: [invoiceLineId], references: [id], onDelete: Restrict)
+
+  @@unique([creditNoteId, invoiceLineId])
+  @@check(expression: "\"quantity\" > 0", name: "erp_credit_note_lines_quantity")
+  @@check(expression: "\"lineTotal\" = \"grossAmount\" - \"discountAmount\" + \"taxAmount\"", name: "erp_credit_note_lines_total")
+  @@map("erp_credit_note_lines")
+}
+
+/// Money received from a customer against one issued invoice. A wrong
+/// receipt is voided (with a reason), never deleted.
+model CustomerReceipt {
+  id             Uuid               @id @default(uuid())
+  receiptNumber  String             @unique
+  invoiceId      Uuid
+  customerId     Uuid
+  receiptDate    String
+  method         String
+  reference      String?
+  amount         Decimal
+  status         String             @default("POSTED")
+  notes          String?
+  idempotencyKey String             @unique
+  createdBy      Uuid
+  createdAt      TimestamptzString  @default(now())
+  voidedBy       Uuid?
+  voidedAt       TimestamptzString?
+  voidReason     String?
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+
+  @@index([invoiceId, status])
+  @@index([customerId])
+  @@index([receiptDate])
+  @@check(expression: "\"amount\" > 0", name: "erp_customer_receipts_amount_positive")
+  @@check(expression: "\"status\" IN ('POSTED', 'VOIDED')", name: "erp_customer_receipts_status")
+  @@check(expression: "\"method\" IN ('CASH', 'BANK_TRANSFER', 'CHEQUE', 'CARD', 'OTHER')", name: "erp_customer_receipts_method")
+  @@map("erp_customer_receipts")
 }
