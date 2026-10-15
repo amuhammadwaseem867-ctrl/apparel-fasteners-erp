@@ -335,3 +335,62 @@ the public stock API.
 
 MRP still counts the full ordered quantity as demand (D-020). Subtracting
 shipped quantities is a follow-up.
+
+## D-023: Invoicing and receivables (not a general ledger)
+
+**Scope.** Finance covers customer invoicing and receivables only. There
+are no accounts, journals, payables, expenses or financial statements yet.
+- **Invoices bill shipped goods.** One active invoice per DISPATCHED or
+  DELIVERED shipment, enforced by a partial unique index.
+- **Pricing.** Each line takes the quantity shipped and the unit price,
+  discount % and tax % of its approved sales order line. No tax rate is
+  invented or configured here.
+- **Ambiguous pricing.** If an order has the same item at more than one
+  price or tax, the invoice is refused (`INVOICE_PRICE_UNRESOLVED`). In
+  support of this, dispatch now links a shipment line to a sales order line
+  only when the item is on exactly one catalogue line.
+- **Arithmetic.** Amounts are exact cents (BigInt), rounded half up at each
+  step: gross = quantity × price; discount on gross; tax on
+  gross − discount. This is the same rule as sales orders (D-011).
+- **Due date.** Invoice date + payment terms (0–365 days), in calendar days.
+
+**Invoice lifecycle.**
+- DRAFT → ISSUED, or DRAFT → CANCELLED (with a reason). Each is a
+  compare-and-set.
+- Issued invoices are never edited, cancelled or deleted. They are
+  corrected with credit notes.
+
+**Credit notes.**
+- They credit quantities of invoiced lines at the invoiced terms.
+- Credits per line never exceed the invoiced quantity. The credit that
+  reaches the full quantity takes the exact remaining amounts, so rounding
+  can never credit more than was invoiced.
+- A credit may not exceed the invoice's outstanding balance. Refunds are
+  not supported yet, so void receipts first.
+- Credit notes are final.
+- Returned goods are received into stock separately (Inventory → Stock In,
+  with a reason).
+
+**Receipts.**
+- A receipt is posted against one ISSUED invoice and may not exceed the
+  outstanding balance.
+- Credits and receipts lock the invoice row (`FOR UPDATE`), so concurrent
+  postings cannot overpay or over-credit (tested).
+- A wrong receipt is voided with a reason, never deleted.
+
+**Balances.**
+- Outstanding = total − credit notes − posted receipts.
+- Payment status: UNPAID, PARTIALLY_PAID or PAID.
+- Receivables are aged by days past the due date: current, 1–30, 31–60,
+  61–90, 90+.
+
+**Permissions** (please confirm):
+- `finance:view` to see.
+- `finance:create` to draft invoices and record receipts.
+- `finance:approve` to issue or cancel invoices, issue credit notes and
+  void receipts.
+
+**Printing.** Invoice, credit note and receipt print with the company
+fields from `config/company.js`. The legal name, address and tax
+registration are still empty (D-013) and must be filled in before invoices
+are sent to customers.

@@ -382,7 +382,7 @@ const NAV_GROUPS = [
             href: "/finance/invoices",
           },
           {
-            label: "Payments",
+            label: "Receipts",
             href: "/finance/payments",
           },
           {

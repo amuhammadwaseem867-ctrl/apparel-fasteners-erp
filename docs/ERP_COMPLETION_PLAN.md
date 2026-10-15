@@ -50,7 +50,7 @@ tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
 | 4 | BOM + MRP | Yes | BOM revisions with approval, cycle detection, single scrap convention (D-004). MRP runs stored with inputs, BOM revision and results; deterministic decimal maths; planned orders require explicit confirmation. |
 | 5 | Production: 9 stages | Yes | **Done.** Stage runs with `input = accepted + rejected + wastage + rework` (D-021); server-enforced sequence; partial runs; hold/resume; rework; append-only history; material issue linked to orders; job card. |
 | 6 | QC, packing, dispatch, delivery | Yes | **Done.** QC gates packing (final inspections drive stage 7); packing receives FG (stage 8); dispatch cannot exceed ordered quantity or available FG; partial deliveries; delivery drives stage 9; incoming inspection releases or scraps held stock (D-022). |
-| 7 | Finance | Yes | Invoices with explicit tax configuration (no invented rates); credit notes instead of deletion. Not described as a full ledger. |
+| 7 | Finance | Yes | **Done (invoicing and receivables).** Invoices from shipments at sales-order terms (no invented tax); credit notes instead of deletion; receipts with voiding; receivables ageing (D-023). Not a general ledger. Payables wait for procurement. |
 | 8 | HR, payroll, admin, gate passes | Yes | Least-privilege payroll access; user/role admin over existing RBAC tables; gate passes. Durable login limiter (shared store). |
 | 9 | Print/export, UI polish, E2E | Partly | Print CSS + document layouts; real CSV/XLSX export; Playwright E2E against an isolated test DB. |
 
@@ -103,24 +103,29 @@ tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
 | 2026-10-14 | `bc056f1` | Production service, API and screens; MRP conversion; material issue linked to orders; job card. |
 | 2026-10-15 | `dc35c90` | Quality/packing/dispatch schema + migration `20261015T1506_quality_packing_dispatch` (additive). |
 | 2026-10-15 | `2cf3474` | Quality, packing and dispatch services and API; stages 7–9 owned by those modules. |
-| 2026-10-15 | (this commit) | Quality, packing and dispatch screens; packing list and delivery challan prints. |
+| 2026-10-15 | `2a77dec` | Quality, packing and dispatch screens; packing list and delivery challan prints. |
+| 2026-10-15 | `26c37b6` | Invoicing schema + migration `20261015T1605_invoicing_receivables` (additive). |
+| 2026-10-15 | `80b05a5` | Invoicing, credit notes, receipts and receivables services and API. |
+| 2026-10-15 | (this commit) | Finance screens; invoice, credit note and receipt prints. |
 
 ## Next step
 
-Phases 3–6 are complete and verified on the isolated test database.
-Next: Phase 7, finance. This covers invoices from shipments with explicit
-tax configuration (no invented rates), credit notes instead of deletion,
-and receivables. It is not described as a full ledger.
+Phases 3–7 (invoicing and receivables) are complete and verified on the
+isolated test database.
+Next: Phase 8. This covers HR and payroll (least-privilege access; payroll
+maths in exact decimals), user and role administration over the existing
+RBAC tables, gate passes, and a durable login limiter.
 
 Owner actions still open:
 - Push the local `D:\` work (D-001).
 - Confirm sub-cent prices (D-012).
-- Supply company legal details (D-013).
-- Confirm the production, quality, packing and dispatch permission mappings
-  (D-019, D-021, D-022).
+- Supply company legal details and tax registration (D-013). Invoices need
+  these before going to customers.
+- Confirm the permission mappings (D-019, D-021, D-022, D-023).
 - Approve applying migrations `20261014T1134_inventory_foundation`,
-  `20261014T1624_bom_mrp`, `20261014T1640_production_stages` and
-  `20261015T1506_quality_packing_dispatch` to the live database after a
+  `20261014T1624_bom_mrp`, `20261014T1640_production_stages`,
+  `20261015T1506_quality_packing_dispatch` and
+  `20261015T1605_invoicing_receivables` to the live database after a
   verified backup.
 
 Nothing has been applied to any live database.
