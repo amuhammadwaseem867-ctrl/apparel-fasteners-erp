@@ -5,7 +5,7 @@
  * cannot load or save records says so. Routes with a working backend
  * (dashboard, products, BOM, sales orders, customers, inventory, MRP,
  * production, quality inspections, packing, dispatch, invoicing and
- * receivables, users, roles, audit, gate passes, HR and payroll, reports,
+ * receivables, procurement and payables, users, roles, audit, gate passes, HR and payroll, reports,
  * profile) are not listed.
  * Inventory pages render their own notice (InventoryBackendNotice).
  *
@@ -16,14 +16,12 @@ const UNAVAILABLE_AREAS = [
   { prefix: "/planning/capacity", label: "Capacity planning" },
   { prefix: "/planning/calendar", label: "Planning calendar" },
   { prefix: "/planning/production-plans", label: "Production plans" },
-  { prefix: "/procurement", label: "Procurement" },
   { prefix: "/quality/ncr", label: "Non-conformance reports" },
   { prefix: "/quality/capa", label: "Corrective and preventive actions" },
   { prefix: "/packing/instructions", label: "Packing instructions" },
   { prefix: "/finance/accounts", label: "Chart of accounts" },
   { prefix: "/finance/income", label: "Income" },
   { prefix: "/finance/expenses", label: "Expenses" },
-  { prefix: "/finance/payables", label: "Payables" },
   { prefix: "/finance/cash-bank", label: "Cash and bank" },
   { prefix: "/finance/transactions", label: "Financial transactions" },
   { prefix: "/finance/reports", label: "Financial reports" },

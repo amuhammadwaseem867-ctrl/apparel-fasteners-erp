@@ -315,7 +315,7 @@ export async function getDashboard(
       products: true,
       sales: true,
       inventory: true,
-      procurement: false,
+      procurement: true,
       production: true,
       quality: true,
       dispatch: true,

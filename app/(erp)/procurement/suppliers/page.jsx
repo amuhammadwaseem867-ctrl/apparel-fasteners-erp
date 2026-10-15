@@ -1,217 +1,143 @@
 "use client";
 
-import {
-  Building2,
-  CheckCircle2,
-  Clock3,
-  Search,
-  SlidersHorizontal,
-  Users,
-  XCircle,
-} from "lucide-react";
+import { useState } from "react";
 
-import PageHeader from "@/components/ui/PageHeader";
-import Card from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
-import Input from "@/components/ui/Input";
-import EmptyState from "@/components/ui/EmptyState";
+import Button from "@/components/ui/Button";
+import Modal from "@/components/ui/Modal";
+import InventoryPager from "@/components/inventory/InventoryPager";
+import { ProcStatusBadge } from "@/components/procurement/procurementUi";
+import { apiRequest } from "@/lib/api/client";
+import useCurrentUser from "@/lib/auth/useCurrentUser";
+import useApiData, { toQuery } from "@/lib/inventory/useApiData";
 
-import "./Suppliers.css";
+import "@/components/inventory/InventoryWorkspace.css";
 
-const supplierStats = [
-  {
-    label: "Total Suppliers",
-    value: 0,
-    icon: Users,
-  },
-  {
-    label: "Approved",
-    value: 0,
-    icon: CheckCircle2,
-  },
-  {
-    label: "Pending Approval",
-    value: 0,
-    icon: Clock3,
-  },
-  {
-    label: "Inactive",
-    value: 0,
-    icon: XCircle,
-  },
+const FIELDS = [
+  ["name", "Name *", "text", 160],
+  ["contactName", "Contact person", "text", 120],
+  ["phone", "Phone", "tel", 40],
+  ["email", "Email", "email", 200],
+  ["taxRegistration", "Tax registration (NTN/STRN)", "text", 60],
 ];
 
-const supplierCategories = [
-  "Garments",
-  "Fabrics",
-  "Garment Accessories",
-  "Packaging",
-  "Services",
-  "Other",
-];
+function SupplierDialog({ supplier, onClose, onSaved }) {
+  const [values, setValues] = useState(() => ({
+    code: supplier?.code ?? "", name: supplier?.name ?? "", contactName: supplier?.contactName ?? "", phone: supplier?.phone ?? "",
+    email: supplier?.email ?? "", address: supplier?.address ?? "", taxRegistration: supplier?.taxRegistration ?? "",
+    paymentTermsDays: String(supplier?.paymentTermsDays ?? 30), notes: supplier?.notes ?? "", status: supplier?.status ?? "ACTIVE",
+  }));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const set = (field) => (event) => setValues((current) => ({ ...current, [field]: event.target.value }));
+
+  async function submit(event) {
+    event.preventDefault();
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    const { code, status, ...rest } = values;
+    const body = { ...rest, paymentTermsDays: Number(values.paymentTermsDays) };
+    try {
+      await apiRequest(supplier ? `/api/procurement/suppliers/${supplier.id}` : "/api/procurement/suppliers", {
+        method: supplier ? "PATCH" : "POST",
+        body: JSON.stringify(supplier ? { ...body, status } : { ...body, code: code.toUpperCase() }),
+      });
+      onSaved();
+    } catch (cause) {
+      setError(cause.message);
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal open onClose={saving ? undefined : onClose} title={supplier ? `Edit ${supplier.code}` : "New supplier"} size="large">
+      <form className="inv-dialog" onSubmit={submit}>
+        <div className="inv-dialog__grid">
+          {!supplier && (
+            <div className="inv-field"><label htmlFor="su-code">Code *</label><input id="su-code" required pattern="[A-Za-z0-9\-]{2,20}" maxLength={20} value={values.code} onChange={set("code")} /></div>
+          )}
+          {FIELDS.map(([field, label, type, max]) => (
+            <div className="inv-field" key={field}><label htmlFor={`su-${field}`}>{label}</label><input id={`su-${field}`} type={type} required={field === "name"} maxLength={max} value={values[field]} onChange={set(field)} /></div>
+          ))}
+          <div className="inv-field"><label htmlFor="su-terms">Payment terms (days) *</label><input id="su-terms" type="number" min="0" max="365" step="1" required value={values.paymentTermsDays} onChange={set("paymentTermsDays")} /></div>
+          {supplier && (
+            <div className="inv-field">
+              <label htmlFor="su-status">Status</label>
+              <select id="su-status" value={values.status} onChange={set("status")}><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option></select>
+            </div>
+          )}
+        </div>
+        <div className="inv-field"><label htmlFor="su-address">Address</label><textarea id="su-address" rows={2} maxLength={300} value={values.address} onChange={set("address")} /></div>
+        <div className="inv-field"><label htmlFor="su-notes">Notes</label><textarea id="su-notes" rows={2} maxLength={1000} value={values.notes} onChange={set("notes")} /></div>
+        {error && <p className="inv-dialog__error" role="alert">{error}</p>}
+        <div className="inv-dialog__actions">
+          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button type="submit" variant="primary" loading={saving}>{supplier ? "Save supplier" : "Create supplier"}</Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
 
 export default function SuppliersPage() {
+  const { can } = useCurrentUser();
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [page, setPage] = useState(1);
+  const [editing, setEditing] = useState(null);
+  const suppliers = useApiData(`/api/procurement/suppliers${toQuery({ search, status, page, pageSize: 25 })}`);
+  const rows = suppliers.data?.suppliers ?? [];
+
   return (
-    <div className="suppliers-page">
-      <PageHeader
-        eyebrow="PROCUREMENT"
-        title="Suppliers"
-        description="Manage supplier master records, approvals, commercial terms and procurement relationships."
-      >
-        <button
-          type="button"
-          className="suppliers-page__primary-button"
-          disabled
-          title="Available after backend integration"
-        >
-          Add Supplier
-        </button>
-      </PageHeader>
-
-      <div className="suppliers-page__notice">
+    <main className="inv-page">
+      <header className="inv-header">
         <div>
-          <strong>Supplier database not connected</strong>
-          <p>
-            Supplier records will be loaded from the backend once the
-            database and supplier APIs are connected.
-          </p>
+          <p className="inv-header__eyebrow">Procurement</p>
+          <h1>Suppliers</h1>
+          <p>Vendors you buy from. Payment terms set the default due date on their bills. Suppliers are deactivated, never deleted, once they have history.</p>
         </div>
-
-        <Badge variant="warning">Not Connected</Badge>
-      </div>
-
-      <section className="suppliers-page__stats">
-        {supplierStats.map((stat) => {
-          const Icon = stat.icon;
-
-          return (
-            <Card
-              key={stat.label}
-              className="suppliers-page__stat"
-            >
-              <div className="suppliers-page__stat-icon">
-                <Icon size={18} strokeWidth={1.8} />
-              </div>
-
-              <div>
-                <span>{stat.label}</span>
-                <strong>{stat.value}</strong>
-              </div>
-            </Card>
-          );
-        })}
-      </section>
-
-      <Card className="suppliers-page__toolbar-card">
-        <div className="suppliers-page__toolbar">
-          <div className="suppliers-page__search">
-            <Search size={16} />
-
-            <Input
-              placeholder="Search suppliers..."
-              disabled
-              aria-label="Search suppliers"
-            />
-          </div>
-
-          <button
-            type="button"
-            className="suppliers-page__filter"
-            disabled
-          >
-            <SlidersHorizontal size={15} />
-            Filters
-          </button>
+        <div className="inv-header__actions">
+          {can("purchasing:create") && <Button variant="primary" onClick={() => setEditing("new")}>New supplier</Button>}
         </div>
-      </Card>
-
-      <Card
-        title="Supplier Directory"
-        description="Approved and registered suppliers across the procurement network."
-        className="suppliers-page__directory"
-      >
-        <EmptyState
-          icon={Building2}
-          title="No suppliers available"
-          description="Supplier records will appear here after the supplier master database is connected."
-        />
-      </Card>
-
-      <section className="suppliers-page__structure">
-        <div className="suppliers-page__section-heading">
-          <div>
-            <h2>Supplier Master Structure</h2>
-            <p>
-              Core information that will be maintained for every supplier.
-            </p>
+      </header>
+      <section className="inv-card">
+        <div className="inv-toolbar">
+          <div className="inv-field"><label htmlFor="su-search">Search</label><input id="su-search" type="search" placeholder="Code, name or contact" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} /></div>
+          <div className="inv-field">
+            <label htmlFor="su-filter">Status</label>
+            <select id="su-filter" value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }}>
+              <option value="">All</option><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option>
+            </select>
           </div>
         </div>
-
-        <div className="suppliers-page__structure-grid">
-          <Card title="Company Information">
-            <ul>
-              <li>Supplier / Company Name</li>
-              <li>Supplier Code</li>
-              <li>Registration Details</li>
-              <li>Supplier Category</li>
-              <li>Primary Contact</li>
-            </ul>
-          </Card>
-
-          <Card title="Commercial">
-            <ul>
-              <li>Currency</li>
-              <li>Payment Terms</li>
-              <li>Credit Terms</li>
-              <li>Price Lists</li>
-              <li>Tax Information</li>
-            </ul>
-          </Card>
-
-          <Card title="Supply Capability">
-            <ul>
-              <li>Product Division</li>
-              <li>Material Categories</li>
-              <li>Minimum Order Quantity</li>
-              <li>Lead Time</li>
-              <li>Supply Capacity</li>
-            </ul>
-          </Card>
-
-          <Card title="Compliance & Performance">
-            <ul>
-              <li>Certifications</li>
-              <li>Quality Requirements</li>
-              <li>Delivery Performance</li>
-              <li>Quality Performance</li>
-              <li>Supplier Status</li>
-            </ul>
-          </Card>
-        </div>
-      </section>
-
-      <section className="suppliers-page__categories">
-        <div className="suppliers-page__section-heading">
-          <div>
-            <h2>Supplier Categories</h2>
-            <p>
-              Classification used to organize the procurement network.
-            </p>
+        {suppliers.error ? (
+          <p className="inv-state inv-state--error" role="alert">{suppliers.error}</p>
+        ) : !suppliers.data ? (
+          <p className="inv-state" role="status">Loading suppliers…</p>
+        ) : rows.length === 0 ? (
+          <p className="inv-state">{search || status ? "No suppliers match these filters." : "No suppliers yet."}</p>
+        ) : (
+          <div className="inv-table-wrap">
+            <table className="inv-table">
+              <thead><tr><th>Supplier</th><th>Contact</th><th>Tax reg.</th><th className="inv-num">Terms</th><th>Status</th><th /></tr></thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.id}>
+                    <td data-label="Supplier"><strong>{row.name}</strong><small>{row.code}</small></td>
+                    <td data-label="Contact">{row.contactName || "—"}<small>{[row.phone, row.email].filter(Boolean).join(" · ")}</small></td>
+                    <td data-label="Tax reg.">{row.taxRegistration || "—"}</td>
+                    <td data-label="Terms" className="inv-num">{row.paymentTermsDays} days</td>
+                    <td data-label="Status"><ProcStatusBadge status={row.status} /></td>
+                    <td data-label="">{can("purchasing:create") && <button type="button" className="inv-link-button" onClick={() => setEditing(row)}>Edit</button>}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </div>
-
-        <div className="suppliers-page__category-list">
-          {supplierCategories.map((category) => (
-            <div
-              key={category}
-              className="suppliers-page__category"
-            >
-              <span>{category}</span>
-              <strong>0</strong>
-            </div>
-          ))}
-        </div>
+        )}
+        <InventoryPager page={page} hasMore={suppliers.data?.hasMore} onChange={setPage} disabled={suppliers.loading} />
       </section>
-    </div>
+      {editing && <SupplierDialog supplier={editing === "new" ? null : editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); suppliers.reload(); }} />}
+    </main>
   );
 }

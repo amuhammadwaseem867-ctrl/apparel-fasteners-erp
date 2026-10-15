@@ -606,3 +606,36 @@ export async function getSupplierPerformance() {
     fillRatePercent: pct(row.closedReceived, row.closedOrdered),
   }));
 }
+
+/* Confirmed MRP BUY planned orders that are not on a requisition yet. */
+export async function listBuySuggestions() {
+  const result = await rows<Record<string, string>>(db.runtime(), db.raw.sql`
+    select p.id::text as id, p."productId"::text as "productId", p.quantity::text as quantity, coalesce(p."dueDate", '') as "dueDate",
+      i.sku, i.name as "productName", i.unit, r."runNumber"
+    from erp_mrp_planned_orders p join erp_products i on i.id = p."productId" join erp_mrp_runs r on r.id = p."runId"
+    where p.status = 'CONFIRMED' and p."orderType" = 'BUY'
+      and not exists (select 1 from erp_purchase_requisition_lines l where l."plannedOrderId" = p.id)
+    order by p."dueDate" nulls last, i.sku
+    limit 200
+  `.returnsRow({ id: "pg/text@1", productId: "pg/text@1", quantity: "pg/text@1", dueDate: "pg/text@1", sku: "pg/text@1", productName: "pg/text@1", unit: "pg/text@1", runNumber: "pg/text@1" }).build());
+  return result.map((row) => ({ ...row, quantity: dec(row.quantity), dueDate: row.dueDate || null }));
+}
+
+/* Counts for the procurement overview. */
+export async function getProcurementSummary(asOf = new Date().toISOString().slice(0, 10)) {
+  const [row] = await rows<Record<string, string>>(db.runtime(), db.raw.sql`
+    select
+      (select count(*) from erp_purchase_requisitions where status = 'SUBMITTED')::text as "requisitionsToApprove",
+      (select count(*) from erp_purchase_requisitions where status = 'APPROVED')::text as "requisitionsToOrder",
+      (select count(*) from erp_rfqs where status = 'OPEN')::text as "openRfqs",
+      (select count(*) from erp_purchase_orders where status = 'DRAFT')::text as "draftOrders",
+      (select count(*) from erp_purchase_orders where status in ('APPROVED', 'PARTIALLY_RECEIVED'))::text as "openOrders",
+      (select coalesce(sum("totalAmount"), 0) from erp_purchase_orders where status in ('APPROVED', 'PARTIALLY_RECEIVED'))::text as "openOrderValue",
+      (select count(*) from erp_purchase_orders where status in ('APPROVED', 'PARTIALLY_RECEIVED') and "expectedDate" < ${asOf})::text as "lateOrders",
+      (select count(*) from erp_purchase_receipts where "receivedDate" > to_char(${asOf}::date - 30, 'YYYY-MM-DD'))::text as "receipts30",
+      (select count(*) from erp_suppliers where status = 'ACTIVE')::text as "activeSuppliers",
+      (select count(*) from erp_mrp_planned_orders p where p.status = 'CONFIRMED' and p."orderType" = 'BUY'
+        and not exists (select 1 from erp_purchase_requisition_lines l where l."plannedOrderId" = p.id))::text as "buySuggestions"
+  `.returnsRow({ requisitionsToApprove: "pg/text@1", requisitionsToOrder: "pg/text@1", openRfqs: "pg/text@1", draftOrders: "pg/text@1", openOrders: "pg/text@1", openOrderValue: "pg/text@1", lateOrders: "pg/text@1", receipts30: "pg/text@1", activeSuppliers: "pg/text@1", buySuggestions: "pg/text@1" }).build());
+  return Object.fromEntries(Object.entries(row).map(([name, value]) => [name, name === "openOrderValue" ? cash(value) : Number(value)])) as Record<string, number | string>;
+}

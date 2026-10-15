@@ -603,3 +603,85 @@ pages keep the banner.
 - Result: no 5xx responses, no page errors and no console errors.
 - The pages that still show a banner are exactly the unimplemented areas
   listed in ERP_MODULE_STATUS.md.
+
+## D-029 Procurement and accounts payable (2026-10-15)
+
+**Scope.** Suppliers, purchase requisitions, RFQs with quote comparison,
+purchase orders, goods receipts against POs, supplier bills, supplier
+payments, payables ageing and supplier performance. Migration
+`20261015T1758_procurement` is additive (new tables only).
+
+**Lifecycles** (every status change is compare-and-set or under a row lock)
+- Requisition: DRAFT → SUBMITTED → APPROVED or REJECTED; APPROVED →
+  ORDERED when a PO is raised (directly or by awarding an RFQ). Drafts and
+  submitted requisitions can be cancelled.
+- RFQ: OPEN → AWARDED or CANCELLED. One quote per supplier; recording it
+  again replaces it while the RFQ is open. Awarding creates a DRAFT PO at
+  the quoted prices and tax; the expected date is today + lead time.
+- PO: DRAFT → APPROVED → PARTIALLY_RECEIVED → RECEIVED. Only POs with
+  nothing received can be CANCELLED; a partly received PO is CLOSED short
+  with a reason.
+- Supplier bill: DRAFT → APPROVED; DRAFT, or APPROVED with no posted
+  payments, → CANCELLED.
+- Supplier payment: POSTED → VOIDED, with a reason.
+
+**MRP link.** Only CONFIRMED BUY planned orders can become requisition
+lines. A unique index on `plannedOrderId` stops the same planned order
+being requisitioned twice, including under concurrency.
+
+**Goods receipt**
+- Locks the PO row (`FOR UPDATE`) and refuses any line that would exceed
+  its ordered quantity. Unit precision rules apply (whole pieces for Pcs).
+- In the same transaction it posts a GOODS_RECEIPT stock document. If
+  "hold for inspection" is ticked, it also posts a QC_HOLD; the existing
+  incoming-inspection flow (D-022) releases or scraps the held stock.
+- `PurchaseReceipt` is a module-owned stock source and cannot be posted
+  directly.
+- Idempotent by key.
+
+**Three-way match**
+- A bill line against a PO line may not exceed received − billed.
+- Approval moves `billedQuantity` by compare-and-set
+  (`billedQuantity + q <= receivedQuantity`). Two drafts for the same
+  received goods can never both be approved; a check constraint backs this
+  up.
+- A billed unit price above the PO price is refused at approval. A lower
+  price is allowed.
+- Cancelling an approved bill returns its billed quantity.
+- Bills without a PO (services, expenses) take free-text lines.
+- The supplier invoice number is unique per supplier among bills that are
+  not cancelled (partial unique index).
+- The due date defaults to the bill date plus the supplier's payment
+  terms.
+
+**Payments.** A payment locks the bill and may not exceed total − posted
+payments. All amounts are exact cents (D-011 rules).
+
+**Payables.** Approved bills less posted payments, aged into the same
+buckets as receivables. "Received, not billed" is shown separately as an
+estimate at PO prices and is never added to the payable total.
+
+**Supplier performance**
+- On-time % = receipts dated on or before the PO's expected date ÷
+  receipts on POs that have an expected date.
+- Fill rate = received ÷ ordered, on RECEIVED or CLOSED POs only.
+- Both are blank until there is history; no figure is invented.
+
+**Permissions** (existing codes; confirm with the owner)
+- `purchasing:view`: procurement screens. Finance can also read
+  suppliers, POs and bills.
+- `purchasing:create`: suppliers, requisitions, RFQs, quotes, POs.
+- `purchasing:approve`: approve or reject requisitions, award RFQs,
+  approve, cancel or close POs.
+- Requisitions can also be raised with `production:update` (planners
+  converting MRP suggestions).
+- Goods receipts need `purchasing:create` or `inventory:create` (stores).
+- Bills: `finance:create` to record; `finance:approve` to approve or
+  cancel.
+- Payments: `finance:create` to record; `finance:approve` to void.
+
+**Prints.** `/print/purchase-orders/[id]`; drafts and cancelled POs carry
+a notice.
+
+**Not included.** Bills and payments do not yet post to a general ledger
+(there is none).

@@ -114,18 +114,18 @@ tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
 | 2026-10-15 | `d1e0a1c` | HR/payroll schema + migration `20261015T1652_hr_payroll` (additive); HR and payroll permissions in the seed. |
 | 2026-10-15 | `30264f7` | HR and payroll services and API; migration `20261015T1656_salary_advance_idempotency` (additive). |
 | 2026-10-15 | `9bee029` | People & Payroll screens; payslips and payroll register. |
-| 2026-10-15 | (this commit) | Phase 9: live reports with CSV export, dashboard operations panel, polish, full-route regression. |
+| 2026-10-15 | `d11d2f3` | Phase 9: live reports with CSV export, dashboard operations panel, polish, full-route regression. |
+| 2026-10-15 | `f5b261a` | Procurement schema + migration `20261015T1758_procurement` (additive). |
+| 2026-10-15 | `e8627d5` | Procurement and payables services, API and DB tests. |
+| 2026-10-15 | (this commit) | Phase 10: procurement and payables screens, PO print, E2E (D-029). |
 
 ## Status
 
-Phases 0–9 are complete on branch `claude/inspiring-davinci-7l1qm2`.
+Phases 0–10 are complete on branch `claude/inspiring-davinci-7l1qm2`.
 Everything is verified on the isolated test database: DB-free tests,
 DB integration tests, and Chromium end-to-end tests.
 
 **Remaining work, which needs the owner or new scope**
-- **Procurement** (suppliers, requisitions, RFQs, purchase orders, goods
-  receipts against POs, supplier payables). It is not built; MRP BUY
-  suggestions wait for it.
 - NCR and CAPA records.
 - Shifts and leave balances.
 - Packing instructions.
@@ -138,10 +138,10 @@ DB integration tests, and Chromium end-to-end tests.
    Then delete the superseded files listed in ERP_MODULE_STATUS.md.
 2. Confirm sub-cent prices (D-012).
 3. Supply company legal details and tax registration (D-013).
-4. Confirm the permission mappings (D-019, D-021–D-023, D-026) and the
-   payroll rules (D-027).
+4. Confirm the permission mappings (D-019, D-021–D-023, D-026, D-029) and
+   the payroll rules (D-027).
 5. Take a verified backup of the live database. Then approve applying the
-   nine pending migrations in order:
+   ten pending migrations in order:
    - `20261014T1134_inventory_foundation`
    - `20261014T1624_bom_mrp`
    - `20261014T1640_production_stages`
@@ -151,6 +151,7 @@ DB integration tests, and Chromium end-to-end tests.
    - `20261015T1645_gate_passes`
    - `20261015T1652_hr_payroll`
    - `20261015T1656_salary_advance_idempotency`
+   - `20261015T1758_procurement`
 6. Run the access-control seed on the live system (new HR and payroll
    permissions and roles).
 7. Deploy only after steps 1–6. No production deployment has been made.
