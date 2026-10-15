@@ -1,0 +1,86 @@
+[
+  {
+    "id": "column.public.erp_salary_advances.idempotencyKey",
+    "label": "Add column \"idempotencyKey\" to \"erp_salary_advances\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "idempotencyKey",
+        "table": "erp_salary_advances"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"idempotencyKey\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_salary_advances",
+          "idempotencyKey"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"idempotencyKey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_salary_advances\" ADD COLUMN \"idempotencyKey\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"idempotencyKey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_salary_advances",
+          "idempotencyKey"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_salary_advances.erp_salary_advances_idempotencyKey_key",
+    "label": "Add unique constraint on \"erp_salary_advances\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_salary_advances_idempotencyKey_key",
+        "table": "erp_salary_advances"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_salary_advances_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_salary_advances_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_salary_advances\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_salary_advances_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_salary_advances\" ADD CONSTRAINT \"erp_salary_advances_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_salary_advances_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_salary_advances_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_salary_advances\""
+        ]
+      }
+    ]
+  }
+]

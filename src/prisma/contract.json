@@ -5788,6 +5788,13 @@
                   "kind": "scalar"
                 }
               },
+              "idempotencyKey": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "installment": {
                 "nullable": false,
                 "type": {
@@ -5867,6 +5874,9 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "idempotencyKey": {
+                  "column": "idempotencyKey"
                 },
                 "installment": {
                   "column": "installment"
@@ -12326,6 +12336,11 @@
                   "dataType": "pg/uuid",
                   "nullable": false
                 },
+                "idempotencyKey": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "installment": {
                   "codecId": "pg/numeric@1",
                   "dataType": "pg/numeric",
@@ -12407,6 +12422,11 @@
                 {
                   "columns": [
                     "advanceNumber"
+                  ]
+                },
+                {
+                  "columns": [
+                    "idempotencyKey"
                   ]
                 }
               ]
@@ -14145,7 +14165,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "18f21701327e7468d411506fd34b155534332c720aae339e2d13f0e6eb8eb966"
+    "storageHash": "650af9c793258402fb36b28d3bf8dcdcb91ede3869a7a60bf0f64a9b70b74026"
   },
   "execution": {
     "executionHash": "02ddfcdd8d6bd19484966fee91f5820b3028013e3db93bf815d3d58b363a4ec2",

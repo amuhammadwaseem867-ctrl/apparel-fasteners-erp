@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'18f21701327e7468d411506fd34b155534332c720aae339e2d13f0e6eb8eb966'>;
+  StorageHashBase<'650af9c793258402fb36b28d3bf8dcdcb91ede3869a7a60bf0f64a9b70b74026'>;
 export type ExecutionHash =
   ExecutionHashBase<'02ddfcdd8d6bd19484966fee91f5820b3028013e3db93bf815d3d58b363a4ec2'>;
 export type ProfileHash =
@@ -713,6 +713,7 @@ export type FieldOutputTypes = {
       readonly createdBy: CodecTypes['pg/uuid@1']['output'];
       readonly employeeId: CodecTypes['pg/uuid@1']['output'];
       readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly idempotencyKey: CodecTypes['pg/text@1']['output'] | null;
       readonly installment: CodecTypes['pg/numeric@1']['output'];
       readonly issueDate: CodecTypes['pg/text@1']['output'];
       readonly reason: CodecTypes['pg/text@1']['output'];
@@ -1370,6 +1371,7 @@ export type FieldInputTypes = {
       readonly createdBy: CodecTypes['pg/uuid@1']['input'];
       readonly employeeId: CodecTypes['pg/uuid@1']['input'];
       readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly idempotencyKey: CodecTypes['pg/text@1']['input'] | null;
       readonly installment: CodecTypes['pg/numeric@1']['input'];
       readonly issueDate: CodecTypes['pg/text@1']['input'];
       readonly reason: CodecTypes['pg/text@1']['input'];
@@ -2027,6 +2029,7 @@ export type StorageColumnTypes = {
       readonly createdBy: CodecTypes['pg/uuid@1']['output'];
       readonly employeeId: CodecTypes['pg/uuid@1']['output'];
       readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly idempotencyKey: CodecTypes['pg/text@1']['output'] | null;
       readonly installment: CodecTypes['pg/numeric@1']['output'];
       readonly issueDate: CodecTypes['pg/text@1']['output'];
       readonly reason: CodecTypes['pg/text@1']['output'];
@@ -2684,6 +2687,7 @@ export type StorageColumnInputTypes = {
       readonly createdBy: CodecTypes['pg/uuid@1']['input'];
       readonly employeeId: CodecTypes['pg/uuid@1']['input'];
       readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly idempotencyKey: CodecTypes['pg/text@1']['input'] | null;
       readonly installment: CodecTypes['pg/numeric@1']['input'];
       readonly issueDate: CodecTypes['pg/text@1']['input'];
       readonly reason: CodecTypes['pg/text@1']['input'];
@@ -3456,6 +3460,7 @@ export namespace Models {
     createdBy: CodecTypes['pg/uuid@1']['output'];
     employeeId: CodecTypes['pg/uuid@1']['output'];
     id: CodecTypes['pg/uuid@1']['output'];
+    idempotencyKey: CodecTypes['pg/text@1']['output'] | null;
     installment: CodecTypes['pg/numeric@1']['output'];
     issueDate: CodecTypes['pg/text@1']['output'];
     reason: CodecTypes['pg/text@1']['output'];
@@ -7510,6 +7515,12 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
+                readonly idempotencyKey: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly installment: {
                   readonly dataType: 'pg/numeric';
                   readonly codecId: 'pg/numeric@1';
@@ -7550,7 +7561,10 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [{ readonly columns: readonly ['advanceNumber'] }];
+              uniques: readonly [
+                { readonly columns: readonly ['advanceNumber'] },
+                { readonly columns: readonly ['idempotencyKey'] },
+              ];
               indexes: readonly [
                 {
                   readonly name: 'erp_salary_advances_employeeId_idx_087dd4a6';
@@ -12634,6 +12648,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
               };
+              readonly idempotencyKey: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly installment: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
@@ -12681,6 +12699,7 @@ type ContractBase = Omit<
                 readonly createdBy: { readonly column: 'createdBy' };
                 readonly employeeId: { readonly column: 'employeeId' };
                 readonly id: { readonly column: 'id' };
+                readonly idempotencyKey: { readonly column: 'idempotencyKey' };
                 readonly installment: { readonly column: 'installment' };
                 readonly issueDate: { readonly column: 'issueDate' };
                 readonly reason: { readonly column: 'reason' };

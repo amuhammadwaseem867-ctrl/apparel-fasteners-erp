@@ -1104,6 +1104,7 @@ model SalaryAdvance {
   recovered     Decimal            @default(0)
   status        String             @default("OPEN")
   reason        String
+  idempotencyKey String?           @unique
   createdBy     Uuid
   createdAt     TimestamptzString  @default(now())
   cancelledBy   Uuid?
