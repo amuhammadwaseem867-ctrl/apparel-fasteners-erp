@@ -52,7 +52,7 @@ tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
 | 6 | QC, packing, dispatch, delivery | Yes | **Done.** QC gates packing (final inspections drive stage 7); packing receives FG (stage 8); dispatch cannot exceed ordered quantity or available FG; partial deliveries; delivery drives stage 9; incoming inspection releases or scraps held stock (D-022). |
 | 7 | Finance | Yes | **Done (invoicing and receivables).** Invoices from shipments at sales-order terms (no invented tax); credit notes instead of deletion; receipts with voiding; receivables ageing (D-023). Not a general ledger. Payables wait for procurement. |
 | 8 | HR, payroll, admin, gate passes | Yes | **Done.** User/role admin with lockout protection (D-024); shared login limiter (D-025); gate passes (D-026); HR, attendance, advances and exact payroll with separate payroll permissions (D-027). |
-| 9 | Print/export, UI polish, E2E | Partly | Print CSS + document layouts; real CSV/XLSX export; Playwright E2E against an isolated test DB. |
+| 9 | Print/export, UI polish, E2E | Partly | **Done.** Printable documents for every module; 16 live reports with CSV export; dashboard operations; placeholder clean-up; Chromium regression of all 115 routes for two roles (D-028). XLSX is not produced; CSV opens in Excel. |
 
 ## Migration dependencies
 
@@ -113,35 +113,46 @@ tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
 | 2026-10-15 | `b628415` | Gate passes: schema + migration `20261015T1645_gate_passes` (additive), service, API, screens, print. |
 | 2026-10-15 | `d1e0a1c` | HR/payroll schema + migration `20261015T1652_hr_payroll` (additive); HR and payroll permissions in the seed. |
 | 2026-10-15 | `30264f7` | HR and payroll services and API; migration `20261015T1656_salary_advance_idempotency` (additive). |
-| 2026-10-15 | (this commit) | People & Payroll screens; payslips and payroll register. |
+| 2026-10-15 | `9bee029` | People & Payroll screens; payslips and payroll register. |
+| 2026-10-15 | (this commit) | Phase 9: live reports with CSV export, dashboard operations panel, polish, full-route regression. |
 
-## Next step
+## Status
 
-Phases 3–8 are complete and verified on the isolated test database.
-Next: Phase 9. This covers the remaining reports (sales, stock, production,
-quality, receivables and payroll summaries from live data), CSV export for
-the main lists, UI polish (placeholder KPIs, empty states, removal of
-superseded files once the branches are reconciled), and a full regression
-pass.
+Phases 0–9 are complete on branch `claude/inspiring-davinci-7l1qm2`.
+Everything is verified on the isolated test database: DB-free tests,
+DB integration tests, and Chromium end-to-end tests.
 
-Owner actions still open:
-- Push the local `D:\` work (D-001).
-- Confirm sub-cent prices (D-012).
-- Supply company legal details (D-013).
-- Confirm the permission mappings (D-019, D-021–D-023, D-026) and the
-  payroll rules (D-027).
-- Run the access-control seed on the live system (new HR and payroll
-  permissions).
-- Approve applying these migrations to the live database after a verified
-  backup:
-  - `20261014T1134_inventory_foundation`
-  - `20261014T1624_bom_mrp`
-  - `20261014T1640_production_stages`
-  - `20261015T1506_quality_packing_dispatch`
-  - `20261015T1605_invoicing_receivables`
-  - `20261015T1641_login_attempt_counters`
-  - `20261015T1645_gate_passes`
-  - `20261015T1652_hr_payroll`
-  - `20261015T1656_salary_advance_idempotency`
+**Remaining work, which needs the owner or new scope**
+- **Procurement** (suppliers, requisitions, RFQs, purchase orders, goods
+  receipts against POs, supplier payables). It is not built; MRP BUY
+  suggestions wait for it.
+- NCR and CAPA records.
+- Shifts and leave balances.
+- Packing instructions.
+- Product categories, variants, pricing and documents pages.
+- Capacity planning and calendar.
+- General ledger and financial statements.
+
+**Owner actions before go-live**
+1. Push the local `D:\` work and reconcile it with this branch (D-001).
+   Then delete the superseded files listed in ERP_MODULE_STATUS.md.
+2. Confirm sub-cent prices (D-012).
+3. Supply company legal details and tax registration (D-013).
+4. Confirm the permission mappings (D-019, D-021–D-023, D-026) and the
+   payroll rules (D-027).
+5. Take a verified backup of the live database. Then approve applying the
+   nine pending migrations in order:
+   - `20261014T1134_inventory_foundation`
+   - `20261014T1624_bom_mrp`
+   - `20261014T1640_production_stages`
+   - `20261015T1506_quality_packing_dispatch`
+   - `20261015T1605_invoicing_receivables`
+   - `20261015T1641_login_attempt_counters`
+   - `20261015T1645_gate_passes`
+   - `20261015T1652_hr_payroll`
+   - `20261015T1656_salary_advance_idempotency`
+6. Run the access-control seed on the live system (new HR and payroll
+   permissions and roles).
+7. Deploy only after steps 1–6. No production deployment has been made.
 
 Nothing has been applied to any live database.

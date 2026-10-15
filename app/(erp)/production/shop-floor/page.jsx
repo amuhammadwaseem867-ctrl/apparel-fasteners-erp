@@ -4,3 +4,5 @@ import { redirect } from "next/navigation";
 export default function Page() {
   redirect("/production/stage-board");
 }
+
+export const instant = false;

@@ -136,6 +136,12 @@ export default function Topbar({ onMenuClick }) {
 
   useEffect(() => {
     let mounted = true;
+    // The browser rejects in-flight requests when the page is left (e.g. on
+    // a redirect); that is not a failure worth reporting.
+    let leaving = false;
+    const markLeaving = () => { leaving = true; };
+    window.addEventListener("pagehide", markLeaving);
+    window.addEventListener("beforeunload", markLeaving);
 
     async function loadCurrentUser() {
       try {
@@ -158,7 +164,9 @@ export default function Topbar({ onMenuClick }) {
           setCurrentUser(result.data);
         }
       } catch (error) {
-        console.error("Failed to load current user:", error);
+        if (mounted && !leaving) {
+          console.error("Failed to load current user:", error);
+        }
 
         if (mounted) {
           setCurrentUser(null);
@@ -174,6 +182,8 @@ export default function Topbar({ onMenuClick }) {
 
     return () => {
       mounted = false;
+      window.removeEventListener("pagehide", markLeaving);
+      window.removeEventListener("beforeunload", markLeaving);
     };
   }, []);
 

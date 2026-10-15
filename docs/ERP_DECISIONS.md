@@ -557,3 +557,49 @@ structure and deductions pages redirect to Employees, where pay is set.
 - calendar-day proration, against a fixed 26- or 30-day basis;
 - paying monthly staff for unrecorded days;
 - daily wagers being unpaid on holidays.
+
+## D-028: Reports, dashboard operations and regression
+
+**Reports**
+- 16 reports, each one read-only SQL query over the live tables.
+  - Order fulfilment, deliveries, dispatches, packing.
+  - Production orders, stage-wise production, completion, wastage, and
+    rejections & rework.
+  - Quality inspections.
+  - Stock position, stock movements, WIP stock, finished-goods stock.
+  - Receivables by invoice.
+  - Payroll summary.
+- Quantities and money stay exact. Totals are summed exactly on the server.
+  Percentages are rounded for display only.
+- **No stock valuation.** Item costs are not recorded, so no value is
+  invented.
+- **Export.** `GET /api/reports/[report]?from&to[&format=csv]`. The CSV
+  writer is the formula-safe one, and each export is audited. The screen's
+  export uses the range of the rows shown.
+
+**Report permissions**
+- A report opens with its module's view permission or `reports:view`.
+- The payroll summary needs `payroll:view` only.
+
+**Dashboard**
+- Production, quality, dispatch and finance are now reported as
+  connected.
+- An operations panel shows live counts: production in progress and
+  overdue, inspections awaiting approval, packed / in transit / delivered,
+  and receivables. Each section appears only for users with that module's
+  view permission.
+
+**UI polish**
+- Procurement placeholder KPIs show "—", not "0".
+- Redirect pages opt out of instant validation.
+- The top bar no longer logs fetches aborted by navigation.
+
+**Not implemented:** NCR/CAPA reports and financial statements; those
+pages keep the banner.
+
+**Regression**
+- Every static route (115) was opened in Chromium as an administrator and
+  as a view-only user.
+- Result: no 5xx responses, no page errors and no console errors.
+- The pages that still show a banner are exactly the unimplemented areas
+  listed in ERP_MODULE_STATUS.md.

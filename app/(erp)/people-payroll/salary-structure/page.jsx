@@ -4,3 +4,5 @@ import { redirect } from "next/navigation";
 export default function Page() {
   redirect("/people-payroll/employees");
 }
+
+export const instant = false;

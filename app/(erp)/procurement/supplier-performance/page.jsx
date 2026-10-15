@@ -29,12 +29,12 @@ const performanceStats = [
   },
   {
     label: "On-Time Delivery",
-    value: "0%",
+    value: "—",
     icon: Truck,
   },
   {
     label: "Quality Acceptance",
-    value: "0%",
+    value: "—",
     icon: PackageCheck,
   },
   {

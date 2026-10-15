@@ -21,22 +21,22 @@ import "./GoodsReceipts.css";
 const stats = [
   {
     label: "Total Receipts",
-    value: "0",
+    value: "—",
     icon: PackageCheck,
   },
   {
     label: "Pending Inspection",
-    value: "0",
+    value: "—",
     icon: ClipboardCheck,
   },
   {
     label: "Partially Received",
-    value: "0",
+    value: "—",
     icon: Clock3,
   },
   {
     label: "Completed",
-    value: "0",
+    value: "—",
     icon: Warehouse,
   },
 ];

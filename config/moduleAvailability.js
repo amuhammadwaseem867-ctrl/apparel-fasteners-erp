@@ -5,8 +5,8 @@
  * cannot load or save records says so. Routes with a working backend
  * (dashboard, products, BOM, sales orders, customers, inventory, MRP,
  * production, quality inspections, packing, dispatch, invoicing and
- * receivables, users, roles, audit, gate passes, HR and payroll, profile)
- * are not listed.
+ * receivables, users, roles, audit, gate passes, HR and payroll, reports,
+ * profile) are not listed.
  * Inventory pages render their own notice (InventoryBackendNotice).
  *
  * Remove an entry when that area's API and tables are in place.
@@ -29,7 +29,6 @@ const UNAVAILABLE_AREAS = [
   { prefix: "/finance/reports", label: "Financial reports" },
   { prefix: "/people-payroll/shifts", label: "Shifts" },
   { prefix: "/people-payroll/leave", label: "Leave balances", message: "Leave balances and requests are not implemented yet. Record paid and unpaid leave on the Attendance page; payroll uses it." },
-  { prefix: "/people-payroll/reports", label: "HR reports" },
   { prefix: "/products/categories", label: "Product categories" },
   { prefix: "/products/variants", label: "Product variants" },
   { prefix: "/products/pricing", label: "Product pricing" },
@@ -40,12 +39,8 @@ const UNAVAILABLE_AREAS = [
     message:
       "This page lists built-in configuration for reference only; it cannot be changed here. Users, roles and the audit log are managed on their own pages.",
   },
-  {
-    prefix: "/reports",
-    label: "Reports",
-    message:
-      "Reports cannot show data yet: the modules they report on have no database tables or API. Live figures for sales orders, customers and products are on the Dashboard and Sales pages.",
-  },
+  { prefix: "/reports/quality/ncr", label: "NCR reports" },
+  { prefix: "/reports/quality/capa", label: "CAPA reports" },
 ];
 
 const AVAILABLE_ROUTES = [

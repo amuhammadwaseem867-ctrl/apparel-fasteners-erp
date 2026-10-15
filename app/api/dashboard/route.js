@@ -22,7 +22,7 @@ export async function GET(request) {
   );
 
   try {
-    await authorizeRequest(
+    const user = await authorizeRequest(
       request,
       "dashboard:view",
     );
@@ -52,6 +52,7 @@ export async function GET(request) {
 
     const dashboard = await getDashboard(
       period,
+      user.permissions,
     );
 
     return NextResponse.json(

@@ -75,6 +75,7 @@ function countStatuses(
 
 export async function getDashboard(
   period: DashboardPeriod = "30d",
+  permissions: string[] = [],
 ) {
   const { dateFrom, dateTo } = getPeriodDates(period);
 
@@ -306,16 +307,19 @@ export async function getDashboard(
     // never added together.
     inventory: await inventorySnapshot(),
 
+    // Each section only for users who may view that module.
+    operations: await operationsSnapshot(dateFrom, dateTo, permissions),
+
     modules: {
       customers: true,
       products: true,
       sales: true,
       inventory: true,
       procurement: false,
-      production: false,
-      quality: false,
-      dispatch: false,
-      finance: false,
+      production: true,
+      quality: true,
+      dispatch: true,
+      finance: true,
     },
   };
 }
@@ -329,4 +333,62 @@ async function inventorySnapshot() {
     outOfStockCount: summary.outOfStockCount,
     totalsByUnit: summary.totalsByUnit,
   };
+}
+
+/*
+ * Live operational counts for the dashboard (D-028). Counts and exact
+ * money strings only; each section is included only when the user holds
+ * that module's view permission.
+ */
+async function operationsSnapshot(dateFrom: string, dateTo: string, permissions: string[]) {
+  const can = (permission: string) => permissions.includes(permission);
+  const upper = new Date(Date.parse(`${dateTo}T00:00:00Z`) + 86400000).toISOString().slice(0, 10);
+  const today = new Date().toISOString().slice(0, 10);
+  const one = async (plan: unknown) => ((await db.runtime().query(plan as never)) as unknown as Array<Record<string, string>>)[0];
+  const result: Record<string, Record<string, string | number>> = {};
+
+  if (can("production:view")) {
+    const row = await one(db.raw.sql`
+      select
+        (select count(*) from erp_production_orders where status in ('RELEASED', 'IN_PROGRESS'))::text as active,
+        (select count(*) from erp_production_orders where status = 'ON_HOLD')::text as "onHold",
+        (select count(*) from erp_production_orders where status in ('PLANNED', 'RELEASED', 'IN_PROGRESS', 'ON_HOLD') and "dueDate" < ${today})::text as overdue,
+        (select count(*) from erp_production_orders where status = 'COMPLETED' and "completedAt" >= ${dateFrom}::date and "completedAt" < ${upper}::date)::text as completed
+    `.returnsRow({ active: "pg/text@1", onHold: "pg/text@1", overdue: "pg/text@1", completed: "pg/text@1" }).build());
+    result.production = Object.fromEntries(Object.entries(row).map(([key, value]) => [key, Number(value)]));
+  }
+
+  if (can("quality:view")) {
+    const row = await one(db.raw.sql`
+      select (select count(*) from erp_quality_inspections where status = 'OPEN')::text as open,
+        coalesce((select round(sum("passedQuantity") * 100 / nullif(sum("inspectedQuantity"), 0), 1) from erp_quality_inspections
+          where status = 'APPROVED' and "inspectionType" = 'FINAL' and "decidedAt" >= ${dateFrom}::date and "decidedAt" < ${upper}::date)::text, '') as "finalPassRate"
+    `.returnsRow({ open: "pg/text@1", finalPassRate: "pg/text@1" }).build());
+    result.quality = { open: Number(row.open), finalPassRate: row.finalPassRate };
+  }
+
+  if (can("dispatch:view")) {
+    const row = await one(db.raw.sql`
+      select (select count(*) from erp_packing_lists where status = 'CONFIRMED')::text as "readyToShip",
+        (select count(*) from erp_shipments where status = 'DRAFT')::text as drafts,
+        (select count(*) from erp_shipments where status = 'DISPATCHED')::text as "inTransit",
+        (select count(*) from erp_shipments where status = 'DELIVERED' and "deliveredAt" >= ${dateFrom}::date and "deliveredAt" < ${upper}::date)::text as delivered
+    `.returnsRow({ readyToShip: "pg/text@1", drafts: "pg/text@1", inTransit: "pg/text@1", delivered: "pg/text@1" }).build());
+    result.dispatch = Object.fromEntries(Object.entries(row).map(([key, value]) => [key, Number(value)]));
+  }
+
+  if (can("finance:view")) {
+    const row = await one(db.raw.sql`
+      select coalesce(sum(o), 0)::text as receivable, coalesce(sum(case when "dueDate" < ${today} then o else 0 end), 0)::text as overdue,
+        (select coalesce(sum(amount), 0) from erp_customer_receipts where status = 'POSTED' and "receiptDate" between ${dateFrom} and ${dateTo})::text as received
+      from (
+        select i."dueDate", i."totalAmount" - coalesce((select sum("totalAmount") from erp_credit_notes c where c."invoiceId" = i.id), 0)
+          - coalesce((select sum(amount) from erp_customer_receipts r where r."invoiceId" = i.id and r.status = 'POSTED'), 0) as o
+        from erp_invoices i where i.status = 'ISSUED'
+      ) x where o > 0
+    `.returnsRow({ receivable: "pg/text@1", overdue: "pg/text@1", received: "pg/text@1" }).build());
+    result.finance = row;
+  }
+
+  return result;
 }

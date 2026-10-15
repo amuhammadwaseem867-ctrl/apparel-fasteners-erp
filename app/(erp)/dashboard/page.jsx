@@ -462,12 +462,40 @@ export default function DashboardPage() {
             </section>
           )}
 
+          {Object.keys(view.operations).length > 0 && (
+            <section className="dashboard__panel">
+              <div className="dashboard__panel-header">
+                <div>
+                  <span className="dashboard__panel-kicker">Operations</span>
+                  <h3>Production, quality, dispatch and receivables</h3>
+                </div>
+                <Link className="dashboard__text-button" href="/reports">Reports</Link>
+              </div>
+              <div className="dashboard__stats" style={{ padding: 18, marginBottom: 0 }}>
+                {view.operations.production && <>
+                  <StatCard icon={Clock3} label="Production in progress" value={formatCount(view.operations.production.active)} note={`${view.operations.production.onHold} on hold · ${view.operations.production.completed} completed in period`} />
+                  <StatCard icon={AlertTriangle} label="Production overdue" value={formatCount(view.operations.production.overdue)} note="open orders past due date" tone={view.operations.production.overdue ? "danger" : undefined} />
+                </>}
+                {view.operations.quality && (
+                  <StatCard icon={CheckCircle2} label="Inspections awaiting approval" value={formatCount(view.operations.quality.open)} note={view.operations.quality.finalPassRate ? `final pass rate ${view.operations.quality.finalPassRate}% in period` : "no final inspections in period"} />
+                )}
+                {view.operations.dispatch && <>
+                  <StatCard icon={Package} label="Packed, ready to ship" value={formatCount(view.operations.dispatch.readyToShip)} note={`${view.operations.dispatch.drafts} draft shipments`} />
+                  <StatCard icon={ShoppingCart} label="In transit" value={formatCount(view.operations.dispatch.inTransit)} note={`${view.operations.dispatch.delivered} delivered in period`} />
+                </>}
+                {view.operations.finance && (
+                  <StatCard icon={FilePen} label="Receivable" value={formatAmount(view.operations.finance.receivable)} note={`overdue ${formatAmount(view.operations.finance.overdue)} · received ${formatAmount(view.operations.finance.received)} in period`} tone={Number(view.operations.finance.overdue) > 0 ? "warning" : undefined} />
+                )}
+              </div>
+            </section>
+          )}
+
           {view.unavailableModules.length > 0 && (
             <div className="dashboard__message">
               <Alert variant="neutral" title="Not yet reported by the backend">
                 {view.unavailableModules.join(", ")} KPIs are not available
                 from the dashboard API yet, so they are not shown. They will
-                appear here once those modules are connected to the database.
+                appear here once those modules are built.
               </Alert>
             </div>
           )}

@@ -30,6 +30,7 @@ committed repository.** Statuses below describe the committed code only.
 | Administration | `/api/admin/{users,users/[id],users/[id]/password,roles,roles/[id],permissions,audit,audit/actions}` | `server/admin/*` | existing RBAC and audit tables |
 | Gate passes | `/api/gate-passes`, `/api/gate-passes/[id]`, `/api/gate-passes/[id]/returns` | `server/gate/*` | `erp_gate_passes`, `erp_gate_pass_lines` |
 | HR and payroll | `/api/hr/{departments,departments/[id],employees,employees/[id],employees/[id]/pay,attendance}`, `/api/payroll/{advances,advances/[id],runs,runs/[id],runs/[id]/lines/[lineId]}` | `server/payroll/*` | `erp_departments`, `erp_employees`, `erp_attendance_records`, `erp_salary_advances`, `erp_payroll_runs`, `erp_payroll_lines` |
+| Reports | `/api/reports/[report]` (JSON or `?format=csv`) | `server/reports/*` | reads the tables above |
 | Sales orders | `/api/sales/orders`, `/api/sales/orders/[id]` | `server/sales/*` | `erp_sales_orders`, `erp_sales_order_lines` (has `productId`) |
 | Dashboard | `/api/dashboard` | `server/dashboard/*` | reads the above |
 
@@ -45,7 +46,7 @@ and reports success; data is lost on reload and never reaches the server.
 |---|---|---|---|
 | Authentication | login, profile | Working | Login rate limiting per email and per IP, shared by all instances in the database (D-025). |
 | Administration | users, roles, settings, audit | **Working** (3) / reference (1) | Users (create, edit roles, enable/disable, password reset), roles (custom roles with permissions; system roles read-only), and audit log (filters) are connected, with lockout protection (D-024). Settings is a read-only reference page (banner). Verified in Chromium against the test DB. |
-| Dashboard | dashboard | Working | Connected in commit `e1241ae`. Sales/customer/product KPIs only; other modules reported as not connected. |
+| Dashboard | dashboard | Working | Sales, customers, products and inventory, plus a permission-scoped operations panel for production, quality, dispatch and receivables (D-028). Only procurement is reported as not connected. |
 | Customers | sales/customers | Working | |
 | Products | products, [id], new, edit | Working | Unit price stored exactly up to 6 decimals; it was previously rounded to 2 silently (D-012). Item specification fields, deterministic SKU suggestion, restore, guarded permanent delete. |
 | Products: BOM | bom | **Working** | Revisions, draft editing, approve, activate (one active per item), obsolete, revise; cycle refusal. |
@@ -60,7 +61,7 @@ and reports success; data is lost on reload and never reaches the server.
 | Dispatch | 6 pages | **Working** | Overview, ready for delivery (packed lists by sales order), dispatch (drafts), shipments, delivered, shipment detail (dispatch, confirm delivery, cancel draft) and a printable delivery challan. Partial deliveries are supported; nothing ships past the ordered quantity. Verified in Chromium against the test DB. |
 | Finance | 12 pages | **Working** (5) / static (7) | Overview (live receivable, overdue, invoiced/received last 30 days), invoices (from dispatched shipments, issue/cancel draft), invoice detail (receipts, void, credit notes), receipts, receivables ageing; printable invoice, credit note and receipt (D-023). Accounts, income, expenses, payables, cash & bank, transactions and financial reports are not implemented (banner). Verified in Chromium against the test DB. |
 | People & Payroll | 11 pages | **Working** (8) / static (3) | Overview, employees (pay visible and editable only for payroll roles), departments, daily attendance with overtime, salary advances, payroll runs (calculate, adjust, recalculate, approve, pay) with payslips and register (D-027). Salary structure and deductions redirect to employees. Shifts, leave balances and HR reports show a banner. Verified in Chromium against the test DB, including pay hidden from an HR manager. |
-| Reports | 17 pages | Static, banner | No reporting API beyond the dashboard. |
+| Reports | 18 pages | **Working** (16) / static (2) | Order fulfilment, deliveries, dispatches, packing, production (orders, stages, completion, wastage, rejections), quality, stock (position, movements, WIP, finished goods), receivables and payroll summary: live data, date filters, exact totals and CSV export (D-028). NCR and CAPA reports keep a banner. |
 | Gate passes | 2 pages | **Working** | List (open, overdue, type filters), create (lines or from a dispatched shipment), approve, record gate exit/entry with guard, partial returns, cancel, printable pass (D-026). Verified in Chromium against the test DB. |
 | Printing / export | sales order sheet, stock slips, job card, packing list, delivery challan, invoice, credit note, receipt, gate pass, payslip, payroll register | Partial | `/print/sales-orders/[id]`, `/print/stock-documents/[id]`, `/print/production-orders/[id]`, `/print/packing-lists/[id]`, `/print/shipments/[id]`, `/print/invoices/[id]`, `/print/credit-notes/[id]`, `/print/receipts/[id]`, `/print/gate-passes/[id]`, `/print/payroll/[id]`, plus shell print CSS. Other documents depend on their modules' data. Sales order list CSV export (Excel-compatible). PDF comes from the browser's print dialog. |
 
@@ -110,8 +111,7 @@ The Quality, Packing and Dispatch rewrite left these unreferenced:
   (the NCR/CAPA pages may still use some of them);
 - the old page stylesheets under `app/(erp)/packing` and `app/(erp)/dispatch`.
 
-Procurement pages show `0` / `0%` placeholder KPIs under their banner. They
-should become "—" in the UI polish phase.
+Procurement placeholder KPIs now show "—" (D-028).
 
 The Finance rewrite left the old page stylesheets
 (`app/(erp)/finance/**/*.css`) unreferenced. The other finance pages still
