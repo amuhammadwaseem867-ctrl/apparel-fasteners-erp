@@ -1,0 +1,2669 @@
+[
+  {
+    "id": "table.erp_purchase_order_lines",
+    "label": "Create table \"erp_purchase_order_lines\"",
+    "summary": "Creates table \"erp_purchase_order_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_purchase_order_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_purchase_order_lines\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_order_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_purchase_order_lines\"",
+        "sql": "CREATE TABLE \"public\".\"erp_purchase_order_lines\" (\n  \"billedQuantity\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"discountAmount\" numeric NOT NULL,\n  \"discountPercent\" int4 DEFAULT 0 NOT NULL,\n  \"grossAmount\" numeric NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"lineNo\" int4 NOT NULL,\n  \"lineTotal\" numeric NOT NULL,\n  \"productId\" uuid NOT NULL,\n  \"purchaseOrderId\" uuid NOT NULL,\n  \"quantity\" numeric NOT NULL,\n  \"receivedQuantity\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"requisitionLineId\" uuid,\n  \"taxAmount\" numeric NOT NULL,\n  \"taxPercent\" int4 DEFAULT 0 NOT NULL,\n  \"unitPrice\" numeric NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_purchase_order_lines_billed_92f991e7\" CHECK (\"billedQuantity\" >= 0 AND \"billedQuantity\" <= \"receivedQuantity\"),\n  CONSTRAINT \"erp_purchase_order_lines_percents_01abab9f\" CHECK (\"discountPercent\" BETWEEN 0 AND 100 AND \"taxPercent\" BETWEEN 0 AND 100),\n  CONSTRAINT \"erp_purchase_order_lines_quantity_3b6690a7\" CHECK (\"quantity\" > 0 AND \"unitPrice\" >= 0),\n  CONSTRAINT \"erp_purchase_order_lines_received_b8d29085\" CHECK (\"receivedQuantity\" >= 0 AND \"receivedQuantity\" <= \"quantity\"),\n  CONSTRAINT \"erp_purchase_order_lines_total_ae91d4e0\" CHECK (\"lineTotal\" = \"grossAmount\" - \"discountAmount\" + \"taxAmount\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_purchase_order_lines\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_order_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_purchase_orders",
+    "label": "Create table \"erp_purchase_orders\"",
+    "summary": "Creates table \"erp_purchase_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_purchase_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_purchase_orders\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_orders\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_purchase_orders\"",
+        "sql": "CREATE TABLE \"public\".\"erp_purchase_orders\" (\n  \"approvedAt\" timestamptz,\n  \"approvedBy\" uuid,\n  \"closeReason\" text,\n  \"closedAt\" timestamptz,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"discountTotal\" numeric NOT NULL,\n  \"expectedDate\" text,\n  \"id\" uuid NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"notes\" text,\n  \"orderDate\" text NOT NULL,\n  \"poNumber\" text NOT NULL,\n  \"requisitionId\" uuid,\n  \"rfqId\" uuid,\n  \"status\" text DEFAULT 'DRAFT' NOT NULL,\n  \"subtotal\" numeric NOT NULL,\n  \"supplierId\" uuid NOT NULL,\n  \"taxTotal\" numeric NOT NULL,\n  \"totalAmount\" numeric NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_purchase_orders_status_5fd3317f\" CHECK (\"status\" IN ('DRAFT', 'APPROVED', 'PARTIALLY_RECEIVED', 'RECEIVED', 'CLOSED', 'CANCELLED')),\n  CONSTRAINT \"erp_purchase_orders_total_afde76ef\" CHECK (\"totalAmount\" = \"subtotal\" - \"discountTotal\" + \"taxTotal\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_purchase_orders\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_orders\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_purchase_receipt_lines",
+    "label": "Create table \"erp_purchase_receipt_lines\"",
+    "summary": "Creates table \"erp_purchase_receipt_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_purchase_receipt_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_purchase_receipt_lines\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_receipt_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_purchase_receipt_lines\"",
+        "sql": "CREATE TABLE \"public\".\"erp_purchase_receipt_lines\" (\n  \"id\" uuid NOT NULL,\n  \"purchaseOrderLineId\" uuid NOT NULL,\n  \"quantity\" numeric NOT NULL,\n  \"receiptId\" uuid NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_purchase_receipt_lines_quantity_fc510296\" CHECK (\"quantity\" > 0)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_purchase_receipt_lines\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_receipt_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_purchase_receipts",
+    "label": "Create table \"erp_purchase_receipts\"",
+    "summary": "Creates table \"erp_purchase_receipts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_purchase_receipts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_purchase_receipts\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_receipts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_purchase_receipts\"",
+        "sql": "CREATE TABLE \"public\".\"erp_purchase_receipts\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"deliveryNoteRef\" text,\n  \"id\" uuid NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"locationId\" uuid NOT NULL,\n  \"notes\" text,\n  \"purchaseOrderId\" uuid NOT NULL,\n  \"qualityHold\" bool DEFAULT false NOT NULL,\n  \"receiptNumber\" text NOT NULL,\n  \"receivedDate\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_purchase_receipts\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_receipts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_purchase_requisition_lines",
+    "label": "Create table \"erp_purchase_requisition_lines\"",
+    "summary": "Creates table \"erp_purchase_requisition_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_purchase_requisition_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_purchase_requisition_lines\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_requisition_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_purchase_requisition_lines\"",
+        "sql": "CREATE TABLE \"public\".\"erp_purchase_requisition_lines\" (\n  \"id\" uuid NOT NULL,\n  \"lineNo\" int4 NOT NULL,\n  \"notes\" text,\n  \"plannedOrderId\" uuid,\n  \"productId\" uuid NOT NULL,\n  \"quantity\" numeric NOT NULL,\n  \"requisitionId\" uuid NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_purchase_requisition_lines_quantity_fc510296\" CHECK (\"quantity\" > 0)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_purchase_requisition_lines\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_requisition_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_purchase_requisitions",
+    "label": "Create table \"erp_purchase_requisitions\"",
+    "summary": "Creates table \"erp_purchase_requisitions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_purchase_requisitions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_purchase_requisitions\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_requisitions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_purchase_requisitions\"",
+        "sql": "CREATE TABLE \"public\".\"erp_purchase_requisitions\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"decidedAt\" timestamptz,\n  \"decidedBy\" uuid,\n  \"decisionNote\" text,\n  \"id\" uuid NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"neededBy\" text,\n  \"notes\" text,\n  \"requisitionNumber\" text NOT NULL,\n  \"status\" text DEFAULT 'DRAFT' NOT NULL,\n  \"submittedAt\" timestamptz,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_purchase_requisitions_status_32a3dd2b\" CHECK (\"status\" IN ('DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED', 'CANCELLED', 'ORDERED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_purchase_requisitions\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_requisitions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_rfq_lines",
+    "label": "Create table \"erp_rfq_lines\"",
+    "summary": "Creates table \"erp_rfq_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_rfq_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_rfq_lines\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_rfq_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_rfq_lines\"",
+        "sql": "CREATE TABLE \"public\".\"erp_rfq_lines\" (\n  \"id\" uuid NOT NULL,\n  \"lineNo\" int4 NOT NULL,\n  \"productId\" uuid NOT NULL,\n  \"quantity\" numeric NOT NULL,\n  \"rfqId\" uuid NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_rfq_lines_quantity_fc510296\" CHECK (\"quantity\" > 0)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_rfq_lines\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_rfq_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_rfq_quote_lines",
+    "label": "Create table \"erp_rfq_quote_lines\"",
+    "summary": "Creates table \"erp_rfq_quote_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_rfq_quote_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_rfq_quote_lines\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_rfq_quote_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_rfq_quote_lines\"",
+        "sql": "CREATE TABLE \"public\".\"erp_rfq_quote_lines\" (\n  \"id\" uuid NOT NULL,\n  \"quoteId\" uuid NOT NULL,\n  \"rfqLineId\" uuid NOT NULL,\n  \"unitPrice\" numeric NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_rfq_quote_lines_price_07e3086a\" CHECK (\"unitPrice\" >= 0)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_rfq_quote_lines\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_rfq_quote_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_rfq_quotes",
+    "label": "Create table \"erp_rfq_quotes\"",
+    "summary": "Creates table \"erp_rfq_quotes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_rfq_quotes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_rfq_quotes\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_rfq_quotes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_rfq_quotes\"",
+        "sql": "CREATE TABLE \"public\".\"erp_rfq_quotes\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"leadTimeDays\" int4,\n  \"notes\" text,\n  \"quoteRef\" text,\n  \"rfqId\" uuid NOT NULL,\n  \"supplierId\" uuid NOT NULL,\n  \"taxPercent\" int4 DEFAULT 0 NOT NULL,\n  \"totalAmount\" numeric NOT NULL,\n  \"validUntil\" text,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_rfq_quotes_amounts_d58c0db4\" CHECK (\"taxPercent\" BETWEEN 0 AND 100 AND \"totalAmount\" >= 0)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_rfq_quotes\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_rfq_quotes\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_rfqs",
+    "label": "Create table \"erp_rfqs\"",
+    "summary": "Creates table \"erp_rfqs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_rfqs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_rfqs\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_rfqs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_rfqs\"",
+        "sql": "CREATE TABLE \"public\".\"erp_rfqs\" (\n  \"awardedQuoteId\" uuid,\n  \"closedAt\" timestamptz,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"notes\" text,\n  \"requisitionId\" uuid,\n  \"responseDue\" text,\n  \"rfqNumber\" text NOT NULL,\n  \"status\" text DEFAULT 'OPEN' NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_rfqs_status_4ba8b2ec\" CHECK (\"status\" IN ('OPEN', 'AWARDED', 'CANCELLED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_rfqs\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_rfqs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_supplier_bill_lines",
+    "label": "Create table \"erp_supplier_bill_lines\"",
+    "summary": "Creates table \"erp_supplier_bill_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_supplier_bill_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_supplier_bill_lines\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_bill_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_supplier_bill_lines\"",
+        "sql": "CREATE TABLE \"public\".\"erp_supplier_bill_lines\" (\n  \"billId\" uuid NOT NULL,\n  \"description\" text NOT NULL,\n  \"discountAmount\" numeric NOT NULL,\n  \"discountPercent\" int4 DEFAULT 0 NOT NULL,\n  \"grossAmount\" numeric NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"lineNo\" int4 NOT NULL,\n  \"lineTotal\" numeric NOT NULL,\n  \"productId\" uuid,\n  \"purchaseOrderLineId\" uuid,\n  \"quantity\" numeric NOT NULL,\n  \"taxAmount\" numeric NOT NULL,\n  \"taxPercent\" int4 DEFAULT 0 NOT NULL,\n  \"unitPrice\" numeric NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_supplier_bill_lines_quantity_3b6690a7\" CHECK (\"quantity\" > 0 AND \"unitPrice\" >= 0),\n  CONSTRAINT \"erp_supplier_bill_lines_total_ae91d4e0\" CHECK (\"lineTotal\" = \"grossAmount\" - \"discountAmount\" + \"taxAmount\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_supplier_bill_lines\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_bill_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_supplier_bills",
+    "label": "Create table \"erp_supplier_bills\"",
+    "summary": "Creates table \"erp_supplier_bills\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_supplier_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_supplier_bills\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_bills\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_supplier_bills\"",
+        "sql": "CREATE TABLE \"public\".\"erp_supplier_bills\" (\n  \"approvedAt\" timestamptz,\n  \"approvedBy\" uuid,\n  \"billDate\" text NOT NULL,\n  \"billNumber\" text NOT NULL,\n  \"cancelReason\" text,\n  \"cancelledAt\" timestamptz,\n  \"cancelledBy\" uuid,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"discountTotal\" numeric NOT NULL,\n  \"dueDate\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"notes\" text,\n  \"purchaseOrderId\" uuid,\n  \"status\" text DEFAULT 'DRAFT' NOT NULL,\n  \"subtotal\" numeric NOT NULL,\n  \"supplierId\" uuid NOT NULL,\n  \"supplierInvoiceNumber\" text NOT NULL,\n  \"taxTotal\" numeric NOT NULL,\n  \"totalAmount\" numeric NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_supplier_bills_status_e344e5f8\" CHECK (\"status\" IN ('DRAFT', 'APPROVED', 'CANCELLED')),\n  CONSTRAINT \"erp_supplier_bills_total_afde76ef\" CHECK (\"totalAmount\" = \"subtotal\" - \"discountTotal\" + \"taxTotal\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_supplier_bills\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_bills\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_supplier_payments",
+    "label": "Create table \"erp_supplier_payments\"",
+    "summary": "Creates table \"erp_supplier_payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_supplier_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_supplier_payments\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_supplier_payments\"",
+        "sql": "CREATE TABLE \"public\".\"erp_supplier_payments\" (\n  \"amount\" numeric NOT NULL,\n  \"billId\" uuid NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"method\" text NOT NULL,\n  \"notes\" text,\n  \"paymentDate\" text NOT NULL,\n  \"paymentNumber\" text NOT NULL,\n  \"reference\" text,\n  \"status\" text DEFAULT 'POSTED' NOT NULL,\n  \"supplierId\" uuid NOT NULL,\n  \"voidReason\" text,\n  \"voidedAt\" timestamptz,\n  \"voidedBy\" uuid,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_supplier_payments_amount_ed0d10ac\" CHECK (\"amount\" > 0),\n  CONSTRAINT \"erp_supplier_payments_method_582524af\" CHECK (\"method\" IN ('CASH', 'BANK_TRANSFER', 'CHEQUE', 'CARD', 'OTHER')),\n  CONSTRAINT \"erp_supplier_payments_status_12d53be9\" CHECK (\"status\" IN ('POSTED', 'VOIDED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_supplier_payments\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_suppliers",
+    "label": "Create table \"erp_suppliers\"",
+    "summary": "Creates table \"erp_suppliers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_suppliers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_suppliers\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_suppliers\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_suppliers\"",
+        "sql": "CREATE TABLE \"public\".\"erp_suppliers\" (\n  \"address\" text,\n  \"code\" text NOT NULL,\n  \"contactName\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"email\" text,\n  \"id\" uuid NOT NULL,\n  \"name\" text NOT NULL,\n  \"notes\" text,\n  \"paymentTermsDays\" int4 DEFAULT 30 NOT NULL,\n  \"phone\" text,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"taxRegistration\" text,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_suppliers_status_ee520df2\" CHECK (\"status\" IN ('ACTIVE', 'INACTIVE')),\n  CONSTRAINT \"erp_suppliers_terms_301004b8\" CHECK (\"paymentTermsDays\" BETWEEN 0 AND 365)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_suppliers\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_suppliers\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_purchase_order_lines.erp_purchase_order_lines_purchaseOrderId_lineNo_key",
+    "label": "Add unique constraint on \"erp_purchase_order_lines\" (purchaseOrderId, lineNo)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_purchase_order_lines_purchaseOrderId_lineNo_key",
+        "table": "erp_purchase_order_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_purchase_order_lines_purchaseOrderId_lineNo_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_order_lines_purchaseOrderId_lineNo_key",
+          "public",
+          "\"public\".\"erp_purchase_order_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_purchase_order_lines_purchaseOrderId_lineNo_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_purchase_order_lines\" ADD CONSTRAINT \"erp_purchase_order_lines_purchaseOrderId_lineNo_key\" UNIQUE (\"purchaseOrderId\", \"lineNo\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_purchase_order_lines_purchaseOrderId_lineNo_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_order_lines_purchaseOrderId_lineNo_key",
+          "public",
+          "\"public\".\"erp_purchase_order_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_purchase_orders.erp_purchase_orders_poNumber_key",
+    "label": "Add unique constraint on \"erp_purchase_orders\" (poNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_purchase_orders_poNumber_key",
+        "table": "erp_purchase_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_purchase_orders_poNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_orders_poNumber_key",
+          "public",
+          "\"public\".\"erp_purchase_orders\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_purchase_orders_poNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_purchase_orders\" ADD CONSTRAINT \"erp_purchase_orders_poNumber_key\" UNIQUE (\"poNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_purchase_orders_poNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_orders_poNumber_key",
+          "public",
+          "\"public\".\"erp_purchase_orders\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_purchase_orders.erp_purchase_orders_idempotencyKey_key",
+    "label": "Add unique constraint on \"erp_purchase_orders\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_purchase_orders_idempotencyKey_key",
+        "table": "erp_purchase_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_purchase_orders_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_orders_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_purchase_orders\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_purchase_orders_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_purchase_orders\" ADD CONSTRAINT \"erp_purchase_orders_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_purchase_orders_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_orders_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_purchase_orders\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_purchase_receipt_lines.erp_purchase_receipt_lines_receiptId_purchaseOrderLineId_key",
+    "label": "Add unique constraint on \"erp_purchase_receipt_lines\" (receiptId, purchaseOrderLineId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_purchase_receipt_lines_receiptId_purchaseOrderLineId_key",
+        "table": "erp_purchase_receipt_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_purchase_receipt_lines_receiptId_purchaseOrderLineId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_receipt_lines_receiptId_purchaseOrderLineId_key",
+          "public",
+          "\"public\".\"erp_purchase_receipt_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_purchase_receipt_lines_receiptId_purchaseOrderLineId_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_purchase_receipt_lines\" ADD CONSTRAINT \"erp_purchase_receipt_lines_receiptId_purchaseOrderLineId_key\" UNIQUE (\"receiptId\", \"purchaseOrderLineId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_purchase_receipt_lines_receiptId_purchaseOrderLineId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_receipt_lines_receiptId_purchaseOrderLineId_key",
+          "public",
+          "\"public\".\"erp_purchase_receipt_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_purchase_receipts.erp_purchase_receipts_receiptNumber_key",
+    "label": "Add unique constraint on \"erp_purchase_receipts\" (receiptNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_purchase_receipts_receiptNumber_key",
+        "table": "erp_purchase_receipts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_purchase_receipts_receiptNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_receipts_receiptNumber_key",
+          "public",
+          "\"public\".\"erp_purchase_receipts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_purchase_receipts_receiptNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_purchase_receipts\" ADD CONSTRAINT \"erp_purchase_receipts_receiptNumber_key\" UNIQUE (\"receiptNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_purchase_receipts_receiptNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_receipts_receiptNumber_key",
+          "public",
+          "\"public\".\"erp_purchase_receipts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_purchase_receipts.erp_purchase_receipts_idempotencyKey_key",
+    "label": "Add unique constraint on \"erp_purchase_receipts\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_purchase_receipts_idempotencyKey_key",
+        "table": "erp_purchase_receipts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_purchase_receipts_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_receipts_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_purchase_receipts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_purchase_receipts_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_purchase_receipts\" ADD CONSTRAINT \"erp_purchase_receipts_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_purchase_receipts_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_receipts_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_purchase_receipts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_purchase_requisition_lines.erp_purchase_requisition_lines_plannedOrderId_key",
+    "label": "Add unique constraint on \"erp_purchase_requisition_lines\" (plannedOrderId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_purchase_requisition_lines_plannedOrderId_key",
+        "table": "erp_purchase_requisition_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_purchase_requisition_lines_plannedOrderId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_requisition_lines_plannedOrderId_key",
+          "public",
+          "\"public\".\"erp_purchase_requisition_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_purchase_requisition_lines_plannedOrderId_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_purchase_requisition_lines\" ADD CONSTRAINT \"erp_purchase_requisition_lines_plannedOrderId_key\" UNIQUE (\"plannedOrderId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_purchase_requisition_lines_plannedOrderId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_requisition_lines_plannedOrderId_key",
+          "public",
+          "\"public\".\"erp_purchase_requisition_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_purchase_requisition_lines.erp_purchase_requisition_lines_requisitionId_lineNo_key",
+    "label": "Add unique constraint on \"erp_purchase_requisition_lines\" (requisitionId, lineNo)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_purchase_requisition_lines_requisitionId_lineNo_key",
+        "table": "erp_purchase_requisition_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_purchase_requisition_lines_requisitionId_lineNo_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_requisition_lines_requisitionId_lineNo_key",
+          "public",
+          "\"public\".\"erp_purchase_requisition_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_purchase_requisition_lines_requisitionId_lineNo_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_purchase_requisition_lines\" ADD CONSTRAINT \"erp_purchase_requisition_lines_requisitionId_lineNo_key\" UNIQUE (\"requisitionId\", \"lineNo\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_purchase_requisition_lines_requisitionId_lineNo_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_requisition_lines_requisitionId_lineNo_key",
+          "public",
+          "\"public\".\"erp_purchase_requisition_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_purchase_requisitions.erp_purchase_requisitions_requisitionNumber_key",
+    "label": "Add unique constraint on \"erp_purchase_requisitions\" (requisitionNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_purchase_requisitions_requisitionNumber_key",
+        "table": "erp_purchase_requisitions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_purchase_requisitions_requisitionNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_requisitions_requisitionNumber_key",
+          "public",
+          "\"public\".\"erp_purchase_requisitions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_purchase_requisitions_requisitionNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_purchase_requisitions\" ADD CONSTRAINT \"erp_purchase_requisitions_requisitionNumber_key\" UNIQUE (\"requisitionNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_purchase_requisitions_requisitionNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_requisitions_requisitionNumber_key",
+          "public",
+          "\"public\".\"erp_purchase_requisitions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_purchase_requisitions.erp_purchase_requisitions_idempotencyKey_key",
+    "label": "Add unique constraint on \"erp_purchase_requisitions\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_purchase_requisitions_idempotencyKey_key",
+        "table": "erp_purchase_requisitions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_purchase_requisitions_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_requisitions_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_purchase_requisitions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_purchase_requisitions_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_purchase_requisitions\" ADD CONSTRAINT \"erp_purchase_requisitions_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_purchase_requisitions_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_requisitions_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_purchase_requisitions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_rfq_lines.erp_rfq_lines_rfqId_lineNo_key",
+    "label": "Add unique constraint on \"erp_rfq_lines\" (rfqId, lineNo)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_rfq_lines_rfqId_lineNo_key",
+        "table": "erp_rfq_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_rfq_lines_rfqId_lineNo_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_rfq_lines_rfqId_lineNo_key",
+          "public",
+          "\"public\".\"erp_rfq_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_rfq_lines_rfqId_lineNo_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_rfq_lines\" ADD CONSTRAINT \"erp_rfq_lines_rfqId_lineNo_key\" UNIQUE (\"rfqId\", \"lineNo\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_rfq_lines_rfqId_lineNo_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_rfq_lines_rfqId_lineNo_key",
+          "public",
+          "\"public\".\"erp_rfq_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_rfq_quote_lines.erp_rfq_quote_lines_quoteId_rfqLineId_key",
+    "label": "Add unique constraint on \"erp_rfq_quote_lines\" (quoteId, rfqLineId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_rfq_quote_lines_quoteId_rfqLineId_key",
+        "table": "erp_rfq_quote_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_rfq_quote_lines_quoteId_rfqLineId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_rfq_quote_lines_quoteId_rfqLineId_key",
+          "public",
+          "\"public\".\"erp_rfq_quote_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_rfq_quote_lines_quoteId_rfqLineId_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_rfq_quote_lines\" ADD CONSTRAINT \"erp_rfq_quote_lines_quoteId_rfqLineId_key\" UNIQUE (\"quoteId\", \"rfqLineId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_rfq_quote_lines_quoteId_rfqLineId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_rfq_quote_lines_quoteId_rfqLineId_key",
+          "public",
+          "\"public\".\"erp_rfq_quote_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_rfq_quotes.erp_rfq_quotes_rfqId_supplierId_key",
+    "label": "Add unique constraint on \"erp_rfq_quotes\" (rfqId, supplierId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_rfq_quotes_rfqId_supplierId_key",
+        "table": "erp_rfq_quotes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_rfq_quotes_rfqId_supplierId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_rfq_quotes_rfqId_supplierId_key",
+          "public",
+          "\"public\".\"erp_rfq_quotes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_rfq_quotes_rfqId_supplierId_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_rfq_quotes\" ADD CONSTRAINT \"erp_rfq_quotes_rfqId_supplierId_key\" UNIQUE (\"rfqId\", \"supplierId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_rfq_quotes_rfqId_supplierId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_rfq_quotes_rfqId_supplierId_key",
+          "public",
+          "\"public\".\"erp_rfq_quotes\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_rfqs.erp_rfqs_rfqNumber_key",
+    "label": "Add unique constraint on \"erp_rfqs\" (rfqNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_rfqs_rfqNumber_key",
+        "table": "erp_rfqs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_rfqs_rfqNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_rfqs_rfqNumber_key",
+          "public",
+          "\"public\".\"erp_rfqs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_rfqs_rfqNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_rfqs\" ADD CONSTRAINT \"erp_rfqs_rfqNumber_key\" UNIQUE (\"rfqNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_rfqs_rfqNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_rfqs_rfqNumber_key",
+          "public",
+          "\"public\".\"erp_rfqs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_rfqs.erp_rfqs_idempotencyKey_key",
+    "label": "Add unique constraint on \"erp_rfqs\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_rfqs_idempotencyKey_key",
+        "table": "erp_rfqs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_rfqs_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_rfqs_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_rfqs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_rfqs_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_rfqs\" ADD CONSTRAINT \"erp_rfqs_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_rfqs_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_rfqs_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_rfqs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_supplier_bill_lines.erp_supplier_bill_lines_billId_lineNo_key",
+    "label": "Add unique constraint on \"erp_supplier_bill_lines\" (billId, lineNo)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_supplier_bill_lines_billId_lineNo_key",
+        "table": "erp_supplier_bill_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_supplier_bill_lines_billId_lineNo_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_supplier_bill_lines_billId_lineNo_key",
+          "public",
+          "\"public\".\"erp_supplier_bill_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_supplier_bill_lines_billId_lineNo_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_supplier_bill_lines\" ADD CONSTRAINT \"erp_supplier_bill_lines_billId_lineNo_key\" UNIQUE (\"billId\", \"lineNo\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_supplier_bill_lines_billId_lineNo_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_supplier_bill_lines_billId_lineNo_key",
+          "public",
+          "\"public\".\"erp_supplier_bill_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_supplier_bills.erp_supplier_bills_billNumber_key",
+    "label": "Add unique constraint on \"erp_supplier_bills\" (billNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_supplier_bills_billNumber_key",
+        "table": "erp_supplier_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_supplier_bills_billNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_supplier_bills_billNumber_key",
+          "public",
+          "\"public\".\"erp_supplier_bills\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_supplier_bills_billNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_supplier_bills\" ADD CONSTRAINT \"erp_supplier_bills_billNumber_key\" UNIQUE (\"billNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_supplier_bills_billNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_supplier_bills_billNumber_key",
+          "public",
+          "\"public\".\"erp_supplier_bills\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_supplier_bills.erp_supplier_bills_idempotencyKey_key",
+    "label": "Add unique constraint on \"erp_supplier_bills\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_supplier_bills_idempotencyKey_key",
+        "table": "erp_supplier_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_supplier_bills_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_supplier_bills_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_supplier_bills\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_supplier_bills_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_supplier_bills\" ADD CONSTRAINT \"erp_supplier_bills_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_supplier_bills_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_supplier_bills_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_supplier_bills\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_supplier_payments.erp_supplier_payments_paymentNumber_key",
+    "label": "Add unique constraint on \"erp_supplier_payments\" (paymentNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_supplier_payments_paymentNumber_key",
+        "table": "erp_supplier_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_supplier_payments_paymentNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_supplier_payments_paymentNumber_key",
+          "public",
+          "\"public\".\"erp_supplier_payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_supplier_payments_paymentNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_supplier_payments\" ADD CONSTRAINT \"erp_supplier_payments_paymentNumber_key\" UNIQUE (\"paymentNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_supplier_payments_paymentNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_supplier_payments_paymentNumber_key",
+          "public",
+          "\"public\".\"erp_supplier_payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_supplier_payments.erp_supplier_payments_idempotencyKey_key",
+    "label": "Add unique constraint on \"erp_supplier_payments\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_supplier_payments_idempotencyKey_key",
+        "table": "erp_supplier_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_supplier_payments_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_supplier_payments_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_supplier_payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_supplier_payments_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_supplier_payments\" ADD CONSTRAINT \"erp_supplier_payments_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_supplier_payments_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_supplier_payments_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_supplier_payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_suppliers.erp_suppliers_code_key",
+    "label": "Add unique constraint on \"erp_suppliers\" (code)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_suppliers_code_key",
+        "table": "erp_suppliers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_suppliers_code_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_suppliers_code_key",
+          "public",
+          "\"public\".\"erp_suppliers\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_suppliers_code_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_suppliers\" ADD CONSTRAINT \"erp_suppliers_code_key\" UNIQUE (\"code\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_suppliers_code_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_suppliers_code_key",
+          "public",
+          "\"public\".\"erp_suppliers\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_purchase_order_lines.erp_purchase_order_lines_productId_idx_5858600a",
+    "label": "Create index \"erp_purchase_order_lines_productId_idx_5858600a\" on \"erp_purchase_order_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_purchase_order_lines_productId_idx_5858600a",
+        "table": "erp_purchase_order_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_purchase_order_lines_productId_idx_5858600a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_order_lines_productId_idx_5858600a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_purchase_order_lines_productId_idx_5858600a\"",
+        "sql": "CREATE INDEX \"erp_purchase_order_lines_productId_idx_5858600a\" ON \"public\".\"erp_purchase_order_lines\" (\"productId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_purchase_order_lines_productId_idx_5858600a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_order_lines_productId_idx_5858600a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_purchase_order_lines.erp_purchase_order_lines_purchaseOrderId_idx_3e3a8c45",
+    "label": "Create index \"erp_purchase_order_lines_purchaseOrderId_idx_3e3a8c45\" on \"erp_purchase_order_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_purchase_order_lines_purchaseOrderId_idx_3e3a8c45",
+        "table": "erp_purchase_order_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_purchase_order_lines_purchaseOrderId_idx_3e3a8c45\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_order_lines_purchaseOrderId_idx_3e3a8c45\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_purchase_order_lines_purchaseOrderId_idx_3e3a8c45\"",
+        "sql": "CREATE INDEX \"erp_purchase_order_lines_purchaseOrderId_idx_3e3a8c45\" ON \"public\".\"erp_purchase_order_lines\" (\"purchaseOrderId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_purchase_order_lines_purchaseOrderId_idx_3e3a8c45\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_order_lines_purchaseOrderId_idx_3e3a8c45\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_purchase_orders.erp_purchase_orders_status_idx_e98638ab",
+    "label": "Create index \"erp_purchase_orders_status_idx_e98638ab\" on \"erp_purchase_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_purchase_orders_status_idx_e98638ab",
+        "table": "erp_purchase_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_purchase_orders_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_orders_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_purchase_orders_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"erp_purchase_orders_status_idx_e98638ab\" ON \"public\".\"erp_purchase_orders\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_purchase_orders_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_orders_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_purchase_orders.erp_purchase_orders_supplierId_idx_c4d9a8b9",
+    "label": "Create index \"erp_purchase_orders_supplierId_idx_c4d9a8b9\" on \"erp_purchase_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_purchase_orders_supplierId_idx_c4d9a8b9",
+        "table": "erp_purchase_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_purchase_orders_supplierId_idx_c4d9a8b9\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_orders_supplierId_idx_c4d9a8b9\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_purchase_orders_supplierId_idx_c4d9a8b9\"",
+        "sql": "CREATE INDEX \"erp_purchase_orders_supplierId_idx_c4d9a8b9\" ON \"public\".\"erp_purchase_orders\" (\"supplierId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_purchase_orders_supplierId_idx_c4d9a8b9\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_orders_supplierId_idx_c4d9a8b9\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_purchase_orders.erp_purchase_orders_supplierId_status_idx_fb45ad1d",
+    "label": "Create index \"erp_purchase_orders_supplierId_status_idx_fb45ad1d\" on \"erp_purchase_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_purchase_orders_supplierId_status_idx_fb45ad1d",
+        "table": "erp_purchase_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_purchase_orders_supplierId_status_idx_fb45ad1d\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_orders_supplierId_status_idx_fb45ad1d\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_purchase_orders_supplierId_status_idx_fb45ad1d\"",
+        "sql": "CREATE INDEX \"erp_purchase_orders_supplierId_status_idx_fb45ad1d\" ON \"public\".\"erp_purchase_orders\" (\"supplierId\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_purchase_orders_supplierId_status_idx_fb45ad1d\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_orders_supplierId_status_idx_fb45ad1d\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_purchase_receipt_lines.erp_purchase_receipt_lines_receiptId_idx_9b8e07be",
+    "label": "Create index \"erp_purchase_receipt_lines_receiptId_idx_9b8e07be\" on \"erp_purchase_receipt_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_purchase_receipt_lines_receiptId_idx_9b8e07be",
+        "table": "erp_purchase_receipt_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_purchase_receipt_lines_receiptId_idx_9b8e07be\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_receipt_lines_receiptId_idx_9b8e07be\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_purchase_receipt_lines_receiptId_idx_9b8e07be\"",
+        "sql": "CREATE INDEX \"erp_purchase_receipt_lines_receiptId_idx_9b8e07be\" ON \"public\".\"erp_purchase_receipt_lines\" (\"receiptId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_purchase_receipt_lines_receiptId_idx_9b8e07be\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_receipt_lines_receiptId_idx_9b8e07be\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_purchase_receipts.erp_purchase_receipts_purchaseOrderId_idx_3e3a8c45",
+    "label": "Create index \"erp_purchase_receipts_purchaseOrderId_idx_3e3a8c45\" on \"erp_purchase_receipts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_purchase_receipts_purchaseOrderId_idx_3e3a8c45",
+        "table": "erp_purchase_receipts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_purchase_receipts_purchaseOrderId_idx_3e3a8c45\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_receipts_purchaseOrderId_idx_3e3a8c45\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_purchase_receipts_purchaseOrderId_idx_3e3a8c45\"",
+        "sql": "CREATE INDEX \"erp_purchase_receipts_purchaseOrderId_idx_3e3a8c45\" ON \"public\".\"erp_purchase_receipts\" (\"purchaseOrderId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_purchase_receipts_purchaseOrderId_idx_3e3a8c45\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_receipts_purchaseOrderId_idx_3e3a8c45\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_purchase_requisition_lines.erp_purchase_requisition_lines_requisitionId_idx_ddbe18bf",
+    "label": "Create index \"erp_purchase_requisition_lines_requisitionId_idx_ddbe18bf\" on \"erp_purchase_requisition_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_purchase_requisition_lines_requisitionId_idx_ddbe18bf",
+        "table": "erp_purchase_requisition_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_purchase_requisition_lines_requisitionId_idx_ddbe18bf\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_requisition_lines_requisitionId_idx_ddbe18bf\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_purchase_requisition_lines_requisitionId_idx_ddbe18bf\"",
+        "sql": "CREATE INDEX \"erp_purchase_requisition_lines_requisitionId_idx_ddbe18bf\" ON \"public\".\"erp_purchase_requisition_lines\" (\"requisitionId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_purchase_requisition_lines_requisitionId_idx_ddbe18bf\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_requisition_lines_requisitionId_idx_ddbe18bf\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_purchase_requisitions.erp_purchase_requisitions_status_idx_e98638ab",
+    "label": "Create index \"erp_purchase_requisitions_status_idx_e98638ab\" on \"erp_purchase_requisitions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_purchase_requisitions_status_idx_e98638ab",
+        "table": "erp_purchase_requisitions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_purchase_requisitions_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_requisitions_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_purchase_requisitions_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"erp_purchase_requisitions_status_idx_e98638ab\" ON \"public\".\"erp_purchase_requisitions\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_purchase_requisitions_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_purchase_requisitions_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_rfq_lines.erp_rfq_lines_rfqId_idx_feb32f22",
+    "label": "Create index \"erp_rfq_lines_rfqId_idx_feb32f22\" on \"erp_rfq_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_rfq_lines_rfqId_idx_feb32f22",
+        "table": "erp_rfq_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_rfq_lines_rfqId_idx_feb32f22\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_rfq_lines_rfqId_idx_feb32f22\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_rfq_lines_rfqId_idx_feb32f22\"",
+        "sql": "CREATE INDEX \"erp_rfq_lines_rfqId_idx_feb32f22\" ON \"public\".\"erp_rfq_lines\" (\"rfqId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_rfq_lines_rfqId_idx_feb32f22\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_rfq_lines_rfqId_idx_feb32f22\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_rfq_quote_lines.erp_rfq_quote_lines_quoteId_idx_a7628ce5",
+    "label": "Create index \"erp_rfq_quote_lines_quoteId_idx_a7628ce5\" on \"erp_rfq_quote_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_rfq_quote_lines_quoteId_idx_a7628ce5",
+        "table": "erp_rfq_quote_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_rfq_quote_lines_quoteId_idx_a7628ce5\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_rfq_quote_lines_quoteId_idx_a7628ce5\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_rfq_quote_lines_quoteId_idx_a7628ce5\"",
+        "sql": "CREATE INDEX \"erp_rfq_quote_lines_quoteId_idx_a7628ce5\" ON \"public\".\"erp_rfq_quote_lines\" (\"quoteId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_rfq_quote_lines_quoteId_idx_a7628ce5\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_rfq_quote_lines_quoteId_idx_a7628ce5\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_rfq_quotes.erp_rfq_quotes_rfqId_idx_feb32f22",
+    "label": "Create index \"erp_rfq_quotes_rfqId_idx_feb32f22\" on \"erp_rfq_quotes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_rfq_quotes_rfqId_idx_feb32f22",
+        "table": "erp_rfq_quotes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_rfq_quotes_rfqId_idx_feb32f22\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_rfq_quotes_rfqId_idx_feb32f22\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_rfq_quotes_rfqId_idx_feb32f22\"",
+        "sql": "CREATE INDEX \"erp_rfq_quotes_rfqId_idx_feb32f22\" ON \"public\".\"erp_rfq_quotes\" (\"rfqId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_rfq_quotes_rfqId_idx_feb32f22\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_rfq_quotes_rfqId_idx_feb32f22\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_rfqs.erp_rfqs_status_idx_e98638ab",
+    "label": "Create index \"erp_rfqs_status_idx_e98638ab\" on \"erp_rfqs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_rfqs_status_idx_e98638ab",
+        "table": "erp_rfqs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_rfqs_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_rfqs_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_rfqs_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"erp_rfqs_status_idx_e98638ab\" ON \"public\".\"erp_rfqs\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_rfqs_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_rfqs_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_supplier_bill_lines.erp_supplier_bill_lines_billId_idx_1639f7ee",
+    "label": "Create index \"erp_supplier_bill_lines_billId_idx_1639f7ee\" on \"erp_supplier_bill_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_supplier_bill_lines_billId_idx_1639f7ee",
+        "table": "erp_supplier_bill_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_supplier_bill_lines_billId_idx_1639f7ee\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_bill_lines_billId_idx_1639f7ee\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_supplier_bill_lines_billId_idx_1639f7ee\"",
+        "sql": "CREATE INDEX \"erp_supplier_bill_lines_billId_idx_1639f7ee\" ON \"public\".\"erp_supplier_bill_lines\" (\"billId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_supplier_bill_lines_billId_idx_1639f7ee\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_bill_lines_billId_idx_1639f7ee\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_supplier_bills.erp_supplier_bills_dueDate_idx_fb527616",
+    "label": "Create index \"erp_supplier_bills_dueDate_idx_fb527616\" on \"erp_supplier_bills\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_supplier_bills_dueDate_idx_fb527616",
+        "table": "erp_supplier_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_supplier_bills_dueDate_idx_fb527616\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_bills_dueDate_idx_fb527616\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_supplier_bills_dueDate_idx_fb527616\"",
+        "sql": "CREATE INDEX \"erp_supplier_bills_dueDate_idx_fb527616\" ON \"public\".\"erp_supplier_bills\" (\"dueDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_supplier_bills_dueDate_idx_fb527616\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_bills_dueDate_idx_fb527616\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_supplier_bills.erp_supplier_bills_supplierId_idx_c4d9a8b9",
+    "label": "Create index \"erp_supplier_bills_supplierId_idx_c4d9a8b9\" on \"erp_supplier_bills\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_supplier_bills_supplierId_idx_c4d9a8b9",
+        "table": "erp_supplier_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_supplier_bills_supplierId_idx_c4d9a8b9\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_bills_supplierId_idx_c4d9a8b9\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_supplier_bills_supplierId_idx_c4d9a8b9\"",
+        "sql": "CREATE INDEX \"erp_supplier_bills_supplierId_idx_c4d9a8b9\" ON \"public\".\"erp_supplier_bills\" (\"supplierId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_supplier_bills_supplierId_idx_c4d9a8b9\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_bills_supplierId_idx_c4d9a8b9\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_supplier_bills.erp_supplier_bills_supplierId_status_idx_fb45ad1d",
+    "label": "Create index \"erp_supplier_bills_supplierId_status_idx_fb45ad1d\" on \"erp_supplier_bills\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_supplier_bills_supplierId_status_idx_fb45ad1d",
+        "table": "erp_supplier_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_supplier_bills_supplierId_status_idx_fb45ad1d\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_bills_supplierId_status_idx_fb45ad1d\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_supplier_bills_supplierId_status_idx_fb45ad1d\"",
+        "sql": "CREATE INDEX \"erp_supplier_bills_supplierId_status_idx_fb45ad1d\" ON \"public\".\"erp_supplier_bills\" (\"supplierId\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_supplier_bills_supplierId_status_idx_fb45ad1d\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_bills_supplierId_status_idx_fb45ad1d\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_supplier_bills.erp_supplier_bills_unique_invoice_d91895d8",
+    "label": "Create index \"erp_supplier_bills_unique_invoice_d91895d8\" on \"erp_supplier_bills\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_supplier_bills_unique_invoice_d91895d8",
+        "table": "erp_supplier_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_supplier_bills_unique_invoice_d91895d8\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_bills_unique_invoice_d91895d8\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_supplier_bills_unique_invoice_d91895d8\"",
+        "sql": "CREATE UNIQUE INDEX \"erp_supplier_bills_unique_invoice_d91895d8\" ON \"public\".\"erp_supplier_bills\" (\"supplierId\", \"supplierInvoiceNumber\") WHERE (\"status\" <> 'CANCELLED')",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_supplier_bills_unique_invoice_d91895d8\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_bills_unique_invoice_d91895d8\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_supplier_payments.erp_supplier_payments_billId_idx_1639f7ee",
+    "label": "Create index \"erp_supplier_payments_billId_idx_1639f7ee\" on \"erp_supplier_payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_supplier_payments_billId_idx_1639f7ee",
+        "table": "erp_supplier_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_supplier_payments_billId_idx_1639f7ee\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_payments_billId_idx_1639f7ee\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_supplier_payments_billId_idx_1639f7ee\"",
+        "sql": "CREATE INDEX \"erp_supplier_payments_billId_idx_1639f7ee\" ON \"public\".\"erp_supplier_payments\" (\"billId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_supplier_payments_billId_idx_1639f7ee\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_payments_billId_idx_1639f7ee\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_supplier_payments.erp_supplier_payments_billId_status_idx_99657680",
+    "label": "Create index \"erp_supplier_payments_billId_status_idx_99657680\" on \"erp_supplier_payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_supplier_payments_billId_status_idx_99657680",
+        "table": "erp_supplier_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_supplier_payments_billId_status_idx_99657680\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_payments_billId_status_idx_99657680\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_supplier_payments_billId_status_idx_99657680\"",
+        "sql": "CREATE INDEX \"erp_supplier_payments_billId_status_idx_99657680\" ON \"public\".\"erp_supplier_payments\" (\"billId\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_supplier_payments_billId_status_idx_99657680\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_supplier_payments_billId_status_idx_99657680\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_suppliers.erp_suppliers_name_idx_ce87e6ba",
+    "label": "Create index \"erp_suppliers_name_idx_ce87e6ba\" on \"erp_suppliers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_suppliers_name_idx_ce87e6ba",
+        "table": "erp_suppliers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_suppliers_name_idx_ce87e6ba\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_suppliers_name_idx_ce87e6ba\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_suppliers_name_idx_ce87e6ba\"",
+        "sql": "CREATE INDEX \"erp_suppliers_name_idx_ce87e6ba\" ON \"public\".\"erp_suppliers\" (\"name\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_suppliers_name_idx_ce87e6ba\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_suppliers_name_idx_ce87e6ba\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_purchase_order_lines.erp_purchase_order_lines_purchaseOrderId_fkey",
+    "label": "Add foreign key \"erp_purchase_order_lines_purchaseOrderId_fkey\" on \"erp_purchase_order_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_purchase_order_lines_purchaseOrderId_fkey",
+        "table": "erp_purchase_order_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_purchase_order_lines_purchaseOrderId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_order_lines_purchaseOrderId_fkey",
+          "public",
+          "\"public\".\"erp_purchase_order_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_purchase_order_lines_purchaseOrderId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_purchase_order_lines\"\nADD CONSTRAINT \"erp_purchase_order_lines_purchaseOrderId_fkey\"\nFOREIGN KEY (\"purchaseOrderId\")\nREFERENCES \"public\".\"erp_purchase_orders\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_purchase_order_lines_purchaseOrderId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_order_lines_purchaseOrderId_fkey",
+          "public",
+          "\"public\".\"erp_purchase_order_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_purchase_orders.erp_purchase_orders_supplierId_fkey",
+    "label": "Add foreign key \"erp_purchase_orders_supplierId_fkey\" on \"erp_purchase_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_purchase_orders_supplierId_fkey",
+        "table": "erp_purchase_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_purchase_orders_supplierId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_orders_supplierId_fkey",
+          "public",
+          "\"public\".\"erp_purchase_orders\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_purchase_orders_supplierId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_purchase_orders\"\nADD CONSTRAINT \"erp_purchase_orders_supplierId_fkey\"\nFOREIGN KEY (\"supplierId\")\nREFERENCES \"public\".\"erp_suppliers\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_purchase_orders_supplierId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_orders_supplierId_fkey",
+          "public",
+          "\"public\".\"erp_purchase_orders\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_purchase_receipt_lines.erp_purchase_receipt_lines_receiptId_fkey",
+    "label": "Add foreign key \"erp_purchase_receipt_lines_receiptId_fkey\" on \"erp_purchase_receipt_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_purchase_receipt_lines_receiptId_fkey",
+        "table": "erp_purchase_receipt_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_purchase_receipt_lines_receiptId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_receipt_lines_receiptId_fkey",
+          "public",
+          "\"public\".\"erp_purchase_receipt_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_purchase_receipt_lines_receiptId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_purchase_receipt_lines\"\nADD CONSTRAINT \"erp_purchase_receipt_lines_receiptId_fkey\"\nFOREIGN KEY (\"receiptId\")\nREFERENCES \"public\".\"erp_purchase_receipts\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_purchase_receipt_lines_receiptId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_receipt_lines_receiptId_fkey",
+          "public",
+          "\"public\".\"erp_purchase_receipt_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_purchase_requisition_lines.erp_purchase_requisition_lines_requisitionId_fkey",
+    "label": "Add foreign key \"erp_purchase_requisition_lines_requisitionId_fkey\" on \"erp_purchase_requisition_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_purchase_requisition_lines_requisitionId_fkey",
+        "table": "erp_purchase_requisition_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_purchase_requisition_lines_requisitionId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_requisition_lines_requisitionId_fkey",
+          "public",
+          "\"public\".\"erp_purchase_requisition_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_purchase_requisition_lines_requisitionId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_purchase_requisition_lines\"\nADD CONSTRAINT \"erp_purchase_requisition_lines_requisitionId_fkey\"\nFOREIGN KEY (\"requisitionId\")\nREFERENCES \"public\".\"erp_purchase_requisitions\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_purchase_requisition_lines_requisitionId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_purchase_requisition_lines_requisitionId_fkey",
+          "public",
+          "\"public\".\"erp_purchase_requisition_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_rfq_lines.erp_rfq_lines_rfqId_fkey",
+    "label": "Add foreign key \"erp_rfq_lines_rfqId_fkey\" on \"erp_rfq_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_rfq_lines_rfqId_fkey",
+        "table": "erp_rfq_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_rfq_lines_rfqId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_rfq_lines_rfqId_fkey",
+          "public",
+          "\"public\".\"erp_rfq_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_rfq_lines_rfqId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_rfq_lines\"\nADD CONSTRAINT \"erp_rfq_lines_rfqId_fkey\"\nFOREIGN KEY (\"rfqId\")\nREFERENCES \"public\".\"erp_rfqs\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_rfq_lines_rfqId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_rfq_lines_rfqId_fkey",
+          "public",
+          "\"public\".\"erp_rfq_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_rfq_quote_lines.erp_rfq_quote_lines_quoteId_fkey",
+    "label": "Add foreign key \"erp_rfq_quote_lines_quoteId_fkey\" on \"erp_rfq_quote_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_rfq_quote_lines_quoteId_fkey",
+        "table": "erp_rfq_quote_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_rfq_quote_lines_quoteId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_rfq_quote_lines_quoteId_fkey",
+          "public",
+          "\"public\".\"erp_rfq_quote_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_rfq_quote_lines_quoteId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_rfq_quote_lines\"\nADD CONSTRAINT \"erp_rfq_quote_lines_quoteId_fkey\"\nFOREIGN KEY (\"quoteId\")\nREFERENCES \"public\".\"erp_rfq_quotes\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_rfq_quote_lines_quoteId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_rfq_quote_lines_quoteId_fkey",
+          "public",
+          "\"public\".\"erp_rfq_quote_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_rfq_quotes.erp_rfq_quotes_rfqId_fkey",
+    "label": "Add foreign key \"erp_rfq_quotes_rfqId_fkey\" on \"erp_rfq_quotes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_rfq_quotes_rfqId_fkey",
+        "table": "erp_rfq_quotes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_rfq_quotes_rfqId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_rfq_quotes_rfqId_fkey",
+          "public",
+          "\"public\".\"erp_rfq_quotes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_rfq_quotes_rfqId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_rfq_quotes\"\nADD CONSTRAINT \"erp_rfq_quotes_rfqId_fkey\"\nFOREIGN KEY (\"rfqId\")\nREFERENCES \"public\".\"erp_rfqs\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_rfq_quotes_rfqId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_rfq_quotes_rfqId_fkey",
+          "public",
+          "\"public\".\"erp_rfq_quotes\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_supplier_bill_lines.erp_supplier_bill_lines_billId_fkey",
+    "label": "Add foreign key \"erp_supplier_bill_lines_billId_fkey\" on \"erp_supplier_bill_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_supplier_bill_lines_billId_fkey",
+        "table": "erp_supplier_bill_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_supplier_bill_lines_billId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_supplier_bill_lines_billId_fkey",
+          "public",
+          "\"public\".\"erp_supplier_bill_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_supplier_bill_lines_billId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_supplier_bill_lines\"\nADD CONSTRAINT \"erp_supplier_bill_lines_billId_fkey\"\nFOREIGN KEY (\"billId\")\nREFERENCES \"public\".\"erp_supplier_bills\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_supplier_bill_lines_billId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_supplier_bill_lines_billId_fkey",
+          "public",
+          "\"public\".\"erp_supplier_bill_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_supplier_bills.erp_supplier_bills_supplierId_fkey",
+    "label": "Add foreign key \"erp_supplier_bills_supplierId_fkey\" on \"erp_supplier_bills\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_supplier_bills_supplierId_fkey",
+        "table": "erp_supplier_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_supplier_bills_supplierId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_supplier_bills_supplierId_fkey",
+          "public",
+          "\"public\".\"erp_supplier_bills\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_supplier_bills_supplierId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_supplier_bills\"\nADD CONSTRAINT \"erp_supplier_bills_supplierId_fkey\"\nFOREIGN KEY (\"supplierId\")\nREFERENCES \"public\".\"erp_suppliers\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_supplier_bills_supplierId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_supplier_bills_supplierId_fkey",
+          "public",
+          "\"public\".\"erp_supplier_bills\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_supplier_payments.erp_supplier_payments_billId_fkey",
+    "label": "Add foreign key \"erp_supplier_payments_billId_fkey\" on \"erp_supplier_payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_supplier_payments_billId_fkey",
+        "table": "erp_supplier_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_supplier_payments_billId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_supplier_payments_billId_fkey",
+          "public",
+          "\"public\".\"erp_supplier_payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_supplier_payments_billId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_supplier_payments\"\nADD CONSTRAINT \"erp_supplier_payments_billId_fkey\"\nFOREIGN KEY (\"billId\")\nREFERENCES \"public\".\"erp_supplier_bills\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_supplier_payments_billId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_supplier_payments_billId_fkey",
+          "public",
+          "\"public\".\"erp_supplier_payments\""
+        ]
+      }
+    ]
+  }
+]

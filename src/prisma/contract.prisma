@@ -1179,3 +1179,314 @@ model PayrollLine {
   @@check(expression: "\"netPay\" = \"grossPay\" - \"fixedDeduction\" - \"advanceRecovery\" - \"otherDeduction\" AND \"netPay\" >= 0", name: "erp_payroll_lines_net")
   @@map("erp_payroll_lines")
 }
+
+// Phase 10: procurement and payables (see docs/ERP_DECISIONS.md D-029).
+
+model Supplier {
+  id                Uuid              @id @default(uuid())
+  code              String            @unique
+  name              String
+  contactName       String?
+  phone             String?
+  email             String?
+  address           String?
+  taxRegistration   String?
+  paymentTermsDays  Int               @default(30)
+  status            String            @default("ACTIVE")
+  notes             String?
+  createdAt         TimestamptzString @default(now())
+  updatedAt         TimestamptzString @default(now())
+
+  purchaseOrders PurchaseOrder[]
+  bills          SupplierBill[]
+
+  @@index([name])
+  @@check(expression: "\"status\" IN ('ACTIVE', 'INACTIVE')", name: "erp_suppliers_status")
+  @@check(expression: "\"paymentTermsDays\" BETWEEN 0 AND 365", name: "erp_suppliers_terms")
+  @@map("erp_suppliers")
+}
+
+model PurchaseRequisition {
+  id                Uuid               @id @default(uuid())
+  requisitionNumber String             @unique
+  status            String             @default("DRAFT")
+  neededBy          String?
+  notes             String?
+  idempotencyKey    String             @unique
+  createdBy         Uuid
+  createdAt         TimestamptzString  @default(now())
+  submittedAt       TimestamptzString?
+  decidedBy         Uuid?
+  decidedAt         TimestamptzString?
+  decisionNote      String?
+
+  lines PurchaseRequisitionLine[]
+
+  @@index([status])
+  @@check(expression: "\"status\" IN ('DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED', 'CANCELLED', 'ORDERED')", name: "erp_purchase_requisitions_status")
+  @@map("erp_purchase_requisitions")
+}
+
+model PurchaseRequisitionLine {
+  id             Uuid    @id @default(uuid())
+  requisitionId  Uuid
+  lineNo         Int
+  productId      Uuid
+  quantity       Decimal
+  plannedOrderId Uuid?   @unique
+  notes          String?
+
+  requisition PurchaseRequisition @relation(fields: [requisitionId], references: [id], onDelete: Restrict)
+
+  @@unique([requisitionId, lineNo])
+  @@check(expression: "\"quantity\" > 0", name: "erp_purchase_requisition_lines_quantity")
+  @@map("erp_purchase_requisition_lines")
+}
+
+model Rfq {
+  id             Uuid               @id @default(uuid())
+  rfqNumber      String             @unique
+  requisitionId  Uuid?
+  status         String             @default("OPEN")
+  responseDue    String?
+  notes          String?
+  awardedQuoteId Uuid?
+  idempotencyKey String             @unique
+  createdBy      Uuid
+  createdAt      TimestamptzString  @default(now())
+  closedAt       TimestamptzString?
+
+  lines  RfqLine[]
+  quotes RfqQuote[]
+
+  @@index([status])
+  @@check(expression: "\"status\" IN ('OPEN', 'AWARDED', 'CANCELLED')", name: "erp_rfqs_status")
+  @@map("erp_rfqs")
+}
+
+model RfqLine {
+  id        Uuid    @id @default(uuid())
+  rfqId     Uuid
+  lineNo    Int
+  productId Uuid
+  quantity  Decimal
+
+  rfq Rfq @relation(fields: [rfqId], references: [id], onDelete: Restrict)
+
+  @@unique([rfqId, lineNo])
+  @@check(expression: "\"quantity\" > 0", name: "erp_rfq_lines_quantity")
+  @@map("erp_rfq_lines")
+}
+
+model RfqQuote {
+  id            Uuid              @id @default(uuid())
+  rfqId         Uuid
+  supplierId    Uuid
+  quoteRef      String?
+  validUntil    String?
+  leadTimeDays  Int?
+  taxPercent    Int               @default(0)
+  totalAmount   Decimal
+  notes         String?
+  createdBy     Uuid
+  createdAt     TimestamptzString @default(now())
+
+  rfq   Rfq                @relation(fields: [rfqId], references: [id], onDelete: Restrict)
+  lines RfqQuoteLine[]
+
+  @@unique([rfqId, supplierId])
+  @@check(expression: "\"taxPercent\" BETWEEN 0 AND 100 AND \"totalAmount\" >= 0", name: "erp_rfq_quotes_amounts")
+  @@map("erp_rfq_quotes")
+}
+
+model RfqQuoteLine {
+  id        Uuid    @id @default(uuid())
+  quoteId   Uuid
+  rfqLineId Uuid
+  unitPrice Decimal
+
+  quote RfqQuote @relation(fields: [quoteId], references: [id], onDelete: Restrict)
+
+  @@unique([quoteId, rfqLineId])
+  @@check(expression: "\"unitPrice\" >= 0", name: "erp_rfq_quote_lines_price")
+  @@map("erp_rfq_quote_lines")
+}
+
+model PurchaseOrder {
+  id             Uuid               @id @default(uuid())
+  poNumber       String             @unique
+  supplierId     Uuid
+  status         String             @default("DRAFT")
+  orderDate      String
+  expectedDate   String?
+  requisitionId  Uuid?
+  rfqId          Uuid?
+  subtotal       Decimal
+  discountTotal  Decimal
+  taxTotal       Decimal
+  totalAmount    Decimal
+  notes          String?
+  idempotencyKey String             @unique
+  createdBy      Uuid
+  createdAt      TimestamptzString  @default(now())
+  approvedBy     Uuid?
+  approvedAt     TimestamptzString?
+  closedAt       TimestamptzString?
+  closeReason    String?
+
+  supplier Supplier            @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  lines    PurchaseOrderLine[]
+
+  @@index([supplierId, status])
+  @@index([status])
+  @@check(expression: "\"status\" IN ('DRAFT', 'APPROVED', 'PARTIALLY_RECEIVED', 'RECEIVED', 'CLOSED', 'CANCELLED')", name: "erp_purchase_orders_status")
+  @@check(expression: "\"totalAmount\" = \"subtotal\" - \"discountTotal\" + \"taxTotal\"", name: "erp_purchase_orders_total")
+  @@map("erp_purchase_orders")
+}
+
+model PurchaseOrderLine {
+  id                    Uuid    @id @default(uuid())
+  purchaseOrderId       Uuid
+  lineNo                Int
+  productId             Uuid
+  requisitionLineId     Uuid?
+  quantity              Decimal
+  unitPrice             Decimal
+  discountPercent       Int     @default(0)
+  taxPercent            Int     @default(0)
+  grossAmount           Decimal
+  discountAmount        Decimal
+  taxAmount             Decimal
+  lineTotal             Decimal
+  receivedQuantity      Decimal @default(0)
+  billedQuantity        Decimal @default(0)
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Restrict)
+
+  @@unique([purchaseOrderId, lineNo])
+  @@index([productId])
+  @@check(expression: "\"quantity\" > 0 AND \"unitPrice\" >= 0", name: "erp_purchase_order_lines_quantity")
+  @@check(expression: "\"receivedQuantity\" >= 0 AND \"receivedQuantity\" <= \"quantity\"", name: "erp_purchase_order_lines_received")
+  @@check(expression: "\"billedQuantity\" >= 0 AND \"billedQuantity\" <= \"receivedQuantity\"", name: "erp_purchase_order_lines_billed")
+  @@check(expression: "\"discountPercent\" BETWEEN 0 AND 100 AND \"taxPercent\" BETWEEN 0 AND 100", name: "erp_purchase_order_lines_percents")
+  @@check(expression: "\"lineTotal\" = \"grossAmount\" - \"discountAmount\" + \"taxAmount\"", name: "erp_purchase_order_lines_total")
+  @@map("erp_purchase_order_lines")
+}
+
+model PurchaseReceipt {
+  id              Uuid              @id @default(uuid())
+  receiptNumber   String            @unique
+  purchaseOrderId Uuid
+  locationId      Uuid
+  receivedDate    String
+  deliveryNoteRef String?
+  qualityHold     Boolean           @default(false)
+  notes           String?
+  idempotencyKey  String            @unique
+  createdBy       Uuid
+  createdAt       TimestamptzString @default(now())
+
+  lines PurchaseReceiptLine[]
+
+  @@index([purchaseOrderId])
+  @@map("erp_purchase_receipts")
+}
+
+model PurchaseReceiptLine {
+  id                  Uuid    @id @default(uuid())
+  receiptId           Uuid
+  purchaseOrderLineId Uuid
+  quantity            Decimal
+
+  receipt PurchaseReceipt @relation(fields: [receiptId], references: [id], onDelete: Restrict)
+
+  @@unique([receiptId, purchaseOrderLineId])
+  @@check(expression: "\"quantity\" > 0", name: "erp_purchase_receipt_lines_quantity")
+  @@map("erp_purchase_receipt_lines")
+}
+
+model SupplierBill {
+  id                    Uuid               @id @default(uuid())
+  billNumber            String             @unique
+  supplierId            Uuid
+  purchaseOrderId       Uuid?
+  supplierInvoiceNumber String
+  billDate              String
+  dueDate               String
+  status                String             @default("DRAFT")
+  subtotal              Decimal
+  discountTotal         Decimal
+  taxTotal              Decimal
+  totalAmount           Decimal
+  notes                 String?
+  idempotencyKey        String             @unique
+  createdBy             Uuid
+  createdAt             TimestamptzString  @default(now())
+  approvedBy            Uuid?
+  approvedAt            TimestamptzString?
+  cancelledBy           Uuid?
+  cancelledAt           TimestamptzString?
+  cancelReason          String?
+
+  supplier Supplier           @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  lines    SupplierBillLine[]
+  payments SupplierPayment[]
+
+  @@index([supplierId, status])
+  @@index([dueDate])
+  @@index([supplierId, supplierInvoiceNumber], where: "\"status\" <> 'CANCELLED'", unique: true, name: "erp_supplier_bills_unique_invoice")
+  @@check(expression: "\"status\" IN ('DRAFT', 'APPROVED', 'CANCELLED')", name: "erp_supplier_bills_status")
+  @@check(expression: "\"totalAmount\" = \"subtotal\" - \"discountTotal\" + \"taxTotal\"", name: "erp_supplier_bills_total")
+  @@map("erp_supplier_bills")
+}
+
+model SupplierBillLine {
+  id                  Uuid    @id @default(uuid())
+  billId              Uuid
+  lineNo              Int
+  purchaseOrderLineId Uuid?
+  productId           Uuid?
+  description         String
+  quantity            Decimal
+  unitPrice           Decimal
+  discountPercent     Int     @default(0)
+  taxPercent          Int     @default(0)
+  grossAmount         Decimal
+  discountAmount      Decimal
+  taxAmount           Decimal
+  lineTotal           Decimal
+
+  bill SupplierBill @relation(fields: [billId], references: [id], onDelete: Restrict)
+
+  @@unique([billId, lineNo])
+  @@check(expression: "\"quantity\" > 0 AND \"unitPrice\" >= 0", name: "erp_supplier_bill_lines_quantity")
+  @@check(expression: "\"lineTotal\" = \"grossAmount\" - \"discountAmount\" + \"taxAmount\"", name: "erp_supplier_bill_lines_total")
+  @@map("erp_supplier_bill_lines")
+}
+
+model SupplierPayment {
+  id             Uuid               @id @default(uuid())
+  paymentNumber  String             @unique
+  billId         Uuid
+  supplierId     Uuid
+  paymentDate    String
+  method         String
+  reference      String?
+  amount         Decimal
+  status         String             @default("POSTED")
+  notes          String?
+  idempotencyKey String             @unique
+  createdBy      Uuid
+  createdAt      TimestamptzString  @default(now())
+  voidedBy       Uuid?
+  voidedAt       TimestamptzString?
+  voidReason     String?
+
+  bill SupplierBill @relation(fields: [billId], references: [id], onDelete: Restrict)
+
+  @@index([billId, status])
+  @@check(expression: "\"amount\" > 0", name: "erp_supplier_payments_amount")
+  @@check(expression: "\"status\" IN ('POSTED', 'VOIDED')", name: "erp_supplier_payments_status")
+  @@check(expression: "\"method\" IN ('CASH', 'BANK_TRANSFER', 'CHEQUE', 'CARD', 'OTHER')", name: "erp_supplier_payments_method")
+  @@map("erp_supplier_payments")
+}
