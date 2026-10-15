@@ -1057,11 +1057,14 @@ model Employee {
   overtimeRate   Decimal           @default(0)
   fixedDeduction Decimal           @default(0)
   bankAccount    String?
+  shiftId        Uuid?
   createdAt      TimestamptzString @default(now())
   updatedAt      TimestamptzString @default(now())
 
   department   Department          @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  shift        Shift?              @relation(fields: [shiftId], references: [id], onDelete: Restrict)
   attendance   AttendanceRecord[]
+  leaveRequests LeaveRequest[]
   advances     SalaryAdvance[]
   payrollLines PayrollLine[]
 
@@ -1581,4 +1584,306 @@ model CashTransaction {
   @@check(expression: "\"amount\" > 0 AND \"amount\" = round(\"amount\", 2)", name: "erp_cash_transactions_amount")
   @@check(expression: "\"cashAccountId\" <> \"counterAccountId\"", name: "erp_cash_transactions_accounts")
   @@map("erp_cash_transactions")
+}
+
+model Ncr {
+  id                Uuid               @id @default(uuid())
+  ncrNumber         String             @unique
+  source            String
+  severity          String
+  title             String
+  description       String
+  productId         Uuid?
+  productionOrderId Uuid?
+  inspectionId      Uuid?
+  supplierId        Uuid?
+  customerId        Uuid?
+  quantityAffected  Decimal?
+  containment       String?
+  rootCause         String?
+  disposition       String?
+  status            String             @default("OPEN")
+  idempotencyKey    String             @unique
+  createdBy         Uuid
+  createdAt         TimestamptzString  @default(now())
+  closedBy          Uuid?
+  closedAt          TimestamptzString?
+  closeNote         String?
+
+  capas Capa[]
+
+  @@index([status])
+  @@index([inspectionId])
+  @@check(expression: "\"source\" IN ('INSPECTION', 'IN_PROCESS', 'CUSTOMER', 'SUPPLIER', 'INTERNAL')", name: "erp_ncrs_source")
+  @@check(expression: "\"severity\" IN ('MINOR', 'MAJOR', 'CRITICAL')", name: "erp_ncrs_severity")
+  @@check(expression: "\"status\" IN ('OPEN', 'INVESTIGATING', 'CLOSED', 'CANCELLED')", name: "erp_ncrs_status")
+  @@check(expression: "\"disposition\" IS NULL OR \"disposition\" IN ('REWORK', 'SCRAP', 'USE_AS_IS', 'RETURN_TO_SUPPLIER', 'REGRADE')", name: "erp_ncrs_disposition")
+  @@check(expression: "\"quantityAffected\" IS NULL OR \"quantityAffected\" > 0", name: "erp_ncrs_quantity")
+  @@map("erp_ncrs")
+}
+
+model Capa {
+  id             Uuid               @id @default(uuid())
+  capaNumber     String             @unique
+  ncrId          Uuid?
+  actionType     String
+  title          String
+  action         String
+  ownerName      String
+  dueDate        String
+  status         String             @default("OPEN")
+  completionNote String?
+  completedAt    TimestamptzString?
+  verifiedBy     Uuid?
+  verifiedAt     TimestamptzString?
+  verificationNote String?
+  idempotencyKey String             @unique
+  createdBy      Uuid
+  createdAt      TimestamptzString  @default(now())
+
+  ncr Ncr? @relation(fields: [ncrId], references: [id], onDelete: Restrict)
+
+  @@index([status, dueDate])
+  @@index([ncrId])
+  @@check(expression: "\"actionType\" IN ('CORRECTIVE', 'PREVENTIVE')", name: "erp_capas_type")
+  @@check(expression: "\"status\" IN ('OPEN', 'IN_PROGRESS', 'DONE', 'VERIFIED', 'CANCELLED')", name: "erp_capas_status")
+  @@map("erp_capas")
+}
+
+model Shift {
+  id           Uuid              @id @default(uuid())
+  code         String            @unique
+  name         String
+  startTime    String
+  endTime      String
+  breakMinutes Int               @default(0)
+  status       String            @default("ACTIVE")
+  createdAt    TimestamptzString @default(now())
+
+  employees Employee[]
+
+  @@check(expression: "\"startTime\" ~ '^([01][0-9]|2[0-3]):[0-5][0-9]$' AND \"endTime\" ~ '^([01][0-9]|2[0-3]):[0-5][0-9]$' AND \"startTime\" <> \"endTime\"", name: "erp_shifts_times")
+  @@check(expression: "\"breakMinutes\" BETWEEN 0 AND 240", name: "erp_shifts_break")
+  @@check(expression: "\"status\" IN ('ACTIVE', 'INACTIVE')", name: "erp_shifts_status")
+  @@map("erp_shifts")
+}
+
+model LeaveType {
+  id          Uuid              @id @default(uuid())
+  code        String            @unique
+  name        String
+  paid        Boolean
+  annualDays  Decimal           @default(0)
+  status      String            @default("ACTIVE")
+  createdAt   TimestamptzString @default(now())
+
+  requests LeaveRequest[]
+
+  @@check(expression: "\"annualDays\" >= 0 AND \"annualDays\" <= 366", name: "erp_leave_types_days")
+  @@check(expression: "\"status\" IN ('ACTIVE', 'INACTIVE')", name: "erp_leave_types_status")
+  @@map("erp_leave_types")
+}
+
+model LeaveRequest {
+  id             Uuid               @id @default(uuid())
+  requestNumber  String             @unique
+  employeeId     Uuid
+  leaveTypeId    Uuid
+  fromDate       String
+  toDate         String
+  days           Decimal
+  reason         String
+  status         String             @default("PENDING")
+  idempotencyKey String             @unique
+  createdBy      Uuid
+  createdAt      TimestamptzString  @default(now())
+  decidedBy      Uuid?
+  decidedAt      TimestamptzString?
+  decisionNote   String?
+
+  employee  Employee  @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+  leaveType LeaveType @relation(fields: [leaveTypeId], references: [id], onDelete: Restrict)
+
+  @@index([employeeId, status])
+  @@index([fromDate])
+  @@check(expression: "\"toDate\" >= \"fromDate\" AND \"days\" > 0", name: "erp_leave_requests_dates")
+  @@check(expression: "\"status\" IN ('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED')", name: "erp_leave_requests_status")
+  @@map("erp_leave_requests")
+}
+
+model ProductCategory {
+  id          Uuid              @id @default(uuid())
+  name        String            @unique
+  description String?
+  status      String            @default("ACTIVE")
+  createdAt   TimestamptzString @default(now())
+
+  @@check(expression: "\"status\" IN ('ACTIVE', 'INACTIVE')", name: "erp_product_categories_status")
+  @@map("erp_product_categories")
+}
+
+model ProductPriceChange {
+  id            Uuid              @id @default(uuid())
+  productId     Uuid
+  previousPrice Decimal
+  newPrice      Decimal
+  effectiveDate String
+  reason        String
+  changedBy     Uuid
+  changedAt     TimestamptzString @default(now())
+
+  @@index([productId, changedAt])
+  @@check(expression: "\"newPrice\" >= 0 AND \"previousPrice\" >= 0", name: "erp_product_price_changes_nonnegative")
+  @@map("erp_product_price_changes")
+}
+
+model ProductDocument {
+  id           Uuid              @id @default(uuid())
+  productId    Uuid
+  title        String
+  documentType String
+  fileName     String
+  mimeType     String
+  sizeBytes    Int
+  sha256       String
+  content      Bytes
+  status       String            @default("ACTIVE")
+  uploadedBy   Uuid
+  uploadedAt   TimestamptzString @default(now())
+  archivedBy   Uuid?
+  archivedAt   TimestamptzString?
+
+  @@index([productId, status])
+  @@check(expression: "\"sizeBytes\" > 0 AND \"sizeBytes\" <= 5242880", name: "erp_product_documents_size")
+  @@check(expression: "\"documentType\" IN ('SPECIFICATION', 'DRAWING', 'TEST_REPORT', 'CERTIFICATE', 'IMAGE', 'OTHER')", name: "erp_product_documents_type")
+  @@check(expression: "\"status\" IN ('ACTIVE', 'ARCHIVED')", name: "erp_product_documents_status")
+  @@map("erp_product_documents")
+}
+
+model WorkCenter {
+  id            Uuid              @id @default(uuid())
+  stageKey      String            @unique
+  name          String
+  dailyCapacity Decimal
+  capacityUnit  String
+  shiftsPerDay  Int               @default(1)
+  notes         String?
+  updatedBy     Uuid?
+  updatedAt     TimestamptzString @default(now())
+
+  @@check(expression: "\"dailyCapacity\" > 0", name: "erp_work_centers_capacity")
+  @@check(expression: "\"shiftsPerDay\" BETWEEN 1 AND 3", name: "erp_work_centers_shifts")
+  @@map("erp_work_centers")
+}
+
+model CalendarDay {
+  id        Uuid              @id @default(uuid())
+  date      String            @unique
+  dayType   String
+  note      String?
+  createdBy Uuid
+  createdAt TimestamptzString @default(now())
+
+  @@check(expression: "\"dayType\" IN ('HOLIDAY', 'SHUTDOWN', 'WORKING')", name: "erp_calendar_days_type")
+  @@map("erp_calendar_days")
+}
+
+model ProductionPlan {
+  id             Uuid               @id @default(uuid())
+  planNumber     String             @unique
+  title          String
+  periodStart    String
+  periodEnd      String
+  status         String             @default("DRAFT")
+  notes          String?
+  idempotencyKey String             @unique
+  createdBy      Uuid
+  createdAt      TimestamptzString  @default(now())
+  approvedBy     Uuid?
+  approvedAt     TimestamptzString?
+
+  lines ProductionPlanLine[]
+
+  @@check(expression: "\"periodEnd\" >= \"periodStart\"", name: "erp_production_plans_period")
+  @@check(expression: "\"status\" IN ('DRAFT', 'APPROVED', 'CLOSED', 'CANCELLED')", name: "erp_production_plans_status")
+  @@map("erp_production_plans")
+}
+
+model ProductionPlanLine {
+  id                Uuid    @id @default(uuid())
+  planId            Uuid
+  lineNo            Int
+  productId         Uuid
+  quantity          Decimal
+  dueDate           String
+  priority          String  @default("NORMAL")
+  status            String  @default("PLANNED")
+  productionOrderId Uuid?   @unique
+  notes             String?
+
+  plan ProductionPlan @relation(fields: [planId], references: [id], onDelete: Restrict)
+
+  @@unique([planId, lineNo])
+  @@check(expression: "\"quantity\" > 0", name: "erp_production_plan_lines_quantity")
+  @@check(expression: "\"status\" IN ('PLANNED', 'RELEASING', 'RELEASED', 'CANCELLED')", name: "erp_production_plan_lines_status")
+  @@check(expression: "\"priority\" IN ('LOW', 'NORMAL', 'HIGH', 'URGENT')", name: "erp_production_plan_lines_priority")
+  @@map("erp_production_plan_lines")
+}
+
+model PackingInstruction {
+  id             Uuid              @id @default(uuid())
+  productId      Uuid
+  customerId     Uuid?
+  packType       String
+  unitsPerPack   Decimal
+  packsPerCarton Int
+  cartonType     String?
+  labelling      String?
+  instructions   String?
+  status         String            @default("ACTIVE")
+  createdBy      Uuid
+  createdAt      TimestamptzString @default(now())
+  updatedAt      TimestamptzString @default(now())
+
+  @@index([productId, customerId])
+  @@index([productId, customerId], where: "\"status\" = 'ACTIVE' AND \"customerId\" IS NOT NULL", unique: true, name: "erp_packing_instructions_one_active_per_customer")
+  @@index([productId], where: "\"status\" = 'ACTIVE' AND \"customerId\" IS NULL", unique: true, name: "erp_packing_instructions_one_active_default")
+  @@check(expression: "\"unitsPerPack\" > 0 AND \"packsPerCarton\" > 0", name: "erp_packing_instructions_quantities")
+  @@check(expression: "\"status\" IN ('ACTIVE', 'INACTIVE')", name: "erp_packing_instructions_status")
+  @@map("erp_packing_instructions")
+}
+
+model Batch {
+  id                Uuid              @id @default(uuid())
+  batchNumber       String            @unique
+  productId         Uuid
+  sourceType        String
+  productionOrderId Uuid?
+  purchaseReceiptId Uuid?
+  supplierLotRef    String?
+  quantity          Decimal
+  madeOn            String
+  expiresOn         String?
+  status            String            @default("ACTIVE")
+  notes             String?
+  createdBy         Uuid
+  createdAt         TimestamptzString @default(now())
+
+  @@index([productId])
+  @@index([productionOrderId])
+  @@index([purchaseReceiptId])
+  @@check(expression: "\"quantity\" > 0", name: "erp_batches_quantity")
+  @@check(expression: "\"sourceType\" IN ('PRODUCTION', 'PURCHASE', 'OPENING')", name: "erp_batches_source")
+  @@check(expression: "\"status\" IN ('ACTIVE', 'ON_HOLD', 'RELEASED', 'REJECTED', 'CONSUMED')", name: "erp_batches_status")
+  @@check(expression: "\"expiresOn\" IS NULL OR \"expiresOn\" >= \"madeOn\"", name: "erp_batches_dates")
+  @@map("erp_batches")
+}
+
+model AppSetting {
+  key       String            @id
+  value     String
+  updatedBy Uuid?
+  updatedAt TimestamptzString @default(now())
+
+  @@map("erp_app_settings")
 }

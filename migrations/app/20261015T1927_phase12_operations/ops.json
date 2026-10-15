@@ -1,0 +1,2213 @@
+[
+  {
+    "id": "table.erp_app_settings",
+    "label": "Create table \"erp_app_settings\"",
+    "summary": "Creates table \"erp_app_settings\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_app_settings"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_app_settings\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_app_settings\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_app_settings\"",
+        "sql": "CREATE TABLE \"public\".\"erp_app_settings\" (\n  \"key\" text NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"updatedBy\" uuid,\n  \"value\" text NOT NULL,\n  PRIMARY KEY (\"key\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_app_settings\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_app_settings\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_batches",
+    "label": "Create table \"erp_batches\"",
+    "summary": "Creates table \"erp_batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_batches\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_batches\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_batches\"",
+        "sql": "CREATE TABLE \"public\".\"erp_batches\" (\n  \"batchNumber\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"expiresOn\" text,\n  \"id\" uuid NOT NULL,\n  \"madeOn\" text NOT NULL,\n  \"notes\" text,\n  \"productId\" uuid NOT NULL,\n  \"productionOrderId\" uuid,\n  \"purchaseReceiptId\" uuid,\n  \"quantity\" numeric NOT NULL,\n  \"sourceType\" text NOT NULL,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"supplierLotRef\" text,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_batches_dates_781ad94d\" CHECK (\"expiresOn\" IS NULL OR \"expiresOn\" >= \"madeOn\"),\n  CONSTRAINT \"erp_batches_quantity_fc510296\" CHECK (\"quantity\" > 0),\n  CONSTRAINT \"erp_batches_source_41609188\" CHECK (\"sourceType\" IN ('PRODUCTION', 'PURCHASE', 'OPENING')),\n  CONSTRAINT \"erp_batches_status_d357ef7b\" CHECK (\"status\" IN ('ACTIVE', 'ON_HOLD', 'RELEASED', 'REJECTED', 'CONSUMED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_batches\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_batches\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_calendar_days",
+    "label": "Create table \"erp_calendar_days\"",
+    "summary": "Creates table \"erp_calendar_days\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_calendar_days"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_calendar_days\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_calendar_days\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_calendar_days\"",
+        "sql": "CREATE TABLE \"public\".\"erp_calendar_days\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"date\" text NOT NULL,\n  \"dayType\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"note\" text,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_calendar_days_type_a1bf6376\" CHECK (\"dayType\" IN ('HOLIDAY', 'SHUTDOWN', 'WORKING'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_calendar_days\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_calendar_days\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_capas",
+    "label": "Create table \"erp_capas\"",
+    "summary": "Creates table \"erp_capas\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_capas"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_capas\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_capas\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_capas\"",
+        "sql": "CREATE TABLE \"public\".\"erp_capas\" (\n  \"action\" text NOT NULL,\n  \"actionType\" text NOT NULL,\n  \"capaNumber\" text NOT NULL,\n  \"completedAt\" timestamptz,\n  \"completionNote\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"dueDate\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"ncrId\" uuid,\n  \"ownerName\" text NOT NULL,\n  \"status\" text DEFAULT 'OPEN' NOT NULL,\n  \"title\" text NOT NULL,\n  \"verificationNote\" text,\n  \"verifiedAt\" timestamptz,\n  \"verifiedBy\" uuid,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_capas_status_bca129da\" CHECK (\"status\" IN ('OPEN', 'IN_PROGRESS', 'DONE', 'VERIFIED', 'CANCELLED')),\n  CONSTRAINT \"erp_capas_type_eca50f56\" CHECK (\"actionType\" IN ('CORRECTIVE', 'PREVENTIVE'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_capas\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_capas\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_leave_requests",
+    "label": "Create table \"erp_leave_requests\"",
+    "summary": "Creates table \"erp_leave_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_leave_requests\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_leave_requests\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_leave_requests\"",
+        "sql": "CREATE TABLE \"public\".\"erp_leave_requests\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"days\" numeric NOT NULL,\n  \"decidedAt\" timestamptz,\n  \"decidedBy\" uuid,\n  \"decisionNote\" text,\n  \"employeeId\" uuid NOT NULL,\n  \"fromDate\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"leaveTypeId\" uuid NOT NULL,\n  \"reason\" text NOT NULL,\n  \"requestNumber\" text NOT NULL,\n  \"status\" text DEFAULT 'PENDING' NOT NULL,\n  \"toDate\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_leave_requests_dates_5f46a36a\" CHECK (\"toDate\" >= \"fromDate\" AND \"days\" > 0),\n  CONSTRAINT \"erp_leave_requests_status_57fe5f48\" CHECK (\"status\" IN ('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_leave_requests\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_leave_requests\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_leave_types",
+    "label": "Create table \"erp_leave_types\"",
+    "summary": "Creates table \"erp_leave_types\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_leave_types"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_leave_types\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_leave_types\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_leave_types\"",
+        "sql": "CREATE TABLE \"public\".\"erp_leave_types\" (\n  \"annualDays\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"code\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"name\" text NOT NULL,\n  \"paid\" bool NOT NULL,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_leave_types_days_fb514958\" CHECK (\"annualDays\" >= 0 AND \"annualDays\" <= 366),\n  CONSTRAINT \"erp_leave_types_status_ee520df2\" CHECK (\"status\" IN ('ACTIVE', 'INACTIVE'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_leave_types\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_leave_types\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_ncrs",
+    "label": "Create table \"erp_ncrs\"",
+    "summary": "Creates table \"erp_ncrs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_ncrs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_ncrs\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_ncrs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_ncrs\"",
+        "sql": "CREATE TABLE \"public\".\"erp_ncrs\" (\n  \"closeNote\" text,\n  \"closedAt\" timestamptz,\n  \"closedBy\" uuid,\n  \"containment\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"customerId\" uuid,\n  \"description\" text NOT NULL,\n  \"disposition\" text,\n  \"id\" uuid NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"inspectionId\" uuid,\n  \"ncrNumber\" text NOT NULL,\n  \"productId\" uuid,\n  \"productionOrderId\" uuid,\n  \"quantityAffected\" numeric,\n  \"rootCause\" text,\n  \"severity\" text NOT NULL,\n  \"source\" text NOT NULL,\n  \"status\" text DEFAULT 'OPEN' NOT NULL,\n  \"supplierId\" uuid,\n  \"title\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_ncrs_disposition_c259db1c\" CHECK (\"disposition\" IS NULL OR \"disposition\" IN ('REWORK', 'SCRAP', 'USE_AS_IS', 'RETURN_TO_SUPPLIER', 'REGRADE')),\n  CONSTRAINT \"erp_ncrs_quantity_01ebca41\" CHECK (\"quantityAffected\" IS NULL OR \"quantityAffected\" > 0),\n  CONSTRAINT \"erp_ncrs_severity_e3c48749\" CHECK (\"severity\" IN ('MINOR', 'MAJOR', 'CRITICAL')),\n  CONSTRAINT \"erp_ncrs_source_f09274fc\" CHECK (\"source\" IN ('INSPECTION', 'IN_PROCESS', 'CUSTOMER', 'SUPPLIER', 'INTERNAL')),\n  CONSTRAINT \"erp_ncrs_status_3c5226f6\" CHECK (\"status\" IN ('OPEN', 'INVESTIGATING', 'CLOSED', 'CANCELLED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_ncrs\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_ncrs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_packing_instructions",
+    "label": "Create table \"erp_packing_instructions\"",
+    "summary": "Creates table \"erp_packing_instructions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_packing_instructions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_packing_instructions\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_packing_instructions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_packing_instructions\"",
+        "sql": "CREATE TABLE \"public\".\"erp_packing_instructions\" (\n  \"cartonType\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"customerId\" uuid,\n  \"id\" uuid NOT NULL,\n  \"instructions\" text,\n  \"labelling\" text,\n  \"packType\" text NOT NULL,\n  \"packsPerCarton\" int4 NOT NULL,\n  \"productId\" uuid NOT NULL,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"unitsPerPack\" numeric NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_packing_instructions_quantities_ac11af64\" CHECK (\"unitsPerPack\" > 0 AND \"packsPerCarton\" > 0),\n  CONSTRAINT \"erp_packing_instructions_status_ee520df2\" CHECK (\"status\" IN ('ACTIVE', 'INACTIVE'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_packing_instructions\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_packing_instructions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_product_categories",
+    "label": "Create table \"erp_product_categories\"",
+    "summary": "Creates table \"erp_product_categories\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_product_categories"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_product_categories\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_product_categories\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_product_categories\"",
+        "sql": "CREATE TABLE \"public\".\"erp_product_categories\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" uuid NOT NULL,\n  \"name\" text NOT NULL,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_product_categories_status_ee520df2\" CHECK (\"status\" IN ('ACTIVE', 'INACTIVE'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_product_categories\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_product_categories\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_product_documents",
+    "label": "Create table \"erp_product_documents\"",
+    "summary": "Creates table \"erp_product_documents\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_product_documents"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_product_documents\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_product_documents\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_product_documents\"",
+        "sql": "CREATE TABLE \"public\".\"erp_product_documents\" (\n  \"archivedAt\" timestamptz,\n  \"archivedBy\" uuid,\n  \"content\" bytea NOT NULL,\n  \"documentType\" text NOT NULL,\n  \"fileName\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"mimeType\" text NOT NULL,\n  \"productId\" uuid NOT NULL,\n  \"sha256\" text NOT NULL,\n  \"sizeBytes\" int4 NOT NULL,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"title\" text NOT NULL,\n  \"uploadedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"uploadedBy\" uuid NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_product_documents_size_37f354af\" CHECK (\"sizeBytes\" > 0 AND \"sizeBytes\" <= 5242880),\n  CONSTRAINT \"erp_product_documents_status_aef30f3b\" CHECK (\"status\" IN ('ACTIVE', 'ARCHIVED')),\n  CONSTRAINT \"erp_product_documents_type_2b38851f\" CHECK (\"documentType\" IN ('SPECIFICATION', 'DRAWING', 'TEST_REPORT', 'CERTIFICATE', 'IMAGE', 'OTHER'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_product_documents\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_product_documents\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_product_price_changes",
+    "label": "Create table \"erp_product_price_changes\"",
+    "summary": "Creates table \"erp_product_price_changes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_product_price_changes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_product_price_changes\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_product_price_changes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_product_price_changes\"",
+        "sql": "CREATE TABLE \"public\".\"erp_product_price_changes\" (\n  \"changedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"changedBy\" uuid NOT NULL,\n  \"effectiveDate\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"newPrice\" numeric NOT NULL,\n  \"previousPrice\" numeric NOT NULL,\n  \"productId\" uuid NOT NULL,\n  \"reason\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_product_price_changes_nonnegative_653eab89\" CHECK (\"newPrice\" >= 0 AND \"previousPrice\" >= 0)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_product_price_changes\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_product_price_changes\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_production_plan_lines",
+    "label": "Create table \"erp_production_plan_lines\"",
+    "summary": "Creates table \"erp_production_plan_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_production_plan_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_production_plan_lines\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_plan_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_production_plan_lines\"",
+        "sql": "CREATE TABLE \"public\".\"erp_production_plan_lines\" (\n  \"dueDate\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"lineNo\" int4 NOT NULL,\n  \"notes\" text,\n  \"planId\" uuid NOT NULL,\n  \"priority\" text DEFAULT 'NORMAL' NOT NULL,\n  \"productId\" uuid NOT NULL,\n  \"productionOrderId\" uuid,\n  \"quantity\" numeric NOT NULL,\n  \"status\" text DEFAULT 'PLANNED' NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_production_plan_lines_priority_72dbae57\" CHECK (\"priority\" IN ('LOW', 'NORMAL', 'HIGH', 'URGENT')),\n  CONSTRAINT \"erp_production_plan_lines_quantity_fc510296\" CHECK (\"quantity\" > 0),\n  CONSTRAINT \"erp_production_plan_lines_status_f23dda36\" CHECK (\"status\" IN ('PLANNED', 'RELEASING', 'RELEASED', 'CANCELLED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_production_plan_lines\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_plan_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_production_plans",
+    "label": "Create table \"erp_production_plans\"",
+    "summary": "Creates table \"erp_production_plans\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_production_plans"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_production_plans\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_plans\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_production_plans\"",
+        "sql": "CREATE TABLE \"public\".\"erp_production_plans\" (\n  \"approvedAt\" timestamptz,\n  \"approvedBy\" uuid,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"notes\" text,\n  \"periodEnd\" text NOT NULL,\n  \"periodStart\" text NOT NULL,\n  \"planNumber\" text NOT NULL,\n  \"status\" text DEFAULT 'DRAFT' NOT NULL,\n  \"title\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_production_plans_period_a4b7382c\" CHECK (\"periodEnd\" >= \"periodStart\"),\n  CONSTRAINT \"erp_production_plans_status_c831a02a\" CHECK (\"status\" IN ('DRAFT', 'APPROVED', 'CLOSED', 'CANCELLED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_production_plans\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_plans\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_shifts",
+    "label": "Create table \"erp_shifts\"",
+    "summary": "Creates table \"erp_shifts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_shifts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_shifts\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_shifts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_shifts\"",
+        "sql": "CREATE TABLE \"public\".\"erp_shifts\" (\n  \"breakMinutes\" int4 DEFAULT 0 NOT NULL,\n  \"code\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"endTime\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"name\" text NOT NULL,\n  \"startTime\" text NOT NULL,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_shifts_break_592e88e3\" CHECK (\"breakMinutes\" BETWEEN 0 AND 240),\n  CONSTRAINT \"erp_shifts_status_ee520df2\" CHECK (\"status\" IN ('ACTIVE', 'INACTIVE')),\n  CONSTRAINT \"erp_shifts_times_82b30b72\" CHECK (\"startTime\" ~ '^([01][0-9]|2[0-3]):[0-5][0-9]$' AND \"endTime\" ~ '^([01][0-9]|2[0-3]):[0-5][0-9]$' AND \"startTime\" <> \"endTime\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_shifts\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_shifts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_work_centers",
+    "label": "Create table \"erp_work_centers\"",
+    "summary": "Creates table \"erp_work_centers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_work_centers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_work_centers\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_work_centers\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_work_centers\"",
+        "sql": "CREATE TABLE \"public\".\"erp_work_centers\" (\n  \"capacityUnit\" text NOT NULL,\n  \"dailyCapacity\" numeric NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"name\" text NOT NULL,\n  \"notes\" text,\n  \"shiftsPerDay\" int4 DEFAULT 1 NOT NULL,\n  \"stageKey\" text NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"updatedBy\" uuid,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_work_centers_capacity_736e7537\" CHECK (\"dailyCapacity\" > 0),\n  CONSTRAINT \"erp_work_centers_shifts_477ebc18\" CHECK (\"shiftsPerDay\" BETWEEN 1 AND 3)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_work_centers\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_work_centers\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_employees.shiftId",
+    "label": "Add column \"shiftId\" to \"erp_employees\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "shiftId",
+        "table": "erp_employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"shiftId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_employees",
+          "shiftId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"shiftId\"",
+        "sql": "ALTER TABLE \"public\".\"erp_employees\" ADD COLUMN \"shiftId\" uuid"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"shiftId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_employees",
+          "shiftId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_batches.erp_batches_batchNumber_key",
+    "label": "Add unique constraint on \"erp_batches\" (batchNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_batches_batchNumber_key",
+        "table": "erp_batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_batches_batchNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_batches_batchNumber_key",
+          "public",
+          "\"public\".\"erp_batches\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_batches_batchNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_batches\" ADD CONSTRAINT \"erp_batches_batchNumber_key\" UNIQUE (\"batchNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_batches_batchNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_batches_batchNumber_key",
+          "public",
+          "\"public\".\"erp_batches\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_calendar_days.erp_calendar_days_date_key",
+    "label": "Add unique constraint on \"erp_calendar_days\" (date)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_calendar_days_date_key",
+        "table": "erp_calendar_days"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_calendar_days_date_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_calendar_days_date_key",
+          "public",
+          "\"public\".\"erp_calendar_days\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_calendar_days_date_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_calendar_days\" ADD CONSTRAINT \"erp_calendar_days_date_key\" UNIQUE (\"date\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_calendar_days_date_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_calendar_days_date_key",
+          "public",
+          "\"public\".\"erp_calendar_days\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_capas.erp_capas_capaNumber_key",
+    "label": "Add unique constraint on \"erp_capas\" (capaNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_capas_capaNumber_key",
+        "table": "erp_capas"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_capas_capaNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_capas_capaNumber_key",
+          "public",
+          "\"public\".\"erp_capas\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_capas_capaNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_capas\" ADD CONSTRAINT \"erp_capas_capaNumber_key\" UNIQUE (\"capaNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_capas_capaNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_capas_capaNumber_key",
+          "public",
+          "\"public\".\"erp_capas\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_capas.erp_capas_idempotencyKey_key",
+    "label": "Add unique constraint on \"erp_capas\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_capas_idempotencyKey_key",
+        "table": "erp_capas"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_capas_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_capas_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_capas\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_capas_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_capas\" ADD CONSTRAINT \"erp_capas_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_capas_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_capas_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_capas\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_leave_requests.erp_leave_requests_requestNumber_key",
+    "label": "Add unique constraint on \"erp_leave_requests\" (requestNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_leave_requests_requestNumber_key",
+        "table": "erp_leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_leave_requests_requestNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_leave_requests_requestNumber_key",
+          "public",
+          "\"public\".\"erp_leave_requests\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_leave_requests_requestNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_leave_requests\" ADD CONSTRAINT \"erp_leave_requests_requestNumber_key\" UNIQUE (\"requestNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_leave_requests_requestNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_leave_requests_requestNumber_key",
+          "public",
+          "\"public\".\"erp_leave_requests\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_leave_requests.erp_leave_requests_idempotencyKey_key",
+    "label": "Add unique constraint on \"erp_leave_requests\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_leave_requests_idempotencyKey_key",
+        "table": "erp_leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_leave_requests_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_leave_requests_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_leave_requests\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_leave_requests_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_leave_requests\" ADD CONSTRAINT \"erp_leave_requests_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_leave_requests_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_leave_requests_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_leave_requests\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_leave_types.erp_leave_types_code_key",
+    "label": "Add unique constraint on \"erp_leave_types\" (code)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_leave_types_code_key",
+        "table": "erp_leave_types"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_leave_types_code_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_leave_types_code_key",
+          "public",
+          "\"public\".\"erp_leave_types\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_leave_types_code_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_leave_types\" ADD CONSTRAINT \"erp_leave_types_code_key\" UNIQUE (\"code\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_leave_types_code_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_leave_types_code_key",
+          "public",
+          "\"public\".\"erp_leave_types\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_ncrs.erp_ncrs_ncrNumber_key",
+    "label": "Add unique constraint on \"erp_ncrs\" (ncrNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_ncrs_ncrNumber_key",
+        "table": "erp_ncrs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_ncrs_ncrNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_ncrs_ncrNumber_key",
+          "public",
+          "\"public\".\"erp_ncrs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_ncrs_ncrNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_ncrs\" ADD CONSTRAINT \"erp_ncrs_ncrNumber_key\" UNIQUE (\"ncrNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_ncrs_ncrNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_ncrs_ncrNumber_key",
+          "public",
+          "\"public\".\"erp_ncrs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_ncrs.erp_ncrs_idempotencyKey_key",
+    "label": "Add unique constraint on \"erp_ncrs\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_ncrs_idempotencyKey_key",
+        "table": "erp_ncrs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_ncrs_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_ncrs_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_ncrs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_ncrs_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_ncrs\" ADD CONSTRAINT \"erp_ncrs_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_ncrs_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_ncrs_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_ncrs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_product_categories.erp_product_categories_name_key",
+    "label": "Add unique constraint on \"erp_product_categories\" (name)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_product_categories_name_key",
+        "table": "erp_product_categories"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_product_categories_name_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_product_categories_name_key",
+          "public",
+          "\"public\".\"erp_product_categories\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_product_categories_name_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_product_categories\" ADD CONSTRAINT \"erp_product_categories_name_key\" UNIQUE (\"name\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_product_categories_name_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_product_categories_name_key",
+          "public",
+          "\"public\".\"erp_product_categories\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_production_plan_lines.erp_production_plan_lines_productionOrderId_key",
+    "label": "Add unique constraint on \"erp_production_plan_lines\" (productionOrderId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_production_plan_lines_productionOrderId_key",
+        "table": "erp_production_plan_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_production_plan_lines_productionOrderId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_plan_lines_productionOrderId_key",
+          "public",
+          "\"public\".\"erp_production_plan_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_production_plan_lines_productionOrderId_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_production_plan_lines\" ADD CONSTRAINT \"erp_production_plan_lines_productionOrderId_key\" UNIQUE (\"productionOrderId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_production_plan_lines_productionOrderId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_plan_lines_productionOrderId_key",
+          "public",
+          "\"public\".\"erp_production_plan_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_production_plan_lines.erp_production_plan_lines_planId_lineNo_key",
+    "label": "Add unique constraint on \"erp_production_plan_lines\" (planId, lineNo)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_production_plan_lines_planId_lineNo_key",
+        "table": "erp_production_plan_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_production_plan_lines_planId_lineNo_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_plan_lines_planId_lineNo_key",
+          "public",
+          "\"public\".\"erp_production_plan_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_production_plan_lines_planId_lineNo_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_production_plan_lines\" ADD CONSTRAINT \"erp_production_plan_lines_planId_lineNo_key\" UNIQUE (\"planId\", \"lineNo\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_production_plan_lines_planId_lineNo_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_plan_lines_planId_lineNo_key",
+          "public",
+          "\"public\".\"erp_production_plan_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_production_plans.erp_production_plans_planNumber_key",
+    "label": "Add unique constraint on \"erp_production_plans\" (planNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_production_plans_planNumber_key",
+        "table": "erp_production_plans"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_production_plans_planNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_plans_planNumber_key",
+          "public",
+          "\"public\".\"erp_production_plans\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_production_plans_planNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_production_plans\" ADD CONSTRAINT \"erp_production_plans_planNumber_key\" UNIQUE (\"planNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_production_plans_planNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_plans_planNumber_key",
+          "public",
+          "\"public\".\"erp_production_plans\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_production_plans.erp_production_plans_idempotencyKey_key",
+    "label": "Add unique constraint on \"erp_production_plans\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_production_plans_idempotencyKey_key",
+        "table": "erp_production_plans"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_production_plans_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_plans_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_production_plans\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_production_plans_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_production_plans\" ADD CONSTRAINT \"erp_production_plans_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_production_plans_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_plans_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_production_plans\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_shifts.erp_shifts_code_key",
+    "label": "Add unique constraint on \"erp_shifts\" (code)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_shifts_code_key",
+        "table": "erp_shifts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_shifts_code_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_shifts_code_key",
+          "public",
+          "\"public\".\"erp_shifts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_shifts_code_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_shifts\" ADD CONSTRAINT \"erp_shifts_code_key\" UNIQUE (\"code\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_shifts_code_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_shifts_code_key",
+          "public",
+          "\"public\".\"erp_shifts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_work_centers.erp_work_centers_stageKey_key",
+    "label": "Add unique constraint on \"erp_work_centers\" (stageKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_work_centers_stageKey_key",
+        "table": "erp_work_centers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_work_centers_stageKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_work_centers_stageKey_key",
+          "public",
+          "\"public\".\"erp_work_centers\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_work_centers_stageKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_work_centers\" ADD CONSTRAINT \"erp_work_centers_stageKey_key\" UNIQUE (\"stageKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_work_centers_stageKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_work_centers_stageKey_key",
+          "public",
+          "\"public\".\"erp_work_centers\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_batches.erp_batches_productId_idx_5858600a",
+    "label": "Create index \"erp_batches_productId_idx_5858600a\" on \"erp_batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_batches_productId_idx_5858600a",
+        "table": "erp_batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_batches_productId_idx_5858600a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_batches_productId_idx_5858600a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_batches_productId_idx_5858600a\"",
+        "sql": "CREATE INDEX \"erp_batches_productId_idx_5858600a\" ON \"public\".\"erp_batches\" (\"productId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_batches_productId_idx_5858600a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_batches_productId_idx_5858600a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_batches.erp_batches_productionOrderId_idx_6ada58cc",
+    "label": "Create index \"erp_batches_productionOrderId_idx_6ada58cc\" on \"erp_batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_batches_productionOrderId_idx_6ada58cc",
+        "table": "erp_batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_batches_productionOrderId_idx_6ada58cc\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_batches_productionOrderId_idx_6ada58cc\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_batches_productionOrderId_idx_6ada58cc\"",
+        "sql": "CREATE INDEX \"erp_batches_productionOrderId_idx_6ada58cc\" ON \"public\".\"erp_batches\" (\"productionOrderId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_batches_productionOrderId_idx_6ada58cc\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_batches_productionOrderId_idx_6ada58cc\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_batches.erp_batches_purchaseReceiptId_idx_ffe25907",
+    "label": "Create index \"erp_batches_purchaseReceiptId_idx_ffe25907\" on \"erp_batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_batches_purchaseReceiptId_idx_ffe25907",
+        "table": "erp_batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_batches_purchaseReceiptId_idx_ffe25907\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_batches_purchaseReceiptId_idx_ffe25907\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_batches_purchaseReceiptId_idx_ffe25907\"",
+        "sql": "CREATE INDEX \"erp_batches_purchaseReceiptId_idx_ffe25907\" ON \"public\".\"erp_batches\" (\"purchaseReceiptId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_batches_purchaseReceiptId_idx_ffe25907\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_batches_purchaseReceiptId_idx_ffe25907\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_capas.erp_capas_ncrId_idx_e22c656f",
+    "label": "Create index \"erp_capas_ncrId_idx_e22c656f\" on \"erp_capas\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_capas_ncrId_idx_e22c656f",
+        "table": "erp_capas"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_capas_ncrId_idx_e22c656f\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_capas_ncrId_idx_e22c656f\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_capas_ncrId_idx_e22c656f\"",
+        "sql": "CREATE INDEX \"erp_capas_ncrId_idx_e22c656f\" ON \"public\".\"erp_capas\" (\"ncrId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_capas_ncrId_idx_e22c656f\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_capas_ncrId_idx_e22c656f\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_capas.erp_capas_status_dueDate_idx_ec56e113",
+    "label": "Create index \"erp_capas_status_dueDate_idx_ec56e113\" on \"erp_capas\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_capas_status_dueDate_idx_ec56e113",
+        "table": "erp_capas"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_capas_status_dueDate_idx_ec56e113\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_capas_status_dueDate_idx_ec56e113\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_capas_status_dueDate_idx_ec56e113\"",
+        "sql": "CREATE INDEX \"erp_capas_status_dueDate_idx_ec56e113\" ON \"public\".\"erp_capas\" (\"status\", \"dueDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_capas_status_dueDate_idx_ec56e113\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_capas_status_dueDate_idx_ec56e113\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_employees.erp_employees_shiftId_idx_fee8a58d",
+    "label": "Create index \"erp_employees_shiftId_idx_fee8a58d\" on \"erp_employees\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_employees_shiftId_idx_fee8a58d",
+        "table": "erp_employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_employees_shiftId_idx_fee8a58d\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_employees_shiftId_idx_fee8a58d\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_employees_shiftId_idx_fee8a58d\"",
+        "sql": "CREATE INDEX \"erp_employees_shiftId_idx_fee8a58d\" ON \"public\".\"erp_employees\" (\"shiftId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_employees_shiftId_idx_fee8a58d\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_employees_shiftId_idx_fee8a58d\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_leave_requests.erp_leave_requests_employeeId_idx_087dd4a6",
+    "label": "Create index \"erp_leave_requests_employeeId_idx_087dd4a6\" on \"erp_leave_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_leave_requests_employeeId_idx_087dd4a6",
+        "table": "erp_leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_leave_requests_employeeId_idx_087dd4a6\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_leave_requests_employeeId_idx_087dd4a6\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_leave_requests_employeeId_idx_087dd4a6\"",
+        "sql": "CREATE INDEX \"erp_leave_requests_employeeId_idx_087dd4a6\" ON \"public\".\"erp_leave_requests\" (\"employeeId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_leave_requests_employeeId_idx_087dd4a6\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_leave_requests_employeeId_idx_087dd4a6\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_leave_requests.erp_leave_requests_employeeId_status_idx_e746ea39",
+    "label": "Create index \"erp_leave_requests_employeeId_status_idx_e746ea39\" on \"erp_leave_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_leave_requests_employeeId_status_idx_e746ea39",
+        "table": "erp_leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_leave_requests_employeeId_status_idx_e746ea39\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_leave_requests_employeeId_status_idx_e746ea39\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_leave_requests_employeeId_status_idx_e746ea39\"",
+        "sql": "CREATE INDEX \"erp_leave_requests_employeeId_status_idx_e746ea39\" ON \"public\".\"erp_leave_requests\" (\"employeeId\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_leave_requests_employeeId_status_idx_e746ea39\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_leave_requests_employeeId_status_idx_e746ea39\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_leave_requests.erp_leave_requests_fromDate_idx_de8be4be",
+    "label": "Create index \"erp_leave_requests_fromDate_idx_de8be4be\" on \"erp_leave_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_leave_requests_fromDate_idx_de8be4be",
+        "table": "erp_leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_leave_requests_fromDate_idx_de8be4be\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_leave_requests_fromDate_idx_de8be4be\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_leave_requests_fromDate_idx_de8be4be\"",
+        "sql": "CREATE INDEX \"erp_leave_requests_fromDate_idx_de8be4be\" ON \"public\".\"erp_leave_requests\" (\"fromDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_leave_requests_fromDate_idx_de8be4be\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_leave_requests_fromDate_idx_de8be4be\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_leave_requests.erp_leave_requests_leaveTypeId_idx_810d88f1",
+    "label": "Create index \"erp_leave_requests_leaveTypeId_idx_810d88f1\" on \"erp_leave_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_leave_requests_leaveTypeId_idx_810d88f1",
+        "table": "erp_leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_leave_requests_leaveTypeId_idx_810d88f1\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_leave_requests_leaveTypeId_idx_810d88f1\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_leave_requests_leaveTypeId_idx_810d88f1\"",
+        "sql": "CREATE INDEX \"erp_leave_requests_leaveTypeId_idx_810d88f1\" ON \"public\".\"erp_leave_requests\" (\"leaveTypeId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_leave_requests_leaveTypeId_idx_810d88f1\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_leave_requests_leaveTypeId_idx_810d88f1\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_ncrs.erp_ncrs_inspectionId_idx_8d93ea9a",
+    "label": "Create index \"erp_ncrs_inspectionId_idx_8d93ea9a\" on \"erp_ncrs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_ncrs_inspectionId_idx_8d93ea9a",
+        "table": "erp_ncrs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_ncrs_inspectionId_idx_8d93ea9a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_ncrs_inspectionId_idx_8d93ea9a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_ncrs_inspectionId_idx_8d93ea9a\"",
+        "sql": "CREATE INDEX \"erp_ncrs_inspectionId_idx_8d93ea9a\" ON \"public\".\"erp_ncrs\" (\"inspectionId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_ncrs_inspectionId_idx_8d93ea9a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_ncrs_inspectionId_idx_8d93ea9a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_ncrs.erp_ncrs_status_idx_e98638ab",
+    "label": "Create index \"erp_ncrs_status_idx_e98638ab\" on \"erp_ncrs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_ncrs_status_idx_e98638ab",
+        "table": "erp_ncrs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_ncrs_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_ncrs_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_ncrs_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"erp_ncrs_status_idx_e98638ab\" ON \"public\".\"erp_ncrs\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_ncrs_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_ncrs_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_packing_instructions.erp_packing_instructions_one_active_default_203dddcf",
+    "label": "Create index \"erp_packing_instructions_one_active_default_203dddcf\" on \"erp_packing_instructions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_packing_instructions_one_active_default_203dddcf",
+        "table": "erp_packing_instructions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_packing_instructions_one_active_default_203dddcf\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_packing_instructions_one_active_default_203dddcf\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_packing_instructions_one_active_default_203dddcf\"",
+        "sql": "CREATE UNIQUE INDEX \"erp_packing_instructions_one_active_default_203dddcf\" ON \"public\".\"erp_packing_instructions\" (\"productId\") WHERE (\"status\" = 'ACTIVE' AND \"customerId\" IS NULL)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_packing_instructions_one_active_default_203dddcf\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_packing_instructions_one_active_default_203dddcf\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_packing_instructions.erp_packing_instructions_one_active_per_customer_262f33b7",
+    "label": "Create index \"erp_packing_instructions_one_active_per_customer_262f33b7\" on \"erp_packing_instructions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_packing_instructions_one_active_per_customer_262f33b7",
+        "table": "erp_packing_instructions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_packing_instructions_one_active_per_customer_262f33b7\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_packing_instructions_one_active_per_customer_262f33b7\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_packing_instructions_one_active_per_customer_262f33b7\"",
+        "sql": "CREATE UNIQUE INDEX \"erp_packing_instructions_one_active_per_customer_262f33b7\" ON \"public\".\"erp_packing_instructions\" (\"productId\", \"customerId\") WHERE (\"status\" = 'ACTIVE' AND \"customerId\" IS NOT NULL)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_packing_instructions_one_active_per_customer_262f33b7\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_packing_instructions_one_active_per_customer_262f33b7\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_packing_instructions.erp_packing_instructions_productId_customerId_idx_155eae7f",
+    "label": "Create index \"erp_packing_instructions_productId_customerId_idx_155eae7f\" on \"erp_packing_instructions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_packing_instructions_productId_customerId_idx_155eae7f",
+        "table": "erp_packing_instructions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_packing_instructions_productId_customerId_idx_155eae7f\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_packing_instructions_productId_customerId_idx_155eae7f\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_packing_instructions_productId_customerId_idx_155eae7f\"",
+        "sql": "CREATE INDEX \"erp_packing_instructions_productId_customerId_idx_155eae7f\" ON \"public\".\"erp_packing_instructions\" (\"productId\", \"customerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_packing_instructions_productId_customerId_idx_155eae7f\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_packing_instructions_productId_customerId_idx_155eae7f\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_product_documents.erp_product_documents_productId_status_idx_285a0d76",
+    "label": "Create index \"erp_product_documents_productId_status_idx_285a0d76\" on \"erp_product_documents\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_product_documents_productId_status_idx_285a0d76",
+        "table": "erp_product_documents"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_product_documents_productId_status_idx_285a0d76\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_product_documents_productId_status_idx_285a0d76\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_product_documents_productId_status_idx_285a0d76\"",
+        "sql": "CREATE INDEX \"erp_product_documents_productId_status_idx_285a0d76\" ON \"public\".\"erp_product_documents\" (\"productId\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_product_documents_productId_status_idx_285a0d76\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_product_documents_productId_status_idx_285a0d76\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_product_price_changes.erp_product_price_changes_productId_changedAt_idx_b623e1f9",
+    "label": "Create index \"erp_product_price_changes_productId_changedAt_idx_b623e1f9\" on \"erp_product_price_changes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_product_price_changes_productId_changedAt_idx_b623e1f9",
+        "table": "erp_product_price_changes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_product_price_changes_productId_changedAt_idx_b623e1f9\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_product_price_changes_productId_changedAt_idx_b623e1f9\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_product_price_changes_productId_changedAt_idx_b623e1f9\"",
+        "sql": "CREATE INDEX \"erp_product_price_changes_productId_changedAt_idx_b623e1f9\" ON \"public\".\"erp_product_price_changes\" (\"productId\", \"changedAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_product_price_changes_productId_changedAt_idx_b623e1f9\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_product_price_changes_productId_changedAt_idx_b623e1f9\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_production_plan_lines.erp_production_plan_lines_planId_idx_5b32079a",
+    "label": "Create index \"erp_production_plan_lines_planId_idx_5b32079a\" on \"erp_production_plan_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_production_plan_lines_planId_idx_5b32079a",
+        "table": "erp_production_plan_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_production_plan_lines_planId_idx_5b32079a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_plan_lines_planId_idx_5b32079a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_production_plan_lines_planId_idx_5b32079a\"",
+        "sql": "CREATE INDEX \"erp_production_plan_lines_planId_idx_5b32079a\" ON \"public\".\"erp_production_plan_lines\" (\"planId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_production_plan_lines_planId_idx_5b32079a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_production_plan_lines_planId_idx_5b32079a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_capas.erp_capas_ncrId_fkey",
+    "label": "Add foreign key \"erp_capas_ncrId_fkey\" on \"erp_capas\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_capas_ncrId_fkey",
+        "table": "erp_capas"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_capas_ncrId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_capas_ncrId_fkey",
+          "public",
+          "\"public\".\"erp_capas\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_capas_ncrId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_capas\"\nADD CONSTRAINT \"erp_capas_ncrId_fkey\"\nFOREIGN KEY (\"ncrId\")\nREFERENCES \"public\".\"erp_ncrs\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_capas_ncrId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_capas_ncrId_fkey",
+          "public",
+          "\"public\".\"erp_capas\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_leave_requests.erp_leave_requests_employeeId_fkey",
+    "label": "Add foreign key \"erp_leave_requests_employeeId_fkey\" on \"erp_leave_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_leave_requests_employeeId_fkey",
+        "table": "erp_leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_leave_requests_employeeId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_leave_requests_employeeId_fkey",
+          "public",
+          "\"public\".\"erp_leave_requests\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_leave_requests_employeeId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_leave_requests\"\nADD CONSTRAINT \"erp_leave_requests_employeeId_fkey\"\nFOREIGN KEY (\"employeeId\")\nREFERENCES \"public\".\"erp_employees\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_leave_requests_employeeId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_leave_requests_employeeId_fkey",
+          "public",
+          "\"public\".\"erp_leave_requests\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_leave_requests.erp_leave_requests_leaveTypeId_fkey",
+    "label": "Add foreign key \"erp_leave_requests_leaveTypeId_fkey\" on \"erp_leave_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_leave_requests_leaveTypeId_fkey",
+        "table": "erp_leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_leave_requests_leaveTypeId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_leave_requests_leaveTypeId_fkey",
+          "public",
+          "\"public\".\"erp_leave_requests\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_leave_requests_leaveTypeId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_leave_requests\"\nADD CONSTRAINT \"erp_leave_requests_leaveTypeId_fkey\"\nFOREIGN KEY (\"leaveTypeId\")\nREFERENCES \"public\".\"erp_leave_types\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_leave_requests_leaveTypeId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_leave_requests_leaveTypeId_fkey",
+          "public",
+          "\"public\".\"erp_leave_requests\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_production_plan_lines.erp_production_plan_lines_planId_fkey",
+    "label": "Add foreign key \"erp_production_plan_lines_planId_fkey\" on \"erp_production_plan_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_production_plan_lines_planId_fkey",
+        "table": "erp_production_plan_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_production_plan_lines_planId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_plan_lines_planId_fkey",
+          "public",
+          "\"public\".\"erp_production_plan_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_production_plan_lines_planId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_production_plan_lines\"\nADD CONSTRAINT \"erp_production_plan_lines_planId_fkey\"\nFOREIGN KEY (\"planId\")\nREFERENCES \"public\".\"erp_production_plans\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_production_plan_lines_planId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_production_plan_lines_planId_fkey",
+          "public",
+          "\"public\".\"erp_production_plan_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_employees.erp_employees_shiftId_fkey",
+    "label": "Add foreign key \"erp_employees_shiftId_fkey\" on \"erp_employees\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_employees_shiftId_fkey",
+        "table": "erp_employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_employees_shiftId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_employees_shiftId_fkey",
+          "public",
+          "\"public\".\"erp_employees\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_employees_shiftId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_employees\"\nADD CONSTRAINT \"erp_employees_shiftId_fkey\"\nFOREIGN KEY (\"shiftId\")\nREFERENCES \"public\".\"erp_shifts\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_employees_shiftId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_employees_shiftId_fkey",
+          "public",
+          "\"public\".\"erp_employees\""
+        ]
+      }
+    ]
+  }
+]
