@@ -1,15 +1,14 @@
-﻿"use client";
+"use client";
 
-import InspectionList from "@/components/quality/InspectionList";
+import QualityInspectionList from "@/components/quality/QualityInspectionList";
 
 export default function InProcessInspectionPage() {
   return (
-    <InspectionList
-      type="in-process"
+    <QualityInspectionList
+      type="IN_PROCESS"
       title="In-Process Inspection"
-      description="Quality checks during production stages. Production Output depends on in-process results."
-      emptyTitle="No in-process inspections"
-      emptyDescription="In-process inspections are created against production stages while an order is being manufactured."
+      description="Sampling checks at production stages before Quality Check. They record results and defects for traceability; stage output is still recorded on the production order."
+      emptyText="No in-process inspections yet."
     />
   );
 }

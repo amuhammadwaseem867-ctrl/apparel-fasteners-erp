@@ -23,10 +23,13 @@ committed repository.** Statuses below describe the committed code only.
 | Planning (BOM, MRP) | `/api/planning/{boms,mrp-runs,planned-orders}` | `server/planning/*` | `erp_boms`, `erp_bom_lines`, `erp_mrp_runs`, `erp_mrp_demands`, `erp_mrp_requirements`, `erp_mrp_planned_orders` |
 | Inventory | `/api/inventory/{warehouses,locations,balances,summary,movements,documents,reservations}` | `server/inventory/*` | `erp_warehouses`, `erp_storage_locations`, `erp_stock_balances`, `erp_stock_documents`, `erp_stock_movements`, `erp_stock_reservations`, `erp_document_sequences` |
 | Production | `/api/production/{orders,orders/[id],orders/[id]/stages/[stageKey]/{runs,complete},summary}` | `server/production/*` | `erp_production_orders`, `erp_production_stages`, `erp_production_stage_runs`, `erp_production_events` |
+| Quality | `/api/quality/{inspections,inspections/[id],summary}` | `server/quality/*` | `erp_quality_inspections` |
+| Packing | `/api/packing/{lists,lists/[id]}` | `server/packing/*` | `erp_packing_lists`, `erp_packing_packages` |
+| Dispatch | `/api/dispatch/{shipments,shipments/[id],sales-orders/[id]}` | `server/dispatch/*` | `erp_shipments`, `erp_shipment_lines` |
 | Sales orders | `/api/sales/orders`, `/api/sales/orders/[id]` | `server/sales/*` | `erp_sales_orders`, `erp_sales_order_lines` (has `productId`) |
 | Dashboard | `/api/dashboard` | `server/dashboard/*` | reads the above |
 
-Migrations: `20261008T1419_migration` (base) → `20261014T1134_inventory_foundation` → `20261014T1624_bom_mrp` → `20261014T1640_production_stages` (all additive; applied and verified only on the isolated test database).
+Migrations: `20261008T1419_migration` (base) → `20261014T1134_inventory_foundation` → `20261014T1624_bom_mrp` → `20261014T1640_production_stages` → `20261015T1506_quality_packing_dispatch` (all additive; applied and verified only on the isolated test database).
 
 ## Module status
 
@@ -48,14 +51,14 @@ and reports success; data is lost on reload and never reaches the server.
 | Procurement | 7 pages | Static, banner | No supplier/PR/RFQ/PO/GRN tables or API. The "productId linking failure" from the audit is not reproducible here: there is no procurement code. |
 | Inventory | 13 pages | **Working** (12) / static (1) | Overview, stock, item master + profile, warehouses/locations, movements, transfers, adjustments, counts, reservations, finished goods and WIP (by warehouse type) are connected; printable slips. Batches & Lots remains unavailable (no batch schema). Verified in Chromium against the test DB. |
 | Production | 11 pages | **Working** | Overview (live KPIs and per-stage totals), orders (list, new, detail), stage board, schedule (open orders by due date), operations, stage output, completion, material issue are connected. On the order: release/hold/resume/cancel, record stage runs (accepted/rejected/wastage/rework), complete stages in sequence, issue BOM material through the stock ledger, append-only history, printable job card. Created from confirmed MRP MAKE orders. Work orders and shop floor redirect to orders and the stage board (D-021). Verified in Chromium against the test DB. |
-| Quality | 8 pages | Static, honest | Store mutations throw; create/release/refresh entry points disabled with reason; shell banner (Phase 1). |
-| Packing | 5 pages | Static, honest | Store mutations throw; New Packing Order disabled; shell banner (Phase 1). |
-| Dispatch | 5 pages | Static, honest | Store mutations throw (row actions only appear with records, which cannot exist); shell banner (Phase 1). |
+| Quality | 9 pages | **Working** (7) / static (2) | The overview shows live totals; the fabricated KPIs were removed. Inspections (all, incoming, in-process, final, rejections & rework) and the inspection detail with approve/cancel are connected. Final inspections record the Quality Check stage; incoming inspections release or scrap held stock (D-022). NCR and CAPA are not implemented (banner). |
+| Packing | 5 pages | **Working** (4) / static (1) | Overview, packing lists (create with packages and quick fill, confirm, cancel), list detail, packed & shipped, printable packing list. Confirming records the packing stage and receives finished goods. Packages redirects to packing lists. Packing instructions are not implemented (banner). |
+| Dispatch | 6 pages | **Working** | Overview, ready for delivery (packed lists by sales order), dispatch (drafts), shipments, delivered, shipment detail (dispatch, confirm delivery, cancel draft) and a printable delivery challan. Partial deliveries are supported; nothing ships past the ordered quantity. Verified in Chromium against the test DB. |
 | Finance | 11 pages | Static, honest | Workspace no longer stores records in page state; save/confirm/report report "not saved"; add/transaction/generate disabled; shell banner (Phase 1). |
 | People & Payroll | 11 pages | Static, honest | All 34 store mutations (incl. floating-point `computePayrollEntry`) throw; create/import/period buttons disabled; shell banner (Phase 1). |
 | Reports | 17 pages | Static, banner | No reporting API beyond the dashboard. |
 | Gate passes | none | Missing | No pages, no tables. |
-| Printing / export | sales order sheet, stock slips, job card | Partial | `/print/sales-orders/[id]`, `/print/stock-documents/[id]`, `/print/production-orders/[id]`, plus shell print CSS. Other documents depend on their modules' data. Sales order list CSV export (Excel-compatible). PDF comes from the browser's print dialog. |
+| Printing / export | sales order sheet, stock slips, job card, packing list, delivery challan | Partial | `/print/sales-orders/[id]`, `/print/stock-documents/[id]`, `/print/production-orders/[id]`, `/print/packing-lists/[id]`, `/print/shipments/[id]`, plus shell print CSS. Other documents depend on their modules' data. Sales order list CSV export (Excel-compatible). PDF comes from the browser's print dialog. |
 
 ## Audit findings re-verified
 
@@ -96,3 +99,12 @@ them once the branches are reconciled:
 The Production rewrite left these unreferenced:
 `app/(erp)/production/**/*.css` (old page stylesheets) and
 `components/production/Production{Activity,Issues,KpiGrid,Operations,Output,QuickActions,Schedule,WorkOrders,Workflow}.{jsx,css}`.
+
+The Quality, Packing and Dispatch rewrite left these unreferenced:
+- `components/quality/InspectionList.jsx`;
+- `components/quality/Quality{Activity,CAPA,Defects,InspectionSummary,Inspections,KpiGrid,NCR,QuickActions,Rejections,Workflow}.{jsx,css}`
+  (the NCR/CAPA pages may still use some of them);
+- the old page stylesheets under `app/(erp)/packing` and `app/(erp)/dispatch`.
+
+Procurement pages show `0` / `0%` placeholder KPIs under their banner. They
+should become "—" in the UI polish phase.

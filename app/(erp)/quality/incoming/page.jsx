@@ -1,15 +1,14 @@
-﻿"use client";
+"use client";
 
-import InspectionList from "@/components/quality/InspectionList";
+import QualityInspectionList from "@/components/quality/QualityInspectionList";
 
 export default function IncomingInspectionPage() {
   return (
-    <InspectionList
-      type="incoming"
+    <QualityInspectionList
+      type="INCOMING"
       title="Incoming Inspection"
-      description="Verify supplier material compliance before issue to production. Goods Receipt flows into Incoming Inspection: Approved, Conditional or Rejected."
-      emptyTitle="No incoming inspections"
-      emptyDescription="Incoming inspections are created when purchased material is received and requires quality review before issue to production."
+      description="Inspect received material that is on quality hold. On approval, passed quantity is released to available stock, rejected quantity is scrapped, and rework stays on hold."
+      emptyText="No incoming inspections. Put received stock on quality hold (Inventory → Stock → Quality hold), then record an inspection."
     />
   );
 }

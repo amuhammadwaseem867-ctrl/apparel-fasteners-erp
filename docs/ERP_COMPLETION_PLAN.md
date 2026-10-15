@@ -49,7 +49,7 @@ tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
 | 3 | Item master + inventory ledger | Yes | Item/variant model covering every fastener spec in the owner's requirements (deterministic SKUs); warehouses/locations; append-only movement ledger with source document/line, idempotency key and per-item row locking; balances derived or maintained transactionally; Inventory pages connected. |
 | 4 | BOM + MRP | Yes | BOM revisions with approval, cycle detection, single scrap convention (D-004). MRP runs stored with inputs, BOM revision and results; deterministic decimal maths; planned orders require explicit confirmation. |
 | 5 | Production: 9 stages | Yes | **Done.** Stage runs with `input = accepted + rejected + wastage + rework` (D-021); server-enforced sequence; partial runs; hold/resume; rework; append-only history; material issue linked to orders; job card. |
-| 6 | QC, packing, dispatch, delivery | Yes | QC gates packing; holds block stock availability; dispatch cannot exceed approved FG; partial deliveries. |
+| 6 | QC, packing, dispatch, delivery | Yes | **Done.** QC gates packing (final inspections drive stage 7); packing receives FG (stage 8); dispatch cannot exceed ordered quantity or available FG; partial deliveries; delivery drives stage 9; incoming inspection releases or scraps held stock (D-022). |
 | 7 | Finance | Yes | Invoices with explicit tax configuration (no invented rates); credit notes instead of deletion. Not described as a full ledger. |
 | 8 | HR, payroll, admin, gate passes | Yes | Least-privilege payroll access; user/role admin over existing RBAC tables; gate passes. Durable login limiter (shared store). |
 | 9 | Print/export, UI polish, E2E | Partly | Print CSS + document layouts; real CSV/XLSX export; Playwright E2E against an isolated test DB. |
@@ -100,23 +100,27 @@ tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
 | 2026-10-14 | `010b97a` | MRP engine, BOM and MRP services, planning API. |
 | 2026-10-14 | `b2edcad` | BOM and MRP screens connected. |
 | 2026-10-14 | `01dbce8` | Production schema + migration `20261014T1640_production_stages` (additive). |
-| 2026-10-14 | (this commit) | Production service, API and screens; MRP conversion; material issue linked to orders; job card. |
+| 2026-10-14 | `bc056f1` | Production service, API and screens; MRP conversion; material issue linked to orders; job card. |
+| 2026-10-15 | `dc35c90` | Quality/packing/dispatch schema + migration `20261015T1506_quality_packing_dispatch` (additive). |
+| 2026-10-15 | `2cf3474` | Quality, packing and dispatch services and API; stages 7–9 owned by those modules. |
+| 2026-10-15 | (this commit) | Quality, packing and dispatch screens; packing list and delivery challan prints. |
 
 ## Next step
 
-Phases 3, 4 and 5 are complete and verified on the isolated test database.
-Next: Phase 6, QC, packing, dispatch and delivery. QC must gate packing,
-holds must block availability, dispatch cannot exceed approved finished
-goods, and partial deliveries must be supported. Production completion will
-then feed a finished-goods receipt.
+Phases 3–6 are complete and verified on the isolated test database.
+Next: Phase 7, finance. This covers invoices from shipments with explicit
+tax configuration (no invented rates), credit notes instead of deletion,
+and receivables. It is not described as a full ledger.
 
 Owner actions still open:
 - Push the local `D:\` work (D-001).
 - Confirm sub-cent prices (D-012).
 - Supply company legal details (D-013).
-- Confirm the production permission mapping (D-019, D-021).
+- Confirm the production, quality, packing and dispatch permission mappings
+  (D-019, D-021, D-022).
 - Approve applying migrations `20261014T1134_inventory_foundation`,
-  `20261014T1624_bom_mrp` and `20261014T1640_production_stages` to the live
-  database after a verified backup.
+  `20261014T1624_bom_mrp`, `20261014T1640_production_stages` and
+  `20261015T1506_quality_packing_dispatch` to the live database after a
+  verified backup.
 
 Nothing has been applied to any live database.

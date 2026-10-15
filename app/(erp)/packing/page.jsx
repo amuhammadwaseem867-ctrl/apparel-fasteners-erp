@@ -1,133 +1,46 @@
 "use client";
 
 import Link from "next/link";
-import {
-  AlertTriangle,
-  Package,
-  PackageCheck,
-  Plus,
-  Search,
-} from "lucide-react";
 
-import PageHeader from "@/components/ui/PageHeader";
-import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
-import EmptyState from "@/components/ui/EmptyState";
+import useApiData from "@/lib/inventory/useApiData";
 
-import "./PackingOverview.css";
-
-/*
- * Packing Overview.
- *
- * Workflow: QC Approved → Packing → Ready for Delivery
- *
- * Packing record (backend entity mirror):
- * { orderId, product, approvedQuantity, packedQuantity,
- *   remainingQuantity, packageType, packageCount, weight,
- *   dimensions, packingInstructions, specialInstructions,
- *   packedBy, packedAt }
- */
-
-const PACKING_ORDERS = [];
+import "@/components/inventory/InventoryWorkspace.css";
 
 export default function PackingOverviewPage() {
+  const drafts = useApiData("/api/packing/lists?status=DRAFT&pageSize=100");
+  const ready = useApiData("/api/packing/lists?status=CONFIRMED&pageSize=100");
+  const count = (data) => (data.data ? `${data.data.packingLists.length}${data.data.hasMore ? "+" : ""}` : "…");
+  const error = drafts.error || ready.error;
+
   return (
-    <main className="packing-overview">
-      <PageHeader
-        eyebrow="Factory Operations / Packing"
-        title="Packing"
-        description="Packing of QC-approved finished zippers into customer packages, ready for delivery."
-        action={
-          <Link href="/packing/orders">
-            <Button variant="primary" icon={Plus}>
-              New Packing Order
-            </Button>
-          </Link>
-        }
-      />
-
-      <div className="packing-overview__content">
-        <section className="packing-overview__workflow">
-          <div className="packing-overview__workflow-step">
-            <span>01</span>
-            <strong>QC Approved</strong>
-            <small>Final inspection passed</small>
-          </div>
-
-          <div className="packing-overview__workflow-line" />
-
-          <div className="packing-overview__workflow-step">
-            <span>02</span>
-            <strong>Packing</strong>
-            <small>Pack into packages</small>
-          </div>
-
-          <div className="packing-overview__workflow-line" />
-
-          <div className="packing-overview__workflow-step">
-            <span>03</span>
-            <strong>Ready for Delivery</strong>
-            <small>Handoff to dispatch</small>
-          </div>
+    <main className="inv-page">
+      <header className="inv-header">
+        <div>
+          <p className="inv-header__eyebrow">Packing</p>
+          <h1>Packing</h1>
+          <p>Packing is stage 8 of production. A confirmed packing list records the stage and puts the packed goods into finished-goods stock, ready for dispatch.</p>
+        </div>
+        <div className="inv-header__actions">
+          <Link className="inv-link-button" href="/packing/orders">Packing lists</Link>
+        </div>
+      </header>
+      {error ? (
+        <p className="inv-dialog__error" role="alert">{error}</p>
+      ) : (
+        <section className="inv-kpis" aria-label="Packing">
+          <div className="inv-kpi"><span>Draft packing lists</span><strong>{count(drafts)}</strong><small>awaiting confirmation</small></div>
+          <div className="inv-kpi"><span>Packed, ready to ship</span><strong>{count(ready)}</strong><small>confirmed, not yet dispatched</small></div>
         </section>
-
-        <section className="packing-overview__kpis">
-          <div className="packing-overview__kpi">
-            <span>Packing Orders Open</span>
-            <strong>0</strong>
-          </div>
-
-          <div className="packing-overview__kpi">
-            <span>QC Approved Awaiting Packing</span>
-            <strong>0</strong>
-          </div>
-
-          <div className="packing-overview__kpi">
-            <span>Approved Qty</span>
-            <strong>0</strong>
-          </div>
-
-          <div className="packing-overview__kpi">
-            <span>Packed Qty</span>
-            <strong>0</strong>
-          </div>
-
-          <div className="packing-overview__kpi">
-            <span>Remaining Qty</span>
-            <strong>0</strong>
-          </div>
-        </section>
-
-        <section className="packing-overview__toolbar">
-          <div className="packing-overview__search">
-            <Input
-              placeholder="Search packing orders by order number, customer, SKU..."
-              icon={Search}
-            />
-          </div>
-        </section>
-
-        <section className="packing-overview__list-card">
-          {PACKING_ORDERS.length > 0 ? (
-            <div className="packing-overview__table" />
-          ) : (
-            <EmptyState
-              icon={PackageCheck}
-              title="No packing activity"
-              description="Packing orders appear here once QC-approved quantities are released for packing and the backend is connected."
-            />
-          )}
-        </section>
-
-        <section className="packing-overview__attention">
-          <AlertTriangle size={17} strokeWidth={1.8} />
-
-          <span>
-            Packing quantity cannot exceed QC-approved quantity.
-            Workflow transitions are enforced by backend rules.
-          </span>
-        </section>
-      </div>
+      )}
+      <section className="inv-card">
+        <div className="inv-card__header"><h2>Packing areas</h2></div>
+        <ul style={{ margin: 0, padding: "12px 32px", fontSize: 13 }}>
+          <li><Link href="/packing/orders">Packing lists</Link>: create, confirm and print packing lists.</li>
+          <li><Link href="/packing/completed">Packed &amp; shipped</Link>: confirmed and shipped lists.</li>
+          <li><Link href="/dispatch/ready">Ready to dispatch</Link>: ship confirmed lists to customers.</li>
+          <li>Packing instructions: not implemented yet.</li>
+        </ul>
+      </section>
     </main>
   );
 }

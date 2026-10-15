@@ -308,16 +308,12 @@ const NAV_GROUPS = [
             href: "/packing",
           },
           {
-            label: "Packing Orders",
+            label: "Packing Lists",
             href: "/packing/orders",
           },
           {
             label: "Packing Instructions",
             href: "/packing/instructions",
-          },
-          {
-            label: "Packages",
-            href: "/packing/packages",
           },
           {
             label: "Completed Packing",

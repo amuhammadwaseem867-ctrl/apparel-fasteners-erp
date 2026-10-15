@@ -1,16 +1,14 @@
 "use client";
 
-import InspectionList from "@/components/quality/InspectionList";
+import QualityInspectionList from "@/components/quality/QualityInspectionList";
 
 export default function RejectionsPage() {
   return (
-    <InspectionList
-      type="incoming"
-      title="Rejections"
-      description="All rejected quality records across incoming and in-process inspections. Rejected material triggers NCR and CAPA."
-      emptyTitle="No rejections"
-      emptyDescription="Rejected inspections appear here for traceability and corrective action."
-      showRejectionsOnly={true}
+    <QualityInspectionList
+      failedOnly
+      title="Rejections & Rework"
+      description="Inspections of every type with rejected or rework quantities, for traceability. NCR and CAPA records are not implemented yet."
+      emptyText="No inspection has rejected or rework quantities."
     />
   );
 }

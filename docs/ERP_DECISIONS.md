@@ -263,3 +263,75 @@ Not implemented:
   inventory; this is linked in Phase 6 with QC and packing.
 - Production orders are not yet MRP supply: open orders do not reduce MRP
   net requirements. This is recorded as a known gap for the next MRP change.
+
+## D-022: Quality, packing and dispatch drive stages 7–9
+
+**Ownership of the last three production stages.** Each is driven by the
+module that owns it, not by hand. The production order screen links to that
+module, and the API refuses manual runs with `STAGE_MANAGED_ELSEWHERE`.
+- **Quality Check.** Approving a **final inspection**
+  (`inspected = passed + rework + rejected`) records the stage run:
+  - passed units go on to packing;
+  - rework units return to the Quality Check queue;
+  - rejected units are lost.
+- **Packing.** Confirming a **packing list** records the stage run
+  (accepted = packed quantity). In the same transaction it posts an
+  `FG_RECEIPT` of that quantity into the chosen finished-goods location.
+  Packing more than passed Quality Check is refused.
+- **Delivered.** For a production order linked to a sales order, confirming
+  delivery of the shipment that carried its packing list records this stage.
+  For make-to-stock orders it is still recorded by hand (handover to stock).
+
+**Incoming inspections.** These cover stock already on quality hold at a
+location. On approval:
+- passed quantity is released to available stock (`QC_RELEASE`);
+- rejected quantity is scrapped (`QC_REJECT`);
+- rework quantity stays on hold.
+
+**In-process inspections.** These are sampling records for stages 1–6 and
+change no quantities.
+
+**Recording and approving inspections.**
+- An inspection is recorded with its results (OPEN), then approved or
+  cancelled exactly once (compare-and-set).
+- Recording needs `quality:create`; approving needs `quality:approve`.
+
+**Shipments.** A shipment covers one APPROVED sales order. Its lines are
+confirmed packing lists, or loose finished-goods stock.
+- **Dispatching.** One transaction that:
+  - locks the sales order row;
+  - re-checks that no item ships past its ordered quantity (dispatched plus
+    delivered, catalogue lines only);
+  - claims each packing list (CONFIRMED → SHIPPED, compare-and-set);
+  - posts one `FG_DISPATCH` from the ship-from location, consuming the
+    order's open reservations there first (oldest first).
+- **Partial deliveries** are multiple shipments.
+- **Cancelling.** Only drafts can be cancelled.
+- **Effect on the sales order.** Cancelling the sales order takes the same
+  row lock. It is refused once anything has been dispatched, and it cancels
+  draft shipments.
+
+**Atomic stock postings.** Module stock postings run inside the module's
+transaction (`postStockDocumentInTransaction`). Sources `QualityInspection`,
+`PackingList`, `Shipment` and `StockReservation` cannot be posted through
+the public stock API.
+
+**Permissions** (please confirm):
+- **Quality:** `quality:view` / `quality:create` / `quality:approve`.
+- **Packing:** uses `production:view` / `production:update`. The seed has no
+  `packing:*` permissions; `config/roles.js` lists them for the UI only.
+- **Dispatch:**
+  - `dispatch:view` and `dispatch:create`;
+  - `dispatch:ship` to dispatch;
+  - `dispatch:update` to deliver or cancel.
+
+**Not implemented:**
+- NCR and CAPA records.
+- Packing instructions.
+- Shipping custom (non-catalogue) sales order lines.
+- Proof-of-delivery attachments.
+- A sales order "delivered" status. Sales orders stay APPROVED; fulfilment
+  is shown per item (ordered / shipped / delivered / remaining).
+
+MRP still counts the full ordered quantity as demand (D-020). Subtracting
+shipped quantities is a follow-up.

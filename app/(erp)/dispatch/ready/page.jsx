@@ -1,166 +1,80 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { PackageCheck, Truck } from "lucide-react";
 
-import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
-import Modal from "@/components/ui/Modal";
-import EmptyState from "@/components/ui/EmptyState";
-import { useToast } from "@/components/ui/ToastProvider";
+import ShipmentDialog from "@/components/dispatch/ShipmentDialog";
+import useApiData from "@/lib/inventory/useApiData";
 
-import useFulfillmentStore from "@/lib/useFulfillmentStore";
+import "@/components/inventory/InventoryWorkspace.css";
 
-import "../DispatchPages.css";
-
+/* Confirmed (packed, unshipped) packing lists grouped by sales order. */
 export default function ReadyForDeliveryPage() {
-  const toast = useToast();
-
-  const { readyOrders, dispatch } = useFulfillmentStore();
-
-  const [dispatchTarget, setDispatchTarget] = useState(null);
-  const [form, setForm] = useState({
-    carrier: "",
-    trackingNumber: "",
-    expectedDelivery: "",
-    address: "",
-  });
-  const [submitting, setSubmitting] = useState(false);
-
-  function handleDispatch() {
-    if (!dispatchTarget || !form.carrier.trim()) return;
-
-    setSubmitting(true);
-
-    const shipment = dispatch(dispatchTarget.id, form);
-
-    setSubmitting(false);
-    setDispatchTarget(null);
-    setForm({ carrier: "", trackingNumber: "", expectedDelivery: "", address: "" });
-
-    toast.success({
-      title: "Dispatched",
-      message: `${shipment.code} created. Track it in Shipments.`,
-    });
+  const router = useRouter();
+  const lists = useApiData("/api/packing/lists?status=CONFIRMED&pageSize=100");
+  const [shipFor, setShipFor] = useState(null);
+  const rows = lists.data?.packingLists ?? [];
+  const groups = new Map();
+  for (const row of rows) {
+    const key = row.salesOrderId ?? "";
+    groups.set(key, [...(groups.get(key) ?? []), row]);
   }
 
   return (
-    <main className="dispatch-pages">
-      <PageHeader
-        eyebrow="Factory Operations / Dispatch & Logistics"
-        title="Ready for Delivery"
-        description="Orders with completed packing, awaiting dispatch. Dispatching creates a shipment."
-      />
-
-      <div className="dispatch-pages__content">
-        <section className="dispatch-pages__list-card">
-          {readyOrders.length === 0 ? (
-            <EmptyState
-              icon={PackageCheck}
-              title="Nothing ready for delivery"
-              description="Orders appear here when packing is marked complete. Complete and mark a packing order ready from Packing → Packing Orders."
-            />
-          ) : (
-            <div className="dispatch-pages__table-wrap">
-              <table className="dispatch-pages__table">
-                <thead>
-                  <tr>
-                    <th>Order</th>
-                    <th>Product</th>
-                    <th>Packed</th>
-                    <th>Package</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-
+    <main className="inv-page">
+      <header className="inv-header">
+        <div>
+          <p className="inv-header__eyebrow">Dispatch</p>
+          <h1>Ready for Delivery</h1>
+          <p>Packed goods in finished-goods stock that have not been shipped, by sales order.</p>
+        </div>
+      </header>
+      {lists.error ? (
+        <p className="inv-dialog__error" role="alert">{lists.error}</p>
+      ) : !lists.data ? (
+        <p className="inv-state" role="status">Loading…</p>
+      ) : rows.length === 0 ? (
+        <p className="inv-state">Nothing is packed and waiting. Confirm packing lists under Packing first.</p>
+      ) : (
+        [...groups.entries()].map(([salesOrderId, items]) => (
+          <section key={salesOrderId || "stock"} className="inv-card">
+            <div className="inv-card__header">
+              <div>
+                <h2>{items[0].salesOrderNumber ?? "Made to stock"}</h2>
+                <small>{items.length} packing {items.length === 1 ? "list" : "lists"}</small>
+              </div>
+              {salesOrderId ? (
+                <Button variant="primary" onClick={() => setShipFor(salesOrderId)}>Create shipment</Button>
+              ) : (
+                <small>Ship stock items from a sales order&apos;s shipment as loose stock.</small>
+              )}
+            </div>
+            <div className="inv-table-wrap">
+              <table className="inv-table">
+                <thead><tr><th>Packing list</th><th>Item</th><th>Production order</th><th className="inv-num">Packages</th><th className="inv-num">Quantity</th><th>Location</th></tr></thead>
                 <tbody>
-                  {readyOrders.map((order) => (
-                    <tr key={order.id}>
-                      <td>{order.orderId}</td>
-
-                      <td>{order.product}</td>
-
-                      <td>
-                        {order.packedQuantity.toLocaleString()} {order.unit}
-                      </td>
-
-                      <td>
-                        {order.packageType}
-                        {order.packageCount ? ` × ${order.packageCount}` : ""}
-                      </td>
-
-                      <td>
-                        <Button
-                          variant="primary"
-                          size="small"
-                          icon={Truck}
-                          onClick={() => setDispatchTarget(order)}
-                        >
-                          Dispatch
-                        </Button>
-                      </td>
+                  {items.map((row) => (
+                    <tr key={row.id}>
+                      <td data-label="Packing list"><Link href={`/packing/orders/${row.id}`}>{row.packingNumber}</Link></td>
+                      <td data-label="Item"><strong>{row.sku}</strong><small>{row.productName}</small></td>
+                      <td data-label="Production order">{row.orderNumber}</td>
+                      <td data-label="Packages" className="inv-num">{row.packageCount}</td>
+                      <td data-label="Quantity" className="inv-num">{row.totalQuantity} {row.unit}</td>
+                      <td data-label="Location">{row.locationLabel}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          )}
-        </section>
-      </div>
-
-      <Modal
-        open={Boolean(dispatchTarget)}
-        onClose={() => setDispatchTarget(null)}
-        title="Dispatch Order"
-        description={dispatchTarget?.orderId}
-      >
-        <div className="dispatch-pages__form">
-          <Input
-            label="Carrier *"
-            placeholder="e.g. DHL, TCS, self-pickup"
-            value={form.carrier}
-            onChange={(e) => setForm((f) => ({ ...f, carrier: e.target.value }))}
-          />
-
-          <Input
-            label="Tracking Number"
-            value={form.trackingNumber}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, trackingNumber: e.target.value }))
-            }
-          />
-
-          <Input
-            label="Expected Delivery"
-            type="date"
-            value={form.expectedDelivery}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, expectedDelivery: e.target.value }))
-            }
-          />
-
-          <Input
-            label="Delivery Address"
-            value={form.address}
-            onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
-          />
-
-          <div className="dispatch-pages__form-actions">
-            <Button variant="secondary" onClick={() => setDispatchTarget(null)}>
-              Cancel
-            </Button>
-
-            <Button
-              variant="primary"
-              disabled={!form.carrier.trim() || submitting}
-              onClick={handleDispatch}
-            >
-              Dispatch
-            </Button>
-          </div>
-        </div>
-      </Modal>
+          </section>
+        ))
+      )}
+      {lists.data?.hasMore && <p className="inv-state">Showing the 100 most recent packed lists.</p>}
+      {shipFor && (
+        <ShipmentDialog initialSalesOrderId={shipFor} onClose={() => setShipFor(null)} onCreated={(created) => router.push(`/dispatch/shipments/${created.id}`)} />
+      )}
     </main>
   );
 }

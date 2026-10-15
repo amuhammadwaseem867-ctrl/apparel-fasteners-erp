@@ -35,6 +35,13 @@ const AVAILABLE_ACTIONS = {
   ON_HOLD: ["resume"],
 };
 
+/* Stages owned by another module (D-022) link there instead of a run form. */
+const MANAGED_LINKS = {
+  quality: { text: "Quality Check is recorded by approving a final inspection.", label: "Record final inspection", href: (order) => `/quality/final?productionOrderId=${order.id}` },
+  packing: { text: "Packing is recorded by confirming a packing list.", label: "New packing list", href: (order) => `/packing/orders?productionOrderId=${order.id}` },
+  dispatch: { text: "Delivery for this sales order is recorded by confirming a shipment's delivery.", label: "Ready for delivery", href: () => "/dispatch/ready" },
+};
+
 const EVENT_LABELS = {
   CREATED: "Order created",
   STATUS_RELEASE: "Released",
@@ -196,7 +203,14 @@ function StageSection({ order, stage, onChanged }) {
         {stage.completedAt && <div><dt>Completed</dt><dd>{formatDateTime(stage.completedAt)}</dd></div>}
       </dl>
       {error && <p className="inv-dialog__error" role="alert">{error}</p>}
-      {open && Number(stage.available) > 0 && <StageRunForm order={order} stage={stage} onRecorded={onChanged} />}
+      {open && Number(stage.available) > 0 && (MANAGED_LINKS[stage.managedBy] ? (
+        <p className="inv-state" role="status">
+          {MANAGED_LINKS[stage.managedBy].text}{" "}
+          <Link className="inv-link-button" href={MANAGED_LINKS[stage.managedBy].href(order)}>{MANAGED_LINKS[stage.managedBy].label}</Link>
+        </p>
+      ) : (
+        <StageRunForm order={order} stage={stage} onRecorded={onChanged} />
+      ))}
       {showRuns && (
         <div className="inv-table-wrap">
           <table className="inv-table">

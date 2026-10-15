@@ -17,7 +17,10 @@ test("routes without a backend get a banner; connected routes do not", () => {
     assert.equal(getModuleAvailability(path), null, path);
   }
 
-  assert.equal(getModuleAvailability("/quality/ncr")?.label, "Quality control");
+  assert.equal(getModuleAvailability("/quality/ncr")?.label, "Non-conformance reports");
+  for (const path of ["/quality", "/quality/final", "/packing/orders", "/dispatch/shipments"]) {
+    assert.equal(getModuleAvailability(path), null, `${path} is connected`);
+  }
   assert.equal(getModuleAvailability("/people-payroll/payroll")?.label, "People and payroll");
   assert.equal(getModuleAvailability("/products/bom"), null, "BOM authoring is connected");
   assert.equal(getModuleAvailability("/planning/mrp-runs"), null, "MRP is connected");
