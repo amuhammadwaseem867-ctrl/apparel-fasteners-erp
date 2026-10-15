@@ -1490,3 +1490,95 @@ model SupplierPayment {
   @@check(expression: "\"method\" IN ('CASH', 'BANK_TRANSFER', 'CHEQUE', 'CARD', 'OTHER')", name: "erp_supplier_payments_method")
   @@map("erp_supplier_payments")
 }
+
+model LedgerAccount {
+  id          Uuid              @id @default(uuid())
+  code        String            @unique
+  name        String
+  accountType String
+  systemKey   String?           @unique
+  isCashBank  Boolean           @default(false)
+  status      String            @default("ACTIVE")
+  description String?
+  createdBy   Uuid?
+  createdAt   TimestamptzString @default(now())
+
+  lines JournalLine[]
+
+  @@check(expression: "\"accountType\" IN ('ASSET', 'LIABILITY', 'EQUITY', 'INCOME', 'EXPENSE')", name: "erp_ledger_accounts_type")
+  @@check(expression: "\"status\" IN ('ACTIVE', 'INACTIVE')", name: "erp_ledger_accounts_status")
+  @@check(expression: "NOT \"isCashBank\" OR \"accountType\" = 'ASSET'", name: "erp_ledger_accounts_cash_is_asset")
+  @@map("erp_ledger_accounts")
+}
+
+model JournalEntry {
+  id              Uuid              @id @default(uuid())
+  entryNumber     String            @unique
+  entryDate       String
+  description     String
+  sourceType      String?
+  sourceId        Uuid?
+  sourceEvent     String?
+  status          String            @default("POSTED")
+  reversesEntryId Uuid?             @unique
+  totalAmount     Decimal
+  idempotencyKey  String            @unique
+  createdBy       Uuid
+  createdAt       TimestamptzString @default(now())
+
+  lines JournalLine[]
+
+  @@index([entryDate])
+  @@index([sourceType, sourceId])
+  @@index([sourceType, sourceId, sourceEvent], where: "\"sourceType\" IS NOT NULL", unique: true, name: "erp_journal_entries_one_per_source_event")
+  @@check(expression: "\"status\" IN ('POSTED', 'REVERSED')", name: "erp_journal_entries_status")
+  @@check(expression: "\"totalAmount\" > 0", name: "erp_journal_entries_total")
+  @@map("erp_journal_entries")
+}
+
+model JournalLine {
+  id        Uuid    @id @default(uuid())
+  entryId   Uuid
+  lineNo    Int
+  accountId Uuid
+  debit     Decimal @default(0)
+  credit    Decimal @default(0)
+  memo      String?
+
+  entry   JournalEntry  @relation(fields: [entryId], references: [id], onDelete: Restrict)
+  account LedgerAccount @relation(fields: [accountId], references: [id], onDelete: Restrict)
+
+  @@unique([entryId, lineNo])
+  @@index([accountId])
+  @@check(expression: "\"debit\" >= 0 AND \"credit\" >= 0 AND (\"debit\" = 0) <> (\"credit\" = 0)", name: "erp_journal_lines_one_side")
+  @@check(expression: "\"debit\" = round(\"debit\", 2) AND \"credit\" = round(\"credit\", 2)", name: "erp_journal_lines_cents")
+  @@map("erp_journal_lines")
+}
+
+model CashTransaction {
+  id               Uuid               @id @default(uuid())
+  transactionNumber String            @unique
+  kind             String
+  transactionDate  String
+  cashAccountId    Uuid
+  counterAccountId Uuid
+  amount           Decimal
+  payee            String?
+  reference        String?
+  description      String
+  status           String             @default("POSTED")
+  journalEntryId   Uuid?
+  idempotencyKey   String             @unique
+  createdBy        Uuid
+  createdAt        TimestamptzString  @default(now())
+  voidedBy         Uuid?
+  voidedAt         TimestamptzString?
+  voidReason       String?
+
+  @@index([kind, transactionDate])
+  @@check(expression: "\"kind\" IN ('EXPENSE', 'INCOME', 'TRANSFER')", name: "erp_cash_transactions_kind")
+  @@check(expression: "\"status\" IN ('POSTED', 'VOIDED')", name: "erp_cash_transactions_status")
+  @@check(expression: "\"amount\" > 0 AND \"amount\" = round(\"amount\", 2)", name: "erp_cash_transactions_amount")
+  @@check(expression: "\"cashAccountId\" <> \"counterAccountId\"", name: "erp_cash_transactions_accounts")
+  @@map("erp_cash_transactions")
+}

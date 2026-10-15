@@ -1,0 +1,812 @@
+[
+  {
+    "id": "table.erp_cash_transactions",
+    "label": "Create table \"erp_cash_transactions\"",
+    "summary": "Creates table \"erp_cash_transactions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_cash_transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_cash_transactions\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_cash_transactions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_cash_transactions\"",
+        "sql": "CREATE TABLE \"public\".\"erp_cash_transactions\" (\n  \"amount\" numeric NOT NULL,\n  \"cashAccountId\" uuid NOT NULL,\n  \"counterAccountId\" uuid NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"description\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"journalEntryId\" uuid,\n  \"kind\" text NOT NULL,\n  \"payee\" text,\n  \"reference\" text,\n  \"status\" text DEFAULT 'POSTED' NOT NULL,\n  \"transactionDate\" text NOT NULL,\n  \"transactionNumber\" text NOT NULL,\n  \"voidReason\" text,\n  \"voidedAt\" timestamptz,\n  \"voidedBy\" uuid,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_cash_transactions_accounts_62d4335e\" CHECK (\"cashAccountId\" <> \"counterAccountId\"),\n  CONSTRAINT \"erp_cash_transactions_amount_356342cb\" CHECK (\"amount\" > 0 AND \"amount\" = round(\"amount\", 2)),\n  CONSTRAINT \"erp_cash_transactions_kind_402a1b57\" CHECK (\"kind\" IN ('EXPENSE', 'INCOME', 'TRANSFER')),\n  CONSTRAINT \"erp_cash_transactions_status_12d53be9\" CHECK (\"status\" IN ('POSTED', 'VOIDED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_cash_transactions\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_cash_transactions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_journal_entries",
+    "label": "Create table \"erp_journal_entries\"",
+    "summary": "Creates table \"erp_journal_entries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_journal_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_journal_entries\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_journal_entries\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_journal_entries\"",
+        "sql": "CREATE TABLE \"public\".\"erp_journal_entries\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"description\" text NOT NULL,\n  \"entryDate\" text NOT NULL,\n  \"entryNumber\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"reversesEntryId\" uuid,\n  \"sourceEvent\" text,\n  \"sourceId\" uuid,\n  \"sourceType\" text,\n  \"status\" text DEFAULT 'POSTED' NOT NULL,\n  \"totalAmount\" numeric NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_journal_entries_status_84d18ad9\" CHECK (\"status\" IN ('POSTED', 'REVERSED')),\n  CONSTRAINT \"erp_journal_entries_total_043493e1\" CHECK (\"totalAmount\" > 0)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_journal_entries\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_journal_entries\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_journal_lines",
+    "label": "Create table \"erp_journal_lines\"",
+    "summary": "Creates table \"erp_journal_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_journal_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_journal_lines\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_journal_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_journal_lines\"",
+        "sql": "CREATE TABLE \"public\".\"erp_journal_lines\" (\n  \"accountId\" uuid NOT NULL,\n  \"credit\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"debit\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"entryId\" uuid NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"lineNo\" int4 NOT NULL,\n  \"memo\" text,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_journal_lines_cents_bdbd75ce\" CHECK (\"debit\" = round(\"debit\", 2) AND \"credit\" = round(\"credit\", 2)),\n  CONSTRAINT \"erp_journal_lines_one_side_05950dd8\" CHECK (\"debit\" >= 0 AND \"credit\" >= 0 AND (\"debit\" = 0) <> (\"credit\" = 0))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_journal_lines\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_journal_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_ledger_accounts",
+    "label": "Create table \"erp_ledger_accounts\"",
+    "summary": "Creates table \"erp_ledger_accounts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_ledger_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_ledger_accounts\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_ledger_accounts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_ledger_accounts\"",
+        "sql": "CREATE TABLE \"public\".\"erp_ledger_accounts\" (\n  \"accountType\" text NOT NULL,\n  \"code\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid,\n  \"description\" text,\n  \"id\" uuid NOT NULL,\n  \"isCashBank\" bool DEFAULT false NOT NULL,\n  \"name\" text NOT NULL,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"systemKey\" text,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_ledger_accounts_cash_is_asset_756458e9\" CHECK (NOT \"isCashBank\" OR \"accountType\" = 'ASSET'),\n  CONSTRAINT \"erp_ledger_accounts_status_ee520df2\" CHECK (\"status\" IN ('ACTIVE', 'INACTIVE')),\n  CONSTRAINT \"erp_ledger_accounts_type_ab027f61\" CHECK (\"accountType\" IN ('ASSET', 'LIABILITY', 'EQUITY', 'INCOME', 'EXPENSE'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_ledger_accounts\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_ledger_accounts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_cash_transactions.erp_cash_transactions_transactionNumber_key",
+    "label": "Add unique constraint on \"erp_cash_transactions\" (transactionNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_cash_transactions_transactionNumber_key",
+        "table": "erp_cash_transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_cash_transactions_transactionNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_cash_transactions_transactionNumber_key",
+          "public",
+          "\"public\".\"erp_cash_transactions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_cash_transactions_transactionNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_cash_transactions\" ADD CONSTRAINT \"erp_cash_transactions_transactionNumber_key\" UNIQUE (\"transactionNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_cash_transactions_transactionNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_cash_transactions_transactionNumber_key",
+          "public",
+          "\"public\".\"erp_cash_transactions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_cash_transactions.erp_cash_transactions_idempotencyKey_key",
+    "label": "Add unique constraint on \"erp_cash_transactions\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_cash_transactions_idempotencyKey_key",
+        "table": "erp_cash_transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_cash_transactions_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_cash_transactions_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_cash_transactions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_cash_transactions_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_cash_transactions\" ADD CONSTRAINT \"erp_cash_transactions_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_cash_transactions_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_cash_transactions_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_cash_transactions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_journal_entries.erp_journal_entries_entryNumber_key",
+    "label": "Add unique constraint on \"erp_journal_entries\" (entryNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_journal_entries_entryNumber_key",
+        "table": "erp_journal_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_journal_entries_entryNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_journal_entries_entryNumber_key",
+          "public",
+          "\"public\".\"erp_journal_entries\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_journal_entries_entryNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_journal_entries\" ADD CONSTRAINT \"erp_journal_entries_entryNumber_key\" UNIQUE (\"entryNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_journal_entries_entryNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_journal_entries_entryNumber_key",
+          "public",
+          "\"public\".\"erp_journal_entries\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_journal_entries.erp_journal_entries_reversesEntryId_key",
+    "label": "Add unique constraint on \"erp_journal_entries\" (reversesEntryId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_journal_entries_reversesEntryId_key",
+        "table": "erp_journal_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_journal_entries_reversesEntryId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_journal_entries_reversesEntryId_key",
+          "public",
+          "\"public\".\"erp_journal_entries\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_journal_entries_reversesEntryId_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_journal_entries\" ADD CONSTRAINT \"erp_journal_entries_reversesEntryId_key\" UNIQUE (\"reversesEntryId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_journal_entries_reversesEntryId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_journal_entries_reversesEntryId_key",
+          "public",
+          "\"public\".\"erp_journal_entries\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_journal_entries.erp_journal_entries_idempotencyKey_key",
+    "label": "Add unique constraint on \"erp_journal_entries\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_journal_entries_idempotencyKey_key",
+        "table": "erp_journal_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_journal_entries_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_journal_entries_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_journal_entries\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_journal_entries_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_journal_entries\" ADD CONSTRAINT \"erp_journal_entries_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_journal_entries_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_journal_entries_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_journal_entries\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_journal_lines.erp_journal_lines_entryId_lineNo_key",
+    "label": "Add unique constraint on \"erp_journal_lines\" (entryId, lineNo)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_journal_lines_entryId_lineNo_key",
+        "table": "erp_journal_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_journal_lines_entryId_lineNo_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_journal_lines_entryId_lineNo_key",
+          "public",
+          "\"public\".\"erp_journal_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_journal_lines_entryId_lineNo_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_journal_lines\" ADD CONSTRAINT \"erp_journal_lines_entryId_lineNo_key\" UNIQUE (\"entryId\", \"lineNo\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_journal_lines_entryId_lineNo_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_journal_lines_entryId_lineNo_key",
+          "public",
+          "\"public\".\"erp_journal_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_ledger_accounts.erp_ledger_accounts_code_key",
+    "label": "Add unique constraint on \"erp_ledger_accounts\" (code)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_ledger_accounts_code_key",
+        "table": "erp_ledger_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_ledger_accounts_code_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_ledger_accounts_code_key",
+          "public",
+          "\"public\".\"erp_ledger_accounts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_ledger_accounts_code_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_ledger_accounts\" ADD CONSTRAINT \"erp_ledger_accounts_code_key\" UNIQUE (\"code\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_ledger_accounts_code_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_ledger_accounts_code_key",
+          "public",
+          "\"public\".\"erp_ledger_accounts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_ledger_accounts.erp_ledger_accounts_systemKey_key",
+    "label": "Add unique constraint on \"erp_ledger_accounts\" (systemKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_ledger_accounts_systemKey_key",
+        "table": "erp_ledger_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_ledger_accounts_systemKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_ledger_accounts_systemKey_key",
+          "public",
+          "\"public\".\"erp_ledger_accounts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_ledger_accounts_systemKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_ledger_accounts\" ADD CONSTRAINT \"erp_ledger_accounts_systemKey_key\" UNIQUE (\"systemKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_ledger_accounts_systemKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_ledger_accounts_systemKey_key",
+          "public",
+          "\"public\".\"erp_ledger_accounts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_cash_transactions.erp_cash_transactions_kind_transactionDate_idx_ee6642d6",
+    "label": "Create index \"erp_cash_transactions_kind_transactionDate_idx_ee6642d6\" on \"erp_cash_transactions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_cash_transactions_kind_transactionDate_idx_ee6642d6",
+        "table": "erp_cash_transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_cash_transactions_kind_transactionDate_idx_ee6642d6\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_cash_transactions_kind_transactionDate_idx_ee6642d6\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_cash_transactions_kind_transactionDate_idx_ee6642d6\"",
+        "sql": "CREATE INDEX \"erp_cash_transactions_kind_transactionDate_idx_ee6642d6\" ON \"public\".\"erp_cash_transactions\" (\"kind\", \"transactionDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_cash_transactions_kind_transactionDate_idx_ee6642d6\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_cash_transactions_kind_transactionDate_idx_ee6642d6\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_journal_entries.erp_journal_entries_entryDate_idx_f5afac2f",
+    "label": "Create index \"erp_journal_entries_entryDate_idx_f5afac2f\" on \"erp_journal_entries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_journal_entries_entryDate_idx_f5afac2f",
+        "table": "erp_journal_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_journal_entries_entryDate_idx_f5afac2f\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_journal_entries_entryDate_idx_f5afac2f\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_journal_entries_entryDate_idx_f5afac2f\"",
+        "sql": "CREATE INDEX \"erp_journal_entries_entryDate_idx_f5afac2f\" ON \"public\".\"erp_journal_entries\" (\"entryDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_journal_entries_entryDate_idx_f5afac2f\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_journal_entries_entryDate_idx_f5afac2f\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_journal_entries.erp_journal_entries_one_per_source_event_c67a67e7",
+    "label": "Create index \"erp_journal_entries_one_per_source_event_c67a67e7\" on \"erp_journal_entries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_journal_entries_one_per_source_event_c67a67e7",
+        "table": "erp_journal_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_journal_entries_one_per_source_event_c67a67e7\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_journal_entries_one_per_source_event_c67a67e7\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_journal_entries_one_per_source_event_c67a67e7\"",
+        "sql": "CREATE UNIQUE INDEX \"erp_journal_entries_one_per_source_event_c67a67e7\" ON \"public\".\"erp_journal_entries\" (\"sourceType\", \"sourceId\", \"sourceEvent\") WHERE (\"sourceType\" IS NOT NULL)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_journal_entries_one_per_source_event_c67a67e7\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_journal_entries_one_per_source_event_c67a67e7\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_journal_entries.erp_journal_entries_sourceType_sourceId_idx_9b8c3bc3",
+    "label": "Create index \"erp_journal_entries_sourceType_sourceId_idx_9b8c3bc3\" on \"erp_journal_entries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_journal_entries_sourceType_sourceId_idx_9b8c3bc3",
+        "table": "erp_journal_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_journal_entries_sourceType_sourceId_idx_9b8c3bc3\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_journal_entries_sourceType_sourceId_idx_9b8c3bc3\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_journal_entries_sourceType_sourceId_idx_9b8c3bc3\"",
+        "sql": "CREATE INDEX \"erp_journal_entries_sourceType_sourceId_idx_9b8c3bc3\" ON \"public\".\"erp_journal_entries\" (\"sourceType\", \"sourceId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_journal_entries_sourceType_sourceId_idx_9b8c3bc3\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_journal_entries_sourceType_sourceId_idx_9b8c3bc3\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_journal_lines.erp_journal_lines_accountId_idx_cbfb3085",
+    "label": "Create index \"erp_journal_lines_accountId_idx_cbfb3085\" on \"erp_journal_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_journal_lines_accountId_idx_cbfb3085",
+        "table": "erp_journal_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_journal_lines_accountId_idx_cbfb3085\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_journal_lines_accountId_idx_cbfb3085\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_journal_lines_accountId_idx_cbfb3085\"",
+        "sql": "CREATE INDEX \"erp_journal_lines_accountId_idx_cbfb3085\" ON \"public\".\"erp_journal_lines\" (\"accountId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_journal_lines_accountId_idx_cbfb3085\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_journal_lines_accountId_idx_cbfb3085\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_journal_lines.erp_journal_lines_entryId_idx_8b42d1db",
+    "label": "Create index \"erp_journal_lines_entryId_idx_8b42d1db\" on \"erp_journal_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_journal_lines_entryId_idx_8b42d1db",
+        "table": "erp_journal_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_journal_lines_entryId_idx_8b42d1db\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_journal_lines_entryId_idx_8b42d1db\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_journal_lines_entryId_idx_8b42d1db\"",
+        "sql": "CREATE INDEX \"erp_journal_lines_entryId_idx_8b42d1db\" ON \"public\".\"erp_journal_lines\" (\"entryId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_journal_lines_entryId_idx_8b42d1db\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_journal_lines_entryId_idx_8b42d1db\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_journal_lines.erp_journal_lines_entryId_fkey",
+    "label": "Add foreign key \"erp_journal_lines_entryId_fkey\" on \"erp_journal_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_journal_lines_entryId_fkey",
+        "table": "erp_journal_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_journal_lines_entryId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_journal_lines_entryId_fkey",
+          "public",
+          "\"public\".\"erp_journal_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_journal_lines_entryId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_journal_lines\"\nADD CONSTRAINT \"erp_journal_lines_entryId_fkey\"\nFOREIGN KEY (\"entryId\")\nREFERENCES \"public\".\"erp_journal_entries\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_journal_lines_entryId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_journal_lines_entryId_fkey",
+          "public",
+          "\"public\".\"erp_journal_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_journal_lines.erp_journal_lines_accountId_fkey",
+    "label": "Add foreign key \"erp_journal_lines_accountId_fkey\" on \"erp_journal_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_journal_lines_accountId_fkey",
+        "table": "erp_journal_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_journal_lines_accountId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_journal_lines_accountId_fkey",
+          "public",
+          "\"public\".\"erp_journal_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_journal_lines_accountId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_journal_lines\"\nADD CONSTRAINT \"erp_journal_lines_accountId_fkey\"\nFOREIGN KEY (\"accountId\")\nREFERENCES \"public\".\"erp_ledger_accounts\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_journal_lines_accountId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_journal_lines_accountId_fkey",
+          "public",
+          "\"public\".\"erp_journal_lines\""
+        ]
+      }
+    ]
+  }
+]

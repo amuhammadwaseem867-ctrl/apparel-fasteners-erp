@@ -20,6 +20,10 @@
       "model": "Bom",
       "namespace": "public"
     },
+    "erp_cash_transactions": {
+      "model": "CashTransaction",
+      "namespace": "public"
+    },
     "erp_credit_note_lines": {
       "model": "CreditNoteLine",
       "namespace": "public"
@@ -62,6 +66,18 @@
     },
     "erp_invoices": {
       "model": "Invoice",
+      "namespace": "public"
+    },
+    "erp_journal_entries": {
+      "model": "JournalEntry",
+      "namespace": "public"
+    },
+    "erp_journal_lines": {
+      "model": "JournalLine",
+      "namespace": "public"
+    },
+    "erp_ledger_accounts": {
+      "model": "LedgerAccount",
       "namespace": "public"
     },
     "erp_login_attempt_counters": {
@@ -765,6 +781,197 @@
               },
               "namespaceId": "public",
               "table": "erp_bom_lines"
+            }
+          },
+          "CashTransaction": {
+            "fields": {
+              "amount": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "cashAccountId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "counterAccountId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdBy": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "description": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "idempotencyKey": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "journalEntryId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "kind": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "payee": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "reference": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "transactionDate": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "transactionNumber": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "voidReason": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "voidedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "voidedBy": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "amount": {
+                  "column": "amount"
+                },
+                "cashAccountId": {
+                  "column": "cashAccountId"
+                },
+                "counterAccountId": {
+                  "column": "counterAccountId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "createdBy": {
+                  "column": "createdBy"
+                },
+                "description": {
+                  "column": "description"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "idempotencyKey": {
+                  "column": "idempotencyKey"
+                },
+                "journalEntryId": {
+                  "column": "journalEntryId"
+                },
+                "kind": {
+                  "column": "kind"
+                },
+                "payee": {
+                  "column": "payee"
+                },
+                "reference": {
+                  "column": "reference"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "transactionDate": {
+                  "column": "transactionDate"
+                },
+                "transactionNumber": {
+                  "column": "transactionNumber"
+                },
+                "voidReason": {
+                  "column": "voidReason"
+                },
+                "voidedAt": {
+                  "column": "voidedAt"
+                },
+                "voidedBy": {
+                  "column": "voidedBy"
+                }
+              },
+              "namespaceId": "public",
+              "table": "erp_cash_transactions"
             }
           },
           "CreditNote": {
@@ -2640,6 +2847,404 @@
               },
               "namespaceId": "public",
               "table": "erp_invoice_lines"
+            }
+          },
+          "JournalEntry": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdBy": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "description": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "entryDate": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "entryNumber": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "idempotencyKey": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "reversesEntryId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "sourceEvent": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "sourceId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "sourceType": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "totalAmount": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "lines": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "entryId"
+                  ]
+                },
+                "to": {
+                  "model": "JournalLine",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "createdBy": {
+                  "column": "createdBy"
+                },
+                "description": {
+                  "column": "description"
+                },
+                "entryDate": {
+                  "column": "entryDate"
+                },
+                "entryNumber": {
+                  "column": "entryNumber"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "idempotencyKey": {
+                  "column": "idempotencyKey"
+                },
+                "reversesEntryId": {
+                  "column": "reversesEntryId"
+                },
+                "sourceEvent": {
+                  "column": "sourceEvent"
+                },
+                "sourceId": {
+                  "column": "sourceId"
+                },
+                "sourceType": {
+                  "column": "sourceType"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "totalAmount": {
+                  "column": "totalAmount"
+                }
+              },
+              "namespaceId": "public",
+              "table": "erp_journal_entries"
+            }
+          },
+          "JournalLine": {
+            "fields": {
+              "accountId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "credit": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "debit": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "entryId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "lineNo": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "memo": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "account": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "accountId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "LedgerAccount",
+                  "namespace": "public"
+                }
+              },
+              "entry": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "entryId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "JournalEntry",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "accountId": {
+                  "column": "accountId"
+                },
+                "credit": {
+                  "column": "credit"
+                },
+                "debit": {
+                  "column": "debit"
+                },
+                "entryId": {
+                  "column": "entryId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "lineNo": {
+                  "column": "lineNo"
+                },
+                "memo": {
+                  "column": "memo"
+                }
+              },
+              "namespaceId": "public",
+              "table": "erp_journal_lines"
+            }
+          },
+          "LedgerAccount": {
+            "fields": {
+              "accountType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "code": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdBy": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "description": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "isCashBank": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "systemKey": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "lines": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "accountId"
+                  ]
+                },
+                "to": {
+                  "model": "JournalLine",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "accountType": {
+                  "column": "accountType"
+                },
+                "code": {
+                  "column": "code"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "createdBy": {
+                  "column": "createdBy"
+                },
+                "description": {
+                  "column": "description"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "isCashBank": {
+                  "column": "isCashBank"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "systemKey": {
+                  "column": "systemKey"
+                }
+              },
+              "namespaceId": "public",
+              "table": "erp_ledger_accounts"
             }
           },
           "LoginAttemptCounter": {
@@ -10553,6 +11158,159 @@
                 }
               ]
             },
+            "erp_cash_transactions": {
+              "checks": [
+                {
+                  "expression": "\"cashAccountId\" <> \"counterAccountId\"",
+                  "name": "erp_cash_transactions_accounts_62d4335e",
+                  "prefix": "erp_cash_transactions_accounts"
+                },
+                {
+                  "expression": "\"amount\" > 0 AND \"amount\" = round(\"amount\", 2)",
+                  "name": "erp_cash_transactions_amount_356342cb",
+                  "prefix": "erp_cash_transactions_amount"
+                },
+                {
+                  "expression": "\"kind\" IN ('EXPENSE', 'INCOME', 'TRANSFER')",
+                  "name": "erp_cash_transactions_kind_402a1b57",
+                  "prefix": "erp_cash_transactions_kind"
+                },
+                {
+                  "expression": "\"status\" IN ('POSTED', 'VOIDED')",
+                  "name": "erp_cash_transactions_status_12d53be9",
+                  "prefix": "erp_cash_transactions_status"
+                }
+              ],
+              "columns": {
+                "amount": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "nullable": false
+                },
+                "cashAccountId": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "counterAccountId": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "createdBy": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "description": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "idempotencyKey": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "journalEntryId": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": true
+                },
+                "kind": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "payee": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "reference": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "POSTED"
+                  },
+                  "nullable": false
+                },
+                "transactionDate": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "transactionNumber": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "voidReason": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "voidedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "voidedBy": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": true
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [
+                {
+                  "columns": [
+                    "kind",
+                    "transactionDate"
+                  ],
+                  "name": "erp_cash_transactions_kind_transactionDate_idx_ee6642d6",
+                  "prefix": "erp_cash_transactions_kind_transactionDate_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "transactionNumber"
+                  ]
+                },
+                {
+                  "columns": [
+                    "idempotencyKey"
+                  ]
+                }
+              ]
+            },
             "erp_credit_note_lines": {
               "checks": [
                 {
@@ -12042,6 +12800,376 @@
                 {
                   "columns": [
                     "idempotencyKey"
+                  ]
+                }
+              ]
+            },
+            "erp_journal_entries": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('POSTED', 'REVERSED')",
+                  "name": "erp_journal_entries_status_84d18ad9",
+                  "prefix": "erp_journal_entries_status"
+                },
+                {
+                  "expression": "\"totalAmount\" > 0",
+                  "name": "erp_journal_entries_total_043493e1",
+                  "prefix": "erp_journal_entries_total"
+                }
+              ],
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "createdBy": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "description": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "entryDate": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "entryNumber": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "idempotencyKey": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "reversesEntryId": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": true
+                },
+                "sourceEvent": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "sourceId": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": true
+                },
+                "sourceType": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "POSTED"
+                  },
+                  "nullable": false
+                },
+                "totalAmount": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [
+                {
+                  "columns": [
+                    "entryDate"
+                  ],
+                  "name": "erp_journal_entries_entryDate_idx_f5afac2f",
+                  "prefix": "erp_journal_entries_entryDate_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "sourceType",
+                    "sourceId",
+                    "sourceEvent"
+                  ],
+                  "name": "erp_journal_entries_one_per_source_event_c67a67e7",
+                  "prefix": "erp_journal_entries_one_per_source_event",
+                  "unique": true,
+                  "where": "\"sourceType\" IS NOT NULL"
+                },
+                {
+                  "columns": [
+                    "sourceType",
+                    "sourceId"
+                  ],
+                  "name": "erp_journal_entries_sourceType_sourceId_idx_9b8c3bc3",
+                  "prefix": "erp_journal_entries_sourceType_sourceId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "entryNumber"
+                  ]
+                },
+                {
+                  "columns": [
+                    "reversesEntryId"
+                  ]
+                },
+                {
+                  "columns": [
+                    "idempotencyKey"
+                  ]
+                }
+              ]
+            },
+            "erp_journal_lines": {
+              "checks": [
+                {
+                  "expression": "\"debit\" = round(\"debit\", 2) AND \"credit\" = round(\"credit\", 2)",
+                  "name": "erp_journal_lines_cents_bdbd75ce",
+                  "prefix": "erp_journal_lines_cents"
+                },
+                {
+                  "expression": "\"debit\" >= 0 AND \"credit\" >= 0 AND (\"debit\" = 0) <> (\"credit\" = 0)",
+                  "name": "erp_journal_lines_one_side_05950dd8",
+                  "prefix": "erp_journal_lines_one_side"
+                }
+              ],
+              "columns": {
+                "accountId": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "credit": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "default": {
+                    "kind": "literal",
+                    "value": "0"
+                  },
+                  "nullable": false
+                },
+                "debit": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "default": {
+                    "kind": "literal",
+                    "value": "0"
+                  },
+                  "nullable": false
+                },
+                "entryId": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "lineNo": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "memo": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "entryId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "erp_journal_lines"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "erp_journal_entries"
+                  }
+                },
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "accountId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "erp_journal_lines"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "erp_ledger_accounts"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "accountId"
+                  ],
+                  "name": "erp_journal_lines_accountId_idx_cbfb3085",
+                  "prefix": "erp_journal_lines_accountId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "entryId"
+                  ],
+                  "name": "erp_journal_lines_entryId_idx_8b42d1db",
+                  "prefix": "erp_journal_lines_entryId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "entryId",
+                    "lineNo"
+                  ]
+                }
+              ]
+            },
+            "erp_ledger_accounts": {
+              "checks": [
+                {
+                  "expression": "NOT \"isCashBank\" OR \"accountType\" = 'ASSET'",
+                  "name": "erp_ledger_accounts_cash_is_asset_756458e9",
+                  "prefix": "erp_ledger_accounts_cash_is_asset"
+                },
+                {
+                  "expression": "\"status\" IN ('ACTIVE', 'INACTIVE')",
+                  "name": "erp_ledger_accounts_status_ee520df2",
+                  "prefix": "erp_ledger_accounts_status"
+                },
+                {
+                  "expression": "\"accountType\" IN ('ASSET', 'LIABILITY', 'EQUITY', 'INCOME', 'EXPENSE')",
+                  "name": "erp_ledger_accounts_type_ab027f61",
+                  "prefix": "erp_ledger_accounts_type"
+                }
+              ],
+              "columns": {
+                "accountType": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "code": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "createdBy": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": true
+                },
+                "description": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "isCashBank": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nullable": false
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "ACTIVE"
+                  },
+                  "nullable": false
+                },
+                "systemKey": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "code"
+                  ]
+                },
+                {
+                  "columns": [
+                    "systemKey"
                   ]
                 }
               ]
@@ -18057,10 +19185,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "543d095a5fb9dc589fb26b9c71a2e0d3aca0a34b363f0d45774d14797cf81f32"
+    "storageHash": "0384763eb0940887c2363fe1cf81b0ce97c46ab12ee7774ec4bc34b4d2a325de"
   },
   "execution": {
-    "executionHash": "c0a8f9694f5fdf54cd11c97b9fbc3c52b4f2c66284ec7b79557d07570b73ab34",
+    "executionHash": "d622d29581f1701b197d2be7f9ae93c62bbe568ea03a6a93c123f4062dc01db8",
     "mutations": {
       "defaults": [
         {
@@ -18103,6 +19231,17 @@
           },
           "ref": {
             "entry": "erp_boms",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "erp_cash_transactions",
             "field": "id",
             "namespace": "public"
           }
@@ -18213,6 +19352,39 @@
           },
           "ref": {
             "entry": "erp_invoices",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "erp_journal_entries",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "erp_journal_lines",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "erp_ledger_accounts",
             "field": "id",
             "namespace": "public"
           }
