@@ -45,6 +45,11 @@ export const SYSTEM_PERMISSIONS = [
   { code: "roles:create", name: "Create roles", module: "roles", action: "create", description: "Create system roles." },
   { code: "roles:update", name: "Update roles", module: "roles", action: "update", description: "Update system roles." },
   { code: "audit:view", name: "View audit logs", module: "audit", action: "view", description: "View audit log entries." },
+  { code: "hr:view", name: "View HR", module: "hr", action: "view", description: "View employees, departments and attendance (no pay details)." },
+  { code: "hr:manage", name: "Manage HR", module: "hr", action: "manage", description: "Create and update employees and departments; record attendance." },
+  { code: "payroll:view", name: "View payroll", module: "payroll", action: "view", description: "View pay rates, advances, payroll runs and payslips." },
+  { code: "payroll:process", name: "Process payroll", module: "payroll", action: "process", description: "Set pay rates, issue advances, prepare payroll runs." },
+  { code: "payroll:approve", name: "Approve payroll", module: "payroll", action: "approve", description: "Approve payroll runs and mark them paid." },
 ];
 
 export const SYSTEM_ROLES = [
@@ -58,6 +63,8 @@ export const SYSTEM_ROLES = [
   { name: "QUALITY_MANAGER", code: "QUALITY_MANAGER", description: "Quality management role.", permissions: ["dashboard:view", "quality:view", "quality:create", "quality:approve", "production:view", "reports:view"] },
   { name: "DISPATCH_MANAGER", code: "DISPATCH_MANAGER", description: "Dispatch management role.", permissions: ["dashboard:view", "dispatch:view", "dispatch:create", "dispatch:update", "dispatch:ship", "inventory:view", "reports:view"] },
   { name: "FINANCE_MANAGER", code: "FINANCE_MANAGER", description: "Finance management role.", permissions: ["dashboard:view", "finance:view", "finance:create", "finance:approve", "reports:view"] },
+  { name: "HR_MANAGER", code: "HR_MANAGER", description: "Employee records and attendance (no pay details).", permissions: ["dashboard:view", "hr:view", "hr:manage", "reports:view"] },
+  { name: "PAYROLL_OFFICER", code: "PAYROLL_OFFICER", description: "Prepares payroll; approval is separate.", permissions: ["dashboard:view", "hr:view", "payroll:view", "payroll:process"] },
   { name: "REPORT_VIEWER", code: "REPORT_VIEWER", description: "Read-only analytics role.", permissions: ["dashboard:view", "reports:view"] },
 ];
 

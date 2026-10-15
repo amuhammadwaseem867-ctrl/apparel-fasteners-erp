@@ -1,0 +1,1091 @@
+[
+  {
+    "id": "table.erp_attendance_records",
+    "label": "Create table \"erp_attendance_records\"",
+    "summary": "Creates table \"erp_attendance_records\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_attendance_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_attendance_records\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_attendance_records\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_attendance_records\"",
+        "sql": "CREATE TABLE \"public\".\"erp_attendance_records\" (\n  \"date\" text NOT NULL,\n  \"employeeId\" uuid NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"overtimeHours\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"recordedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"recordedBy\" uuid NOT NULL,\n  \"remarks\" text,\n  \"status\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_attendance_overtime_7a045ec0\" CHECK (\"overtimeHours\" >= 0 AND \"overtimeHours\" <= 24),\n  CONSTRAINT \"erp_attendance_status_89d03483\" CHECK (\"status\" IN ('PRESENT', 'ABSENT', 'HALF_DAY', 'PAID_LEAVE', 'UNPAID_LEAVE', 'HOLIDAY', 'WEEKLY_OFF'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_attendance_records\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_attendance_records\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_departments",
+    "label": "Create table \"erp_departments\"",
+    "summary": "Creates table \"erp_departments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_departments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_departments\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_departments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_departments\"",
+        "sql": "CREATE TABLE \"public\".\"erp_departments\" (\n  \"code\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"name\" text NOT NULL,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_departments_status_ee520df2\" CHECK (\"status\" IN ('ACTIVE', 'INACTIVE'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_departments\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_departments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_employees",
+    "label": "Create table \"erp_employees\"",
+    "summary": "Creates table \"erp_employees\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_employees\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_employees\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_employees\"",
+        "sql": "CREATE TABLE \"public\".\"erp_employees\" (\n  \"address\" text,\n  \"allowances\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"bankAccount\" text,\n  \"basicSalary\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"departmentId\" uuid NOT NULL,\n  \"designation\" text NOT NULL,\n  \"employeeCode\" text NOT NULL,\n  \"employmentType\" text NOT NULL,\n  \"fatherName\" text,\n  \"fixedDeduction\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"joinDate\" text NOT NULL,\n  \"leftDate\" text,\n  \"name\" text NOT NULL,\n  \"nationalId\" text,\n  \"overtimeRate\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"payBasis\" text DEFAULT 'MONTHLY' NOT NULL,\n  \"phone\" text,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_employees_dates_aa7ed532\" CHECK (\"leftDate\" IS NULL OR \"leftDate\" >= \"joinDate\"),\n  CONSTRAINT \"erp_employees_pay_basis_86d9d810\" CHECK (\"payBasis\" IN ('MONTHLY', 'DAILY')),\n  CONSTRAINT \"erp_employees_pay_nonnegative_9c3ff11e\" CHECK (\"basicSalary\" >= 0 AND \"allowances\" >= 0 AND \"overtimeRate\" >= 0 AND \"fixedDeduction\" >= 0),\n  CONSTRAINT \"erp_employees_status_3cb0e4b8\" CHECK (\"status\" IN ('ACTIVE', 'LEFT')),\n  CONSTRAINT \"erp_employees_type_db41a0b7\" CHECK (\"employmentType\" IN ('PERMANENT', 'CONTRACT', 'DAILY_WAGE'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_employees\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_employees\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_payroll_lines",
+    "label": "Create table \"erp_payroll_lines\"",
+    "summary": "Creates table \"erp_payroll_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_payroll_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_payroll_lines\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_payroll_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_payroll_lines\"",
+        "sql": "CREATE TABLE \"public\".\"erp_payroll_lines\" (\n  \"adjustmentNote\" text,\n  \"advanceRecovery\" numeric NOT NULL,\n  \"allowances\" numeric NOT NULL,\n  \"allowancesEarned\" numeric NOT NULL,\n  \"basicEarned\" numeric NOT NULL,\n  \"basicSalary\" numeric NOT NULL,\n  \"employedDays\" numeric NOT NULL,\n  \"employeeId\" uuid NOT NULL,\n  \"fixedDeduction\" numeric NOT NULL,\n  \"grossPay\" numeric NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"netPay\" numeric NOT NULL,\n  \"otherDeduction\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"otherEarning\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"overtimeHours\" numeric NOT NULL,\n  \"overtimePay\" numeric NOT NULL,\n  \"overtimeRate\" numeric NOT NULL,\n  \"paidDays\" numeric NOT NULL,\n  \"payBasis\" text NOT NULL,\n  \"runId\" uuid NOT NULL,\n  \"unpaidDays\" numeric NOT NULL,\n  \"unrecordedDays\" int4 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_payroll_lines_gross_7986d44f\" CHECK (\"grossPay\" = \"basicEarned\" + \"allowancesEarned\" + \"overtimePay\" + \"otherEarning\"),\n  CONSTRAINT \"erp_payroll_lines_net_23b20380\" CHECK (\"netPay\" = \"grossPay\" - \"fixedDeduction\" - \"advanceRecovery\" - \"otherDeduction\" AND \"netPay\" >= 0)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_payroll_lines\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_payroll_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_payroll_runs",
+    "label": "Create table \"erp_payroll_runs\"",
+    "summary": "Creates table \"erp_payroll_runs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_payroll_runs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_payroll_runs\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_payroll_runs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_payroll_runs\"",
+        "sql": "CREATE TABLE \"public\".\"erp_payroll_runs\" (\n  \"approvedAt\" timestamptz,\n  \"approvedBy\" uuid,\n  \"calculatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"cancelledAt\" timestamptz,\n  \"cancelledBy\" uuid,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"deductionTotal\" numeric NOT NULL,\n  \"employeeCount\" int4 NOT NULL,\n  \"grossTotal\" numeric NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"netTotal\" numeric NOT NULL,\n  \"notes\" text,\n  \"paidAt\" timestamptz,\n  \"paymentReference\" text,\n  \"period\" text NOT NULL,\n  \"periodDays\" int4 NOT NULL,\n  \"runNumber\" text NOT NULL,\n  \"status\" text DEFAULT 'DRAFT' NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_payroll_runs_status_0c430d1c\" CHECK (\"status\" IN ('DRAFT', 'APPROVED', 'PAID', 'CANCELLED')),\n  CONSTRAINT \"erp_payroll_runs_total_693b5987\" CHECK (\"netTotal\" = \"grossTotal\" - \"deductionTotal\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_payroll_runs\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_payroll_runs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_salary_advances",
+    "label": "Create table \"erp_salary_advances\"",
+    "summary": "Creates table \"erp_salary_advances\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_salary_advances"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_salary_advances\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_salary_advances\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_salary_advances\"",
+        "sql": "CREATE TABLE \"public\".\"erp_salary_advances\" (\n  \"advanceNumber\" text NOT NULL,\n  \"amount\" numeric NOT NULL,\n  \"cancelledAt\" timestamptz,\n  \"cancelledBy\" uuid,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"employeeId\" uuid NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"installment\" numeric NOT NULL,\n  \"issueDate\" text NOT NULL,\n  \"reason\" text NOT NULL,\n  \"recovered\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"status\" text DEFAULT 'OPEN' NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_salary_advances_amounts_5be432fd\" CHECK (\"amount\" > 0 AND \"installment\" > 0 AND \"installment\" <= \"amount\" AND \"recovered\" >= 0 AND \"recovered\" <= \"amount\"),\n  CONSTRAINT \"erp_salary_advances_status_187bacb5\" CHECK (\"status\" IN ('OPEN', 'CLOSED', 'CANCELLED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_salary_advances\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_salary_advances\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_attendance_records.erp_attendance_records_employeeId_date_key",
+    "label": "Add unique constraint on \"erp_attendance_records\" (employeeId, date)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_attendance_records_employeeId_date_key",
+        "table": "erp_attendance_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_attendance_records_employeeId_date_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_attendance_records_employeeId_date_key",
+          "public",
+          "\"public\".\"erp_attendance_records\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_attendance_records_employeeId_date_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_attendance_records\" ADD CONSTRAINT \"erp_attendance_records_employeeId_date_key\" UNIQUE (\"employeeId\", \"date\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_attendance_records_employeeId_date_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_attendance_records_employeeId_date_key",
+          "public",
+          "\"public\".\"erp_attendance_records\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_departments.erp_departments_code_key",
+    "label": "Add unique constraint on \"erp_departments\" (code)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_departments_code_key",
+        "table": "erp_departments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_departments_code_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_departments_code_key",
+          "public",
+          "\"public\".\"erp_departments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_departments_code_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_departments\" ADD CONSTRAINT \"erp_departments_code_key\" UNIQUE (\"code\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_departments_code_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_departments_code_key",
+          "public",
+          "\"public\".\"erp_departments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_departments.erp_departments_name_key",
+    "label": "Add unique constraint on \"erp_departments\" (name)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_departments_name_key",
+        "table": "erp_departments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_departments_name_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_departments_name_key",
+          "public",
+          "\"public\".\"erp_departments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_departments_name_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_departments\" ADD CONSTRAINT \"erp_departments_name_key\" UNIQUE (\"name\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_departments_name_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_departments_name_key",
+          "public",
+          "\"public\".\"erp_departments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_employees.erp_employees_employeeCode_key",
+    "label": "Add unique constraint on \"erp_employees\" (employeeCode)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_employees_employeeCode_key",
+        "table": "erp_employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_employees_employeeCode_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_employees_employeeCode_key",
+          "public",
+          "\"public\".\"erp_employees\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_employees_employeeCode_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_employees\" ADD CONSTRAINT \"erp_employees_employeeCode_key\" UNIQUE (\"employeeCode\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_employees_employeeCode_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_employees_employeeCode_key",
+          "public",
+          "\"public\".\"erp_employees\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_payroll_lines.erp_payroll_lines_runId_employeeId_key",
+    "label": "Add unique constraint on \"erp_payroll_lines\" (runId, employeeId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_payroll_lines_runId_employeeId_key",
+        "table": "erp_payroll_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_payroll_lines_runId_employeeId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_payroll_lines_runId_employeeId_key",
+          "public",
+          "\"public\".\"erp_payroll_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_payroll_lines_runId_employeeId_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_payroll_lines\" ADD CONSTRAINT \"erp_payroll_lines_runId_employeeId_key\" UNIQUE (\"runId\", \"employeeId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_payroll_lines_runId_employeeId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_payroll_lines_runId_employeeId_key",
+          "public",
+          "\"public\".\"erp_payroll_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_payroll_runs.erp_payroll_runs_runNumber_key",
+    "label": "Add unique constraint on \"erp_payroll_runs\" (runNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_payroll_runs_runNumber_key",
+        "table": "erp_payroll_runs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_payroll_runs_runNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_payroll_runs_runNumber_key",
+          "public",
+          "\"public\".\"erp_payroll_runs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_payroll_runs_runNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_payroll_runs\" ADD CONSTRAINT \"erp_payroll_runs_runNumber_key\" UNIQUE (\"runNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_payroll_runs_runNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_payroll_runs_runNumber_key",
+          "public",
+          "\"public\".\"erp_payroll_runs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_salary_advances.erp_salary_advances_advanceNumber_key",
+    "label": "Add unique constraint on \"erp_salary_advances\" (advanceNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_salary_advances_advanceNumber_key",
+        "table": "erp_salary_advances"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_salary_advances_advanceNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_salary_advances_advanceNumber_key",
+          "public",
+          "\"public\".\"erp_salary_advances\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_salary_advances_advanceNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_salary_advances\" ADD CONSTRAINT \"erp_salary_advances_advanceNumber_key\" UNIQUE (\"advanceNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_salary_advances_advanceNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_salary_advances_advanceNumber_key",
+          "public",
+          "\"public\".\"erp_salary_advances\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_attendance_records.erp_attendance_records_date_idx_b4ca319c",
+    "label": "Create index \"erp_attendance_records_date_idx_b4ca319c\" on \"erp_attendance_records\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_attendance_records_date_idx_b4ca319c",
+        "table": "erp_attendance_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_attendance_records_date_idx_b4ca319c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_attendance_records_date_idx_b4ca319c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_attendance_records_date_idx_b4ca319c\"",
+        "sql": "CREATE INDEX \"erp_attendance_records_date_idx_b4ca319c\" ON \"public\".\"erp_attendance_records\" (\"date\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_attendance_records_date_idx_b4ca319c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_attendance_records_date_idx_b4ca319c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_attendance_records.erp_attendance_records_employeeId_idx_087dd4a6",
+    "label": "Create index \"erp_attendance_records_employeeId_idx_087dd4a6\" on \"erp_attendance_records\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_attendance_records_employeeId_idx_087dd4a6",
+        "table": "erp_attendance_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_attendance_records_employeeId_idx_087dd4a6\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_attendance_records_employeeId_idx_087dd4a6\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_attendance_records_employeeId_idx_087dd4a6\"",
+        "sql": "CREATE INDEX \"erp_attendance_records_employeeId_idx_087dd4a6\" ON \"public\".\"erp_attendance_records\" (\"employeeId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_attendance_records_employeeId_idx_087dd4a6\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_attendance_records_employeeId_idx_087dd4a6\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_employees.erp_employees_departmentId_idx_8e261ed8",
+    "label": "Create index \"erp_employees_departmentId_idx_8e261ed8\" on \"erp_employees\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_employees_departmentId_idx_8e261ed8",
+        "table": "erp_employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_employees_departmentId_idx_8e261ed8\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_employees_departmentId_idx_8e261ed8\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_employees_departmentId_idx_8e261ed8\"",
+        "sql": "CREATE INDEX \"erp_employees_departmentId_idx_8e261ed8\" ON \"public\".\"erp_employees\" (\"departmentId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_employees_departmentId_idx_8e261ed8\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_employees_departmentId_idx_8e261ed8\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_employees.erp_employees_status_idx_e98638ab",
+    "label": "Create index \"erp_employees_status_idx_e98638ab\" on \"erp_employees\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_employees_status_idx_e98638ab",
+        "table": "erp_employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_employees_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_employees_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_employees_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"erp_employees_status_idx_e98638ab\" ON \"public\".\"erp_employees\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_employees_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_employees_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_payroll_lines.erp_payroll_lines_employeeId_idx_087dd4a6",
+    "label": "Create index \"erp_payroll_lines_employeeId_idx_087dd4a6\" on \"erp_payroll_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_payroll_lines_employeeId_idx_087dd4a6",
+        "table": "erp_payroll_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_payroll_lines_employeeId_idx_087dd4a6\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_payroll_lines_employeeId_idx_087dd4a6\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_payroll_lines_employeeId_idx_087dd4a6\"",
+        "sql": "CREATE INDEX \"erp_payroll_lines_employeeId_idx_087dd4a6\" ON \"public\".\"erp_payroll_lines\" (\"employeeId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_payroll_lines_employeeId_idx_087dd4a6\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_payroll_lines_employeeId_idx_087dd4a6\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_payroll_lines.erp_payroll_lines_runId_idx_a6016437",
+    "label": "Create index \"erp_payroll_lines_runId_idx_a6016437\" on \"erp_payroll_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_payroll_lines_runId_idx_a6016437",
+        "table": "erp_payroll_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_payroll_lines_runId_idx_a6016437\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_payroll_lines_runId_idx_a6016437\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_payroll_lines_runId_idx_a6016437\"",
+        "sql": "CREATE INDEX \"erp_payroll_lines_runId_idx_a6016437\" ON \"public\".\"erp_payroll_lines\" (\"runId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_payroll_lines_runId_idx_a6016437\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_payroll_lines_runId_idx_a6016437\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_payroll_runs.erp_payroll_runs_one_per_period_97c10069",
+    "label": "Create index \"erp_payroll_runs_one_per_period_97c10069\" on \"erp_payroll_runs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_payroll_runs_one_per_period_97c10069",
+        "table": "erp_payroll_runs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_payroll_runs_one_per_period_97c10069\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_payroll_runs_one_per_period_97c10069\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_payroll_runs_one_per_period_97c10069\"",
+        "sql": "CREATE UNIQUE INDEX \"erp_payroll_runs_one_per_period_97c10069\" ON \"public\".\"erp_payroll_runs\" (\"period\") WHERE (\"status\" <> 'CANCELLED')",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_payroll_runs_one_per_period_97c10069\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_payroll_runs_one_per_period_97c10069\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_salary_advances.erp_salary_advances_employeeId_idx_087dd4a6",
+    "label": "Create index \"erp_salary_advances_employeeId_idx_087dd4a6\" on \"erp_salary_advances\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_salary_advances_employeeId_idx_087dd4a6",
+        "table": "erp_salary_advances"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_salary_advances_employeeId_idx_087dd4a6\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_salary_advances_employeeId_idx_087dd4a6\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_salary_advances_employeeId_idx_087dd4a6\"",
+        "sql": "CREATE INDEX \"erp_salary_advances_employeeId_idx_087dd4a6\" ON \"public\".\"erp_salary_advances\" (\"employeeId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_salary_advances_employeeId_idx_087dd4a6\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_salary_advances_employeeId_idx_087dd4a6\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_salary_advances.erp_salary_advances_employeeId_status_idx_e746ea39",
+    "label": "Create index \"erp_salary_advances_employeeId_status_idx_e746ea39\" on \"erp_salary_advances\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_salary_advances_employeeId_status_idx_e746ea39",
+        "table": "erp_salary_advances"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_salary_advances_employeeId_status_idx_e746ea39\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_salary_advances_employeeId_status_idx_e746ea39\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_salary_advances_employeeId_status_idx_e746ea39\"",
+        "sql": "CREATE INDEX \"erp_salary_advances_employeeId_status_idx_e746ea39\" ON \"public\".\"erp_salary_advances\" (\"employeeId\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_salary_advances_employeeId_status_idx_e746ea39\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_salary_advances_employeeId_status_idx_e746ea39\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_attendance_records.erp_attendance_records_employeeId_fkey",
+    "label": "Add foreign key \"erp_attendance_records_employeeId_fkey\" on \"erp_attendance_records\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_attendance_records_employeeId_fkey",
+        "table": "erp_attendance_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_attendance_records_employeeId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_attendance_records_employeeId_fkey",
+          "public",
+          "\"public\".\"erp_attendance_records\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_attendance_records_employeeId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_attendance_records\"\nADD CONSTRAINT \"erp_attendance_records_employeeId_fkey\"\nFOREIGN KEY (\"employeeId\")\nREFERENCES \"public\".\"erp_employees\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_attendance_records_employeeId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_attendance_records_employeeId_fkey",
+          "public",
+          "\"public\".\"erp_attendance_records\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_employees.erp_employees_departmentId_fkey",
+    "label": "Add foreign key \"erp_employees_departmentId_fkey\" on \"erp_employees\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_employees_departmentId_fkey",
+        "table": "erp_employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_employees_departmentId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_employees_departmentId_fkey",
+          "public",
+          "\"public\".\"erp_employees\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_employees_departmentId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_employees\"\nADD CONSTRAINT \"erp_employees_departmentId_fkey\"\nFOREIGN KEY (\"departmentId\")\nREFERENCES \"public\".\"erp_departments\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_employees_departmentId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_employees_departmentId_fkey",
+          "public",
+          "\"public\".\"erp_employees\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_payroll_lines.erp_payroll_lines_runId_fkey",
+    "label": "Add foreign key \"erp_payroll_lines_runId_fkey\" on \"erp_payroll_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_payroll_lines_runId_fkey",
+        "table": "erp_payroll_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_payroll_lines_runId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_payroll_lines_runId_fkey",
+          "public",
+          "\"public\".\"erp_payroll_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_payroll_lines_runId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_payroll_lines\"\nADD CONSTRAINT \"erp_payroll_lines_runId_fkey\"\nFOREIGN KEY (\"runId\")\nREFERENCES \"public\".\"erp_payroll_runs\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_payroll_lines_runId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_payroll_lines_runId_fkey",
+          "public",
+          "\"public\".\"erp_payroll_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_payroll_lines.erp_payroll_lines_employeeId_fkey",
+    "label": "Add foreign key \"erp_payroll_lines_employeeId_fkey\" on \"erp_payroll_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_payroll_lines_employeeId_fkey",
+        "table": "erp_payroll_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_payroll_lines_employeeId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_payroll_lines_employeeId_fkey",
+          "public",
+          "\"public\".\"erp_payroll_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_payroll_lines_employeeId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_payroll_lines\"\nADD CONSTRAINT \"erp_payroll_lines_employeeId_fkey\"\nFOREIGN KEY (\"employeeId\")\nREFERENCES \"public\".\"erp_employees\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_payroll_lines_employeeId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_payroll_lines_employeeId_fkey",
+          "public",
+          "\"public\".\"erp_payroll_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_salary_advances.erp_salary_advances_employeeId_fkey",
+    "label": "Add foreign key \"erp_salary_advances_employeeId_fkey\" on \"erp_salary_advances\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_salary_advances_employeeId_fkey",
+        "table": "erp_salary_advances"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_salary_advances_employeeId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_salary_advances_employeeId_fkey",
+          "public",
+          "\"public\".\"erp_salary_advances\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_salary_advances_employeeId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_salary_advances\"\nADD CONSTRAINT \"erp_salary_advances_employeeId_fkey\"\nFOREIGN KEY (\"employeeId\")\nREFERENCES \"public\".\"erp_employees\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_salary_advances_employeeId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_salary_advances_employeeId_fkey",
+          "public",
+          "\"public\".\"erp_salary_advances\""
+        ]
+      }
+    ]
+  }
+]

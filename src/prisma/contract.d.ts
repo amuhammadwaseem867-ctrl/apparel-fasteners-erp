@@ -18,9 +18,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'9acd9c9787f4d197375a61f9e6941f180d9b661fc3b773954cb0b8e08a4089cc'>;
+  StorageHashBase<'18f21701327e7468d411506fd34b155534332c720aae339e2d13f0e6eb8eb966'>;
 export type ExecutionHash =
-  ExecutionHashBase<'b53a18abca22d965a901fcad28e2cdeff16a84c891b82211f2fdfd146da2e10a'>;
+  ExecutionHashBase<'02ddfcdd8d6bd19484966fee91f5820b3028013e3db93bf815d3d58b363a4ec2'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -234,6 +234,16 @@ type DefaultLiteralValue<CodecId extends string, Encoded> = CodecId extends keyo
 
 export type FieldOutputTypes = {
   readonly public: {
+    readonly AttendanceRecord: {
+      readonly date: CodecTypes['pg/text@1']['output'];
+      readonly employeeId: CodecTypes['pg/uuid@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly overtimeHours: CodecTypes['pg/numeric@1']['output'];
+      readonly recordedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly recordedBy: CodecTypes['pg/uuid@1']['output'];
+      readonly remarks: CodecTypes['pg/text@1']['output'] | null;
+      readonly status: CodecTypes['pg/text@1']['output'];
+    };
     readonly AuditLog: {
       readonly action: CodecTypes['pg/text@1']['output'];
       readonly actorId: CodecTypes['pg/uuid@1']['output'] | null;
@@ -321,9 +331,40 @@ export type FieldOutputTypes = {
       readonly voidedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
       readonly voidedBy: CodecTypes['pg/uuid@1']['output'] | null;
     };
+    readonly Department: {
+      readonly code: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
     readonly DocumentSequence: {
       readonly key: CodecTypes['pg/text@1']['output'];
       readonly nextValue: CodecTypes['pg/int4@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
+    readonly Employee: {
+      readonly address: CodecTypes['pg/text@1']['output'] | null;
+      readonly allowances: CodecTypes['pg/numeric@1']['output'];
+      readonly bankAccount: CodecTypes['pg/text@1']['output'] | null;
+      readonly basicSalary: CodecTypes['pg/numeric@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly departmentId: CodecTypes['pg/uuid@1']['output'];
+      readonly designation: CodecTypes['pg/text@1']['output'];
+      readonly employeeCode: CodecTypes['pg/text@1']['output'];
+      readonly employmentType: CodecTypes['pg/text@1']['output'];
+      readonly fatherName: CodecTypes['pg/text@1']['output'] | null;
+      readonly fixedDeduction: CodecTypes['pg/numeric@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly joinDate: CodecTypes['pg/text@1']['output'];
+      readonly leftDate: CodecTypes['pg/text@1']['output'] | null;
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly nationalId: CodecTypes['pg/text@1']['output'] | null;
+      readonly overtimeRate: CodecTypes['pg/numeric@1']['output'];
+      readonly payBasis: CodecTypes['pg/text@1']['output'];
+      readonly phone: CodecTypes['pg/text@1']['output'] | null;
+      readonly status: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
     readonly GatePass: {
@@ -481,6 +522,51 @@ export type FieldOutputTypes = {
       readonly packingListId: CodecTypes['pg/uuid@1']['output'];
       readonly quantity: CodecTypes['pg/numeric@1']['output'];
     };
+    readonly PayrollLine: {
+      readonly adjustmentNote: CodecTypes['pg/text@1']['output'] | null;
+      readonly advanceRecovery: CodecTypes['pg/numeric@1']['output'];
+      readonly allowances: CodecTypes['pg/numeric@1']['output'];
+      readonly allowancesEarned: CodecTypes['pg/numeric@1']['output'];
+      readonly basicEarned: CodecTypes['pg/numeric@1']['output'];
+      readonly basicSalary: CodecTypes['pg/numeric@1']['output'];
+      readonly employedDays: CodecTypes['pg/numeric@1']['output'];
+      readonly employeeId: CodecTypes['pg/uuid@1']['output'];
+      readonly fixedDeduction: CodecTypes['pg/numeric@1']['output'];
+      readonly grossPay: CodecTypes['pg/numeric@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly netPay: CodecTypes['pg/numeric@1']['output'];
+      readonly otherDeduction: CodecTypes['pg/numeric@1']['output'];
+      readonly otherEarning: CodecTypes['pg/numeric@1']['output'];
+      readonly overtimeHours: CodecTypes['pg/numeric@1']['output'];
+      readonly overtimePay: CodecTypes['pg/numeric@1']['output'];
+      readonly overtimeRate: CodecTypes['pg/numeric@1']['output'];
+      readonly paidDays: CodecTypes['pg/numeric@1']['output'];
+      readonly payBasis: CodecTypes['pg/text@1']['output'];
+      readonly runId: CodecTypes['pg/uuid@1']['output'];
+      readonly unpaidDays: CodecTypes['pg/numeric@1']['output'];
+      readonly unrecordedDays: CodecTypes['pg/int4@1']['output'];
+    };
+    readonly PayrollRun: {
+      readonly approvedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly approvedBy: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly calculatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly cancelledAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly cancelledBy: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['output'];
+      readonly deductionTotal: CodecTypes['pg/numeric@1']['output'];
+      readonly employeeCount: CodecTypes['pg/int4@1']['output'];
+      readonly grossTotal: CodecTypes['pg/numeric@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly netTotal: CodecTypes['pg/numeric@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'] | null;
+      readonly paidAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly paymentReference: CodecTypes['pg/text@1']['output'] | null;
+      readonly period: CodecTypes['pg/text@1']['output'];
+      readonly periodDays: CodecTypes['pg/int4@1']['output'];
+      readonly runNumber: CodecTypes['pg/text@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
+    };
     readonly Permission: {
       readonly action: CodecTypes['pg/text@1']['output'];
       readonly code: CodecTypes['pg/text@1']['output'];
@@ -617,6 +703,21 @@ export type FieldOutputTypes = {
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly permissionId: CodecTypes['pg/uuid@1']['output'];
       readonly roleId: CodecTypes['pg/uuid@1']['output'];
+    };
+    readonly SalaryAdvance: {
+      readonly advanceNumber: CodecTypes['pg/text@1']['output'];
+      readonly amount: CodecTypes['pg/numeric@1']['output'];
+      readonly cancelledAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly cancelledBy: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['output'];
+      readonly employeeId: CodecTypes['pg/uuid@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly installment: CodecTypes['pg/numeric@1']['output'];
+      readonly issueDate: CodecTypes['pg/text@1']['output'];
+      readonly reason: CodecTypes['pg/text@1']['output'];
+      readonly recovered: CodecTypes['pg/numeric@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
     };
     readonly SalesOrder: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -790,6 +891,16 @@ export type FieldOutputTypes = {
 };
 export type FieldInputTypes = {
   readonly public: {
+    readonly AttendanceRecord: {
+      readonly date: CodecTypes['pg/text@1']['input'];
+      readonly employeeId: CodecTypes['pg/uuid@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly overtimeHours: CodecTypes['pg/numeric@1']['input'];
+      readonly recordedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly recordedBy: CodecTypes['pg/uuid@1']['input'];
+      readonly remarks: CodecTypes['pg/text@1']['input'] | null;
+      readonly status: CodecTypes['pg/text@1']['input'];
+    };
     readonly AuditLog: {
       readonly action: CodecTypes['pg/text@1']['input'];
       readonly actorId: CodecTypes['pg/uuid@1']['input'] | null;
@@ -877,9 +988,40 @@ export type FieldInputTypes = {
       readonly voidedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly voidedBy: CodecTypes['pg/uuid@1']['input'] | null;
     };
+    readonly Department: {
+      readonly code: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
     readonly DocumentSequence: {
       readonly key: CodecTypes['pg/text@1']['input'];
       readonly nextValue: CodecTypes['pg/int4@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly Employee: {
+      readonly address: CodecTypes['pg/text@1']['input'] | null;
+      readonly allowances: CodecTypes['pg/numeric@1']['input'];
+      readonly bankAccount: CodecTypes['pg/text@1']['input'] | null;
+      readonly basicSalary: CodecTypes['pg/numeric@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly departmentId: CodecTypes['pg/uuid@1']['input'];
+      readonly designation: CodecTypes['pg/text@1']['input'];
+      readonly employeeCode: CodecTypes['pg/text@1']['input'];
+      readonly employmentType: CodecTypes['pg/text@1']['input'];
+      readonly fatherName: CodecTypes['pg/text@1']['input'] | null;
+      readonly fixedDeduction: CodecTypes['pg/numeric@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly joinDate: CodecTypes['pg/text@1']['input'];
+      readonly leftDate: CodecTypes['pg/text@1']['input'] | null;
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly nationalId: CodecTypes['pg/text@1']['input'] | null;
+      readonly overtimeRate: CodecTypes['pg/numeric@1']['input'];
+      readonly payBasis: CodecTypes['pg/text@1']['input'];
+      readonly phone: CodecTypes['pg/text@1']['input'] | null;
+      readonly status: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
     readonly GatePass: {
@@ -1037,6 +1179,51 @@ export type FieldInputTypes = {
       readonly packingListId: CodecTypes['pg/uuid@1']['input'];
       readonly quantity: CodecTypes['pg/numeric@1']['input'];
     };
+    readonly PayrollLine: {
+      readonly adjustmentNote: CodecTypes['pg/text@1']['input'] | null;
+      readonly advanceRecovery: CodecTypes['pg/numeric@1']['input'];
+      readonly allowances: CodecTypes['pg/numeric@1']['input'];
+      readonly allowancesEarned: CodecTypes['pg/numeric@1']['input'];
+      readonly basicEarned: CodecTypes['pg/numeric@1']['input'];
+      readonly basicSalary: CodecTypes['pg/numeric@1']['input'];
+      readonly employedDays: CodecTypes['pg/numeric@1']['input'];
+      readonly employeeId: CodecTypes['pg/uuid@1']['input'];
+      readonly fixedDeduction: CodecTypes['pg/numeric@1']['input'];
+      readonly grossPay: CodecTypes['pg/numeric@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly netPay: CodecTypes['pg/numeric@1']['input'];
+      readonly otherDeduction: CodecTypes['pg/numeric@1']['input'];
+      readonly otherEarning: CodecTypes['pg/numeric@1']['input'];
+      readonly overtimeHours: CodecTypes['pg/numeric@1']['input'];
+      readonly overtimePay: CodecTypes['pg/numeric@1']['input'];
+      readonly overtimeRate: CodecTypes['pg/numeric@1']['input'];
+      readonly paidDays: CodecTypes['pg/numeric@1']['input'];
+      readonly payBasis: CodecTypes['pg/text@1']['input'];
+      readonly runId: CodecTypes['pg/uuid@1']['input'];
+      readonly unpaidDays: CodecTypes['pg/numeric@1']['input'];
+      readonly unrecordedDays: CodecTypes['pg/int4@1']['input'];
+    };
+    readonly PayrollRun: {
+      readonly approvedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly approvedBy: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly calculatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly cancelledAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly cancelledBy: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['input'];
+      readonly deductionTotal: CodecTypes['pg/numeric@1']['input'];
+      readonly employeeCount: CodecTypes['pg/int4@1']['input'];
+      readonly grossTotal: CodecTypes['pg/numeric@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly netTotal: CodecTypes['pg/numeric@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'] | null;
+      readonly paidAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly paymentReference: CodecTypes['pg/text@1']['input'] | null;
+      readonly period: CodecTypes['pg/text@1']['input'];
+      readonly periodDays: CodecTypes['pg/int4@1']['input'];
+      readonly runNumber: CodecTypes['pg/text@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
+    };
     readonly Permission: {
       readonly action: CodecTypes['pg/text@1']['input'];
       readonly code: CodecTypes['pg/text@1']['input'];
@@ -1173,6 +1360,21 @@ export type FieldInputTypes = {
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly permissionId: CodecTypes['pg/uuid@1']['input'];
       readonly roleId: CodecTypes['pg/uuid@1']['input'];
+    };
+    readonly SalaryAdvance: {
+      readonly advanceNumber: CodecTypes['pg/text@1']['input'];
+      readonly amount: CodecTypes['pg/numeric@1']['input'];
+      readonly cancelledAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly cancelledBy: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['input'];
+      readonly employeeId: CodecTypes['pg/uuid@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly installment: CodecTypes['pg/numeric@1']['input'];
+      readonly issueDate: CodecTypes['pg/text@1']['input'];
+      readonly reason: CodecTypes['pg/text@1']['input'];
+      readonly recovered: CodecTypes['pg/numeric@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
     };
     readonly SalesOrder: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
@@ -1346,6 +1548,16 @@ export type FieldInputTypes = {
 };
 export type StorageColumnTypes = {
   readonly public: {
+    readonly erp_attendance_records: {
+      readonly date: CodecTypes['pg/text@1']['output'];
+      readonly employeeId: CodecTypes['pg/uuid@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly overtimeHours: CodecTypes['pg/numeric@1']['output'];
+      readonly recordedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly recordedBy: CodecTypes['pg/uuid@1']['output'];
+      readonly remarks: CodecTypes['pg/text@1']['output'] | null;
+      readonly status: CodecTypes['pg/text@1']['output'];
+    };
     readonly erp_audit_logs: {
       readonly action: CodecTypes['pg/text@1']['output'];
       readonly actorId: CodecTypes['pg/uuid@1']['output'] | null;
@@ -1433,9 +1645,40 @@ export type StorageColumnTypes = {
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
+    readonly erp_departments: {
+      readonly code: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
     readonly erp_document_sequences: {
       readonly key: CodecTypes['pg/text@1']['output'];
       readonly nextValue: CodecTypes['pg/int4@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
+    readonly erp_employees: {
+      readonly address: CodecTypes['pg/text@1']['output'] | null;
+      readonly allowances: CodecTypes['pg/numeric@1']['output'];
+      readonly bankAccount: CodecTypes['pg/text@1']['output'] | null;
+      readonly basicSalary: CodecTypes['pg/numeric@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly departmentId: CodecTypes['pg/uuid@1']['output'];
+      readonly designation: CodecTypes['pg/text@1']['output'];
+      readonly employeeCode: CodecTypes['pg/text@1']['output'];
+      readonly employmentType: CodecTypes['pg/text@1']['output'];
+      readonly fatherName: CodecTypes['pg/text@1']['output'] | null;
+      readonly fixedDeduction: CodecTypes['pg/numeric@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly joinDate: CodecTypes['pg/text@1']['output'];
+      readonly leftDate: CodecTypes['pg/text@1']['output'] | null;
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly nationalId: CodecTypes['pg/text@1']['output'] | null;
+      readonly overtimeRate: CodecTypes['pg/numeric@1']['output'];
+      readonly payBasis: CodecTypes['pg/text@1']['output'];
+      readonly phone: CodecTypes['pg/text@1']['output'] | null;
+      readonly status: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
     readonly erp_gate_pass_lines: {
@@ -1593,6 +1836,51 @@ export type StorageColumnTypes = {
       readonly packingListId: CodecTypes['pg/uuid@1']['output'];
       readonly quantity: CodecTypes['pg/numeric@1']['output'];
     };
+    readonly erp_payroll_lines: {
+      readonly adjustmentNote: CodecTypes['pg/text@1']['output'] | null;
+      readonly advanceRecovery: CodecTypes['pg/numeric@1']['output'];
+      readonly allowances: CodecTypes['pg/numeric@1']['output'];
+      readonly allowancesEarned: CodecTypes['pg/numeric@1']['output'];
+      readonly basicEarned: CodecTypes['pg/numeric@1']['output'];
+      readonly basicSalary: CodecTypes['pg/numeric@1']['output'];
+      readonly employedDays: CodecTypes['pg/numeric@1']['output'];
+      readonly employeeId: CodecTypes['pg/uuid@1']['output'];
+      readonly fixedDeduction: CodecTypes['pg/numeric@1']['output'];
+      readonly grossPay: CodecTypes['pg/numeric@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly netPay: CodecTypes['pg/numeric@1']['output'];
+      readonly otherDeduction: CodecTypes['pg/numeric@1']['output'];
+      readonly otherEarning: CodecTypes['pg/numeric@1']['output'];
+      readonly overtimeHours: CodecTypes['pg/numeric@1']['output'];
+      readonly overtimePay: CodecTypes['pg/numeric@1']['output'];
+      readonly overtimeRate: CodecTypes['pg/numeric@1']['output'];
+      readonly paidDays: CodecTypes['pg/numeric@1']['output'];
+      readonly payBasis: CodecTypes['pg/text@1']['output'];
+      readonly runId: CodecTypes['pg/uuid@1']['output'];
+      readonly unpaidDays: CodecTypes['pg/numeric@1']['output'];
+      readonly unrecordedDays: CodecTypes['pg/int4@1']['output'];
+    };
+    readonly erp_payroll_runs: {
+      readonly approvedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly approvedBy: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly calculatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly cancelledAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly cancelledBy: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['output'];
+      readonly deductionTotal: CodecTypes['pg/numeric@1']['output'];
+      readonly employeeCount: CodecTypes['pg/int4@1']['output'];
+      readonly grossTotal: CodecTypes['pg/numeric@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly netTotal: CodecTypes['pg/numeric@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'] | null;
+      readonly paidAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly paymentReference: CodecTypes['pg/text@1']['output'] | null;
+      readonly period: CodecTypes['pg/text@1']['output'];
+      readonly periodDays: CodecTypes['pg/int4@1']['output'];
+      readonly runNumber: CodecTypes['pg/text@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
+    };
     readonly erp_permissions: {
       readonly action: CodecTypes['pg/text@1']['output'];
       readonly code: CodecTypes['pg/text@1']['output'];
@@ -1729,6 +2017,21 @@ export type StorageColumnTypes = {
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly status: 'ACTIVE' | 'DISABLED';
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
+    readonly erp_salary_advances: {
+      readonly advanceNumber: CodecTypes['pg/text@1']['output'];
+      readonly amount: CodecTypes['pg/numeric@1']['output'];
+      readonly cancelledAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly cancelledBy: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['output'];
+      readonly employeeId: CodecTypes['pg/uuid@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly installment: CodecTypes['pg/numeric@1']['output'];
+      readonly issueDate: CodecTypes['pg/text@1']['output'];
+      readonly reason: CodecTypes['pg/text@1']['output'];
+      readonly recovered: CodecTypes['pg/numeric@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
     };
     readonly erp_sales_order_lines: {
       readonly category: CodecTypes['pg/text@1']['output'] | null;
@@ -1902,6 +2205,16 @@ export type StorageColumnTypes = {
 };
 export type StorageColumnInputTypes = {
   readonly public: {
+    readonly erp_attendance_records: {
+      readonly date: CodecTypes['pg/text@1']['input'];
+      readonly employeeId: CodecTypes['pg/uuid@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly overtimeHours: CodecTypes['pg/numeric@1']['input'];
+      readonly recordedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly recordedBy: CodecTypes['pg/uuid@1']['input'];
+      readonly remarks: CodecTypes['pg/text@1']['input'] | null;
+      readonly status: CodecTypes['pg/text@1']['input'];
+    };
     readonly erp_audit_logs: {
       readonly action: CodecTypes['pg/text@1']['input'];
       readonly actorId: CodecTypes['pg/uuid@1']['input'] | null;
@@ -1989,9 +2302,40 @@ export type StorageColumnInputTypes = {
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
+    readonly erp_departments: {
+      readonly code: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
     readonly erp_document_sequences: {
       readonly key: CodecTypes['pg/text@1']['input'];
       readonly nextValue: CodecTypes['pg/int4@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly erp_employees: {
+      readonly address: CodecTypes['pg/text@1']['input'] | null;
+      readonly allowances: CodecTypes['pg/numeric@1']['input'];
+      readonly bankAccount: CodecTypes['pg/text@1']['input'] | null;
+      readonly basicSalary: CodecTypes['pg/numeric@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly departmentId: CodecTypes['pg/uuid@1']['input'];
+      readonly designation: CodecTypes['pg/text@1']['input'];
+      readonly employeeCode: CodecTypes['pg/text@1']['input'];
+      readonly employmentType: CodecTypes['pg/text@1']['input'];
+      readonly fatherName: CodecTypes['pg/text@1']['input'] | null;
+      readonly fixedDeduction: CodecTypes['pg/numeric@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly joinDate: CodecTypes['pg/text@1']['input'];
+      readonly leftDate: CodecTypes['pg/text@1']['input'] | null;
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly nationalId: CodecTypes['pg/text@1']['input'] | null;
+      readonly overtimeRate: CodecTypes['pg/numeric@1']['input'];
+      readonly payBasis: CodecTypes['pg/text@1']['input'];
+      readonly phone: CodecTypes['pg/text@1']['input'] | null;
+      readonly status: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
     readonly erp_gate_pass_lines: {
@@ -2149,6 +2493,51 @@ export type StorageColumnInputTypes = {
       readonly packingListId: CodecTypes['pg/uuid@1']['input'];
       readonly quantity: CodecTypes['pg/numeric@1']['input'];
     };
+    readonly erp_payroll_lines: {
+      readonly adjustmentNote: CodecTypes['pg/text@1']['input'] | null;
+      readonly advanceRecovery: CodecTypes['pg/numeric@1']['input'];
+      readonly allowances: CodecTypes['pg/numeric@1']['input'];
+      readonly allowancesEarned: CodecTypes['pg/numeric@1']['input'];
+      readonly basicEarned: CodecTypes['pg/numeric@1']['input'];
+      readonly basicSalary: CodecTypes['pg/numeric@1']['input'];
+      readonly employedDays: CodecTypes['pg/numeric@1']['input'];
+      readonly employeeId: CodecTypes['pg/uuid@1']['input'];
+      readonly fixedDeduction: CodecTypes['pg/numeric@1']['input'];
+      readonly grossPay: CodecTypes['pg/numeric@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly netPay: CodecTypes['pg/numeric@1']['input'];
+      readonly otherDeduction: CodecTypes['pg/numeric@1']['input'];
+      readonly otherEarning: CodecTypes['pg/numeric@1']['input'];
+      readonly overtimeHours: CodecTypes['pg/numeric@1']['input'];
+      readonly overtimePay: CodecTypes['pg/numeric@1']['input'];
+      readonly overtimeRate: CodecTypes['pg/numeric@1']['input'];
+      readonly paidDays: CodecTypes['pg/numeric@1']['input'];
+      readonly payBasis: CodecTypes['pg/text@1']['input'];
+      readonly runId: CodecTypes['pg/uuid@1']['input'];
+      readonly unpaidDays: CodecTypes['pg/numeric@1']['input'];
+      readonly unrecordedDays: CodecTypes['pg/int4@1']['input'];
+    };
+    readonly erp_payroll_runs: {
+      readonly approvedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly approvedBy: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly calculatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly cancelledAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly cancelledBy: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['input'];
+      readonly deductionTotal: CodecTypes['pg/numeric@1']['input'];
+      readonly employeeCount: CodecTypes['pg/int4@1']['input'];
+      readonly grossTotal: CodecTypes['pg/numeric@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly netTotal: CodecTypes['pg/numeric@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'] | null;
+      readonly paidAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly paymentReference: CodecTypes['pg/text@1']['input'] | null;
+      readonly period: CodecTypes['pg/text@1']['input'];
+      readonly periodDays: CodecTypes['pg/int4@1']['input'];
+      readonly runNumber: CodecTypes['pg/text@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
+    };
     readonly erp_permissions: {
       readonly action: CodecTypes['pg/text@1']['input'];
       readonly code: CodecTypes['pg/text@1']['input'];
@@ -2285,6 +2674,21 @@ export type StorageColumnInputTypes = {
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly status: 'ACTIVE' | 'DISABLED';
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly erp_salary_advances: {
+      readonly advanceNumber: CodecTypes['pg/text@1']['input'];
+      readonly amount: CodecTypes['pg/numeric@1']['input'];
+      readonly cancelledAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly cancelledBy: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['input'];
+      readonly employeeId: CodecTypes['pg/uuid@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly installment: CodecTypes['pg/numeric@1']['input'];
+      readonly issueDate: CodecTypes['pg/text@1']['input'];
+      readonly reason: CodecTypes['pg/text@1']['input'];
+      readonly recovered: CodecTypes['pg/numeric@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
     };
     readonly erp_sales_order_lines: {
       readonly category: CodecTypes['pg/text@1']['input'] | null;
@@ -2458,6 +2862,18 @@ export type StorageColumnInputTypes = {
 };
 
 export namespace Models {
+  export type public_AttendanceRecord = {
+    date: CodecTypes['pg/text@1']['output'];
+    employeeId: CodecTypes['pg/uuid@1']['output'];
+    id: CodecTypes['pg/uuid@1']['output'];
+    overtimeHours: CodecTypes['pg/numeric@1']['output'];
+    recordedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    recordedBy: CodecTypes['pg/uuid@1']['output'];
+    remarks: CodecTypes['pg/text@1']['output'] | null;
+    status: CodecTypes['pg/text@1']['output'];
+    employee: public_Employee;
+    readonly [RelationKeys]?: 'employee';
+  };
   export type public_AuditLog = {
     action: CodecTypes['pg/text@1']['output'];
     actorId: CodecTypes['pg/uuid@1']['output'] | null;
@@ -2563,11 +2979,49 @@ export namespace Models {
     invoice: public_Invoice;
     readonly [RelationKeys]?: 'invoice';
   };
+  export type public_Department = {
+    code: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    id: CodecTypes['pg/uuid@1']['output'];
+    name: CodecTypes['pg/text@1']['output'];
+    status: CodecTypes['pg/text@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    employees: public_Employee[];
+    readonly [RelationKeys]?: 'employees';
+  };
   export type public_DocumentSequence = {
     key: CodecTypes['pg/text@1']['output'];
     nextValue: CodecTypes['pg/int4@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     readonly [RelationKeys]?: never;
+  };
+  export type public_Employee = {
+    address: CodecTypes['pg/text@1']['output'] | null;
+    allowances: CodecTypes['pg/numeric@1']['output'];
+    bankAccount: CodecTypes['pg/text@1']['output'] | null;
+    basicSalary: CodecTypes['pg/numeric@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    departmentId: CodecTypes['pg/uuid@1']['output'];
+    designation: CodecTypes['pg/text@1']['output'];
+    employeeCode: CodecTypes['pg/text@1']['output'];
+    employmentType: CodecTypes['pg/text@1']['output'];
+    fatherName: CodecTypes['pg/text@1']['output'] | null;
+    fixedDeduction: CodecTypes['pg/numeric@1']['output'];
+    id: CodecTypes['pg/uuid@1']['output'];
+    joinDate: CodecTypes['pg/text@1']['output'];
+    leftDate: CodecTypes['pg/text@1']['output'] | null;
+    name: CodecTypes['pg/text@1']['output'];
+    nationalId: CodecTypes['pg/text@1']['output'] | null;
+    overtimeRate: CodecTypes['pg/numeric@1']['output'];
+    payBasis: CodecTypes['pg/text@1']['output'];
+    phone: CodecTypes['pg/text@1']['output'] | null;
+    status: CodecTypes['pg/text@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    advances: public_SalaryAdvance[];
+    attendance: public_AttendanceRecord[];
+    department: public_Department;
+    payrollLines: public_PayrollLine[];
+    readonly [RelationKeys]?: 'advances' | 'attendance' | 'department' | 'payrollLines';
   };
   export type public_GatePass = {
     approvedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
@@ -2756,6 +3210,56 @@ export namespace Models {
     packingList: public_PackingList;
     readonly [RelationKeys]?: 'packingList';
   };
+  export type public_PayrollLine = {
+    adjustmentNote: CodecTypes['pg/text@1']['output'] | null;
+    advanceRecovery: CodecTypes['pg/numeric@1']['output'];
+    allowances: CodecTypes['pg/numeric@1']['output'];
+    allowancesEarned: CodecTypes['pg/numeric@1']['output'];
+    basicEarned: CodecTypes['pg/numeric@1']['output'];
+    basicSalary: CodecTypes['pg/numeric@1']['output'];
+    employedDays: CodecTypes['pg/numeric@1']['output'];
+    employeeId: CodecTypes['pg/uuid@1']['output'];
+    fixedDeduction: CodecTypes['pg/numeric@1']['output'];
+    grossPay: CodecTypes['pg/numeric@1']['output'];
+    id: CodecTypes['pg/uuid@1']['output'];
+    netPay: CodecTypes['pg/numeric@1']['output'];
+    otherDeduction: CodecTypes['pg/numeric@1']['output'];
+    otherEarning: CodecTypes['pg/numeric@1']['output'];
+    overtimeHours: CodecTypes['pg/numeric@1']['output'];
+    overtimePay: CodecTypes['pg/numeric@1']['output'];
+    overtimeRate: CodecTypes['pg/numeric@1']['output'];
+    paidDays: CodecTypes['pg/numeric@1']['output'];
+    payBasis: CodecTypes['pg/text@1']['output'];
+    runId: CodecTypes['pg/uuid@1']['output'];
+    unpaidDays: CodecTypes['pg/numeric@1']['output'];
+    unrecordedDays: CodecTypes['pg/int4@1']['output'];
+    employee: public_Employee;
+    run: public_PayrollRun;
+    readonly [RelationKeys]?: 'employee' | 'run';
+  };
+  export type public_PayrollRun = {
+    approvedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+    approvedBy: CodecTypes['pg/uuid@1']['output'] | null;
+    calculatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    cancelledAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+    cancelledBy: CodecTypes['pg/uuid@1']['output'] | null;
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    createdBy: CodecTypes['pg/uuid@1']['output'];
+    deductionTotal: CodecTypes['pg/numeric@1']['output'];
+    employeeCount: CodecTypes['pg/int4@1']['output'];
+    grossTotal: CodecTypes['pg/numeric@1']['output'];
+    id: CodecTypes['pg/uuid@1']['output'];
+    netTotal: CodecTypes['pg/numeric@1']['output'];
+    notes: CodecTypes['pg/text@1']['output'] | null;
+    paidAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+    paymentReference: CodecTypes['pg/text@1']['output'] | null;
+    period: CodecTypes['pg/text@1']['output'];
+    periodDays: CodecTypes['pg/int4@1']['output'];
+    runNumber: CodecTypes['pg/text@1']['output'];
+    status: CodecTypes['pg/text@1']['output'];
+    lines: public_PayrollLine[];
+    readonly [RelationKeys]?: 'lines';
+  };
   export type public_Permission = {
     action: CodecTypes['pg/text@1']['output'];
     code: CodecTypes['pg/text@1']['output'];
@@ -2942,6 +3446,23 @@ export namespace Models {
     permission: public_Permission;
     role: public_Role;
     readonly [RelationKeys]?: 'permission' | 'role';
+  };
+  export type public_SalaryAdvance = {
+    advanceNumber: CodecTypes['pg/text@1']['output'];
+    amount: CodecTypes['pg/numeric@1']['output'];
+    cancelledAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+    cancelledBy: CodecTypes['pg/uuid@1']['output'] | null;
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    createdBy: CodecTypes['pg/uuid@1']['output'];
+    employeeId: CodecTypes['pg/uuid@1']['output'];
+    id: CodecTypes['pg/uuid@1']['output'];
+    installment: CodecTypes['pg/numeric@1']['output'];
+    issueDate: CodecTypes['pg/text@1']['output'];
+    reason: CodecTypes['pg/text@1']['output'];
+    recovered: CodecTypes['pg/numeric@1']['output'];
+    status: CodecTypes['pg/text@1']['output'];
+    employee: public_Employee;
+    readonly [RelationKeys]?: 'employee';
   };
   export type public_SalesOrder = {
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -3155,6 +3676,7 @@ export namespace Models {
 
 export declare const models: {
   public: {
+    AttendanceRecord: Models.public_AttendanceRecord;
     AuditLog: Models.public_AuditLog;
     Bom: Models.public_Bom;
     BomLine: Models.public_BomLine;
@@ -3162,7 +3684,9 @@ export declare const models: {
     CreditNoteLine: Models.public_CreditNoteLine;
     Customer: Models.public_Customer;
     CustomerReceipt: Models.public_CustomerReceipt;
+    Department: Models.public_Department;
     DocumentSequence: Models.public_DocumentSequence;
+    Employee: Models.public_Employee;
     GatePass: Models.public_GatePass;
     GatePassLine: Models.public_GatePassLine;
     Invoice: Models.public_Invoice;
@@ -3174,6 +3698,8 @@ export declare const models: {
     MrpRun: Models.public_MrpRun;
     PackingList: Models.public_PackingList;
     PackingPackage: Models.public_PackingPackage;
+    PayrollLine: Models.public_PayrollLine;
+    PayrollRun: Models.public_PayrollRun;
     Permission: Models.public_Permission;
     Product: Models.public_Product;
     ProductionEvent: Models.public_ProductionEvent;
@@ -3183,6 +3709,7 @@ export declare const models: {
     QualityInspection: Models.public_QualityInspection;
     Role: Models.public_Role;
     RolePermission: Models.public_RolePermission;
+    SalaryAdvance: Models.public_SalaryAdvance;
     SalesOrder: Models.public_SalesOrder;
     SalesOrderLine: Models.public_SalesOrderLine;
     Shipment: Models.public_Shipment;
@@ -3217,6 +3744,93 @@ type ContractBase = Omit<
         readonly kind: 'postgres-schema';
         readonly entries: {
           readonly table: {
+            readonly erp_attendance_records: {
+              columns: {
+                readonly date: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly employeeId: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly overtimeHours: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly recordedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly recordedBy: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly remarks: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly status: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['employeeId', 'date'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'erp_attendance_records_date_idx_b4ca319c';
+                  readonly prefix: 'erp_attendance_records_date_idx';
+                  readonly columns: readonly ['date'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'erp_attendance_records_employeeId_idx_087dd4a6';
+                  readonly prefix: 'erp_attendance_records_employeeId_idx';
+                  readonly columns: readonly ['employeeId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_attendance_records';
+                    readonly columns: readonly ['employeeId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_employees';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly erp_audit_logs: {
               columns: {
                 readonly action: {
@@ -3934,6 +4548,59 @@ type ContractBase = Omit<
               ];
               foreignKeys: readonly [];
             };
+            readonly erp_departments: {
+              columns: {
+                readonly code: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly name: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly status: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'ACTIVE'>;
+                  };
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['code'] },
+                { readonly columns: readonly ['name'] },
+              ];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly erp_document_sequences: {
               columns: {
                 readonly key: {
@@ -3964,6 +4631,192 @@ type ContractBase = Omit<
               uniques: readonly [];
               indexes: readonly [];
               foreignKeys: readonly [];
+            };
+            readonly erp_employees: {
+              columns: {
+                readonly address: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly allowances: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly bankAccount: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly basicSalary: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly departmentId: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly designation: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly employeeCode: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly employmentType: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly fatherName: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly fixedDeduction: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly joinDate: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly leftDate: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly name: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly nationalId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly overtimeRate: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly payBasis: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'MONTHLY'>;
+                  };
+                  readonly many: false;
+                };
+                readonly phone: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly status: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'ACTIVE'>;
+                  };
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['employeeCode'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'erp_employees_departmentId_idx_8e261ed8';
+                  readonly prefix: 'erp_employees_departmentId_idx';
+                  readonly columns: readonly ['departmentId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'erp_employees_status_idx_e98638ab';
+                  readonly prefix: 'erp_employees_status_idx';
+                  readonly columns: readonly ['status'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_employees';
+                    readonly columns: readonly ['departmentId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_departments';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
             };
             readonly erp_gate_pass_lines: {
               columns: {
@@ -5187,6 +6040,328 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly erp_payroll_lines: {
+              columns: {
+                readonly adjustmentNote: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly advanceRecovery: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly allowances: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly allowancesEarned: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly basicEarned: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly basicSalary: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly employedDays: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly employeeId: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly fixedDeduction: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly grossPay: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly netPay: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly otherDeduction: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly otherEarning: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly overtimeHours: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly overtimePay: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly overtimeRate: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly paidDays: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly payBasis: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly runId: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly unpaidDays: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly unrecordedDays: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['runId', 'employeeId'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'erp_payroll_lines_employeeId_idx_087dd4a6';
+                  readonly prefix: 'erp_payroll_lines_employeeId_idx';
+                  readonly columns: readonly ['employeeId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'erp_payroll_lines_runId_idx_a6016437';
+                  readonly prefix: 'erp_payroll_lines_runId_idx';
+                  readonly columns: readonly ['runId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_payroll_lines';
+                    readonly columns: readonly ['runId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_payroll_runs';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_payroll_lines';
+                    readonly columns: readonly ['employeeId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_employees';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly erp_payroll_runs: {
+              columns: {
+                readonly approvedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly approvedBy: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly calculatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly cancelledAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly cancelledBy: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly createdBy: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly deductionTotal: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly employeeCount: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly grossTotal: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly netTotal: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly notes: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly paidAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly paymentReference: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly period: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly periodDays: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly runNumber: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly status: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'DRAFT'>;
+                  };
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['runNumber'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'erp_payroll_runs_one_per_period_97c10069';
+                  readonly prefix: 'erp_payroll_runs_one_per_period';
+                  readonly columns: readonly ['period'];
+                  readonly where: '"status" <> \'CANCELLED\'';
+                  readonly unique: true;
+                },
+              ];
+              foreignKeys: readonly [];
+            };
             readonly erp_permissions: {
               columns: {
                 readonly action: {
@@ -6283,6 +7458,127 @@ type ContractBase = Omit<
               ];
               indexes: readonly [];
               foreignKeys: readonly [];
+            };
+            readonly erp_salary_advances: {
+              columns: {
+                readonly advanceNumber: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly amount: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly cancelledAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly cancelledBy: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly createdBy: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly employeeId: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly installment: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly issueDate: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly reason: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly recovered: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly status: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'OPEN'>;
+                  };
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['advanceNumber'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'erp_salary_advances_employeeId_idx_087dd4a6';
+                  readonly prefix: 'erp_salary_advances_employeeId_idx';
+                  readonly columns: readonly ['employeeId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'erp_salary_advances_employeeId_status_idx_e746ea39';
+                  readonly prefix: 'erp_salary_advances_employeeId_status_idx';
+                  readonly columns: readonly ['employeeId', 'status'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_salary_advances';
+                    readonly columns: readonly ['employeeId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_employees';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
             };
             readonly erp_sales_order_lines: {
               columns: {
@@ -7773,6 +9069,10 @@ type ContractBase = Omit<
   readonly target: 'postgres';
   readonly targetFamily: 'sql';
   readonly roots: {
+    readonly erp_attendance_records: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'AttendanceRecord';
+    };
     readonly erp_audit_logs: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'AuditLog';
@@ -7798,9 +9098,17 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'Customer';
     };
+    readonly erp_departments: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'Department';
+    };
     readonly erp_document_sequences: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'DocumentSequence';
+    };
+    readonly erp_employees: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'Employee';
     };
     readonly erp_gate_pass_lines: {
       readonly namespace: 'public' & NamespaceId;
@@ -7843,6 +9151,14 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'PackingPackage';
     };
+    readonly erp_payroll_lines: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'PayrollLine';
+    };
+    readonly erp_payroll_runs: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'PayrollRun';
+    };
     readonly erp_permissions: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'Permission';
@@ -7876,6 +9192,10 @@ type ContractBase = Omit<
       readonly model: 'RolePermission';
     };
     readonly erp_roles: { readonly namespace: 'public' & NamespaceId; readonly model: 'Role' };
+    readonly erp_salary_advances: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'SalaryAdvance';
+    };
     readonly erp_sales_order_lines: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'SalesOrderLine';
@@ -7930,6 +9250,73 @@ type ContractBase = Omit<
     readonly namespaces: {
       readonly public: {
         readonly models: {
+          readonly AttendanceRecord: {
+            readonly fields: {
+              readonly date: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly employeeId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly overtimeHours: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly recordedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly recordedBy: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly remarks: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly employee: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Employee';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['employeeId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'erp_attendance_records';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly date: { readonly column: 'date' };
+                readonly employeeId: { readonly column: 'employeeId' };
+                readonly id: { readonly column: 'id' };
+                readonly overtimeHours: { readonly column: 'overtimeHours' };
+                readonly recordedAt: { readonly column: 'recordedAt' };
+                readonly recordedBy: { readonly column: 'recordedBy' };
+                readonly remarks: { readonly column: 'remarks' };
+                readonly status: { readonly column: 'status' };
+              };
+            };
+          };
           readonly AuditLog: {
             readonly fields: {
               readonly action: {
@@ -8530,6 +9917,65 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly Department: {
+            readonly fields: {
+              readonly code: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly name: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly employees: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Employee';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['departmentId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'erp_departments';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly code: { readonly column: 'code' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly id: { readonly column: 'id' };
+                readonly name: { readonly column: 'name' };
+                readonly status: { readonly column: 'status' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
           readonly DocumentSequence: {
             readonly fields: {
               readonly key: {
@@ -8555,6 +10001,174 @@ type ContractBase = Omit<
               readonly fields: {
                 readonly key: { readonly column: 'key' };
                 readonly nextValue: { readonly column: 'nextValue' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly Employee: {
+            readonly fields: {
+              readonly address: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly allowances: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly bankAccount: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly basicSalary: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly departmentId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly designation: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly employeeCode: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly employmentType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly fatherName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly fixedDeduction: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly joinDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly leftDate: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly name: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly nationalId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly overtimeRate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly payBasis: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly phone: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly advances: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'SalaryAdvance';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['employeeId'];
+                };
+              };
+              readonly attendance: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'AttendanceRecord';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['employeeId'];
+                };
+              };
+              readonly department: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Department';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['departmentId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly payrollLines: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollLine';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['employeeId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'erp_employees';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly address: { readonly column: 'address' };
+                readonly allowances: { readonly column: 'allowances' };
+                readonly bankAccount: { readonly column: 'bankAccount' };
+                readonly basicSalary: { readonly column: 'basicSalary' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly departmentId: { readonly column: 'departmentId' };
+                readonly designation: { readonly column: 'designation' };
+                readonly employeeCode: { readonly column: 'employeeCode' };
+                readonly employmentType: { readonly column: 'employmentType' };
+                readonly fatherName: { readonly column: 'fatherName' };
+                readonly fixedDeduction: { readonly column: 'fixedDeduction' };
+                readonly id: { readonly column: 'id' };
+                readonly joinDate: { readonly column: 'joinDate' };
+                readonly leftDate: { readonly column: 'leftDate' };
+                readonly name: { readonly column: 'name' };
+                readonly nationalId: { readonly column: 'nationalId' };
+                readonly overtimeRate: { readonly column: 'overtimeRate' };
+                readonly payBasis: { readonly column: 'payBasis' };
+                readonly phone: { readonly column: 'phone' };
+                readonly status: { readonly column: 'status' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
               };
             };
@@ -9640,6 +11254,285 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly PayrollLine: {
+            readonly fields: {
+              readonly adjustmentNote: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly advanceRecovery: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly allowances: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly allowancesEarned: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly basicEarned: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly basicSalary: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly employedDays: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly employeeId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly fixedDeduction: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly grossPay: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly netPay: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly otherDeduction: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly otherEarning: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly overtimeHours: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly overtimePay: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly overtimeRate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly paidDays: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly payBasis: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly runId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly unpaidDays: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly unrecordedDays: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly employee: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Employee';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['employeeId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly run: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollRun';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['runId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'erp_payroll_lines';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly adjustmentNote: { readonly column: 'adjustmentNote' };
+                readonly advanceRecovery: { readonly column: 'advanceRecovery' };
+                readonly allowances: { readonly column: 'allowances' };
+                readonly allowancesEarned: { readonly column: 'allowancesEarned' };
+                readonly basicEarned: { readonly column: 'basicEarned' };
+                readonly basicSalary: { readonly column: 'basicSalary' };
+                readonly employedDays: { readonly column: 'employedDays' };
+                readonly employeeId: { readonly column: 'employeeId' };
+                readonly fixedDeduction: { readonly column: 'fixedDeduction' };
+                readonly grossPay: { readonly column: 'grossPay' };
+                readonly id: { readonly column: 'id' };
+                readonly netPay: { readonly column: 'netPay' };
+                readonly otherDeduction: { readonly column: 'otherDeduction' };
+                readonly otherEarning: { readonly column: 'otherEarning' };
+                readonly overtimeHours: { readonly column: 'overtimeHours' };
+                readonly overtimePay: { readonly column: 'overtimePay' };
+                readonly overtimeRate: { readonly column: 'overtimeRate' };
+                readonly paidDays: { readonly column: 'paidDays' };
+                readonly payBasis: { readonly column: 'payBasis' };
+                readonly runId: { readonly column: 'runId' };
+                readonly unpaidDays: { readonly column: 'unpaidDays' };
+                readonly unrecordedDays: { readonly column: 'unrecordedDays' };
+              };
+            };
+          };
+          readonly PayrollRun: {
+            readonly fields: {
+              readonly approvedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly approvedBy: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly calculatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly cancelledAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly cancelledBy: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly createdBy: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly deductionTotal: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly employeeCount: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly grossTotal: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly netTotal: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly notes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly paidAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly paymentReference: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly period: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly periodDays: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly runNumber: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly lines: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollLine';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['runId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'erp_payroll_runs';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly approvedAt: { readonly column: 'approvedAt' };
+                readonly approvedBy: { readonly column: 'approvedBy' };
+                readonly calculatedAt: { readonly column: 'calculatedAt' };
+                readonly cancelledAt: { readonly column: 'cancelledAt' };
+                readonly cancelledBy: { readonly column: 'cancelledBy' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly createdBy: { readonly column: 'createdBy' };
+                readonly deductionTotal: { readonly column: 'deductionTotal' };
+                readonly employeeCount: { readonly column: 'employeeCount' };
+                readonly grossTotal: { readonly column: 'grossTotal' };
+                readonly id: { readonly column: 'id' };
+                readonly netTotal: { readonly column: 'netTotal' };
+                readonly notes: { readonly column: 'notes' };
+                readonly paidAt: { readonly column: 'paidAt' };
+                readonly paymentReference: { readonly column: 'paymentReference' };
+                readonly period: { readonly column: 'period' };
+                readonly periodDays: { readonly column: 'periodDays' };
+                readonly runNumber: { readonly column: 'runNumber' };
+                readonly status: { readonly column: 'status' };
+              };
+            };
+          };
           readonly Permission: {
             readonly fields: {
               readonly action: {
@@ -10698,6 +12591,101 @@ type ContractBase = Omit<
                 readonly id: { readonly column: 'id' };
                 readonly permissionId: { readonly column: 'permissionId' };
                 readonly roleId: { readonly column: 'roleId' };
+              };
+            };
+          };
+          readonly SalaryAdvance: {
+            readonly fields: {
+              readonly advanceNumber: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly amount: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly cancelledAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly cancelledBy: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly createdBy: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly employeeId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly installment: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly issueDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly reason: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly recovered: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly employee: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Employee';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['employeeId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'erp_salary_advances';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly advanceNumber: { readonly column: 'advanceNumber' };
+                readonly amount: { readonly column: 'amount' };
+                readonly cancelledAt: { readonly column: 'cancelledAt' };
+                readonly cancelledBy: { readonly column: 'cancelledBy' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly createdBy: { readonly column: 'createdBy' };
+                readonly employeeId: { readonly column: 'employeeId' };
+                readonly id: { readonly column: 'id' };
+                readonly installment: { readonly column: 'installment' };
+                readonly issueDate: { readonly column: 'issueDate' };
+                readonly reason: { readonly column: 'reason' };
+                readonly recovered: { readonly column: 'recovered' };
+                readonly status: { readonly column: 'status' };
               };
             };
           };
@@ -11993,6 +13981,14 @@ type ContractBase = Omit<
         {
           readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
           readonly ref: {
+            readonly entry: 'erp_attendance_records';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
             readonly entry: 'erp_audit_logs';
             readonly field: 'id';
             readonly namespace: 'public';
@@ -12042,6 +14038,22 @@ type ContractBase = Omit<
           readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'erp_customers';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'erp_departments';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'erp_employees';
             readonly field: 'id';
             readonly namespace: 'public';
           };
@@ -12129,6 +14141,22 @@ type ContractBase = Omit<
         {
           readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
           readonly ref: {
+            readonly entry: 'erp_payroll_lines';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'erp_payroll_runs';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
             readonly entry: 'erp_permissions';
             readonly field: 'id';
             readonly namespace: 'public';
@@ -12194,6 +14222,14 @@ type ContractBase = Omit<
           readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'erp_roles';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'erp_salary_advances';
             readonly field: 'id';
             readonly namespace: 'public';
           };

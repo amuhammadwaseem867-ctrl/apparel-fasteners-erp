@@ -1019,3 +1019,162 @@ model GatePassLine {
   @@check(expression: "\"quantity\" > 0 AND \"returnedQuantity\" >= 0 AND \"returnedQuantity\" <= \"quantity\"", name: "erp_gate_pass_lines_quantities")
   @@map("erp_gate_pass_lines")
 }
+
+// Phase 8: HR and payroll (see docs/ERP_DECISIONS.md D-027). Pay fields are
+// returned only to users with payroll:view; amounts are exact decimals.
+
+model Department {
+  id        Uuid              @id @default(uuid())
+  code      String            @unique
+  name      String            @unique
+  status    String            @default("ACTIVE")
+  createdAt TimestamptzString @default(now())
+  updatedAt TimestamptzString @default(now())
+
+  employees Employee[]
+
+  @@check(expression: "\"status\" IN ('ACTIVE', 'INACTIVE')", name: "erp_departments_status")
+  @@map("erp_departments")
+}
+
+model Employee {
+  id             Uuid              @id @default(uuid())
+  employeeCode   String            @unique
+  name           String
+  fatherName     String?
+  nationalId     String?
+  phone          String?
+  address        String?
+  departmentId   Uuid
+  designation    String
+  employmentType String
+  joinDate       String
+  leftDate       String?
+  status         String            @default("ACTIVE")
+  payBasis       String            @default("MONTHLY")
+  basicSalary    Decimal           @default(0)
+  allowances     Decimal           @default(0)
+  overtimeRate   Decimal           @default(0)
+  fixedDeduction Decimal           @default(0)
+  bankAccount    String?
+  createdAt      TimestamptzString @default(now())
+  updatedAt      TimestamptzString @default(now())
+
+  department   Department          @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  attendance   AttendanceRecord[]
+  advances     SalaryAdvance[]
+  payrollLines PayrollLine[]
+
+  @@index([departmentId])
+  @@index([status])
+  @@check(expression: "\"employmentType\" IN ('PERMANENT', 'CONTRACT', 'DAILY_WAGE')", name: "erp_employees_type")
+  @@check(expression: "\"status\" IN ('ACTIVE', 'LEFT')", name: "erp_employees_status")
+  @@check(expression: "\"payBasis\" IN ('MONTHLY', 'DAILY')", name: "erp_employees_pay_basis")
+  @@check(expression: "\"basicSalary\" >= 0 AND \"allowances\" >= 0 AND \"overtimeRate\" >= 0 AND \"fixedDeduction\" >= 0", name: "erp_employees_pay_nonnegative")
+  @@check(expression: "\"leftDate\" IS NULL OR \"leftDate\" >= \"joinDate\"", name: "erp_employees_dates")
+  @@map("erp_employees")
+}
+
+model AttendanceRecord {
+  id            Uuid              @id @default(uuid())
+  employeeId    Uuid
+  date          String
+  status        String
+  overtimeHours Decimal           @default(0)
+  remarks       String?
+  recordedBy    Uuid
+  recordedAt    TimestamptzString @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@unique([employeeId, date])
+  @@index([date])
+  @@check(expression: "\"status\" IN ('PRESENT', 'ABSENT', 'HALF_DAY', 'PAID_LEAVE', 'UNPAID_LEAVE', 'HOLIDAY', 'WEEKLY_OFF')", name: "erp_attendance_status")
+  @@check(expression: "\"overtimeHours\" >= 0 AND \"overtimeHours\" <= 24", name: "erp_attendance_overtime")
+  @@map("erp_attendance_records")
+}
+
+model SalaryAdvance {
+  id            Uuid               @id @default(uuid())
+  advanceNumber String             @unique
+  employeeId    Uuid
+  issueDate     String
+  amount        Decimal
+  installment   Decimal
+  recovered     Decimal            @default(0)
+  status        String             @default("OPEN")
+  reason        String
+  createdBy     Uuid
+  createdAt     TimestamptzString  @default(now())
+  cancelledBy   Uuid?
+  cancelledAt   TimestamptzString?
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@index([employeeId, status])
+  @@check(expression: "\"amount\" > 0 AND \"installment\" > 0 AND \"installment\" <= \"amount\" AND \"recovered\" >= 0 AND \"recovered\" <= \"amount\"", name: "erp_salary_advances_amounts")
+  @@check(expression: "\"status\" IN ('OPEN', 'CLOSED', 'CANCELLED')", name: "erp_salary_advances_status")
+  @@map("erp_salary_advances")
+}
+
+model PayrollRun {
+  id              Uuid               @id @default(uuid())
+  runNumber       String             @unique
+  period          String
+  status          String             @default("DRAFT")
+  periodDays      Int
+  employeeCount   Int
+  grossTotal      Decimal
+  deductionTotal  Decimal
+  netTotal        Decimal
+  notes           String?
+  createdBy       Uuid
+  createdAt       TimestamptzString  @default(now())
+  calculatedAt    TimestamptzString  @default(now())
+  approvedBy      Uuid?
+  approvedAt      TimestamptzString?
+  paidAt          TimestamptzString?
+  paymentReference String?
+  cancelledBy     Uuid?
+  cancelledAt     TimestamptzString?
+
+  lines PayrollLine[]
+
+  @@index([period], where: "\"status\" <> 'CANCELLED'", unique: true, name: "erp_payroll_runs_one_per_period")
+  @@check(expression: "\"status\" IN ('DRAFT', 'APPROVED', 'PAID', 'CANCELLED')", name: "erp_payroll_runs_status")
+  @@check(expression: "\"netTotal\" = \"grossTotal\" - \"deductionTotal\"", name: "erp_payroll_runs_total")
+  @@map("erp_payroll_runs")
+}
+
+model PayrollLine {
+  id               Uuid    @id @default(uuid())
+  runId            Uuid
+  employeeId       Uuid
+  payBasis         String
+  basicSalary      Decimal
+  allowances       Decimal
+  employedDays     Decimal
+  paidDays         Decimal
+  unpaidDays       Decimal
+  unrecordedDays   Int
+  overtimeHours    Decimal
+  overtimeRate     Decimal
+  basicEarned      Decimal
+  allowancesEarned Decimal
+  overtimePay      Decimal
+  otherEarning     Decimal @default(0)
+  grossPay         Decimal
+  fixedDeduction   Decimal
+  advanceRecovery  Decimal
+  otherDeduction   Decimal @default(0)
+  netPay           Decimal
+  adjustmentNote   String?
+
+  run      PayrollRun @relation(fields: [runId], references: [id], onDelete: Restrict)
+  employee Employee   @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@unique([runId, employeeId])
+  @@check(expression: "\"grossPay\" = \"basicEarned\" + \"allowancesEarned\" + \"overtimePay\" + \"otherEarning\"", name: "erp_payroll_lines_gross")
+  @@check(expression: "\"netPay\" = \"grossPay\" - \"fixedDeduction\" - \"advanceRecovery\" - \"otherDeduction\" AND \"netPay\" >= 0", name: "erp_payroll_lines_net")
+  @@map("erp_payroll_lines")
+}
