@@ -646,14 +646,13 @@ async function consumeReservation(tx: Tx, line: LineContext, quantity: string) {
   }
 }
 
-export async function postStockDocument(input: StockDocumentInput, actorId: string) {
+/*
+ * Validates and posts one stock document inside the caller's transaction,
+ * so modules that change stock together with their own records (quality,
+ * packing, dispatch) commit both or neither. Returns the new document id.
+ */
+export async function postStockDocumentInTransaction(tx: Tx, input: StockDocumentInput, actorId: string) {
   const rule = documentTypeRule(input.documentType);
-
-  const replay = await existingDocument(input.idempotencyKey, input.documentType);
-  if (replay) {
-    return { document: await getStockDocument(replay.id), replayed: true };
-  }
-
   const refs = await loadReferences(input.lines);
   const increasing = rule.operation === "increase-on-hand"
     || rule.operation === "count"
@@ -663,6 +662,116 @@ export async function postStockDocument(input: StockDocumentInput, actorId: stri
     const positive = line.quantity > 0;
     validateLine(refs, line, index, increasing && (rule.operation !== "signed-adjustment" || positive));
   });
+
+  const number = await allocateDocumentNumber(tx, rule.prefix);
+  const document = await tx.orm.public.StockDocument.create({
+    documentNumber: number,
+    documentType: input.documentType,
+    reference: input.reference || null,
+    reason: input.reason || null,
+    notes: input.notes || null,
+    sourceType: input.sourceType || null,
+    sourceId: input.sourceId || null,
+    idempotencyKey: input.idempotencyKey,
+    createdBy: actorId,
+  });
+
+  // Build operations with their ledger line numbers (input order).
+  const planned: Array<PlannedOperation & { lineNo: number; line: LineContext }> = [];
+  let lineNo = 0;
+
+  for (const line of input.lines) {
+    const magnitude = toPlainDecimalString(Math.abs(line.quantity));
+
+    if (rule.operation === "count") {
+      // Lock the balance, then post the difference to the counted quantity.
+      await tx.query(db.raw.sql`
+        select id::text as id from erp_stock_balances
+        where "productId" = ${line.productId}::uuid and "locationId" = ${line.locationId}::uuid
+        for update
+      `.returnsRow({ id: "pg/text@1" }).build());
+
+      const balance = await currentBalance(tx, line.productId, line.locationId);
+      const delta = subtractDecimalStrings(toPlainDecimalString(line.quantity), balance.onHand);
+      const sign = decimalSign(delta);
+
+      if (sign !== 0) {
+        planned.push({
+          lineNo: ++lineNo,
+          line,
+          operation: sign > 0 ? "increase-on-hand" : "decrease-available",
+          productId: line.productId,
+          locationId: line.locationId,
+          quantity: delta.replace(/^-/, ""),
+          movementType: input.documentType,
+        });
+      }
+      continue;
+    }
+
+    const operation: BalanceOperation = rule.operation === "signed-adjustment"
+      ? (line.quantity > 0 ? "increase-on-hand" : "decrease-available")
+      : line.reservationId
+        ? "consume-reserved"
+        : rule.operation;
+
+    planned.push({
+      lineNo: ++lineNo,
+      line,
+      operation,
+      productId: line.productId,
+      locationId: line.locationId,
+      quantity: magnitude,
+      movementType: input.documentType,
+      reservationId: line.reservationId,
+    });
+
+    if ("destination" in rule && rule.destination && line.toLocationId) {
+      planned.push({
+        lineNo: ++lineNo,
+        line,
+        operation: rule.destination,
+        productId: line.productId,
+        locationId: line.toLocationId,
+        quantity: magnitude,
+        movementType: input.documentType,
+      });
+    }
+  }
+
+  for (const op of orderForLocking(planned)) {
+    if (op.operation === "consume-reserved") {
+      await consumeReservation(tx, op.line, op.quantity);
+    }
+
+    const after = await applyOperation(tx, op);
+    await writeMovements(tx, document.id, op.lineNo, op, after, actorId);
+  }
+
+  await recordAuditEvent({
+    actorId,
+    action: "STOCK_DOCUMENT_POSTED",
+    entityType: "StockDocument",
+    entityId: document.id,
+    metadata: { documentNumber: number, documentType: input.documentType, lines: input.lines.length },
+  }, tx);
+
+  return document.id;
+}
+
+export async function postStockDocument(input: StockDocumentInput, actorId: string) {
+  const replay = await existingDocument(input.idempotencyKey, input.documentType);
+  if (replay) {
+    return { document: await getStockDocument(replay.id), replayed: true };
+  }
+
+  // These sources are posted only by their own modules, inside their transactions.
+  if (input.sourceType && ["QualityInspection", "PackingList", "Shipment", "StockReservation"].includes(input.sourceType)) {
+    throw new AppError(`Stock documents for a ${input.sourceType} are posted by that module, not directly.`, {
+      code: "SOURCE_NOT_ALLOWED",
+      status: 400,
+    });
+  }
 
   if (input.sourceType === "ProductionOrder" && !["MATERIAL_ISSUE", "MATERIAL_RETURN"].includes(input.documentType)) {
     throw new AppError("Only material issues and returns can be posted against a production order.", {
@@ -689,100 +798,7 @@ export async function postStockDocument(input: StockDocumentInput, actorId: stri
         }
       }
 
-      const number = await allocateDocumentNumber(tx, rule.prefix);
-      const document = await tx.orm.public.StockDocument.create({
-        documentNumber: number,
-        documentType: input.documentType,
-        reference: input.reference || null,
-        reason: input.reason || null,
-        notes: input.notes || null,
-        sourceType: input.sourceType || null,
-        sourceId: input.sourceId || null,
-        idempotencyKey: input.idempotencyKey,
-        createdBy: actorId,
-      });
-
-      // Build operations with their ledger line numbers (input order).
-      const planned: Array<PlannedOperation & { lineNo: number; line: LineContext }> = [];
-      let lineNo = 0;
-
-      for (const line of input.lines) {
-        const magnitude = toPlainDecimalString(Math.abs(line.quantity));
-
-        if (rule.operation === "count") {
-          // Lock the balance, then post the difference to the counted quantity.
-          await tx.query(db.raw.sql`
-            select id::text as id from erp_stock_balances
-            where "productId" = ${line.productId}::uuid and "locationId" = ${line.locationId}::uuid
-            for update
-          `.returnsRow({ id: "pg/text@1" }).build());
-
-          const balance = await currentBalance(tx, line.productId, line.locationId);
-          const delta = subtractDecimalStrings(toPlainDecimalString(line.quantity), balance.onHand);
-          const sign = decimalSign(delta);
-
-          if (sign !== 0) {
-            planned.push({
-              lineNo: ++lineNo,
-              line,
-              operation: sign > 0 ? "increase-on-hand" : "decrease-available",
-              productId: line.productId,
-              locationId: line.locationId,
-              quantity: delta.replace(/^-/, ""),
-              movementType: input.documentType,
-            });
-          }
-          continue;
-        }
-
-        const operation: BalanceOperation = rule.operation === "signed-adjustment"
-          ? (line.quantity > 0 ? "increase-on-hand" : "decrease-available")
-          : line.reservationId
-            ? "consume-reserved"
-            : rule.operation;
-
-        planned.push({
-          lineNo: ++lineNo,
-          line,
-          operation,
-          productId: line.productId,
-          locationId: line.locationId,
-          quantity: magnitude,
-          movementType: input.documentType,
-          reservationId: line.reservationId,
-        });
-
-        if ("destination" in rule && rule.destination && line.toLocationId) {
-          planned.push({
-            lineNo: ++lineNo,
-            line,
-            operation: rule.destination,
-            productId: line.productId,
-            locationId: line.toLocationId,
-            quantity: magnitude,
-            movementType: input.documentType,
-          });
-        }
-      }
-
-      for (const op of orderForLocking(planned)) {
-        if (op.operation === "consume-reserved") {
-          await consumeReservation(tx, op.line, op.quantity);
-        }
-
-        const after = await applyOperation(tx, op);
-        await writeMovements(tx, document.id, op.lineNo, op, after, actorId);
-      }
-
-      await recordAuditEvent({
-        actorId,
-        action: "STOCK_DOCUMENT_POSTED",
-        entityType: "StockDocument",
-        entityId: document.id,
-        metadata: { documentNumber: number, documentType: input.documentType, lines: input.lines.length },
-      }, tx);
-
-      return document.id;
+      return postStockDocumentInTransaction(tx, input, actorId);
     });
 
     return { document: await getStockDocument(documentId), replayed: false };

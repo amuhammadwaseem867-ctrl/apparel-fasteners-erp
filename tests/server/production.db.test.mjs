@@ -21,7 +21,11 @@ import {
   productionQuerySchema,
   stageRunInputSchema,
 } from "../../server/production/production.validation.ts";
+import { changePackingList, createPackingList } from "../../server/packing/packing.service.ts";
+import { packingListInputSchema } from "../../server/packing/packing.validation.ts";
 import { createProduct } from "../../server/products/product.service.ts";
+import { createInspection, decideInspection } from "../../server/quality/quality.service.ts";
+import { inspectionInputSchema } from "../../server/quality/quality.validation.ts";
 import { changeSalesOrderStatus, createCustomer, createSalesOrder } from "../../server/sales/sales.service.ts";
 
 const run = `R${Date.now().toString(36).toUpperCase()}`;
@@ -171,13 +175,30 @@ test("the order completes only when all nine stages complete in sequence", async
   const { id } = await order({ productId: items.SLD.id, quantity: 4 });
   await changeProductionStatus(id, "release", "", actor);
 
+  // Stages 7 and 8 are driven by Quality and Packing (D-022); Delivered is
+  // recorded by hand because this is a make-to-stock order.
+  const warehouse = await createWarehouse({ code: `RF-${run}`, name: "FG test", warehouseType: "FINISHED_GOODS" }, actor);
+  const fg = await createLocation({ warehouseId: warehouse.id, code: "F1", name: "F1" }, actor);
+
   let state;
-  for (const [index, stageKey] of STAGE_KEYS.entries()) {
-    // Lose one unit to rejection at quality check.
-    const quantities = stageKey === "quality-check"
-      ? { inputQuantity: 4, acceptedQuantity: 3, rejectedQuantity: 1 }
-      : { inputQuantity: index > STAGE_KEYS.indexOf("quality-check") ? 3 : 4, acceptedQuantity: index > STAGE_KEYS.indexOf("quality-check") ? 3 : 4 };
-    await stageRun(id, stageKey, quantities);
+  for (const stageKey of STAGE_KEYS) {
+    if (stageKey === "quality-check") {
+      // Lose one unit to rejection at quality check.
+      const inspection = await createInspection(inspectionInputSchema.parse({
+        idempotencyKey: randomUUID(), inspectionType: "FINAL", productionOrderId: id,
+        inspectedQuantity: 4, passedQuantity: 3, rejectedQuantity: 1,
+      }), actor);
+      await decideInspection(inspection.id, "approve", "", actor);
+    } else if (stageKey === "packing") {
+      const list = await createPackingList(packingListInputSchema.parse({
+        idempotencyKey: randomUUID(), productionOrderId: id, locationId: fg.id,
+        packages: [{ packageType: "Polybag", quantity: 3 }],
+      }), actor);
+      await changePackingList(list.id, "confirm", actor);
+    } else {
+      const quantity = STAGE_KEYS.indexOf(stageKey) > STAGE_KEYS.indexOf("quality-check") ? 3 : 4;
+      await stageRun(id, stageKey, { inputQuantity: quantity, acceptedQuantity: quantity });
+    }
     state = await completeStage(id, stageKey, actor);
   }
 

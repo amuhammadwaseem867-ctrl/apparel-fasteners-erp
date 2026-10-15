@@ -251,6 +251,7 @@ export async function getProductionOrder(id: string) {
         stageKey: stage.stageKey,
         label: definition.label,
         department: stage.department,
+        managedBy: stageManagedBy(stage.stageKey, order.salesOrderId),
         received: quantities.received,
         available: quantities.available,
         previousCompleted: quantities.previousCompleted,
@@ -383,12 +384,40 @@ export async function changeProductionStatus(id: string, action: string, reason:
 /* Stage runs and completion                                           */
 /* ------------------------------------------------------------------ */
 
-export async function recordStageRun(id: string, stageKey: string, input: StageRunInput, actorId: string) {
-  const replay = await db.orm.public.ProductionStageRun.where({ idempotencyKey: input.idempotencyKey }).first();
-  if (replay) {
-    return { order: await getProductionOrder(id), replayed: true };
-  }
+/*
+ * Stages 7-9 are driven by the modules that own them (D-022): quality
+ * check by approved final inspections, packing by confirmed packing lists,
+ * and Delivered by shipment delivery when the order is for a sales order.
+ * Make-to-stock orders record Delivered (handover to stock) by hand.
+ */
+export type RunSource = "manual" | "quality" | "packing" | "dispatch";
 
+const MANAGED_STAGE_MESSAGES: Record<string, string> = {
+  quality: "Quality check results are recorded by approving a final inspection (Quality → Final inspection).",
+  packing: "Packing is recorded by confirming a packing list (Packing → Packing orders).",
+  dispatch: "Delivery for a sales order is recorded by confirming the shipment's delivery (Dispatch).",
+};
+
+export function stageManagedBy(stageKey: string, salesOrderId: string | null | undefined): RunSource | null {
+  if (stageKey === "quality-check") return "quality";
+  if (stageKey === "packing") return "packing";
+  if (stageKey === FINAL_STAGE.key && salesOrderId) return "dispatch";
+  return null;
+}
+
+/*
+ * Records one stage run inside the caller's transaction, after locking the
+ * order row. Quality, packing and dispatch call this so the run commits
+ * atomically with their own records.
+ */
+export async function recordStageRunInTransaction(
+  tx: Tx,
+  id: string,
+  stageKey: string,
+  input: StageRunInput,
+  actorId: string,
+  source: RunSource,
+) {
   const run = {
     inputQuantity: toPlainDecimalString(input.inputQuantity),
     acceptedQuantity: toPlainDecimalString(input.acceptedQuantity),
@@ -397,61 +426,72 @@ export async function recordStageRun(id: string, stageKey: string, input: StageR
     reworkQuantity: toPlainDecimalString(input.reworkQuantity ?? 0),
   };
 
+  await lockOrder(tx, id);
+  const order = await tx.orm.public.ProductionOrder.where({ id }).first();
+  const precision = [input.inputQuantity, input.acceptedQuantity, input.rejectedQuantity, input.wastageQuantity, input.reworkQuantity]
+    .map((value) => quantityPrecisionError(value ?? 0, order!.unit))
+    .find(Boolean);
+  if (precision) {
+    throw new AppError(precision, { code: "QUANTITY_PRECISION", status: 400 });
+  }
+
+  const stages = await tx.orm.public.ProductionStage.where({ productionOrderId: id }).orderBy((row) => row.sequence.asc()).all();
+  const totals = stages.map((stage) => stageTotals(stage as unknown as Record<string, unknown>));
+  const stage = stages.find((item) => item.stageKey === stageKey)!;
+  const managedBy = stageManagedBy(stageKey, order!.salesOrderId);
+  if (managedBy && managedBy !== source) {
+    throw new AppError(MANAGED_STAGE_MESSAGES[managedBy], { code: "STAGE_MANAGED_ELSEWHERE", status: 409 });
+  }
+  const quantities = stageQuantities(totals, dec(order!.quantity), stage.sequence);
+  const problem = runError(run, { available: quantities.available, stageStatus: stage.status, orderStatus: order!.status });
+
+  if (problem) {
+    throw new AppError(problem, { code: "STAGE_RUN_INVALID", status: 409, details: { available: quantities.available } });
+  }
+
+  const previousRuns = await tx.orm.public.ProductionStageRun.where({ stageId: stage.id }).select("id").all();
+  await tx.orm.public.ProductionStageRun.create({
+    stageId: stage.id,
+    runNo: previousRuns.length + 1,
+    ...run,
+    operatorName: input.operatorName || null,
+    workstation: input.workstation || null,
+    remarks: input.remarks || null,
+    idempotencyKey: input.idempotencyKey,
+    recordedBy: actorId,
+  });
+
+  const current = totals.find((item) => item.sequence === stage.sequence)!;
+  await tx.orm.public.ProductionStage.where({ id: stage.id }).update({
+    status: "IN_PROGRESS",
+    processedQuantity: addDecimalStrings(current.processedQuantity, run.inputQuantity),
+    acceptedQuantity: addDecimalStrings(current.acceptedQuantity, run.acceptedQuantity),
+    rejectedQuantity: addDecimalStrings(current.rejectedQuantity, run.rejectedQuantity),
+    wastageQuantity: addDecimalStrings(current.wastageQuantity, run.wastageQuantity),
+    reworkQuantity: addDecimalStrings(current.reworkQuantity, run.reworkQuantity),
+    startedAt: stage.startedAt ?? new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
+
+  if (order!.status === "RELEASED") {
+    await tx.orm.public.ProductionOrder.where({ id }).update({ status: "IN_PROGRESS", updatedAt: new Date().toISOString() });
+    await logEvent(tx, id, actorId, "STATUS_STARTED", { fromValue: "RELEASED", toValue: "IN_PROGRESS" });
+  }
+
+  await logEvent(tx, id, actorId, "STAGE_RUN_RECORDED", {
+    stageKey,
+    details: { ...run, operatorName: input.operatorName || null, workstation: input.workstation || null, source },
+  });
+}
+
+export async function recordStageRun(id: string, stageKey: string, input: StageRunInput, actorId: string) {
+  const replay = await db.orm.public.ProductionStageRun.where({ idempotencyKey: input.idempotencyKey }).first();
+  if (replay) {
+    return { order: await getProductionOrder(id), replayed: true };
+  }
+
   try {
-    await db.transaction(async (tx) => {
-      await lockOrder(tx, id);
-      const order = await tx.orm.public.ProductionOrder.where({ id }).first();
-      const precision = [input.inputQuantity, input.acceptedQuantity, input.rejectedQuantity, input.wastageQuantity, input.reworkQuantity]
-        .map((value) => quantityPrecisionError(value ?? 0, order!.unit))
-        .find(Boolean);
-      if (precision) {
-        throw new AppError(precision, { code: "QUANTITY_PRECISION", status: 400 });
-      }
-
-      const stages = await tx.orm.public.ProductionStage.where({ productionOrderId: id }).orderBy((row) => row.sequence.asc()).all();
-      const totals = stages.map((stage) => stageTotals(stage as unknown as Record<string, unknown>));
-      const stage = stages.find((item) => item.stageKey === stageKey)!;
-      const quantities = stageQuantities(totals, dec(order!.quantity), stage.sequence);
-      const problem = runError(run, { available: quantities.available, stageStatus: stage.status, orderStatus: order!.status });
-
-      if (problem) {
-        throw new AppError(problem, { code: "STAGE_RUN_INVALID", status: 409, details: { available: quantities.available } });
-      }
-
-      const previousRuns = await tx.orm.public.ProductionStageRun.where({ stageId: stage.id }).select("id").all();
-      await tx.orm.public.ProductionStageRun.create({
-        stageId: stage.id,
-        runNo: previousRuns.length + 1,
-        ...run,
-        operatorName: input.operatorName || null,
-        workstation: input.workstation || null,
-        remarks: input.remarks || null,
-        idempotencyKey: input.idempotencyKey,
-        recordedBy: actorId,
-      });
-
-      const current = totals.find((item) => item.sequence === stage.sequence)!;
-      await tx.orm.public.ProductionStage.where({ id: stage.id }).update({
-        status: "IN_PROGRESS",
-        processedQuantity: addDecimalStrings(current.processedQuantity, run.inputQuantity),
-        acceptedQuantity: addDecimalStrings(current.acceptedQuantity, run.acceptedQuantity),
-        rejectedQuantity: addDecimalStrings(current.rejectedQuantity, run.rejectedQuantity),
-        wastageQuantity: addDecimalStrings(current.wastageQuantity, run.wastageQuantity),
-        reworkQuantity: addDecimalStrings(current.reworkQuantity, run.reworkQuantity),
-        startedAt: stage.startedAt ?? new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-
-      if (order!.status === "RELEASED") {
-        await tx.orm.public.ProductionOrder.where({ id }).update({ status: "IN_PROGRESS", updatedAt: new Date().toISOString() });
-        await logEvent(tx, id, actorId, "STATUS_STARTED", { fromValue: "RELEASED", toValue: "IN_PROGRESS" });
-      }
-
-      await logEvent(tx, id, actorId, "STAGE_RUN_RECORDED", {
-        stageKey,
-        details: { ...run, operatorName: input.operatorName || null, workstation: input.workstation || null },
-      });
-    });
+    await db.transaction((tx) => recordStageRunInTransaction(tx, id, stageKey, input, actorId, "manual"));
   } catch (error) {
     const sqlError = findSqlQueryError(error) as { sqlState?: string; constraint?: string } | null;
     if (sqlError?.sqlState === "23505" && sqlError.constraint?.includes("idempotencyKey")) {

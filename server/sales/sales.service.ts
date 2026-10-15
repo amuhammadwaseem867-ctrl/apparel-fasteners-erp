@@ -441,17 +441,40 @@ export async function changeSalesOrderStatus(
   // requests cannot both succeed.
   // Raw compare-and-set: the ORM's filtered update is not atomic under
   // concurrency (verified by tests/server/inventory.db.test.mjs).
-  const updated = (await db.runtime().query(db.raw.sql`
-    update erp_sales_orders set status = ${status}, "updatedAt" = now()
-    where id = ${id}::uuid and status = ${order.status}
-    returning id::text as id
-  `.returnsRow({ id: "pg/text@1" }).build())) as unknown as Array<{ id: string }>;
-  if (!updated.length) {
-    throw new AppError("The order was changed by someone else. Reload and try again.", {
-      code: "SALES_ORDER_STATUS_CONFLICT",
-      status: 409,
-    });
-  }
+  await db.transaction(async (tx) => {
+    if (status === "CANCELLED") {
+      // Dispatch locks the order row too, so a shipment cannot be dispatched
+      // between this check and the cancellation (D-022).
+      await tx.query(db.raw.sql`select id::text as id from erp_sales_orders where id = ${id}::uuid for update`
+        .returnsRow({ id: "pg/text@1" }).build());
+      const shipped = (await tx.query(db.raw.sql`
+        select "shipmentNumber" as number from erp_shipments
+        where "salesOrderId" = ${id}::uuid and status in ('DISPATCHED', 'DELIVERED') limit 1
+      `.returnsRow({ number: "pg/text@1" }).build())) as unknown as Array<{ number: string }>;
+      if (shipped.length) {
+        throw new AppError(`Goods have already been dispatched on ${shipped[0].number}; this order can no longer be cancelled.`, {
+          code: "SALES_ORDER_SHIPPED",
+          status: 409,
+        });
+      }
+      await tx.query(db.raw.sql`
+        update erp_shipments set status = 'CANCELLED' where "salesOrderId" = ${id}::uuid and status = 'DRAFT'
+        returning id::text as id
+      `.returnsRow({ id: "pg/text@1" }).build());
+    }
+
+    const updated = (await tx.query(db.raw.sql`
+      update erp_sales_orders set status = ${status}, "updatedAt" = now()
+      where id = ${id}::uuid and status = ${order.status}
+      returning id::text as id
+    `.returnsRow({ id: "pg/text@1" }).build())) as unknown as Array<{ id: string }>;
+    if (!updated.length) {
+      throw new AppError("The order was changed by someone else. Reload and try again.", {
+        code: "SALES_ORDER_STATUS_CONFLICT",
+        status: 409,
+      });
+    }
+  });
 
   if (status === "CANCELLED") {
     // A cancelled order must not keep stock reserved.

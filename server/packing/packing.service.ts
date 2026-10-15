@@ -1,0 +1,271 @@
+/*
+ * Packing lists (D-022).
+ *
+ * A DRAFT packing list records the packages for part of a production
+ * order's output. Confirming it, in one transaction:
+ *   - records the order's packing stage run (accepted = packed quantity),
+ *     which is refused if more is packed than passed Quality Check;
+ *   - posts a finished-goods receipt of the packed quantity into the
+ *     chosen location, linked to the packing list.
+ * DRAFT -> CONFIRMED and DRAFT -> CANCELLED are compare-and-set.
+ * CONFIRMED -> SHIPPED is done by dispatch.
+ */
+
+import { or } from "@prisma/orm-postgres/orm-client";
+
+import { recordAuditEvent } from "../auth/audit.service";
+import { db } from "../core/database/client";
+import { AppError } from "../core/errors/app-error";
+import { findSqlQueryError } from "../core/errors/database-errors";
+import { addDecimalStrings, normalizeDecimalString, toPlainDecimalString, compareDecimalStrings } from "../core/utils/decimal";
+import { allocateDocumentNumber, postStockDocumentInTransaction } from "../inventory/inventory.service";
+import { quantityPrecisionError } from "../inventory/stock-rules";
+import { STAGES, stageQuantities, type StageTotals } from "../production/production-rules";
+import { recordStageRunInTransaction } from "../production/production.service";
+import type { PackingListInput, PackingQuery } from "./packing.validation";
+
+const dec = (value: unknown) => normalizeDecimalString(String(value ?? "0"));
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const PACKING_STAGE = "packing";
+const PACKING_SEQUENCE = STAGES.find((stage) => stage.key === PACKING_STAGE)!.sequence;
+
+function notFound(): never {
+  throw new AppError("Packing list not found.", { code: "PACKING_LIST_NOT_FOUND", status: 404 });
+}
+
+export async function packingAvailable(productionOrderId: string) {
+  const order = await db.orm.public.ProductionOrder.where({ id: productionOrderId }).first();
+  const stages = await db.orm.public.ProductionStage.where({ productionOrderId }).all();
+  const totals: StageTotals[] = stages.map((stage) => ({
+    sequence: stage.sequence,
+    status: stage.status,
+    processedQuantity: dec(stage.processedQuantity),
+    acceptedQuantity: dec(stage.acceptedQuantity),
+    rejectedQuantity: dec(stage.rejectedQuantity),
+    wastageQuantity: dec(stage.wastageQuantity),
+    reworkQuantity: dec(stage.reworkQuantity),
+  }));
+  return stageQuantities(totals, dec(order?.quantity), PACKING_SEQUENCE).available;
+}
+
+export async function createPackingList(input: PackingListInput, actorId: string) {
+  const replay = await db.orm.public.PackingList.where({ idempotencyKey: input.idempotencyKey }).first();
+  if (replay) return getPackingList(replay.id);
+
+  const order = await db.orm.public.ProductionOrder.where({ id: input.productionOrderId }).first();
+  if (!order) {
+    throw new AppError("Production order not found.", { code: "PRODUCTION_ORDER_NOT_FOUND", status: 400 });
+  }
+  if (!["RELEASED", "IN_PROGRESS"].includes(order.status)) {
+    throw new AppError("Only released or in-progress production orders can be packed.", { code: "PRODUCTION_ORDER_NOT_OPEN", status: 409 });
+  }
+  const location = await db.orm.public.StorageLocation.where({ id: input.locationId }).first();
+  if (!location) {
+    throw new AppError("Storage location not found.", { code: "LOCATION_NOT_FOUND", status: 400 });
+  }
+
+  for (const [index, item] of input.packages.entries()) {
+    const precision = quantityPrecisionError(item.quantity, order.unit);
+    if (precision) {
+      throw new AppError(`Package ${index + 1}: ${precision}`, { code: "QUANTITY_PRECISION", status: 400 });
+    }
+  }
+
+  const total = input.packages.map((item) => toPlainDecimalString(item.quantity)).reduce((sum, value) => addDecimalStrings(sum, value), "0");
+  const available = await packingAvailable(order.id);
+  if (compareDecimalStrings(total, available) > 0) {
+    throw new AppError(`Only ${available} has passed Quality Check and is waiting to be packed for ${order.orderNumber}.`, {
+      code: "PACKING_EXCEEDS_AVAILABLE",
+      status: 409,
+    });
+  }
+
+  try {
+    const id = await db.transaction(async (tx) => {
+      const packingNumber = await allocateDocumentNumber(tx, "PKL");
+      const list = await tx.orm.public.PackingList.create({
+        packingNumber,
+        productionOrderId: order.id,
+        productId: order.productId,
+        salesOrderId: order.salesOrderId,
+        locationId: location.id,
+        totalQuantity: total,
+        packageCount: input.packages.length,
+        notes: input.notes || null,
+        idempotencyKey: input.idempotencyKey,
+        createdBy: actorId,
+      });
+      for (const [index, item] of input.packages.entries()) {
+        await tx.orm.public.PackingPackage.create({
+          packingListId: list.id,
+          packageNo: index + 1,
+          packageType: item.packageType,
+          quantity: toPlainDecimalString(item.quantity),
+          netWeight: item.netWeight === undefined ? null : toPlainDecimalString(item.netWeight),
+          grossWeight: item.grossWeight === undefined ? null : toPlainDecimalString(item.grossWeight),
+          dimensions: item.dimensions || null,
+          marks: item.marks || null,
+        });
+      }
+      await recordAuditEvent({
+        actorId,
+        action: "PACKING_LIST_CREATED",
+        entityType: "PackingList",
+        entityId: list.id,
+        metadata: { packingNumber, productionOrderId: order.id, total },
+      }, tx);
+      return list.id;
+    });
+    return getPackingList(id);
+  } catch (error) {
+    const sqlError = findSqlQueryError(error) as { sqlState?: string; constraint?: string } | null;
+    if (sqlError?.sqlState === "23505" && sqlError.constraint?.includes("idempotencyKey")) {
+      const original = await db.orm.public.PackingList.where({ idempotencyKey: input.idempotencyKey }).first();
+      if (original) return getPackingList(original.id);
+    }
+    throw error;
+  }
+}
+
+export async function changePackingList(id: string, action: "confirm" | "cancel", actorId: string) {
+  if (!UUID.test(id)) notFound();
+
+  await db.transaction(async (tx) => {
+    const status = action === "confirm" ? "CONFIRMED" : "CANCELLED";
+    const claimed = (await tx.query(db.raw.sql`
+      update erp_packing_lists
+        set status = ${status},
+            "confirmedBy" = case when ${status} = 'CONFIRMED' then ${actorId}::uuid else null end,
+            "confirmedAt" = case when ${status} = 'CONFIRMED' then now() else null end
+      where id = ${id}::uuid and status = 'DRAFT'
+      returning id::text as id
+    `.returnsRow({ id: "pg/text@1" }).build() as never)) as unknown as Array<{ id: string }>;
+
+    if (!claimed.length) {
+      const existing = await tx.orm.public.PackingList.where({ id }).first();
+      if (!existing) notFound();
+      throw new AppError(`This packing list is already ${existing.status.toLowerCase()}.`, { code: "PACKING_STATUS_CONFLICT", status: 409 });
+    }
+
+    const list = (await tx.orm.public.PackingList.where({ id }).first())!;
+    const total = dec(list.totalQuantity);
+
+    if (action === "confirm") {
+      await recordStageRunInTransaction(tx, list.productionOrderId, PACKING_STAGE, {
+        idempotencyKey: `pkl-${id}`,
+        inputQuantity: Number(total),
+        acceptedQuantity: Number(total),
+        rejectedQuantity: 0,
+        wastageQuantity: 0,
+        reworkQuantity: 0,
+        operatorName: "",
+        workstation: "",
+        remarks: `Packing list ${list.packingNumber} (${list.packageCount} packages)`,
+      }, actorId, "packing");
+
+      await postStockDocumentInTransaction(tx, {
+        documentType: "FG_RECEIPT",
+        idempotencyKey: `pkl-fg-${id}`,
+        reference: list.packingNumber,
+        reason: "",
+        notes: "",
+        sourceType: "PackingList",
+        sourceId: id,
+        lines: [{ productId: list.productId, locationId: list.locationId, quantity: Number(total) }],
+      }, actorId);
+    }
+
+    await recordAuditEvent({
+      actorId,
+      action: action === "confirm" ? "PACKING_LIST_CONFIRMED" : "PACKING_LIST_CANCELLED",
+      entityType: "PackingList",
+      entityId: id,
+      metadata: { packingNumber: list.packingNumber, total },
+    }, tx);
+  });
+
+  return getPackingList(id);
+}
+
+async function lookups(rows: Array<{ productId: string; productionOrderId: string; salesOrderId: string | null; locationId: string; shipmentId: string | null }>) {
+  const unique = (values: Array<string | null>) => [...new Set(values.filter(Boolean) as string[])];
+  const productIds = unique(rows.map((row) => row.productId));
+  const orderIds = unique(rows.map((row) => row.productionOrderId));
+  const salesIds = unique(rows.map((row) => row.salesOrderId));
+  const locationIds = unique(rows.map((row) => row.locationId));
+  const shipmentIds = unique(rows.map((row) => row.shipmentId));
+  const [products, orders, sales, locations, shipments] = await Promise.all([
+    productIds.length ? db.orm.public.Product.where((item) => item.id.in(productIds)).all() : [],
+    orderIds.length ? db.orm.public.ProductionOrder.where((item) => item.id.in(orderIds)).all() : [],
+    salesIds.length ? db.orm.public.SalesOrder.where((item) => item.id.in(salesIds)).all() : [],
+    locationIds.length ? db.orm.public.StorageLocation.where((item) => item.id.in(locationIds)).all() : [],
+    shipmentIds.length ? db.orm.public.Shipment.where((item) => item.id.in(shipmentIds)).all() : [],
+  ]);
+  const warehouses = locations.length
+    ? await db.orm.public.Warehouse.where((item) => item.id.in(unique(locations.map((location) => location.warehouseId)))).all()
+    : [];
+  return { products, orders, sales, locations, warehouses, shipments };
+}
+
+function present(row: Record<string, unknown> & { productId: string; productionOrderId: string; salesOrderId: string | null; locationId: string; shipmentId: string | null }, data: Awaited<ReturnType<typeof lookups>>) {
+  const product = data.products.find((item) => item.id === row.productId);
+  const location = data.locations.find((item) => item.id === row.locationId);
+  return {
+    ...row,
+    totalQuantity: dec(row.totalQuantity),
+    sku: product?.sku ?? null,
+    productName: product?.name ?? null,
+    unit: product?.unit ?? null,
+    orderNumber: data.orders.find((item) => item.id === row.productionOrderId)?.orderNumber ?? null,
+    salesOrderNumber: data.sales.find((item) => item.id === row.salesOrderId)?.orderNumber ?? null,
+    locationLabel: location ? `${data.warehouses.find((item) => item.id === location.warehouseId)?.code ?? "?"}/${location.code}` : null,
+    shipmentNumber: data.shipments.find((item) => item.id === row.shipmentId)?.shipmentNumber ?? null,
+  };
+}
+
+export async function getPackingList(id: string) {
+  if (!UUID.test(id)) notFound();
+  const row = await db.orm.public.PackingList.where({ id }).first();
+  if (!row) notFound();
+  const packages = await db.orm.public.PackingPackage.where({ packingListId: id }).orderBy((item) => item.packageNo.asc()).all();
+  const documents = await db.orm.public.StockDocument.where({ sourceType: "PackingList", sourceId: id }).all();
+  return {
+    ...present(row as never, await lookups([row])),
+    packages: packages.map((item) => ({
+      ...item,
+      quantity: dec(item.quantity),
+      netWeight: item.netWeight === null ? null : dec(item.netWeight),
+      grossWeight: item.grossWeight === null ? null : dec(item.grossWeight),
+    })),
+    stockDocuments: documents.map((document) => ({ id: document.id, documentNumber: document.documentNumber, documentType: document.documentType })),
+  };
+}
+
+export async function listPackingLists(filters: PackingQuery) {
+  let query = db.orm.public.PackingList;
+  if (filters.status === "OPEN") query = query.where((row) => row.status.in(["DRAFT", "CONFIRMED"]));
+  else if (filters.status) query = query.where({ status: filters.status });
+  if (filters.productionOrderId) query = query.where({ productionOrderId: filters.productionOrderId });
+  if (filters.salesOrderId) query = query.where({ salesOrderId: filters.salesOrderId });
+  if (filters.search) {
+    const pattern = `%${filters.search}%`;
+    const products = await db.orm.public.Product.where((product) => or(product.sku.ilike(pattern), product.name.ilike(pattern))).select("id").all();
+    const productIds = products.map((product) => product.id);
+    query = query.where((row) => (productIds.length
+      ? or(row.packingNumber.ilike(pattern), row.productId.in(productIds))
+      : row.packingNumber.ilike(pattern)));
+  }
+  const result = await query
+    .orderBy((row) => row.createdAt.desc())
+    .offset((filters.page - 1) * filters.pageSize)
+    .limit(filters.pageSize + 1)
+    .all();
+  const page = result.slice(0, filters.pageSize);
+  const data = await lookups(page);
+  return {
+    packingLists: page.map((row) => present(row as never, data)),
+    page: filters.page,
+    pageSize: filters.pageSize,
+    hasMore: result.length > filters.pageSize,
+  };
+}
