@@ -183,6 +183,9 @@ model Product {
   mrpRequirements   MrpRequirement[]
   mrpPlannedOrders  MrpPlannedOrder[]
   productionOrders  ProductionOrder[]
+  qualityInspections QualityInspection[]
+  packingLists      PackingList[]
+  shipmentLines     ShipmentLine[]
 
   @@index([name])
   @@index([category])
@@ -209,6 +212,7 @@ model SalesOrder {
 
   customer Customer          @relation(fields: [customerId], references: [id], onDelete: Restrict)
   lines    SalesOrderLine[]
+  shipments Shipment[]
 
   @@index([customerId])
   @@index([status])
@@ -567,8 +571,10 @@ model ProductionOrder {
   completedAt      TimestamptzString?
 
   product Product           @relation(fields: [productId], references: [id], onDelete: Restrict)
-  stages  ProductionStage[]
-  events  ProductionEvent[]
+  stages             ProductionStage[]
+  events             ProductionEvent[]
+  qualityInspections QualityInspection[]
+  packingLists       PackingList[]
 
   @@index([status])
   @@index([salesOrderId])
@@ -647,4 +653,150 @@ model ProductionEvent {
 
   @@index([productionOrderId, createdAt])
   @@map("erp_production_events")
+}
+
+// Phase 6: quality, packing and dispatch (see docs/ERP_DECISIONS.md D-022).
+
+/// A quality inspection. INCOMING inspects stock held under QC at a
+/// location; IN_PROCESS and FINAL inspect a production order's stage
+/// output. Results are fixed when the inspection is recorded; approval
+/// applies them (stock release/rejection, or the stage run) exactly once.
+model QualityInspection {
+  id                Uuid               @id @default(uuid())
+  inspectionNumber  String             @unique
+  inspectionType    String
+  status            String             @default("OPEN")
+  productId         Uuid
+  productionOrderId Uuid?
+  stageKey          String?
+  locationId        Uuid?
+  inspectedQuantity Decimal
+  passedQuantity    Decimal
+  reworkQuantity    Decimal            @default(0)
+  rejectedQuantity  Decimal            @default(0)
+  sampleSize        Int?
+  defects           String?
+  inspectorName     String?
+  remarks           String?
+  idempotencyKey    String             @unique
+  createdBy         Uuid
+  createdAt         TimestamptzString  @default(now())
+  decidedBy         Uuid?
+  decidedAt         TimestamptzString?
+  decisionNote      String?
+
+  product         Product          @relation(fields: [productId], references: [id], onDelete: Restrict)
+  productionOrder ProductionOrder? @relation(fields: [productionOrderId], references: [id], onDelete: Restrict)
+
+  @@index([inspectionType, status])
+  @@index([productionOrderId])
+  @@check(expression: "\"inspectionType\" IN ('INCOMING', 'IN_PROCESS', 'FINAL')", name: "erp_quality_inspections_type")
+  @@check(expression: "\"status\" IN ('OPEN', 'APPROVED', 'CANCELLED')", name: "erp_quality_inspections_status")
+  @@check(expression: "\"inspectedQuantity\" > 0 AND \"passedQuantity\" >= 0 AND \"reworkQuantity\" >= 0 AND \"rejectedQuantity\" >= 0", name: "erp_quality_inspections_quantities")
+  @@check(expression: "\"inspectedQuantity\" = \"passedQuantity\" + \"reworkQuantity\" + \"rejectedQuantity\"", name: "erp_quality_inspections_balance")
+  @@map("erp_quality_inspections")
+}
+
+/// Packed output of a production order. Confirming records the packing
+/// stage run and receives the packed quantity into finished-goods stock.
+model PackingList {
+  id                Uuid               @id @default(uuid())
+  packingNumber     String             @unique
+  productionOrderId Uuid
+  productId         Uuid
+  salesOrderId      Uuid?
+  locationId        Uuid
+  status            String             @default("DRAFT")
+  totalQuantity     Decimal
+  packageCount      Int
+  shipmentId        Uuid?
+  notes             String?
+  idempotencyKey    String             @unique
+  createdBy         Uuid
+  createdAt         TimestamptzString  @default(now())
+  confirmedBy       Uuid?
+  confirmedAt       TimestamptzString?
+
+  productionOrder ProductionOrder  @relation(fields: [productionOrderId], references: [id], onDelete: Restrict)
+  product         Product          @relation(fields: [productId], references: [id], onDelete: Restrict)
+  packages        PackingPackage[]
+
+  @@index([productionOrderId])
+  @@index([salesOrderId, status])
+  @@check(expression: "\"status\" IN ('DRAFT', 'CONFIRMED', 'SHIPPED', 'CANCELLED')", name: "erp_packing_lists_status")
+  @@check(expression: "\"totalQuantity\" > 0 AND \"packageCount\" > 0", name: "erp_packing_lists_totals")
+  @@map("erp_packing_lists")
+}
+
+model PackingPackage {
+  id            Uuid     @id @default(uuid())
+  packingListId Uuid
+  packageNo     Int
+  packageType   String
+  quantity      Decimal
+  netWeight     Decimal?
+  grossWeight   Decimal?
+  dimensions    String?
+  marks         String?
+
+  packingList PackingList @relation(fields: [packingListId], references: [id], onDelete: Restrict)
+
+  @@unique([packingListId, packageNo])
+  @@check(expression: "\"quantity\" > 0", name: "erp_packing_packages_quantity_positive")
+  @@check(expression: "(\"netWeight\" IS NULL OR \"netWeight\" >= 0) AND (\"grossWeight\" IS NULL OR \"grossWeight\" >= 0)", name: "erp_packing_packages_weights")
+  @@map("erp_packing_packages")
+}
+
+/// A delivery to a customer against one sales order. Dispatching posts a
+/// finished-goods dispatch from the ship-from location; delivery records
+/// the Delivered stage of each packed production order.
+model Shipment {
+  id                Uuid               @id @default(uuid())
+  shipmentNumber    String             @unique
+  salesOrderId      Uuid
+  customerId        Uuid
+  locationId        Uuid
+  status            String             @default("DRAFT")
+  vehicleNumber     String?
+  driverName        String?
+  driverPhone       String?
+  transporter       String?
+  trackingReference String?
+  deliveryAddress   String?
+  notes             String?
+  idempotencyKey    String             @unique
+  createdBy         Uuid
+  createdAt         TimestamptzString  @default(now())
+  dispatchedBy      Uuid?
+  dispatchedAt      TimestamptzString?
+  deliveredBy       Uuid?
+  deliveredAt       TimestamptzString?
+  receivedBy        String?
+  deliveryNote      String?
+
+  salesOrder SalesOrder     @relation(fields: [salesOrderId], references: [id], onDelete: Restrict)
+  lines      ShipmentLine[]
+
+  @@index([salesOrderId])
+  @@index([status])
+  @@check(expression: "\"status\" IN ('DRAFT', 'DISPATCHED', 'DELIVERED', 'CANCELLED')", name: "erp_shipments_status")
+  @@map("erp_shipments")
+}
+
+model ShipmentLine {
+  id               Uuid    @id @default(uuid())
+  shipmentId       Uuid
+  lineNo           Int
+  productId        Uuid
+  salesOrderLineId Uuid?
+  packingListId    Uuid?
+  quantity         Decimal
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Restrict)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([shipmentId, lineNo])
+  @@index([packingListId])
+  @@check(expression: "\"quantity\" > 0", name: "erp_shipment_lines_quantity_positive")
+  @@map("erp_shipment_lines")
 }
