@@ -123,11 +123,13 @@ export async function createShipment(input: ShipmentInput, actorId: string) {
   }
 
   await overShipmentError(await orderPosition(null, order.id), sumByProduct(resolved));
-  const lineIds = new Map(
-    (await db.orm.public.SalesOrderLine.where({ salesOrderId: order.id }).all())
-      .filter((line) => line.productId)
-      .map((line) => [line.productId!, line.id]),
-  );
+  // Link a shipment line to its sales order line only when the item is on
+  // exactly one catalogue line; otherwise the link would be arbitrary.
+  const catalogLines = (await db.orm.public.SalesOrderLine.where({ salesOrderId: order.id }).all())
+    .filter((line) => line.productId && !line.isCustom);
+  const lineIds = new Map(catalogLines
+    .filter((line) => catalogLines.filter((other) => other.productId === line.productId).length === 1)
+    .map((line) => [line.productId!, line.id]));
 
   try {
     const id = await db.transaction(async (tx) => {
