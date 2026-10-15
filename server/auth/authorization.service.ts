@@ -13,7 +13,17 @@ export async function getUserPermissionCodes(
     return [];
   }
 
-  const roleIds = [...new Set(userRoles.map((userRole) => userRole.roleId))];
+  // Disabled roles grant nothing.
+  const activeRoles = await db.orm.public.Role
+    .where((row) => row.id.in([...new Set(userRoles.map((userRole) => userRole.roleId))]))
+    .where({ status: "ACTIVE" })
+    .select("id")
+    .all();
+  const roleIds = activeRoles.map((role) => role.id);
+
+  if (!roleIds.length) {
+    return [];
+  }
 
   const permissionRows = await db.orm.public.RolePermission
     .where((row) => row.roleId.in(roleIds))
@@ -52,6 +62,7 @@ export async function getUserRoleCodes(
 
   const roles = await db.orm.public.Role
     .where((row) => row.id.in(roleIds))
+    .where({ status: "ACTIVE" })
     .select("code")
     .all();
 
