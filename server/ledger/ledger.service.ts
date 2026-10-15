@@ -144,7 +144,9 @@ export async function reverseSourcePosting(tx: Tx, source: Source, reversalEvent
   if (!entry) return null;
   const done = await tx.orm.public.JournalEntry.where({ sourceType: source.type, sourceId: source.id, sourceEvent: reversalEvent }).first();
   if (done) return done.id;
-  return reverseEntryInTransaction(tx, entry.id, date, description, actorId, { ...source, event: reversalEvent });
+  // Never dated before the entry it reverses (a void of a post-dated document).
+  const effective = date < entry.entryDate ? entry.entryDate : date;
+  return reverseEntryInTransaction(tx, entry.id, effective, description, actorId, { ...source, event: reversalEvent });
 }
 
 /* ------------------------------------------------------------------ */
@@ -269,6 +271,7 @@ export async function reverseManualJournal(id: string, date: string, reason: str
   if (!entry) throw new AppError("Journal entry not found.", { code: "JOURNAL_NOT_FOUND", status: 404 });
   if (entry.sourceType) throw new AppError("This entry was posted by a document; void or cancel that document instead.", { code: "JOURNAL_AUTOMATIC", status: 409 });
   if (entry.reversesEntryId) throw new AppError("A reversal cannot itself be reversed; post a new entry instead.", { code: "JOURNAL_IS_REVERSAL", status: 409 });
+  if (date < entry.entryDate) throw new AppError(`A reversal cannot be dated before the entry it reverses (${entry.entryDate}).`, { code: "JOURNAL_REVERSAL_DATE", status: 400 });
   const reversal = await db.transaction(async (tx) => {
     const reversalId = await reverseEntryInTransaction(tx, id, date, `Reversal of ${entry.entryNumber}: ${reason}`, actorId);
     await recordAuditEvent({ actorId, action: "JOURNAL_REVERSED", entityType: "JournalEntry", entityId: id, metadata: { reason, reversalId } }, tx);

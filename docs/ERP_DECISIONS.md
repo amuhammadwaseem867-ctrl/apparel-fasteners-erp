@@ -685,3 +685,84 @@ a notice.
 
 **Not included.** Bills and payments do not yet post to a general ledger
 (there is none).
+
+## D-030 General ledger (2026-10-15)
+
+**Scope.** Chart of accounts, double-entry journals, automatic postings
+from every money document, expenses, other income, cash and bank
+transfers, account statements, trial balance, profit and loss and balance
+sheet. Migration `20261015T1829_general_ledger` is additive.
+
+**Integrity**
+- Every journal line has exactly one positive side, in whole cents (check
+  constraints).
+- An entry's debits equal its credits. The service enforces this and the
+  test suite checks every entry in the database.
+- Entries are never edited or deleted. A correction is a reversing entry:
+  one per entry (unique `reversesEntryId`), never dated before the
+  original.
+- Automatic entries carry (sourceType, sourceId, sourceEvent). A partial
+  unique index and an advisory lock make each document event post once,
+  even when the same request arrives concurrently.
+
+**System accounts.** These are created on first use and used by the
+automatic postings:
+
+| Code | Account |
+| --- | --- |
+| 1000 | Cash in hand |
+| 1010 | Bank |
+| 1100 | Accounts receivable |
+| 1200 | Staff advances |
+| 1300 | Input tax recoverable |
+| 2000 | Accounts payable |
+| 2100 | Output tax payable |
+| 2200 | Salaries payable |
+| 2210 | Payroll deductions payable |
+| 3000 | Owner's equity and opening balances |
+| 3100 | Retained earnings |
+| 4000 | Sales |
+| 4900 | Other income |
+| 5000 | Purchases |
+| 6000 | Salaries and wages |
+| 6900 | General expenses |
+
+- They can be renamed but not deactivated. Other accounts are added
+  freely and deactivated, never deleted.
+- These are configuration, not business records; no balances are seeded.
+  Opening balances are entered as a manual journal against 3000.
+
+**Automatic postings.** Each one is made inside the document's own
+transaction, so the document and its entry commit or fail together.
+
+| Document | Entry |
+| --- | --- |
+| Invoice issued | Dr AR (total) / Cr Sales (net of discount), Cr Output tax |
+| Credit note | The reverse of an invoice, for the credited amounts |
+| Customer receipt | Dr Cash if the method is CASH, otherwise Bank / Cr AR. A void reverses it. |
+| Supplier bill approved | Dr Purchases (PO lines) or General expenses (other lines), Dr Input tax / Cr AP. Cancelling an approved bill reverses it. |
+| Supplier payment | Dr AP / Cr Cash or Bank (by method). A void reverses it. |
+| Salary advance | Dr Staff advances / Cr Cash. Cancellation reverses it. |
+| Payroll approved | Dated the last day of the period. Dr Salaries (gross) / Cr Staff advances (recovered), Cr Payroll deductions payable, Cr Salaries payable (net) |
+| Payroll paid | Dr Salaries payable / Cr Bank |
+| Expense, income, transfer | The chosen accounts. A void reverses it. |
+
+**Earlier documents.** "Post earlier documents" posts every document
+recorded before the ledger existed, with that document's own dates. It is
+idempotent and audited, and needs `finance:approve`.
+
+**Not modelled; owner to confirm**
+- Stock is not valued in the ledger. Purchases are expensed when billed,
+  and there is no inventory asset or cost of goods sold.
+- There is no period close or lock. Current earnings show on the balance
+  sheet until a closing journal moves them to 3100.
+- There is a single currency.
+- Advances are paid from Cash in hand. Receipts and payments by any
+  method other than CASH go to the one system Bank account; reclassify
+  with a manual journal if you use several banks.
+
+**Permissions**
+- `finance:view` reads accounts, journals and statements.
+- `finance:create` records expenses, income and transfers.
+- `finance:approve` creates or edits accounts, posts or reverses manual
+  journals, voids cash transactions, and runs the backfill.

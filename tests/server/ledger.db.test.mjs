@@ -70,6 +70,7 @@ test("manual journals: must balance, replay by key, reverse once, automatic entr
   assert.equal(first.id, replay.id, "same key, same entry");
   assert.equal(first.totalAmount, "500000.00");
 
+  await expectCode(reverseManualJournal(first.id, "2031-02-28", "too early", actor), "JOURNAL_REVERSAL_DATE");
   const reversal = await reverseManualJournal(first.id, "2031-03-02", "entered twice", actor);
   assert.deepEqual(reversal.lines.map((line) => [line.debit, line.credit]), [["0.00", "500000.00"], ["500000.00", "0.00"]]);
   await expectCode(reverseManualJournal(first.id, "2031-03-02", "again", actor), "JOURNAL_ALREADY_REVERSED");
@@ -102,6 +103,8 @@ test("expenses, income and transfers post to the ledger; voids reverse them; P&L
   await voidCashTransaction(transfer.id, "wrong account", actor);
   await expectCode(voidCashTransaction(transfer.id, "again", actor), "CASH_TRANSACTION_VOIDED");
   assert.equal((await getAccountLedger(ctx.bank2.id, "2031-03-01", "2031-03-31")).closingBalance, "0.00");
+  // The void of a post-dated transaction is dated with it, not before it.
+  assert.equal((await getAccountLedger(ctx.bank2.id, "2000-01-01", "2031-03-06")).closingBalance, "0.00");
 
   const pnl = await getProfitAndLoss("2031-03-01", "2031-03-31");
   const rentRow = pnl.expenses.find((row) => row.id === ctx.rent.id);

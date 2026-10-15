@@ -1,9 +1,5 @@
-"use client";
+import CashTransactionsClient from "@/components/ledger/CashTransactionsClient";
 
-import FinanceWorkspace from "@/components/finance/FinanceWorkspace";
-import { expensesConfig } from "@/components/finance/financeConfigs";
-import "./Expenses.css";
-
-export default function ExpensesPage() {
-  return <FinanceWorkspace config={expensesConfig} />;
+export default function Page() {
+  return <CashTransactionsClient kind="EXPENSE" />;
 }

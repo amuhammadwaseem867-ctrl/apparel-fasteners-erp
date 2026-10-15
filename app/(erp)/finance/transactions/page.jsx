@@ -1,9 +1,8 @@
-"use client";
+import JournalClient from "@/components/ledger/JournalClient";
 
-import FinanceWorkspace from "@/components/finance/FinanceWorkspace";
-import { transactionsConfig } from "@/components/finance/financeConfigs";
-import "./Transactions.css";
-
-export default function TransactionsPage() {
-  return <FinanceWorkspace config={transactionsConfig} />;
+export default async function TransactionsPage({ searchParams }) {
+  const params = await searchParams;
+  return <JournalClient initialEntry={params?.entry ?? ""} />;
 }
+
+export const instant = false;

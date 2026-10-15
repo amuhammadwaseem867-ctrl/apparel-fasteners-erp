@@ -17,7 +17,7 @@ export default function FinanceOverviewPage() {
         <div>
           <p className="inv-header__eyebrow">Finance</p>
           <h1>Finance</h1>
-          <p>Invoicing and receivables from dispatched shipments. This is not a general ledger: there are no accounts, journals or financial statements yet.</p>
+          <p>Invoicing, receivables, payables and the general ledger. Every invoice, receipt, bill, payment, payroll run and cash transaction posts a balanced journal entry.</p>
         </div>
         <div className="inv-header__actions"><Link className="inv-link-button" href="/finance/invoices">Invoices</Link></div>
       </header>
@@ -41,7 +41,10 @@ export default function FinanceOverviewPage() {
           <li><Link href="/finance/invoices">Invoices</Link>: invoice dispatched shipments, issue, credit and record receipts.</li>
           <li><Link href="/finance/payments">Receipts</Link>: customer payments.</li>
           <li><Link href="/finance/receivables">Receivables</Link>: ageing by customer.</li>
-          <li>Accounts, income, expenses, payables, cash &amp; bank, transactions and financial reports: not implemented yet.</li>
+          <li><Link href="/finance/payables">Payables</Link>: supplier bills, payments and ageing.</li>
+          <li><Link href="/finance/expenses">Expenses</Link> and <Link href="/finance/income">other income</Link>: cash and bank transactions.</li>
+          <li><Link href="/finance/cash-bank">Cash &amp; bank</Link>: balances, statements and transfers.</li>
+          <li><Link href="/finance/accounts">Chart of accounts</Link>, <Link href="/finance/transactions">journal</Link> and <Link href="/finance/reports">financial statements</Link> (profit and loss, balance sheet, trial balance).</li>
         </ul>
       </section>
     </main>
