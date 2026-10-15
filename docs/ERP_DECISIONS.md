@@ -449,3 +449,39 @@ Failed logins are counted per email (5 per 15 minutes) and per client IP
   directly (Phase 0 risk 4).
 - **Memory limiter.** The in-memory limiter now only defines the policy
   defaults and keeps its unit tests.
+
+## D-026: Gate passes
+
+A gate pass authorises goods through the factory gate. It records the
+movement, not stock; inventory and dispatch documents post stock.
+
+**Types**
+- INWARD.
+- OUTWARD_NON_RETURNABLE.
+- OUTWARD_RETURNABLE: for example job work or repair. It needs an expected
+  return date.
+
+**Lifecycle**
+- DRAFT → APPROVED → gate movement, which records the time and the guard.
+- After the gate movement the pass is COMPLETED, or OUT for returnable
+  passes.
+- An OUT pass completes when every line has come back. Partial returns are
+  allowed; returning more than went out is refused.
+- DRAFT and APPROVED passes can be cancelled with a reason.
+- Transitions are compare-and-set, and returns lock the pass row (both
+  tested concurrently).
+- A pass that is OUT past its return date is shown as overdue.
+
+**Shipments**
+- An outward pass may be linked to a dispatched shipment; its lines are
+  then copied from that shipment.
+
+**Permissions** (please confirm)
+- Uses the inventory permissions, because the seed has no gate permissions.
+- `inventory:view` to see passes.
+- `inventory:create` to create passes and record gate movements and
+  returns.
+- `inventory:adjust` to approve or cancel.
+
+**Screens**
+- Under Dispatch & Logistics → Gate Passes, with a printable pass.

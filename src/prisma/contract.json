@@ -36,6 +36,14 @@
       "model": "DocumentSequence",
       "namespace": "public"
     },
+    "erp_gate_pass_lines": {
+      "model": "GatePassLine",
+      "namespace": "public"
+    },
+    "erp_gate_passes": {
+      "model": "GatePass",
+      "namespace": "public"
+    },
     "erp_invoice_lines": {
       "model": "InvoiceLine",
       "namespace": "public"
@@ -1217,6 +1225,371 @@
               },
               "namespaceId": "public",
               "table": "erp_document_sequences"
+            }
+          },
+          "GatePass": {
+            "fields": {
+              "approvedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "approvedBy": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "cancelReason": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "cancelledAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "cancelledBy": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "closedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdBy": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "driverName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "expectedReturnDate": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "guardName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "idempotencyKey": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "notes": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "partyName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "passNumber": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "passType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "passedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "passedBy": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "purpose": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "shipmentId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "vehicleNumber": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "lines": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "gatePassId"
+                  ]
+                },
+                "to": {
+                  "model": "GatePassLine",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "approvedAt": {
+                  "column": "approvedAt"
+                },
+                "approvedBy": {
+                  "column": "approvedBy"
+                },
+                "cancelReason": {
+                  "column": "cancelReason"
+                },
+                "cancelledAt": {
+                  "column": "cancelledAt"
+                },
+                "cancelledBy": {
+                  "column": "cancelledBy"
+                },
+                "closedAt": {
+                  "column": "closedAt"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "createdBy": {
+                  "column": "createdBy"
+                },
+                "driverName": {
+                  "column": "driverName"
+                },
+                "expectedReturnDate": {
+                  "column": "expectedReturnDate"
+                },
+                "guardName": {
+                  "column": "guardName"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "idempotencyKey": {
+                  "column": "idempotencyKey"
+                },
+                "notes": {
+                  "column": "notes"
+                },
+                "partyName": {
+                  "column": "partyName"
+                },
+                "passNumber": {
+                  "column": "passNumber"
+                },
+                "passType": {
+                  "column": "passType"
+                },
+                "passedAt": {
+                  "column": "passedAt"
+                },
+                "passedBy": {
+                  "column": "passedBy"
+                },
+                "purpose": {
+                  "column": "purpose"
+                },
+                "shipmentId": {
+                  "column": "shipmentId"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "vehicleNumber": {
+                  "column": "vehicleNumber"
+                }
+              },
+              "namespaceId": "public",
+              "table": "erp_gate_passes"
+            }
+          },
+          "GatePassLine": {
+            "fields": {
+              "description": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "gatePassId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "lineNo": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "productId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "quantity": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "returnedQuantity": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "unit": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "gatePass": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "gatePassId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "GatePass",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "description": {
+                  "column": "description"
+                },
+                "gatePassId": {
+                  "column": "gatePassId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "lineNo": {
+                  "column": "lineNo"
+                },
+                "productId": {
+                  "column": "productId"
+                },
+                "quantity": {
+                  "column": "quantity"
+                },
+                "returnedQuantity": {
+                  "column": "returnedQuantity"
+                },
+                "unit": {
+                  "column": "unit"
+                }
+              },
+              "namespaceId": "public",
+              "table": "erp_gate_pass_lines"
             }
           },
           "Invoice": {
@@ -7299,6 +7672,283 @@
               },
               "uniques": []
             },
+            "erp_gate_pass_lines": {
+              "checks": [
+                {
+                  "expression": "\"quantity\" > 0 AND \"returnedQuantity\" >= 0 AND \"returnedQuantity\" <= \"quantity\"",
+                  "name": "erp_gate_pass_lines_quantities_4b674539",
+                  "prefix": "erp_gate_pass_lines_quantities"
+                }
+              ],
+              "columns": {
+                "description": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "gatePassId": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "lineNo": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "productId": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": true
+                },
+                "quantity": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "nullable": false
+                },
+                "returnedQuantity": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "default": {
+                    "kind": "literal",
+                    "value": "0"
+                  },
+                  "nullable": false
+                },
+                "unit": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "gatePassId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "erp_gate_pass_lines"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "erp_gate_passes"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "gatePassId"
+                  ],
+                  "name": "erp_gate_pass_lines_gatePassId_idx_c82c3393",
+                  "prefix": "erp_gate_pass_lines_gatePassId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "gatePassId",
+                    "lineNo"
+                  ]
+                }
+              ]
+            },
+            "erp_gate_passes": {
+              "checks": [
+                {
+                  "expression": "\"passType\" <> 'OUTWARD_RETURNABLE' OR \"expectedReturnDate\" IS NOT NULL",
+                  "name": "erp_gate_passes_return_date_9ba70b37",
+                  "prefix": "erp_gate_passes_return_date"
+                },
+                {
+                  "expression": "\"status\" IN ('DRAFT', 'APPROVED', 'OUT', 'COMPLETED', 'CANCELLED')",
+                  "name": "erp_gate_passes_status_178fea4e",
+                  "prefix": "erp_gate_passes_status"
+                },
+                {
+                  "expression": "\"passType\" IN ('INWARD', 'OUTWARD_NON_RETURNABLE', 'OUTWARD_RETURNABLE')",
+                  "name": "erp_gate_passes_type_5547c3b7",
+                  "prefix": "erp_gate_passes_type"
+                }
+              ],
+              "columns": {
+                "approvedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "approvedBy": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": true
+                },
+                "cancelReason": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "cancelledAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "cancelledBy": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": true
+                },
+                "closedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "createdBy": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "driverName": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "expectedReturnDate": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "guardName": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "idempotencyKey": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "notes": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "partyName": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "passNumber": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "passType": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "passedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "passedBy": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": true
+                },
+                "purpose": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "shipmentId": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": true
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "DRAFT"
+                  },
+                  "nullable": false
+                },
+                "vehicleNumber": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [
+                {
+                  "columns": [
+                    "shipmentId"
+                  ],
+                  "name": "erp_gate_passes_shipmentId_idx_e3606ec1",
+                  "prefix": "erp_gate_passes_shipmentId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "status"
+                  ],
+                  "name": "erp_gate_passes_status_idx_e98638ab",
+                  "prefix": "erp_gate_passes_status_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "passNumber"
+                  ]
+                },
+                {
+                  "columns": [
+                    "idempotencyKey"
+                  ]
+                }
+              ]
+            },
             "erp_invoice_lines": {
               "checks": [
                 {
@@ -11460,10 +12110,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "8f46377bb2b97a99a4da64c442a3da1c14332f5185e59134653f729a6f5f34d0"
+    "storageHash": "9acd9c9787f4d197375a61f9e6941f180d9b661fc3b773954cb0b8e08a4089cc"
   },
   "execution": {
-    "executionHash": "1a26ee2488d3b6099acbd384bf3765688e3b2eefd6171a144efeec87d3af8799",
+    "executionHash": "b53a18abca22d965a901fcad28e2cdeff16a84c891b82211f2fdfd146da2e10a",
     "mutations": {
       "defaults": [
         {
@@ -11539,6 +12189,28 @@
           },
           "ref": {
             "entry": "erp_customers",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "erp_gate_pass_lines",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "erp_gate_passes",
             "field": "id",
             "namespace": "public"
           }

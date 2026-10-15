@@ -964,3 +964,58 @@ model LoginAttemptCounter {
   @@check(expression: "\"count\" > 0", name: "erp_login_attempt_counters_count_positive")
   @@map("erp_login_attempt_counters")
 }
+
+/// A gate pass authorises goods to leave (or enter) through the factory
+/// gate (D-026). It records the movement and, for returnable passes, what
+/// came back; it does not post stock (inventory and dispatch do that).
+model GatePass {
+  id                 Uuid               @id @default(uuid())
+  passNumber         String             @unique
+  passType           String
+  status             String             @default("DRAFT")
+  partyName          String
+  purpose            String
+  shipmentId         Uuid?
+  vehicleNumber      String?
+  driverName         String?
+  expectedReturnDate String?
+  notes              String?
+  idempotencyKey     String             @unique
+  createdBy          Uuid
+  createdAt          TimestamptzString  @default(now())
+  approvedBy         Uuid?
+  approvedAt         TimestamptzString?
+  passedBy           Uuid?
+  passedAt           TimestamptzString?
+  guardName          String?
+  closedAt           TimestamptzString?
+  cancelledBy        Uuid?
+  cancelledAt        TimestamptzString?
+  cancelReason       String?
+
+  lines GatePassLine[]
+
+  @@index([status])
+  @@index([shipmentId])
+  @@check(expression: "\"passType\" IN ('INWARD', 'OUTWARD_NON_RETURNABLE', 'OUTWARD_RETURNABLE')", name: "erp_gate_passes_type")
+  @@check(expression: "\"status\" IN ('DRAFT', 'APPROVED', 'OUT', 'COMPLETED', 'CANCELLED')", name: "erp_gate_passes_status")
+  @@check(expression: "\"passType\" <> 'OUTWARD_RETURNABLE' OR \"expectedReturnDate\" IS NOT NULL", name: "erp_gate_passes_return_date")
+  @@map("erp_gate_passes")
+}
+
+model GatePassLine {
+  id               Uuid    @id @default(uuid())
+  gatePassId       Uuid
+  lineNo           Int
+  productId        Uuid?
+  description      String
+  unit             String
+  quantity         Decimal
+  returnedQuantity Decimal @default(0)
+
+  gatePass GatePass @relation(fields: [gatePassId], references: [id], onDelete: Restrict)
+
+  @@unique([gatePassId, lineNo])
+  @@check(expression: "\"quantity\" > 0 AND \"returnedQuantity\" >= 0 AND \"returnedQuantity\" <= \"quantity\"", name: "erp_gate_pass_lines_quantities")
+  @@map("erp_gate_pass_lines")
+}

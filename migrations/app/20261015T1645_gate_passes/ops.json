@@ -1,0 +1,365 @@
+[
+  {
+    "id": "table.erp_gate_pass_lines",
+    "label": "Create table \"erp_gate_pass_lines\"",
+    "summary": "Creates table \"erp_gate_pass_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_gate_pass_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_gate_pass_lines\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_gate_pass_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_gate_pass_lines\"",
+        "sql": "CREATE TABLE \"public\".\"erp_gate_pass_lines\" (\n  \"description\" text NOT NULL,\n  \"gatePassId\" uuid NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"lineNo\" int4 NOT NULL,\n  \"productId\" uuid,\n  \"quantity\" numeric NOT NULL,\n  \"returnedQuantity\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"unit\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_gate_pass_lines_quantities_4b674539\" CHECK (\"quantity\" > 0 AND \"returnedQuantity\" >= 0 AND \"returnedQuantity\" <= \"quantity\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_gate_pass_lines\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_gate_pass_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.erp_gate_passes",
+    "label": "Create table \"erp_gate_passes\"",
+    "summary": "Creates table \"erp_gate_passes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_gate_passes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_gate_passes\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_gate_passes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_gate_passes\"",
+        "sql": "CREATE TABLE \"public\".\"erp_gate_passes\" (\n  \"approvedAt\" timestamptz,\n  \"approvedBy\" uuid,\n  \"cancelReason\" text,\n  \"cancelledAt\" timestamptz,\n  \"cancelledBy\" uuid,\n  \"closedAt\" timestamptz,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"driverName\" text,\n  \"expectedReturnDate\" text,\n  \"guardName\" text,\n  \"id\" uuid NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"notes\" text,\n  \"partyName\" text NOT NULL,\n  \"passNumber\" text NOT NULL,\n  \"passType\" text NOT NULL,\n  \"passedAt\" timestamptz,\n  \"passedBy\" uuid,\n  \"purpose\" text NOT NULL,\n  \"shipmentId\" uuid,\n  \"status\" text DEFAULT 'DRAFT' NOT NULL,\n  \"vehicleNumber\" text,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_gate_passes_return_date_9ba70b37\" CHECK (\"passType\" <> 'OUTWARD_RETURNABLE' OR \"expectedReturnDate\" IS NOT NULL),\n  CONSTRAINT \"erp_gate_passes_status_178fea4e\" CHECK (\"status\" IN ('DRAFT', 'APPROVED', 'OUT', 'COMPLETED', 'CANCELLED')),\n  CONSTRAINT \"erp_gate_passes_type_5547c3b7\" CHECK (\"passType\" IN ('INWARD', 'OUTWARD_NON_RETURNABLE', 'OUTWARD_RETURNABLE'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_gate_passes\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_gate_passes\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_gate_pass_lines.erp_gate_pass_lines_gatePassId_lineNo_key",
+    "label": "Add unique constraint on \"erp_gate_pass_lines\" (gatePassId, lineNo)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_gate_pass_lines_gatePassId_lineNo_key",
+        "table": "erp_gate_pass_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_gate_pass_lines_gatePassId_lineNo_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_gate_pass_lines_gatePassId_lineNo_key",
+          "public",
+          "\"public\".\"erp_gate_pass_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_gate_pass_lines_gatePassId_lineNo_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_gate_pass_lines\" ADD CONSTRAINT \"erp_gate_pass_lines_gatePassId_lineNo_key\" UNIQUE (\"gatePassId\", \"lineNo\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_gate_pass_lines_gatePassId_lineNo_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_gate_pass_lines_gatePassId_lineNo_key",
+          "public",
+          "\"public\".\"erp_gate_pass_lines\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_gate_passes.erp_gate_passes_passNumber_key",
+    "label": "Add unique constraint on \"erp_gate_passes\" (passNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_gate_passes_passNumber_key",
+        "table": "erp_gate_passes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_gate_passes_passNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_gate_passes_passNumber_key",
+          "public",
+          "\"public\".\"erp_gate_passes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_gate_passes_passNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_gate_passes\" ADD CONSTRAINT \"erp_gate_passes_passNumber_key\" UNIQUE (\"passNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_gate_passes_passNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_gate_passes_passNumber_key",
+          "public",
+          "\"public\".\"erp_gate_passes\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_gate_passes.erp_gate_passes_idempotencyKey_key",
+    "label": "Add unique constraint on \"erp_gate_passes\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_gate_passes_idempotencyKey_key",
+        "table": "erp_gate_passes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_gate_passes_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_gate_passes_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_gate_passes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_gate_passes_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_gate_passes\" ADD CONSTRAINT \"erp_gate_passes_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_gate_passes_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_gate_passes_idempotencyKey_key",
+          "public",
+          "\"public\".\"erp_gate_passes\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_gate_pass_lines.erp_gate_pass_lines_gatePassId_idx_c82c3393",
+    "label": "Create index \"erp_gate_pass_lines_gatePassId_idx_c82c3393\" on \"erp_gate_pass_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_gate_pass_lines_gatePassId_idx_c82c3393",
+        "table": "erp_gate_pass_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_gate_pass_lines_gatePassId_idx_c82c3393\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_gate_pass_lines_gatePassId_idx_c82c3393\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_gate_pass_lines_gatePassId_idx_c82c3393\"",
+        "sql": "CREATE INDEX \"erp_gate_pass_lines_gatePassId_idx_c82c3393\" ON \"public\".\"erp_gate_pass_lines\" (\"gatePassId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_gate_pass_lines_gatePassId_idx_c82c3393\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_gate_pass_lines_gatePassId_idx_c82c3393\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_gate_passes.erp_gate_passes_shipmentId_idx_e3606ec1",
+    "label": "Create index \"erp_gate_passes_shipmentId_idx_e3606ec1\" on \"erp_gate_passes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_gate_passes_shipmentId_idx_e3606ec1",
+        "table": "erp_gate_passes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_gate_passes_shipmentId_idx_e3606ec1\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_gate_passes_shipmentId_idx_e3606ec1\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_gate_passes_shipmentId_idx_e3606ec1\"",
+        "sql": "CREATE INDEX \"erp_gate_passes_shipmentId_idx_e3606ec1\" ON \"public\".\"erp_gate_passes\" (\"shipmentId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_gate_passes_shipmentId_idx_e3606ec1\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_gate_passes_shipmentId_idx_e3606ec1\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_gate_passes.erp_gate_passes_status_idx_e98638ab",
+    "label": "Create index \"erp_gate_passes_status_idx_e98638ab\" on \"erp_gate_passes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_gate_passes_status_idx_e98638ab",
+        "table": "erp_gate_passes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_gate_passes_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_gate_passes_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_gate_passes_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"erp_gate_passes_status_idx_e98638ab\" ON \"public\".\"erp_gate_passes\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_gate_passes_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_gate_passes_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_gate_pass_lines.erp_gate_pass_lines_gatePassId_fkey",
+    "label": "Add foreign key \"erp_gate_pass_lines_gatePassId_fkey\" on \"erp_gate_pass_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_gate_pass_lines_gatePassId_fkey",
+        "table": "erp_gate_pass_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_gate_pass_lines_gatePassId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_gate_pass_lines_gatePassId_fkey",
+          "public",
+          "\"public\".\"erp_gate_pass_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_gate_pass_lines_gatePassId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_gate_pass_lines\"\nADD CONSTRAINT \"erp_gate_pass_lines_gatePassId_fkey\"\nFOREIGN KEY (\"gatePassId\")\nREFERENCES \"public\".\"erp_gate_passes\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_gate_pass_lines_gatePassId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_gate_pass_lines_gatePassId_fkey",
+          "public",
+          "\"public\".\"erp_gate_pass_lines\""
+        ]
+      }
+    ]
+  }
+]

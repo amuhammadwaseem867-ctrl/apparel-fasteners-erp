@@ -18,9 +18,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'8f46377bb2b97a99a4da64c442a3da1c14332f5185e59134653f729a6f5f34d0'>;
+  StorageHashBase<'9acd9c9787f4d197375a61f9e6941f180d9b661fc3b773954cb0b8e08a4089cc'>;
 export type ExecutionHash =
-  ExecutionHashBase<'1a26ee2488d3b6099acbd384bf3765688e3b2eefd6171a144efeec87d3af8799'>;
+  ExecutionHashBase<'b53a18abca22d965a901fcad28e2cdeff16a84c891b82211f2fdfd146da2e10a'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -325,6 +325,41 @@ export type FieldOutputTypes = {
       readonly key: CodecTypes['pg/text@1']['output'];
       readonly nextValue: CodecTypes['pg/int4@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
+    readonly GatePass: {
+      readonly approvedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly approvedBy: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly cancelReason: CodecTypes['pg/text@1']['output'] | null;
+      readonly cancelledAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly cancelledBy: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly closedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['output'];
+      readonly driverName: CodecTypes['pg/text@1']['output'] | null;
+      readonly expectedReturnDate: CodecTypes['pg/text@1']['output'] | null;
+      readonly guardName: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly idempotencyKey: CodecTypes['pg/text@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'] | null;
+      readonly partyName: CodecTypes['pg/text@1']['output'];
+      readonly passNumber: CodecTypes['pg/text@1']['output'];
+      readonly passType: CodecTypes['pg/text@1']['output'];
+      readonly passedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly passedBy: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly purpose: CodecTypes['pg/text@1']['output'];
+      readonly shipmentId: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly vehicleNumber: CodecTypes['pg/text@1']['output'] | null;
+    };
+    readonly GatePassLine: {
+      readonly description: CodecTypes['pg/text@1']['output'];
+      readonly gatePassId: CodecTypes['pg/uuid@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly lineNo: CodecTypes['pg/int4@1']['output'];
+      readonly productId: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly quantity: CodecTypes['pg/numeric@1']['output'];
+      readonly returnedQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly unit: CodecTypes['pg/text@1']['output'];
     };
     readonly Invoice: {
       readonly cancelReason: CodecTypes['pg/text@1']['output'] | null;
@@ -847,6 +882,41 @@ export type FieldInputTypes = {
       readonly nextValue: CodecTypes['pg/int4@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
+    readonly GatePass: {
+      readonly approvedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly approvedBy: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly cancelReason: CodecTypes['pg/text@1']['input'] | null;
+      readonly cancelledAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly cancelledBy: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly closedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['input'];
+      readonly driverName: CodecTypes['pg/text@1']['input'] | null;
+      readonly expectedReturnDate: CodecTypes['pg/text@1']['input'] | null;
+      readonly guardName: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly idempotencyKey: CodecTypes['pg/text@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'] | null;
+      readonly partyName: CodecTypes['pg/text@1']['input'];
+      readonly passNumber: CodecTypes['pg/text@1']['input'];
+      readonly passType: CodecTypes['pg/text@1']['input'];
+      readonly passedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly passedBy: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly purpose: CodecTypes['pg/text@1']['input'];
+      readonly shipmentId: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly vehicleNumber: CodecTypes['pg/text@1']['input'] | null;
+    };
+    readonly GatePassLine: {
+      readonly description: CodecTypes['pg/text@1']['input'];
+      readonly gatePassId: CodecTypes['pg/uuid@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly lineNo: CodecTypes['pg/int4@1']['input'];
+      readonly productId: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly quantity: CodecTypes['pg/numeric@1']['input'];
+      readonly returnedQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly unit: CodecTypes['pg/text@1']['input'];
+    };
     readonly Invoice: {
       readonly cancelReason: CodecTypes['pg/text@1']['input'] | null;
       readonly cancelledAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
@@ -1368,6 +1438,41 @@ export type StorageColumnTypes = {
       readonly nextValue: CodecTypes['pg/int4@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
+    readonly erp_gate_pass_lines: {
+      readonly description: CodecTypes['pg/text@1']['output'];
+      readonly gatePassId: CodecTypes['pg/uuid@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly lineNo: CodecTypes['pg/int4@1']['output'];
+      readonly productId: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly quantity: CodecTypes['pg/numeric@1']['output'];
+      readonly returnedQuantity: CodecTypes['pg/numeric@1']['output'];
+      readonly unit: CodecTypes['pg/text@1']['output'];
+    };
+    readonly erp_gate_passes: {
+      readonly approvedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly approvedBy: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly cancelledAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly cancelledBy: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly cancelReason: CodecTypes['pg/text@1']['output'] | null;
+      readonly closedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['output'];
+      readonly driverName: CodecTypes['pg/text@1']['output'] | null;
+      readonly expectedReturnDate: CodecTypes['pg/text@1']['output'] | null;
+      readonly guardName: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly idempotencyKey: CodecTypes['pg/text@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'] | null;
+      readonly partyName: CodecTypes['pg/text@1']['output'];
+      readonly passedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly passedBy: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly passNumber: CodecTypes['pg/text@1']['output'];
+      readonly passType: CodecTypes['pg/text@1']['output'];
+      readonly purpose: CodecTypes['pg/text@1']['output'];
+      readonly shipmentId: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly vehicleNumber: CodecTypes['pg/text@1']['output'] | null;
+    };
     readonly erp_invoice_lines: {
       readonly description: CodecTypes['pg/text@1']['output'];
       readonly discountAmount: CodecTypes['pg/numeric@1']['output'];
@@ -1888,6 +1993,41 @@ export type StorageColumnInputTypes = {
       readonly key: CodecTypes['pg/text@1']['input'];
       readonly nextValue: CodecTypes['pg/int4@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly erp_gate_pass_lines: {
+      readonly description: CodecTypes['pg/text@1']['input'];
+      readonly gatePassId: CodecTypes['pg/uuid@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly lineNo: CodecTypes['pg/int4@1']['input'];
+      readonly productId: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly quantity: CodecTypes['pg/numeric@1']['input'];
+      readonly returnedQuantity: CodecTypes['pg/numeric@1']['input'];
+      readonly unit: CodecTypes['pg/text@1']['input'];
+    };
+    readonly erp_gate_passes: {
+      readonly approvedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly approvedBy: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly cancelledAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly cancelledBy: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly cancelReason: CodecTypes['pg/text@1']['input'] | null;
+      readonly closedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['input'];
+      readonly driverName: CodecTypes['pg/text@1']['input'] | null;
+      readonly expectedReturnDate: CodecTypes['pg/text@1']['input'] | null;
+      readonly guardName: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly idempotencyKey: CodecTypes['pg/text@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'] | null;
+      readonly partyName: CodecTypes['pg/text@1']['input'];
+      readonly passedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly passedBy: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly passNumber: CodecTypes['pg/text@1']['input'];
+      readonly passType: CodecTypes['pg/text@1']['input'];
+      readonly purpose: CodecTypes['pg/text@1']['input'];
+      readonly shipmentId: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly vehicleNumber: CodecTypes['pg/text@1']['input'] | null;
     };
     readonly erp_invoice_lines: {
       readonly description: CodecTypes['pg/text@1']['input'];
@@ -2428,6 +2568,45 @@ export namespace Models {
     nextValue: CodecTypes['pg/int4@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     readonly [RelationKeys]?: never;
+  };
+  export type public_GatePass = {
+    approvedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+    approvedBy: CodecTypes['pg/uuid@1']['output'] | null;
+    cancelReason: CodecTypes['pg/text@1']['output'] | null;
+    cancelledAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+    cancelledBy: CodecTypes['pg/uuid@1']['output'] | null;
+    closedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    createdBy: CodecTypes['pg/uuid@1']['output'];
+    driverName: CodecTypes['pg/text@1']['output'] | null;
+    expectedReturnDate: CodecTypes['pg/text@1']['output'] | null;
+    guardName: CodecTypes['pg/text@1']['output'] | null;
+    id: CodecTypes['pg/uuid@1']['output'];
+    idempotencyKey: CodecTypes['pg/text@1']['output'];
+    notes: CodecTypes['pg/text@1']['output'] | null;
+    partyName: CodecTypes['pg/text@1']['output'];
+    passNumber: CodecTypes['pg/text@1']['output'];
+    passType: CodecTypes['pg/text@1']['output'];
+    passedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+    passedBy: CodecTypes['pg/uuid@1']['output'] | null;
+    purpose: CodecTypes['pg/text@1']['output'];
+    shipmentId: CodecTypes['pg/uuid@1']['output'] | null;
+    status: CodecTypes['pg/text@1']['output'];
+    vehicleNumber: CodecTypes['pg/text@1']['output'] | null;
+    lines: public_GatePassLine[];
+    readonly [RelationKeys]?: 'lines';
+  };
+  export type public_GatePassLine = {
+    description: CodecTypes['pg/text@1']['output'];
+    gatePassId: CodecTypes['pg/uuid@1']['output'];
+    id: CodecTypes['pg/uuid@1']['output'];
+    lineNo: CodecTypes['pg/int4@1']['output'];
+    productId: CodecTypes['pg/uuid@1']['output'] | null;
+    quantity: CodecTypes['pg/numeric@1']['output'];
+    returnedQuantity: CodecTypes['pg/numeric@1']['output'];
+    unit: CodecTypes['pg/text@1']['output'];
+    gatePass: public_GatePass;
+    readonly [RelationKeys]?: 'gatePass';
   };
   export type public_Invoice = {
     cancelReason: CodecTypes['pg/text@1']['output'] | null;
@@ -2984,6 +3163,8 @@ export declare const models: {
     Customer: Models.public_Customer;
     CustomerReceipt: Models.public_CustomerReceipt;
     DocumentSequence: Models.public_DocumentSequence;
+    GatePass: Models.public_GatePass;
+    GatePassLine: Models.public_GatePassLine;
     Invoice: Models.public_Invoice;
     InvoiceLine: Models.public_InvoiceLine;
     LoginAttemptCounter: Models.public_LoginAttemptCounter;
@@ -3782,6 +3963,253 @@ type ContractBase = Omit<
               primaryKey: { readonly columns: readonly ['key'] };
               uniques: readonly [];
               indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly erp_gate_pass_lines: {
+              columns: {
+                readonly description: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly gatePassId: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly lineNo: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly productId: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly quantity: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly returnedQuantity: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly unit: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['gatePassId', 'lineNo'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'erp_gate_pass_lines_gatePassId_idx_c82c3393';
+                  readonly prefix: 'erp_gate_pass_lines_gatePassId_idx';
+                  readonly columns: readonly ['gatePassId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_gate_pass_lines';
+                    readonly columns: readonly ['gatePassId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'erp_gate_passes';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly erp_gate_passes: {
+              columns: {
+                readonly approvedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly approvedBy: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly cancelReason: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly cancelledAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly cancelledBy: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly closedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly createdBy: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly driverName: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly expectedReturnDate: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly guardName: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly idempotencyKey: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly notes: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly partyName: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly passNumber: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly passType: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly passedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly passedBy: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly purpose: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly shipmentId: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly status: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'DRAFT'>;
+                  };
+                  readonly many: false;
+                };
+                readonly vehicleNumber: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['passNumber'] },
+                { readonly columns: readonly ['idempotencyKey'] },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'erp_gate_passes_shipmentId_idx_e3606ec1';
+                  readonly prefix: 'erp_gate_passes_shipmentId_idx';
+                  readonly columns: readonly ['shipmentId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'erp_gate_passes_status_idx_e98638ab';
+                  readonly prefix: 'erp_gate_passes_status_idx';
+                  readonly columns: readonly ['status'];
+                  readonly unique: false;
+                },
+              ];
               foreignKeys: readonly [];
             };
             readonly erp_invoice_lines: {
@@ -7374,6 +7802,14 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'DocumentSequence';
     };
+    readonly erp_gate_pass_lines: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'GatePassLine';
+    };
+    readonly erp_gate_passes: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'GatePass';
+    };
     readonly erp_invoice_lines: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'InvoiceLine';
@@ -8120,6 +8556,223 @@ type ContractBase = Omit<
                 readonly key: { readonly column: 'key' };
                 readonly nextValue: { readonly column: 'nextValue' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly GatePass: {
+            readonly fields: {
+              readonly approvedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly approvedBy: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly cancelReason: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly cancelledAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly cancelledBy: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly closedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly createdBy: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly driverName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly expectedReturnDate: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly guardName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly idempotencyKey: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly notes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly partyName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly passNumber: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly passType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly passedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly passedBy: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly purpose: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly shipmentId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly vehicleNumber: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly lines: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'GatePassLine';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['gatePassId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'erp_gate_passes';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly approvedAt: { readonly column: 'approvedAt' };
+                readonly approvedBy: { readonly column: 'approvedBy' };
+                readonly cancelReason: { readonly column: 'cancelReason' };
+                readonly cancelledAt: { readonly column: 'cancelledAt' };
+                readonly cancelledBy: { readonly column: 'cancelledBy' };
+                readonly closedAt: { readonly column: 'closedAt' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly createdBy: { readonly column: 'createdBy' };
+                readonly driverName: { readonly column: 'driverName' };
+                readonly expectedReturnDate: { readonly column: 'expectedReturnDate' };
+                readonly guardName: { readonly column: 'guardName' };
+                readonly id: { readonly column: 'id' };
+                readonly idempotencyKey: { readonly column: 'idempotencyKey' };
+                readonly notes: { readonly column: 'notes' };
+                readonly partyName: { readonly column: 'partyName' };
+                readonly passNumber: { readonly column: 'passNumber' };
+                readonly passType: { readonly column: 'passType' };
+                readonly passedAt: { readonly column: 'passedAt' };
+                readonly passedBy: { readonly column: 'passedBy' };
+                readonly purpose: { readonly column: 'purpose' };
+                readonly shipmentId: { readonly column: 'shipmentId' };
+                readonly status: { readonly column: 'status' };
+                readonly vehicleNumber: { readonly column: 'vehicleNumber' };
+              };
+            };
+          };
+          readonly GatePassLine: {
+            readonly fields: {
+              readonly description: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly gatePassId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly lineNo: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly productId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly quantity: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly returnedQuantity: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly unit: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly gatePass: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'GatePass';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['gatePassId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'erp_gate_pass_lines';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly description: { readonly column: 'description' };
+                readonly gatePassId: { readonly column: 'gatePassId' };
+                readonly id: { readonly column: 'id' };
+                readonly lineNo: { readonly column: 'lineNo' };
+                readonly productId: { readonly column: 'productId' };
+                readonly quantity: { readonly column: 'quantity' };
+                readonly returnedQuantity: { readonly column: 'returnedQuantity' };
+                readonly unit: { readonly column: 'unit' };
               };
             };
           };
@@ -11389,6 +12042,22 @@ type ContractBase = Omit<
           readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'erp_customers';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'erp_gate_pass_lines';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'erp_gate_passes';
             readonly field: 'id';
             readonly namespace: 'public';
           };

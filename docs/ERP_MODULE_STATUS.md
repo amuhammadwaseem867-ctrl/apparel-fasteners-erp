@@ -28,10 +28,11 @@ committed repository.** Statuses below describe the committed code only.
 | Dispatch | `/api/dispatch/{shipments,shipments/[id],sales-orders/[id]}` | `server/dispatch/*` | `erp_shipments`, `erp_shipment_lines` |
 | Finance (invoicing) | `/api/finance/{invoices,invoices/[id],uninvoiced-shipments,credit-notes,credit-notes/[id],receipts,receipts/[id],receivables,summary}` | `server/finance/*` | `erp_invoices`, `erp_invoice_lines`, `erp_credit_notes`, `erp_credit_note_lines`, `erp_customer_receipts` |
 | Administration | `/api/admin/{users,users/[id],users/[id]/password,roles,roles/[id],permissions,audit,audit/actions}` | `server/admin/*` | existing RBAC and audit tables |
+| Gate passes | `/api/gate-passes`, `/api/gate-passes/[id]`, `/api/gate-passes/[id]/returns` | `server/gate/*` | `erp_gate_passes`, `erp_gate_pass_lines` |
 | Sales orders | `/api/sales/orders`, `/api/sales/orders/[id]` | `server/sales/*` | `erp_sales_orders`, `erp_sales_order_lines` (has `productId`) |
 | Dashboard | `/api/dashboard` | `server/dashboard/*` | reads the above |
 
-Migrations: `20261008T1419_migration` (base) → `20261014T1134_inventory_foundation` → `20261014T1624_bom_mrp` → `20261014T1640_production_stages` → `20261015T1506_quality_packing_dispatch` → `20261015T1605_invoicing_receivables` → `20261015T1641_login_attempt_counters` (all additive; applied and verified only on the isolated test database).
+Migrations: `20261008T1419_migration` (base) → `20261014T1134_inventory_foundation` → `20261014T1624_bom_mrp` → `20261014T1640_production_stages` → `20261015T1506_quality_packing_dispatch` → `20261015T1605_invoicing_receivables` → `20261015T1641_login_attempt_counters` → `20261015T1645_gate_passes` (all additive; applied and verified only on the isolated test database).
 
 ## Module status
 
@@ -59,8 +60,8 @@ and reports success; data is lost on reload and never reaches the server.
 | Finance | 12 pages | **Working** (5) / static (7) | Overview (live receivable, overdue, invoiced/received last 30 days), invoices (from dispatched shipments, issue/cancel draft), invoice detail (receipts, void, credit notes), receipts, receivables ageing; printable invoice, credit note and receipt (D-023). Accounts, income, expenses, payables, cash & bank, transactions and financial reports are not implemented (banner). Verified in Chromium against the test DB. |
 | People & Payroll | 11 pages | Static, honest | All 34 store mutations (incl. floating-point `computePayrollEntry`) throw; create/import/period buttons disabled; shell banner (Phase 1). |
 | Reports | 17 pages | Static, banner | No reporting API beyond the dashboard. |
-| Gate passes | none | Missing | No pages, no tables. |
-| Printing / export | sales order sheet, stock slips, job card, packing list, delivery challan, invoice, credit note, receipt | Partial | `/print/sales-orders/[id]`, `/print/stock-documents/[id]`, `/print/production-orders/[id]`, `/print/packing-lists/[id]`, `/print/shipments/[id]`, `/print/invoices/[id]`, `/print/credit-notes/[id]`, `/print/receipts/[id]`, plus shell print CSS. Other documents depend on their modules' data. Sales order list CSV export (Excel-compatible). PDF comes from the browser's print dialog. |
+| Gate passes | 2 pages | **Working** | List (open, overdue, type filters), create (lines or from a dispatched shipment), approve, record gate exit/entry with guard, partial returns, cancel, printable pass (D-026). Verified in Chromium against the test DB. |
+| Printing / export | sales order sheet, stock slips, job card, packing list, delivery challan, invoice, credit note, receipt, gate pass | Partial | `/print/sales-orders/[id]`, `/print/stock-documents/[id]`, `/print/production-orders/[id]`, `/print/packing-lists/[id]`, `/print/shipments/[id]`, `/print/invoices/[id]`, `/print/credit-notes/[id]`, `/print/receipts/[id]`, `/print/gate-passes/[id]`, plus shell print CSS. Other documents depend on their modules' data. Sales order list CSV export (Excel-compatible). PDF comes from the browser's print dialog. |
 
 ## Audit findings re-verified
 

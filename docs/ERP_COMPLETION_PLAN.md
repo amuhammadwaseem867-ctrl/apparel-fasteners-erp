@@ -109,7 +109,8 @@ tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
 | 2026-10-15 | `bb524f5` | Finance screens; invoice, credit note and receipt prints. |
 | 2026-10-15 | `2e78acd` | Administration services and API; disabled roles grant nothing; lockout protection. |
 | 2026-10-15 | `d8c557b` | Administration screens: users, roles, audit log. |
-| 2026-10-15 | (this commit) | Login limiter shared across instances; migration `20261015T1641_login_attempt_counters` (additive). |
+| 2026-10-15 | `0facbea` | Login limiter shared across instances; migration `20261015T1641_login_attempt_counters` (additive). |
+| 2026-10-15 | (this commit) | Gate passes: schema + migration `20261015T1645_gate_passes` (additive), service, API, screens, print. |
 
 ## Next step
 

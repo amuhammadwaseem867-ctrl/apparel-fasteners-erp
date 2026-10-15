@@ -347,6 +347,10 @@ const NAV_GROUPS = [
             label: "Delivered",
             href: "/dispatch/delivered",
           },
+          {
+            label: "Gate Passes",
+            href: "/dispatch/gate-passes",
+          },
         ],
       },
 
