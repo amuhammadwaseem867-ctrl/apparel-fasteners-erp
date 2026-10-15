@@ -5,7 +5,7 @@
  * cannot load or save records says so. Routes with a working backend
  * (dashboard, products, BOM, sales orders, customers, inventory, MRP,
  * production, quality inspections, packing, dispatch, invoicing and
- * receivables, profile) are not listed.
+ * receivables, users, roles, audit, profile) are not listed.
  * Inventory pages render their own notice (InventoryBackendNotice).
  *
  * Remove an entry when that area's API and tables are in place.
@@ -31,7 +31,12 @@ const UNAVAILABLE_AREAS = [
   { prefix: "/products/variants", label: "Product variants" },
   { prefix: "/products/pricing", label: "Product pricing" },
   { prefix: "/products/documents", label: "Product documents" },
-  { prefix: "/administration", label: "Administration" },
+  {
+    prefix: "/administration/settings",
+    label: "System settings",
+    message:
+      "This page lists built-in configuration for reference only; it cannot be changed here. Users, roles and the audit log are managed on their own pages.",
+  },
   {
     prefix: "/reports",
     label: "Reports",

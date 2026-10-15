@@ -27,6 +27,7 @@ committed repository.** Statuses below describe the committed code only.
 | Packing | `/api/packing/{lists,lists/[id]}` | `server/packing/*` | `erp_packing_lists`, `erp_packing_packages` |
 | Dispatch | `/api/dispatch/{shipments,shipments/[id],sales-orders/[id]}` | `server/dispatch/*` | `erp_shipments`, `erp_shipment_lines` |
 | Finance (invoicing) | `/api/finance/{invoices,invoices/[id],uninvoiced-shipments,credit-notes,credit-notes/[id],receipts,receipts/[id],receivables,summary}` | `server/finance/*` | `erp_invoices`, `erp_invoice_lines`, `erp_credit_notes`, `erp_credit_note_lines`, `erp_customer_receipts` |
+| Administration | `/api/admin/{users,users/[id],users/[id]/password,roles,roles/[id],permissions,audit,audit/actions}` | `server/admin/*` | existing RBAC and audit tables |
 | Sales orders | `/api/sales/orders`, `/api/sales/orders/[id]` | `server/sales/*` | `erp_sales_orders`, `erp_sales_order_lines` (has `productId`) |
 | Dashboard | `/api/dashboard` | `server/dashboard/*` | reads the above |
 
@@ -41,7 +42,7 @@ and reports success; data is lost on reload and never reaches the server.
 | Module | Pages | Status | Notes |
 |---|---|---|---|
 | Authentication | login, profile | Working | Login rate limiting hardened in this session (per-IP + bounded store). Still per-instance memory. |
-| Administration | users, roles, settings, audit | Static, banner | No user/role/audit API. Seeded RBAC exists in `server/auth/seed.ts`. |
+| Administration | users, roles, settings, audit | **Working** (3) / reference (1) | Users (create, edit roles, enable/disable, password reset), roles (custom roles with permissions; system roles read-only), and audit log (filters) are connected, with lockout protection (D-024). Settings is a read-only reference page (banner). Verified in Chromium against the test DB. |
 | Dashboard | dashboard | Working | Connected in commit `e1241ae`. Sales/customer/product KPIs only; other modules reported as not connected. |
 | Customers | sales/customers | Working | |
 | Products | products, [id], new, edit | Working | Unit price stored exactly up to 6 decimals; it was previously rounded to 2 silently (D-012). Item specification fields, deterministic SKU suggestion, restore, guarded permanent delete. |

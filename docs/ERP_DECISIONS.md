@@ -394,3 +394,40 @@ are no accounts, journals, payables, expenses or financial statements yet.
 fields from `config/company.js`. The legal name, address and tax
 registration are still empty (D-013) and must be filled in before invoices
 are sent to customers.
+
+## D-024: User and role administration
+
+Administration works over the existing RBAC tables, with no schema change:
+users, roles, role permissions and the audit log.
+
+**Users**
+- Create, edit name and phone, and replace the role set.
+- Enable or disable (`users:disable`). Disabling revokes the user's
+  sessions.
+- An administrator can reset another user's password (`users:update`).
+  This revokes that user's sessions.
+- Users cannot disable themselves or reset their own password here. Their
+  own password is changed from the profile, which requires the current
+  one.
+
+**Roles**
+- Seeded system roles (`isSystem`) are read-only.
+- Custom roles can be created, edited and disabled (`roles:create`,
+  `roles:update`) with any seeded permissions.
+- Fix: a DISABLED role now grants nothing. Before this change, permission
+  resolution ignored role status. Disabled roles cannot be assigned.
+
+**Lockout protection**
+- Every access-control change runs under one advisory transaction lock.
+- A change is rolled back if it would leave no ACTIVE user holding
+  `users:update` through an ACTIVE role.
+- This was tested with two administrators removing each other
+  concurrently; exactly one change wins.
+
+**Audit log**
+- Read-only, filterable by action, entity, actor, date range and text
+  (`audit:view`).
+
+**System settings**
+- Still a read-only reference page. There are no editable system settings
+  yet.

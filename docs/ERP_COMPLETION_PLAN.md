@@ -106,7 +106,9 @@ tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
 | 2026-10-15 | `2a77dec` | Quality, packing and dispatch screens; packing list and delivery challan prints. |
 | 2026-10-15 | `26c37b6` | Invoicing schema + migration `20261015T1605_invoicing_receivables` (additive). |
 | 2026-10-15 | `80b05a5` | Invoicing, credit notes, receipts and receivables services and API. |
-| 2026-10-15 | (this commit) | Finance screens; invoice, credit note and receipt prints. |
+| 2026-10-15 | `bb524f5` | Finance screens; invoice, credit note and receipt prints. |
+| 2026-10-15 | `2e78acd` | Administration services and API; disabled roles grant nothing; lockout protection. |
+| 2026-10-15 | (this commit) | Administration screens: users, roles, audit log. |
 
 ## Next step
 
