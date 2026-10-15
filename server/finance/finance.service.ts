@@ -18,6 +18,7 @@ import { AppError } from "../core/errors/app-error";
 import { findSqlQueryError } from "../core/errors/database-errors";
 import { normalizeDecimalString, subtractDecimalStrings, toPlainDecimalString } from "../core/utils/decimal";
 import { allocateDocumentNumber, type Tx } from "../inventory/inventory.service";
+import { postCreditNote, postCustomerReceipt, postInvoiceIssued, reverseCustomerReceipt } from "../ledger/postings";
 import {
   AGING_BUCKETS,
   addDays,
@@ -198,6 +199,7 @@ export async function changeInvoice(id: string, action: "issue" | "cancel", reas
       );
     }
 
+    if (action === "issue") await postInvoiceIssued(tx, id, actorId);
     await recordAuditEvent({
       actorId,
       action: action === "issue" ? "INVOICE_ISSUED" : "INVOICE_CANCELLED",
@@ -297,6 +299,7 @@ export async function createCreditNote(input: CreditNoteInput, actorId: string) 
       for (const line of lines) {
         await tx.orm.public.CreditNoteLine.create({ creditNoteId: note.id, ...line });
       }
+      await postCreditNote(tx, note.id, actorId);
       await recordAuditEvent({
         actorId,
         action: "CREDIT_NOTE_ISSUED",
@@ -383,6 +386,7 @@ export async function recordReceipt(input: ReceiptInput, actorId: string) {
         idempotencyKey: input.idempotencyKey,
         createdBy: actorId,
       });
+      await postCustomerReceipt(tx, receipt.id, actorId);
       await recordAuditEvent({
         actorId,
         action: "RECEIPT_POSTED",
@@ -415,6 +419,7 @@ export async function voidReceipt(id: string, reason: string, actorId: string) {
       if (!existing) throw new AppError("Receipt not found.", { code: "RECEIPT_NOT_FOUND", status: 404 });
       throw new AppError("This receipt is already voided.", { code: "RECEIPT_STATUS_CONFLICT", status: 409 });
     }
+    await reverseCustomerReceipt(tx, id, reason, actorId);
     await recordAuditEvent({
       actorId,
       action: "RECEIPT_VOIDED",

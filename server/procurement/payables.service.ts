@@ -17,6 +17,7 @@ import { AppError } from "../core/errors/app-error";
 import { compareDecimalStrings, subtractDecimalStrings, toPlainDecimalString } from "../core/utils/decimal";
 import { AGING_BUCKETS, addDays, addMoney, agingBucket, compareMoney, daysOverdue, lineAmounts, money, sumAmounts } from "../finance/finance-rules";
 import { allocateDocumentNumber, type Tx } from "../inventory/inventory.service";
+import { postSupplierBillApproved, postSupplierPayment, reverseSupplierBill, reverseSupplierPayment } from "../ledger/postings";
 import { cash, dec, isUnique, notFound, rows, UUID } from "./procurement.service";
 import type { BillInput, ListQuery, SupplierPaymentInput } from "./procurement.validation";
 
@@ -123,6 +124,7 @@ export async function changeBill(id: string, action: "approve" | "cancel", reaso
         }
       }
       await tx.orm.public.SupplierBill.where({ id }).update({ status: "APPROVED", approvedBy: actorId, approvedAt: now });
+      await postSupplierBillApproved(tx, id, actorId);
     } else {
       if (locked.status === "CANCELLED") throw new AppError("This bill is already cancelled.", { code: "BILL_STATUS_CONFLICT", status: 409 });
       if (locked.status === "APPROVED") {
@@ -132,6 +134,7 @@ export async function changeBill(id: string, action: "approve" | "cancel", reaso
         }
       }
       await tx.orm.public.SupplierBill.where({ id }).update({ status: "CANCELLED", cancelledBy: actorId, cancelledAt: now, cancelReason: reason });
+      if (locked.status === "APPROVED") await reverseSupplierBill(tx, id, reason, actorId);
     }
     await recordAuditEvent({ actorId, action: `SUPPLIER_BILL_${action === "approve" ? "APPROVED" : "CANCELLED"}`, entityType: "SupplierBill", entityId: id, metadata: { reason: reason || null } }, tx);
   });
@@ -260,6 +263,7 @@ export async function recordSupplierPayment(input: SupplierPaymentInput, actorId
         paymentNumber, billId: input.billId, supplierId: bill.supplierId, paymentDate: input.paymentDate, method: input.method,
         reference: input.reference || null, amount, notes: input.notes || null, idempotencyKey: input.idempotencyKey, createdBy: actorId,
       });
+      await postSupplierPayment(tx, payment.id, actorId);
       await recordAuditEvent({ actorId, action: "SUPPLIER_PAYMENT_POSTED", entityType: "SupplierPayment", entityId: payment.id, metadata: { paymentNumber, billId: input.billId, amount } }, tx);
       return payment.id;
     });
@@ -284,6 +288,7 @@ export async function voidSupplierPayment(id: string, reason: string, actorId: s
       if (!(await tx.orm.public.SupplierPayment.where({ id }).first())) notFound("Payment", "PAYMENT_NOT_FOUND");
       throw new AppError("This payment is already voided.", { code: "PAYMENT_STATUS_CONFLICT", status: 409 });
     }
+    await reverseSupplierPayment(tx, id, reason, actorId);
     await recordAuditEvent({ actorId, action: "SUPPLIER_PAYMENT_VOIDED", entityType: "SupplierPayment", entityId: id, metadata: { paymentNumber: updated[0].paymentNumber, reason } }, tx);
   });
   return getSupplierPayment(id);

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import test from "node:test";
 
+import { db } from "../../server/core/database/client.ts";
 import { changeShipment, createShipment } from "../../server/dispatch/dispatch.service.ts";
 import { shipmentInputSchema } from "../../server/dispatch/dispatch.validation.ts";
 import { addMoney, lineAmounts } from "../../server/finance/finance-rules.ts";
@@ -118,6 +119,17 @@ test("receipts never exceed the outstanding balance, even concurrently; voids re
   state = await getInvoice(ctx.invoice.id);
   assert.equal(state.outstanding, "40.67");
   ctx.paid = await receipt(ctx.invoice.id, 30);
+
+  // The ledger moved with each document, in the same transaction (D-030).
+  const ar = (await db.orm.public.LedgerAccount.where({ systemKey: "AR" }).first()).id;
+  const arNet = async (sourceType, sourceId) => {
+    const entries = await db.orm.public.JournalEntry.where({ sourceType, sourceId }).all();
+    const lines = entries.length ? await db.orm.public.JournalLine.where((line) => line.entryId.in(entries.map((entry) => entry.id))).all() : [];
+    return lines.filter((line) => line.accountId === ar).reduce((sum, line) => sum + Math.round(Number(line.debit) * 100) - Math.round(Number(line.credit) * 100), 0) / 100;
+  };
+  assert.equal(await arNet("Invoice", ctx.invoice.id), 40.67, "issuing debits receivables with the invoice total");
+  assert.equal(await arNet("CustomerReceipt", posted.id), 0, "a voided receipt is reversed");
+  assert.equal(await arNet("CustomerReceipt", ctx.paid.id), -30);
 });
 
 test("credit notes are limited by invoiced quantity and outstanding balance", async () => {

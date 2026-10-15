@@ -17,6 +17,7 @@ import { AppError } from "../core/errors/app-error";
 import { findSqlQueryError } from "../core/errors/database-errors";
 import { normalizeDecimalString, subtractDecimalStrings, toPlainDecimalString } from "../core/utils/decimal";
 import { allocateDocumentNumber, type Tx } from "../inventory/inventory.service";
+import { postPayrollApproved, postPayrollPaid, postSalaryAdvance, reverseSalaryAdvance } from "../ledger/postings";
 import { lockPayrollPeriod } from "./hr.service";
 import { adjustLine, calculatePayrollLine, employedDays, periodBounds, sumMoney, type AttendanceStatus } from "./payroll-rules";
 import type { AdvanceInput } from "./hr.validation";
@@ -57,6 +58,7 @@ export async function createAdvance(input: AdvanceInput, actorId: string) {
       idempotencyKey: input.idempotencyKey,
       createdBy: actorId,
     });
+    await postSalaryAdvance(tx, advance.id, actorId);
     await recordAuditEvent({ actorId, action: "SALARY_ADVANCE_ISSUED", entityType: "SalaryAdvance", entityId: advance.id, metadata: { advanceNumber, amount: input.amount } }, tx);
     return advance.id;
   }).catch(async (error) => {
@@ -80,6 +82,7 @@ export async function cancelAdvance(id: string, actorId: string) {
     if (!updated.length) {
       throw new AppError("Only open advances with nothing recovered yet can be cancelled.", { code: "ADVANCE_NOT_CANCELLABLE", status: 409 });
     }
+    await reverseSalaryAdvance(tx, id, actorId);
     await recordAuditEvent({ actorId, action: "SALARY_ADVANCE_CANCELLED", entityType: "SalaryAdvance", entityId: id }, tx);
   });
   return getAdvance(id);
@@ -326,10 +329,12 @@ export async function changePayrollRun(id: string, action: "recalculate" | "appr
         }
       }
       await tx.orm.public.PayrollRun.where({ id }).update({ status: "APPROVED", approvedBy: actorId, approvedAt: new Date().toISOString() });
+      await postPayrollApproved(tx, id, actorId);
     }
 
     if (action === "pay") {
       await tx.orm.public.PayrollRun.where({ id }).update({ status: "PAID", paidAt: new Date().toISOString(), paymentReference: paymentReference || null });
+      await postPayrollPaid(tx, id, actorId);
     }
 
     if (action === "cancel") {
