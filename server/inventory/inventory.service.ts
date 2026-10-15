@@ -766,7 +766,7 @@ export async function postStockDocument(input: StockDocumentInput, actorId: stri
   }
 
   // These sources are posted only by their own modules, inside their transactions.
-  if (input.sourceType && ["QualityInspection", "PackingList", "Shipment", "StockReservation"].includes(input.sourceType)) {
+  if (input.sourceType && ["QualityInspection", "PackingList", "Shipment", "StockReservation", "PurchaseReceipt"].includes(input.sourceType)) {
     throw new AppError(`Stock documents for a ${input.sourceType} are posted by that module, not directly.`, {
       code: "SOURCE_NOT_ALLOWED",
       status: 400,

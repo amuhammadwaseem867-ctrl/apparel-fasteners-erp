@@ -21,6 +21,18 @@ export async function authorizeRequest(
   return user;
 }
 
+/* Like authorizeRequest, but any one of `permissions` is enough. */
+export async function authorizeAnyRequest(request: Request, permissions: string[]) {
+  const user = await getCurrentUser(extractSessionTokenFromRequest(request));
+  if (!user) {
+    throw new AppError("Authentication is required.", { code: "AUTH_REQUIRED", status: 401 });
+  }
+  if (!permissions.some((permission) => user.permissions.includes(permission))) {
+    throw new AppError("Forbidden.", { code: "FORBIDDEN", status: 403, details: { requiredPermission: permissions.join(" or ") } });
+  }
+  return user;
+}
+
 export async function parseRequestBody<T>(
   request: Request,
   schema: {
