@@ -1,344 +1,237 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { CalendarDays, Plus, X } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
-import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
-import Select from "@/components/ui/Select";
-import FileUpload from "@/components/ui/FileUpload";
 import Modal from "@/components/ui/Modal";
-import Drawer from "@/components/ui/Drawer";
-import ConfirmDialog from "@/components/ui/ConfirmDialog";
-import EmptyState from "@/components/ui/EmptyState";
-import { useToast } from "@/components/ui/ToastProvider";
-import { usePeoplePayrollStore } from "@/lib/usePeoplePayrollStore";
-import { DEPARTMENTS, LEAVE_STATUSES, LEAVE_TYPES, getDepartmentLabel } from "@/config/people-payroll";
+import InventoryPager from "@/components/inventory/InventoryPager";
+import { newKey, today } from "@/components/people/peopleUi";
+import { apiRequest } from "@/lib/api/client";
+import useCurrentUser from "@/lib/auth/useCurrentUser";
+import useApiData, { toQuery } from "@/lib/inventory/useApiData";
 
-import "../shared.css";
-import "./leave.css";
-import { backendUnavailableReason } from "@/lib/backendUnavailable";
+import "@/components/inventory/InventoryWorkspace.css";
 
-const UNAVAILABLE_REASON = backendUnavailableReason("People and payroll");
+const TONE = { PENDING: "warning", APPROVED: "good", REJECTED: "danger", CANCELLED: "danger" };
 
-const EMPTY_FORM = {
-  employeeId: "",
-  employeeName: "",
-  departmentId: "",
-  departmentName: "",
-  leaveType: "",
-  fromDate: "",
-  toDate: "",
-  reason: "",
-};
+function RequestDialog({ types, onClose, onSaved }) {
+  const employees = useApiData("/api/hr/employees?status=ACTIVE&pageSize=200");
+  const [values, setValues] = useState({ employeeId: "", leaveTypeId: "", fromDate: today(), toDate: today(), reason: "" });
+  const [key] = useState(newKey);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const set = (field) => (event) => setValues((current) => ({ ...current, [field]: event.target.value }));
 
-const ACTION_COPY = {
-  approve: { title: "Approve leave request?", label: "Approve", variant: "success" },
-  reject: { title: "Reject leave request?", label: "Reject", variant: "danger" },
-  cancel: { title: "Cancel leave request?", label: "Cancel Request", variant: "warning" },
-};
+  async function submit(event) {
+    event.preventDefault();
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      await apiRequest("/api/hr/leave-requests", { method: "POST", body: JSON.stringify({ ...values, idempotencyKey: key }) });
+      onSaved();
+    } catch (cause) {
+      setError(cause.message);
+      setSaving(false);
+    }
+  }
 
-function formatDate(value) {
-  if (!value) return "—";
-  const parsed = new Date(`${value}T00:00:00`);
-  return Number.isNaN(parsed.getTime())
-    ? value
-    : new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(parsed);
+  return (
+    <Modal open onClose={saving ? undefined : onClose} title="New leave request" description="Company holidays in the range (Planning → Calendar) are not counted. Approval records the leave on attendance for payroll." size="medium">
+      <form className="inv-dialog" onSubmit={submit}>
+        <div className="inv-dialog__grid">
+          <div className="inv-field">
+            <label htmlFor="lv-emp">Employee *</label>
+            <select id="lv-emp" required value={values.employeeId} onChange={set("employeeId")}>
+              <option value="">Select employee</option>
+              {(employees.data?.employees ?? []).map((row) => <option key={row.id} value={row.id}>{row.employeeCode} · {row.name}</option>)}
+            </select>
+          </div>
+          <div className="inv-field">
+            <label htmlFor="lv-type">Leave type *</label>
+            <select id="lv-type" required value={values.leaveTypeId} onChange={set("leaveTypeId")}>
+              <option value="">Select type</option>
+              {types.filter((type) => type.status === "ACTIVE").map((type) => <option key={type.id} value={type.id}>{type.name} ({type.paid ? "paid" : "unpaid"})</option>)}
+            </select>
+          </div>
+          <div className="inv-field"><label htmlFor="lv-from">From *</label><input id="lv-from" type="date" required value={values.fromDate} onChange={set("fromDate")} /></div>
+          <div className="inv-field"><label htmlFor="lv-to">To *</label><input id="lv-to" type="date" required min={values.fromDate} value={values.toDate} onChange={set("toDate")} /></div>
+        </div>
+        <div className="inv-field"><label htmlFor="lv-reason">Reason *</label><input id="lv-reason" required minLength={3} maxLength={500} value={values.reason} onChange={set("reason")} /></div>
+        {error && <p className="inv-dialog__error" role="alert">{error}</p>}
+        <div className="inv-dialog__actions">
+          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button type="submit" variant="primary" loading={saving}>Submit request</Button>
+        </div>
+      </form>
+    </Modal>
+  );
 }
 
-function statusLabel(status) {
-  return LEAVE_STATUSES.find((item) => item.value === status)?.label || status || "—";
+function TypeDialog({ type, onClose, onSaved }) {
+  const [values, setValues] = useState({ code: "", name: type?.name ?? "", paid: type?.paid ?? true, annualDays: type?.annualDays ?? "0", status: type?.status ?? "ACTIVE" });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  async function submit(event) {
+    event.preventDefault();
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      await apiRequest(type ? `/api/hr/leave-types/${type.id}` : "/api/hr/leave-types", {
+        method: type ? "PATCH" : "POST",
+        body: JSON.stringify(type ? { name: values.name, annualDays: Number(values.annualDays), status: values.status } : { code: values.code.toUpperCase(), name: values.name, paid: values.paid, annualDays: Number(values.annualDays) }),
+      });
+      onSaved();
+    } catch (cause) {
+      setError(cause.message);
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal open onClose={saving ? undefined : onClose} title={type ? `Edit ${type.code}` : "New leave type"} description="Annual days 0 means the type is not limited (balances are not tracked)." size="medium">
+      <form className="inv-dialog" onSubmit={submit}>
+        <div className="inv-dialog__grid">
+          {!type && <div className="inv-field"><label htmlFor="lt-code">Code *</label><input id="lt-code" required maxLength={12} value={values.code} onChange={(event) => setValues({ ...values, code: event.target.value })} /></div>}
+          <div className="inv-field"><label htmlFor="lt-name">Name *</label><input id="lt-name" required minLength={2} maxLength={80} value={values.name} onChange={(event) => setValues({ ...values, name: event.target.value })} /></div>
+          <div className="inv-field"><label htmlFor="lt-days">Days per year</label><input id="lt-days" type="number" min="0" max="366" step="0.5" value={values.annualDays} onChange={(event) => setValues({ ...values, annualDays: event.target.value })} /></div>
+          {!type && <div className="inv-field"><label htmlFor="lt-paid">Pay</label><select id="lt-paid" value={values.paid ? "yes" : "no"} onChange={(event) => setValues({ ...values, paid: event.target.value === "yes" })}><option value="yes">Paid</option><option value="no">Unpaid</option></select></div>}
+          {type && <div className="inv-field"><label htmlFor="lt-status">Status</label><select id="lt-status" value={values.status} onChange={(event) => setValues({ ...values, status: event.target.value })}><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option></select></div>}
+        </div>
+        {error && <p className="inv-dialog__error" role="alert">{error}</p>}
+        <div className="inv-dialog__actions">
+          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button type="submit" variant="primary" loading={saving}>Save</Button>
+        </div>
+      </form>
+    </Modal>
+  );
 }
 
 export default function LeavePage() {
-  const toast = useToast();
-  const store = usePeoplePayrollStore();
-  const [search, setSearch] = useState("");
-  const [employeeFilter, setEmployeeFilter] = useState("");
-  const [departmentFilter, setDepartmentFilter] = useState("");
-  const [typeFilter, setTypeFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [fromFilter, setFromFilter] = useState("");
-  const [toFilter, setToFilter] = useState("");
-  const [formOpen, setFormOpen] = useState(false);
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [errors, setErrors] = useState({});
-  const [saving, setSaving] = useState(false);
-  const [documentFiles, setDocumentFiles] = useState([]);
-  const [viewRequest, setViewRequest] = useState(null);
-  const [actionTarget, setActionTarget] = useState(null);
-  const [rejectionReason, setRejectionReason] = useState("");
-  const [rejectionError, setRejectionError] = useState("");
+  const { can } = useCurrentUser();
+  const manage = can("hr:manage");
+  const [status, setStatus] = useState("PENDING");
+  const [page, setPage] = useState(1);
+  const [year, setYear] = useState(() => Number(today().slice(0, 4)));
+  const [dialog, setDialog] = useState(null);
+  const [error, setError] = useState("");
+  const types = useApiData("/api/hr/leave-types");
+  const requests = useApiData(`/api/hr/leave-requests${toQuery({ status, page, pageSize: 50 })}`);
+  const balances = useApiData(`/api/hr/leave-balances${toQuery({ year })}`);
+  const rows = requests.data?.requests ?? [];
 
-  const employeeOptions = useMemo(
-    () => (store.employees || []).map((employee) => ({
-      value: employee.employeeId || employee.id,
-      label: `${employee.fullName} (${employee.employeeId || "No ID"})`,
-    })),
-    [store.employees]
-  );
-
-  const filtered = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    return (store.leaveRequests || []).filter((request) => {
-      const matchesSearch =
-        !query ||
-        (request.requestId || "").toLowerCase().includes(query) ||
-        (request.employeeName || "").toLowerCase().includes(query) ||
-        (request.employeeId || "").toLowerCase().includes(query) ||
-        (request.reason || "").toLowerCase().includes(query);
-      return (
-        matchesSearch &&
-        (!employeeFilter || request.employeeId === employeeFilter) &&
-        (!departmentFilter || request.departmentId === departmentFilter) &&
-        (!typeFilter || request.leaveType === typeFilter) &&
-        (!statusFilter || request.status === statusFilter) &&
-        (!fromFilter || Boolean(request.toDate && request.toDate >= fromFilter)) &&
-        (!toFilter || Boolean(request.fromDate && request.fromDate <= toFilter))
-      );
-    });
-  }, [store.leaveRequests, search, employeeFilter, departmentFilter, typeFilter, statusFilter, fromFilter, toFilter]);
-
-  const hasFilters = Boolean(search || employeeFilter || departmentFilter || typeFilter || statusFilter || fromFilter || toFilter);
-
-  function setField(key, value) {
-    setForm((current) => ({ ...current, [key]: value }));
-    setErrors((current) => ({ ...current, [key]: undefined }));
-  }
-
-  function handleEmployeeChange(value) {
-    const employee = (store.employees || []).find((item) => item.employeeId === value || item.id === value);
-    setForm((current) => ({
-      ...current,
-      employeeId: employee ? employee.employeeId || employee.id : value,
-      employeeName: employee ? employee.fullName : "",
-      departmentId: employee?.departmentId || "",
-      departmentName: employee ? getDepartmentLabel(employee.departmentId) : "",
-    }));
-    setErrors((current) => ({ ...current, employeeId: undefined }));
-  }
-
-  function openCreate() {
-    setForm(EMPTY_FORM);
-    setDocumentFiles([]);
-    setErrors({});
-    setFormOpen(true);
-  }
-
-  function validate() {
-    const nextErrors = {};
-    if (!form.employeeId) nextErrors.employeeId = "Employee is required.";
-    if (!form.leaveType) nextErrors.leaveType = "Leave type is required.";
-    if (!form.fromDate) nextErrors.fromDate = "Start date is required.";
-    if (!form.toDate) nextErrors.toDate = "End date is required.";
-    if (form.fromDate && form.toDate && form.toDate < form.fromDate) nextErrors.toDate = "End date cannot be before start date.";
-    if (!form.reason.trim()) nextErrors.reason = "Please provide a reason for the leave request.";
-    return nextErrors;
-  }
-
-  async function handleSubmit() {
-    if (saving) return;
-    const nextErrors = validate();
-    if (Object.keys(nextErrors).length > 0) {
-      setErrors(nextErrors);
-      toast.error({ title: "Cannot submit leave request", message: "Please review the highlighted fields." });
-      return;
+  async function act(row, action) {
+    const note = window.prompt(action === "approve" ? "Note (optional)" : `Reason to ${action}?`);
+    if (note === null || (action !== "approve" && !note)) return;
+    setError("");
+    try {
+      await apiRequest(`/api/hr/leave-requests/${row.id}`, { method: "PATCH", body: JSON.stringify({ action, note }) });
+      requests.reload();
+      balances.reload();
+    } catch (cause) {
+      setError(cause.message);
     }
-    setSaving(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 0));
-    const employee = (store.employees || []).find((item) => item.employeeId === form.employeeId || item.id === form.employeeId);
-    const days = Math.floor((new Date(`${form.toDate}T00:00:00Z`) - new Date(`${form.fromDate}T00:00:00Z`)) / 86400000) + 1;
-    store.addLeaveRequest({
-      ...form,
-      employeeName: employee?.fullName || form.employeeName,
-      departmentId: employee?.departmentId || form.departmentId,
-      departmentName: employee ? getDepartmentLabel(employee.departmentId) : form.departmentName,
-      days,
-      document: documentFiles[0]?.file
-        ? { name: documentFiles[0].file.name, size: documentFiles[0].file.size, type: documentFiles[0].file.type, file: documentFiles[0].file }
-        : "",
-    });
-    toast.success({ title: "Leave request submitted", message: `${employee?.fullName || form.employeeName}'s request is pending review.` });
-    setSaving(false);
-    setFormOpen(false);
-    setForm(EMPTY_FORM);
-    setDocumentFiles([]);
-    setErrors({});
   }
-
-  function openAction(action, request) {
-    setActionTarget({ action, request });
-    setRejectionReason("");
-    setRejectionError("");
-  }
-
-  function confirmAction() {
-    if (!actionTarget) return;
-    const { action, request } = actionTarget;
-    if (action === "reject" && !rejectionReason.trim()) {
-      setRejectionError("Rejection reason is required.");
-      return;
-    }
-    if (action === "approve") {
-      store.approveLeaveRequest(request.id);
-    } else if (action === "reject") {
-      store.rejectLeaveRequest(request.id);
-      store.updateLeaveRequest(request.id, { rejectionReason: rejectionReason.trim() });
-    } else {
-      store.cancelLeaveRequest(request.id);
-    }
-    const result = action === "approve" ? "approved" : action === "reject" ? "rejected" : "cancelled";
-    toast.success({ title: `Leave request ${result}`, message: `${request.requestId || request.employeeName}'s request was ${result}.` });
-    setActionTarget(null);
-    setRejectionReason("");
-  }
-
-  function clearFilters() {
-    setSearch("");
-    setEmployeeFilter("");
-    setDepartmentFilter("");
-    setTypeFilter("");
-    setStatusFilter("");
-    setFromFilter("");
-    setToFilter("");
-  }
-
-  const actionCopy = actionTarget ? ACTION_COPY[actionTarget.action] : null;
 
   return (
-    <main className="pp-page">
-      <PageHeader
-        eyebrow="LEAVE MANAGEMENT"
-        title="Leave Management"
-        description="Manage employee leave requests, approvals and leave history."
-        action={<Button variant="primary" icon={Plus} onClick={openCreate} disabled title={UNAVAILABLE_REASON}>Request Leave</Button>}
-      />
-
-      <div className="pp-toolbar pp-toolbar--stacked">
-        <div className="pp-toolbar__field pp-toolbar__field--search">
-          <Input label="Search" search clearable value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search employee, request or reason..." />
+    <main className="inv-page">
+      <header className="inv-header">
+        <div>
+          <p className="inv-header__eyebrow"><Link href="/people-payroll">People &amp; Payroll</Link></p>
+          <h1>Leave</h1>
+          <p>Requests, approvals and balances. Approved leave is written to attendance (paid or unpaid leave) and flows into payroll; once a month&apos;s payroll is approved its leave cannot change.</p>
         </div>
-        <div className="pp-toolbar__field">
-          <Select label="Employee" value={employeeFilter} onChange={setEmployeeFilter} options={[{ value: "", label: "All Employees" }, ...employeeOptions]} searchable clearable />
+        <div className="inv-header__actions">
+          {manage && <Button variant="primary" disabled={!types.data} onClick={() => setDialog({ kind: "request" })}>New request</Button>}
+          {manage && <Button variant="secondary" onClick={() => setDialog({ kind: "type" })}>New leave type</Button>}
         </div>
-        <div className="pp-toolbar__field">
-          <Select label="Department" value={departmentFilter} onChange={setDepartmentFilter} options={[{ value: "", label: "All Departments" }, ...DEPARTMENTS]} searchable clearable />
-        </div>
-        <div className="pp-toolbar__field">
-          <Select label="Leave Type" value={typeFilter} onChange={setTypeFilter} options={[{ value: "", label: "All Types" }, ...LEAVE_TYPES]} clearable />
-        </div>
-        <div className="pp-toolbar__field">
-          <Select label="Status" value={statusFilter} onChange={setStatusFilter} options={[{ value: "", label: "All Statuses" }, ...LEAVE_STATUSES]} clearable />
-        </div>
-        <div className="pp-toolbar__field"><Input label="From" type="date" value={fromFilter} onChange={(event) => setFromFilter(event.target.value)} /></div>
-        <div className="pp-toolbar__field"><Input label="To" type="date" value={toFilter} onChange={(event) => setToFilter(event.target.value)} /></div>
-        <div className="pp-toolbar__actions">
-          <Button variant="ghost" icon={X} onClick={clearFilters} disabled={!hasFilters}>Clear Filters</Button>
-        </div>
-        <div className="pp-toolbar__meta"><span><span className="pp-toolbar__count">{filtered.length}</span> leave request{filtered.length === 1 ? "" : "s"}</span><span>{store.leaveRequests.length} total records</span></div>
-      </div>
-
-      <section className="pp-panel">
-        <div className="pp-panel__head"><h2 className="pp-panel__title">Leave Requests</h2></div>
-        {filtered.length === 0 ? (
-          <div className="pp-empty">
-            <EmptyState
-              icon={CalendarDays}
-              title="No leave requests found"
-              description={store.leaveRequests.length ? "No requests match the selected filters." : "Leave requests will appear here once connected or submitted."}
-              action={!store.leaveRequests.length ? <Button variant="primary" icon={Plus} onClick={openCreate} disabled title={UNAVAILABLE_REASON}>Request Leave</Button> : null}
-            />
+      </header>
+      {error && <p className="inv-dialog__error" role="alert">{error}</p>}
+      <section className="inv-card">
+        <div className="inv-card__header"><h2>Requests</h2></div>
+        <div className="inv-toolbar">
+          <div className="inv-field">
+            <label htmlFor="lv-status">Status</label>
+            <select id="lv-status" value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }}>
+              <option value="PENDING">Pending</option><option value="APPROVED">Approved</option><option value="REJECTED">Rejected</option><option value="CANCELLED">Cancelled</option><option value="">All</option>
+            </select>
           </div>
-        ) : (
-          <div className="pp-table-wrap"><table className="pp-table">
-            <thead><tr><th>Request ID</th><th>Employee</th><th>Department</th><th>Leave Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody>{filtered.map((request) => (
-              <tr key={request.id}>
-                <td className="pp-table__strong">{request.requestId || "—"}</td>
-                <td>{request.employeeName || request.employeeId || "—"}</td>
-                <td>{request.departmentName || getDepartmentLabel(request.departmentId)}</td>
-                <td>{LEAVE_TYPES.find((type) => type.value === request.leaveType)?.label || request.leaveType || "—"}</td>
-                <td>{formatDate(request.fromDate)}</td><td>{formatDate(request.toDate)}</td><td>{request.days || "—"}</td>
-                <td className="pp-table__muted">{request.reason || "—"}</td>
-                <td><span className={`lv-status lv-status--${request.status}`}>{statusLabel(request.status)}</span></td>
-                <td><div className="pp-actions">
-                  <button type="button" className="pp-action-btn" onClick={() => setViewRequest(request)}>View</button>
-                  {request.status === "pending" && <>
-                    <button type="button" className="pp-action-btn pp-action-btn--primary" onClick={() => openAction("approve", request)}>Approve</button>
-                    <button type="button" className="pp-action-btn pp-action-btn--danger" onClick={() => openAction("reject", request)}>Reject</button>
-                  </>}
-                  {(request.status === "pending" || request.status === "approved") && <button type="button" className="pp-action-btn" onClick={() => openAction("cancel", request)}>Cancel</button>}
-                </div></td>
-              </tr>
-            ))}</tbody>
-          </table></div>
+        </div>
+        {requests.error ? <p className="inv-state inv-state--error" role="alert">{requests.error}</p> : !requests.data ? <p className="inv-state" role="status">Loading…</p> : rows.length === 0 ? <p className="inv-state">No requests.</p> : (
+          <div className="inv-table-wrap">
+            <table className="inv-table">
+              <thead><tr><th>Request</th><th>Employee</th><th>Type</th><th>Dates</th><th className="inv-num">Days</th><th>Status</th><th /></tr></thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.id}>
+                    <td data-label="Request"><strong>{row.requestNumber}</strong><small>{row.reason}</small></td>
+                    <td data-label="Employee">{row.employeeName}<small>{row.employeeCode}</small></td>
+                    <td data-label="Type">{row.leaveTypeName}<small>{row.paid ? "paid" : "unpaid"}</small></td>
+                    <td data-label="Dates">{row.fromDate}{row.toDate !== row.fromDate ? ` → ${row.toDate}` : ""}</td>
+                    <td data-label="Days" className="inv-num">{row.days}</td>
+                    <td data-label="Status"><span className={`inv-badge inv-badge--${TONE[row.status]}`}>{row.status.charAt(0) + row.status.slice(1).toLowerCase()}</span>{row.decisionNote && <small>{row.decisionNote}</small>}</td>
+                    <td data-label="">
+                      {manage && row.status === "PENDING" && <><button type="button" className="inv-link-button" onClick={() => act(row, "approve")}>Approve</button> <button type="button" className="inv-link-button" onClick={() => act(row, "reject")}>Reject</button> </>}
+                      {manage && ["PENDING", "APPROVED"].includes(row.status) && <button type="button" className="inv-link-button" onClick={() => act(row, "cancel")}>Cancel</button>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <InventoryPager page={page} hasMore={requests.data?.hasMore} onChange={setPage} disabled={requests.loading} />
+      </section>
+      <section className="inv-card">
+        <div className="inv-card__header"><h2>Balances</h2></div>
+        <div className="inv-toolbar"><div className="inv-field"><label htmlFor="lv-year">Year</label><input id="lv-year" type="number" min="2000" max="2100" value={year} onChange={(event) => setYear(Number(event.target.value) || year)} /></div></div>
+        {balances.error ? <p className="inv-state inv-state--error" role="alert">{balances.error}</p> : !balances.data ? <p className="inv-state" role="status">Loading…</p> : balances.data.types.length === 0 ? <p className="inv-state">No leave type has an annual entitlement, so there are no balances to show.</p> : (
+          <div className="inv-table-wrap">
+            <table className="inv-table">
+              <thead><tr><th>Employee</th>{balances.data.types.map((type) => <th key={type.id} className="inv-num">{type.name} ({type.annualDays})</th>)}</tr></thead>
+              <tbody>
+                {balances.data.employees.map((employee) => (
+                  <tr key={employee.id}>
+                    <td data-label="Employee">{employee.name}<small>{employee.employeeCode}</small></td>
+                    {employee.balances.map((balance, index) => (
+                      <td key={balance.leaveTypeId} data-label={balances.data.types[index].name} className={`inv-num ${Number(balance.remaining) < 0 ? "inv-neg" : ""}`}>
+                        {balance.remaining} left<small>{balance.used} used{Number(balance.pending) ? ` · ${balance.pending} pending` : ""}</small>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
-
-      <Modal
-        open={formOpen}
-        onClose={() => { if (!saving) { setFormOpen(false); setForm(EMPTY_FORM); setDocumentFiles([]); setErrors({}); } }}
-        title="Request Leave"
-        description="Submit a leave request for review."
-        size="large"
-        loading={saving}
-        footer={<div className="pp-modal-footer">
-          <Button variant="ghost" disabled={saving} onClick={() => { setFormOpen(false); setForm(EMPTY_FORM); setDocumentFiles([]); setErrors({}); }}>Cancel</Button>
-          <Button variant="primary" loading={saving} onClick={handleSubmit}>Submit Request</Button>
-        </div>}
-      >
-        <div className="pp-form-grid">
-          <Select label="Employee" required value={form.employeeId} onChange={handleEmployeeChange} options={employeeOptions} searchable clearable error={errors.employeeId} />
-          <Select label="Leave Type" required value={form.leaveType} onChange={(value) => setField("leaveType", value)} options={LEAVE_TYPES} error={errors.leaveType} />
-          <Input label="From Date" required type="date" value={form.fromDate} onChange={(event) => setField("fromDate", event.target.value)} error={errors.fromDate} />
-          <Input label="To Date" required type="date" value={form.toDate} onChange={(event) => setField("toDate", event.target.value)} error={errors.toDate} />
-          <div className="pp-form-field pp-form-field--full">
-            <Input label="Reason" required value={form.reason} onChange={(event) => setField("reason", event.target.value)} error={errors.reason} />
-          </div>
-          <div className="pp-form-field pp-form-field--full">
-            <FileUpload
-              label="Supporting Document (optional)"
-              description="Attach one supporting PDF, document, spreadsheet or image."
-              accept={[".pdf", ".doc", ".docx", ".xls", ".xlsx", ".jpg", ".jpeg", ".png", ".webp"]}
-              maxFiles={1}
-              multiple={false}
-              value={documentFiles}
-              onChange={setDocumentFiles}
-              disabled={saving}
-            />
-          </div>
-        </div>
-      </Modal>
-
-      <Drawer open={Boolean(viewRequest)} onClose={() => setViewRequest(null)} title={viewRequest?.requestId || "Leave request"} description="Leave request details">
-        {viewRequest && <div className="pp-detail-grid">
-          <div className="pp-detail-item"><span className="pp-detail-item__label">Employee</span><span className="pp-detail-item__value">{viewRequest.employeeName || viewRequest.employeeId || "—"}</span></div>
-          <div className="pp-detail-item"><span className="pp-detail-item__label">Department</span><span className="pp-detail-item__value">{viewRequest.departmentName || getDepartmentLabel(viewRequest.departmentId)}</span></div>
-          <div className="pp-detail-item"><span className="pp-detail-item__label">Leave Type</span><span className="pp-detail-item__value">{LEAVE_TYPES.find((type) => type.value === viewRequest.leaveType)?.label || viewRequest.leaveType}</span></div>
-          <div className="pp-detail-item"><span className="pp-detail-item__label">Date Range</span><span className="pp-detail-item__value">{formatDate(viewRequest.fromDate)} – {formatDate(viewRequest.toDate)}</span></div>
-          <div className="pp-detail-item"><span className="pp-detail-item__label">Days / Status</span><span className="pp-detail-item__value">{viewRequest.days || "—"} / {statusLabel(viewRequest.status)}</span></div>
-          <div className="pp-detail-item pp-detail-item--full"><span className="pp-detail-item__label">Reason</span><span className="pp-detail-item__value">{viewRequest.reason || "—"}</span></div>
-          {viewRequest.rejectionReason && <div className="pp-detail-item pp-detail-item--full"><span className="pp-detail-item__label">Rejection Reason</span><span className="pp-detail-item__value">{viewRequest.rejectionReason}</span></div>}
-          {viewRequest.document && <div className="pp-detail-item pp-detail-item--full"><span className="pp-detail-item__label">Supporting Document</span><span className="pp-detail-item__value">{viewRequest.document.name || viewRequest.document}</span></div>}
-        </div>}
-      </Drawer>
-
-      <ConfirmDialog
-        open={Boolean(actionTarget)}
-        onClose={() => { setActionTarget(null); setRejectionReason(""); setRejectionError(""); }}
-        onConfirm={confirmAction}
-        title={actionCopy?.title}
-        description={actionTarget ? `${actionTarget.request.requestId || actionTarget.request.employeeName}'s request will be ${actionTarget.action === "approve" ? "approved" : actionTarget.action === "reject" ? "rejected" : "cancelled"}.` : ""}
-        confirmLabel={actionCopy?.label}
-        variant={actionCopy?.variant}
-      >
-        {actionTarget?.action === "reject" && (
-          <div className="pp-rejection-field">
-            <Input label="Rejection Reason" required value={rejectionReason} onChange={(event) => { setRejectionReason(event.target.value); setRejectionError(""); }} error={rejectionError} />
+      <section className="inv-card">
+        <div className="inv-card__header"><h2>Leave types</h2></div>
+        {!types.data ? <p className="inv-state" role="status">Loading…</p> : types.data.leaveTypes.length === 0 ? <p className="inv-state">No leave types yet. Add the types your company uses (for example annual, sick, casual, unpaid).</p> : (
+          <div className="inv-table-wrap">
+            <table className="inv-table">
+              <thead><tr><th>Type</th><th>Pay</th><th className="inv-num">Days per year</th><th>Status</th><th /></tr></thead>
+              <tbody>
+                {types.data.leaveTypes.map((type) => (
+                  <tr key={type.id}>
+                    <td data-label="Type"><strong>{type.code}</strong> {type.name}</td>
+                    <td data-label="Pay">{type.paid ? "Paid" : "Unpaid"}</td>
+                    <td data-label="Days per year" className="inv-num">{Number(type.annualDays) ? type.annualDays : "Not limited"}</td>
+                    <td data-label="Status">{type.status === "ACTIVE" ? "Active" : "Inactive"}</td>
+                    <td data-label="">{manage && <button type="button" className="inv-link-button" onClick={() => setDialog({ kind: "type", type })}>Edit</button>}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
-      </ConfirmDialog>
+      </section>
+      {dialog?.kind === "request" && <RequestDialog types={types.data?.leaveTypes ?? []} onClose={() => setDialog(null)} onSaved={() => { setDialog(null); requests.reload(); balances.reload(); }} />}
+      {dialog?.kind === "type" && <TypeDialog type={dialog.type} onClose={() => setDialog(null)} onSaved={() => { setDialog(null); types.reload(); balances.reload(); }} />}
     </main>
   );
 }

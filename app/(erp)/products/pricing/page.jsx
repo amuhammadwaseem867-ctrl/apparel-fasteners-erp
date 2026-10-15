@@ -1,522 +1,145 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowUpRight,
-  Calculator,
-  ChevronDown,
-  CircleDollarSign,
-  FileText,
-  Percent,
-  Plus,
-  Search,
-  Settings2,
-  Tag,
-  WalletCards,
-} from "lucide-react";
+import { useState } from "react";
 
-import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
+import InventoryPager from "@/components/inventory/InventoryPager";
+import ItemPicker from "@/components/inventory/ItemPicker";
+import { apiRequest } from "@/lib/api/client";
+import useCurrentUser from "@/lib/auth/useCurrentUser";
+import useApiData, { toQuery } from "@/lib/inventory/useApiData";
 
-import "./Pricing.css";
+import "@/components/inventory/InventoryWorkspace.css";
 
-const PRICING_STRUCTURES = [
-  {
-    id: "purchase",
-    title: "Purchase Pricing",
-    description:
-      "Define supplier purchase costs, standard costs and minimum purchase prices.",
-    icon: WalletCards,
-    fields: [
-      "Purchase Cost",
-      "Standard Cost",
-      "Supplier Price",
-      "Minimum Purchase Price",
-    ],
-  },
-  {
-    id: "sales",
-    title: "Sales Pricing",
-    description:
-      "Manage selling prices, wholesale pricing and customer-specific pricing.",
-    icon: Tag,
-    fields: [
-      "Selling Price",
-      "Wholesale Price",
-      "Customer Price",
-      "Price Lists",
-    ],
-  },
-  {
-    id: "margin",
-    title: "Margin Management",
-    description:
-      "Configure target margins, minimum margins and permitted discounts.",
-    icon: Percent,
-    fields: [
-      "Target Margin",
-      "Minimum Margin",
-      "Discount Limit",
-      "Margin Rules",
-    ],
-  },
-  {
-    id: "tax",
-    title: "Tax Treatment",
-    description:
-      "Configure taxable, zero-rated, exempt and non-taxable pricing treatment.",
-    icon: Calculator,
-    fields: [
-      "Tax Rate",
-      "Tax Treatment",
-      "Inclusive / Exclusive",
-      "Tax Category",
-    ],
-  },
-];
+const todayIso = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 
-const CURRENCIES = [
-  "All Currencies",
-  "PKR",
-  "USD",
-  "EUR",
-  "GBP",
-  "CNY",
-  "HKD",
-];
+export default function PricingPage() {
+  const { can } = useCurrentUser();
+  const manage = can("products:update");
+  const categories = useApiData("/api/products/categories");
+  const [item, setItem] = useState(null);
+  const [single, setSingle] = useState({ unitPrice: "", effectiveDate: todayIso(), reason: "" });
+  const [bulk, setBulk] = useState({ category: "", percent: "", effectiveDate: todayIso(), reason: "" });
+  const [preview, setPreview] = useState(null);
+  const [page, setPage] = useState(1);
+  const [busy, setBusy] = useState("");
+  const [message, setMessage] = useState({ error: "", notice: "" });
+  const history = useApiData(`/api/products/prices${toQuery({ productId: item?.id ?? "", page, pageSize: 50 })}`);
 
-const PRICING_STATUS = [
-  "All Status",
-  "Active",
-  "Draft",
-  "Inactive",
-];
-
-export default function ProductPricingPage() {
-  const [search, setSearch] = useState("");
-  const [currency, setCurrency] =
-    useState("All Currencies");
-  const [status, setStatus] =
-    useState("All Status");
-  const [showFilters, setShowFilters] =
-    useState(false);
-
-  const filteredStructures = useMemo(() => {
-    const query = search.trim().toLowerCase();
-
-    if (!query) {
-      return PRICING_STRUCTURES;
+  async function run(label, work) {
+    setBusy(label);
+    setMessage({ error: "", notice: "" });
+    try {
+      await work();
+    } catch (cause) {
+      setMessage({ error: cause.message, notice: "" });
+    } finally {
+      setBusy("");
     }
-
-    return PRICING_STRUCTURES.filter((item) => {
-      return (
-        item.title.toLowerCase().includes(query) ||
-        item.description.toLowerCase().includes(query) ||
-        item.fields.some((field) =>
-          field.toLowerCase().includes(query)
-        )
-      );
-    });
-  }, [search]);
-
-  function clearFilters() {
-    setSearch("");
-    setCurrency("All Currencies");
-    setStatus("All Status");
   }
 
+  const changeOne = (event) => {
+    event.preventDefault();
+    run("single", async () => {
+      const result = await apiRequest("/api/products/prices", { method: "POST", body: JSON.stringify({ productId: item.id, unitPrice: Number(single.unitPrice), effectiveDate: single.effectiveDate, reason: single.reason }) });
+      setMessage({ error: "", notice: `${result.sku}: ${result.previous} → ${result.next}` });
+      setItem({ ...item, unitPrice: result.next });
+      setSingle({ ...single, unitPrice: "", reason: "" });
+      history.reload();
+    });
+  };
+  const bulkBody = (apply) => JSON.stringify({ ...bulk, percent: Number(bulk.percent), apply });
+  const previewBulk = (event) => { event.preventDefault(); run("preview", async () => setPreview(await apiRequest("/api/products/prices/bulk", { method: "POST", body: bulkBody(false) }))); };
+  const applyBulk = () => run("apply", async () => {
+    const result = await apiRequest("/api/products/prices/bulk", { method: "POST", body: bulkBody(true) });
+    setPreview(null);
+    setMessage({ error: "", notice: `${result.changes.length} prices changed in ${bulk.category}.` });
+    history.reload();
+  });
+
   return (
-    <div className="pricing-page">
-      <PageHeader
-        eyebrow="Product Master"
-        title="Pricing"
-        description="Manage product costs, selling prices, margins and tax treatment."
-        action={
-          <div className="pricing-page__header-actions">
-            <Link href="/products">
-              <Button
-                variant="secondary"
-                icon={ArrowLeft}
-              >
-                Products
-              </Button>
-            </Link>
-
-            <Button
-              icon={Plus}
-              disabled
-            >
-              Add Price Rule
-            </Button>
-          </div>
-        }
-      />
-
-      <div className="pricing-notice">
-        <div className="pricing-notice__icon">
-          <Settings2
-            size={17}
-            strokeWidth={1.8}
-          />
+    <main className="inv-page">
+      <header className="inv-header">
+        <div>
+          <p className="inv-header__eyebrow"><Link href="/products">Products</Link></p>
+          <h1>Product pricing</h1>
+          <p>List prices (up to 6 decimals, never silently rounded) with a full history of every change. New sales order lines default to the current price; existing orders keep theirs.</p>
         </div>
-
-        <div className="pricing-notice__content">
-          <strong>
-            Pricing data is waiting for the backend
-          </strong>
-
-          <p>
-            Pricing structures are ready. Product prices,
-            supplier pricing, margins, currencies and tax
-            rules will load from the database after backend
-            integration.
-          </p>
-        </div>
-
-        <Badge variant="success">
-          Frontend Ready
-        </Badge>
-      </div>
-
-      <section className="pricing-stats">
-        <Card className="pricing-stat">
-          <span>Price Records</span>
-          <strong>0</strong>
-          <small>
-            No pricing records created
-          </small>
-        </Card>
-
-        <Card className="pricing-stat">
-          <span>Price Lists</span>
-          <strong>0</strong>
-          <small>
-            No price lists configured
-          </small>
-        </Card>
-
-        <Card className="pricing-stat">
-          <span>Currencies</span>
-          <strong>6</strong>
-          <small>
-            Supported currencies
-          </small>
-        </Card>
-
-        <Card className="pricing-stat">
-          <span>Tax Rules</span>
-          <strong>0</strong>
-          <small>
-            Awaiting tax configuration
-          </small>
-        </Card>
-      </section>
-
-      <Card
-        className="pricing-toolbar-card"
-        padding={false}
-      >
-        <div className="pricing-toolbar">
-          <div className="pricing-search">
-            <Search
-              size={17}
-              strokeWidth={1.8}
-            />
-
-            <input
-              type="search"
-              value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
-              placeholder="Search pricing structure..."
-              aria-label="Search pricing"
-            />
-          </div>
-
-          <div className="pricing-toolbar__filters">
-            <div className="pricing-select">
-              <select
-                value={currency}
-                onChange={(event) =>
-                  setCurrency(event.target.value)
-                }
-                aria-label="Filter by currency"
-              >
-                {CURRENCIES.map((item) => (
-                  <option
-                    key={item}
-                    value={item}
-                  >
-                    {item}
-                  </option>
+      </header>
+      {message.error && <p className="inv-dialog__error" role="alert">{message.error}</p>}
+      {message.notice && <p className="inv-field__hint" role="status">{message.notice}</p>}
+      {manage && (
+        <section className="inv-card">
+          <div className="inv-card__header"><h2>Change one price</h2></div>
+          <form className="inv-dialog" onSubmit={changeOne}>
+            <ItemPicker label="Item" value={item} onChange={setItem} required />
+            {item && <p className="inv-field__hint">Current price {item.unitPrice} per {item.unit}.</p>}
+            <div className="inv-dialog__grid">
+              <div className="inv-field"><label htmlFor="pp-price">New price *</label><input id="pp-price" type="number" min="0" step="any" required value={single.unitPrice} onChange={(event) => setSingle({ ...single, unitPrice: event.target.value })} /></div>
+              <div className="inv-field"><label htmlFor="pp-date">Effective *</label><input id="pp-date" type="date" required value={single.effectiveDate} onChange={(event) => setSingle({ ...single, effectiveDate: event.target.value })} /></div>
+              <div className="inv-field"><label htmlFor="pp-reason">Reason *</label><input id="pp-reason" required minLength={3} maxLength={300} value={single.reason} onChange={(event) => setSingle({ ...single, reason: event.target.value })} /></div>
+            </div>
+            <div className="inv-dialog__actions"><Button type="submit" variant="primary" loading={busy === "single"} disabled={!item}>Change price</Button></div>
+          </form>
+        </section>
+      )}
+      {manage && (
+        <section className="inv-card">
+          <div className="inv-card__header"><h2>Adjust a category by percentage</h2></div>
+          <form className="inv-dialog" onSubmit={previewBulk}>
+            <div className="inv-dialog__grid">
+              <div className="inv-field">
+                <label htmlFor="pb-cat">Category *</label>
+                <select id="pb-cat" required value={bulk.category} onChange={(event) => { setBulk({ ...bulk, category: event.target.value }); setPreview(null); }}>
+                  <option value="">Select category</option>
+                  {(categories.data?.categories ?? []).map((row) => <option key={row.name} value={row.name}>{row.name} ({row.activeProducts})</option>)}
+                </select>
+              </div>
+              <div className="inv-field"><label htmlFor="pb-pct">Change % *</label><input id="pb-pct" type="number" min="-90" max="500" step="0.01" required value={bulk.percent} onChange={(event) => { setBulk({ ...bulk, percent: event.target.value }); setPreview(null); }} /></div>
+              <div className="inv-field"><label htmlFor="pb-date">Effective *</label><input id="pb-date" type="date" required value={bulk.effectiveDate} onChange={(event) => setBulk({ ...bulk, effectiveDate: event.target.value })} /></div>
+              <div className="inv-field"><label htmlFor="pb-reason">Reason *</label><input id="pb-reason" required minLength={3} maxLength={300} value={bulk.reason} onChange={(event) => setBulk({ ...bulk, reason: event.target.value })} /></div>
+            </div>
+            <div className="inv-dialog__actions"><Button type="submit" variant="secondary" loading={busy === "preview"}>Preview</Button></div>
+          </form>
+          {preview && (
+            <>
+              {preview.changes.length === 0 ? <p className="inv-state">No active item in this category would change.</p> : (
+                <div className="inv-table-wrap">
+                  <table className="inv-table">
+                    <thead><tr><th>Item</th><th className="inv-num">Current</th><th className="inv-num">New</th></tr></thead>
+                    <tbody>{preview.changes.map((row) => <tr key={row.productId}><td data-label="Item">{row.sku}<small>{row.name}</small></td><td data-label="Current" className="inv-num">{row.current}</td><td data-label="New" className="inv-num">{row.proposed}</td></tr>)}</tbody>
+                  </table>
+                </div>
+              )}
+              {preview.changes.length > 0 && <div className="inv-dialog__actions" style={{ padding: "8px 18px" }}><Button variant="primary" loading={busy === "apply"} onClick={applyBulk}>Apply {preview.changes.length} changes</Button></div>}
+            </>
+          )}
+        </section>
+      )}
+      <section className="inv-card">
+        <div className="inv-card__header"><h2>Price history{item ? ` · ${item.sku}` : ""}</h2></div>
+        {history.error ? <p className="inv-state inv-state--error" role="alert">{history.error}</p> : !history.data ? <p className="inv-state" role="status">Loading…</p> : history.data.changes.length === 0 ? <p className="inv-state">No price changes recorded{item ? " for this item" : ""}.</p> : (
+          <div className="inv-table-wrap">
+            <table className="inv-table">
+              <thead><tr><th>Item</th><th className="inv-num">From</th><th className="inv-num">To</th><th>Effective</th><th>Reason</th><th>Changed</th></tr></thead>
+              <tbody>
+                {history.data.changes.map((row) => (
+                  <tr key={row.id}>
+                    <td data-label="Item"><Link href={`/products/${row.productId}`}>{row.sku}</Link><small>{row.name}</small></td>
+                    <td data-label="From" className="inv-num">{row.previousPrice}</td>
+                    <td data-label="To" className="inv-num">{row.newPrice}</td>
+                    <td data-label="Effective">{row.effectiveDate}</td>
+                    <td data-label="Reason">{row.reason}</td>
+                    <td data-label="Changed">{new Date(row.changedAt).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}<small>{row.changedBy}</small></td>
+                  </tr>
                 ))}
-              </select>
-
-              <ChevronDown size={15} />
-            </div>
-
-            <div className="pricing-select">
-              <select
-                value={status}
-                onChange={(event) =>
-                  setStatus(event.target.value)
-                }
-                aria-label="Filter by pricing status"
-              >
-                {PRICING_STATUS.map((item) => (
-                  <option
-                    key={item}
-                    value={item}
-                  >
-                    {item}
-                  </option>
-                ))}
-              </select>
-
-              <ChevronDown size={15} />
-            </div>
-
-            <Button
-              variant={
-                showFilters
-                  ? "secondary"
-                  : "ghost"
-              }
-              onClick={() =>
-                setShowFilters((current) => !current)
-              }
-            >
-              <Settings2 size={16} />
-              Filters
-            </Button>
-          </div>
-        </div>
-
-        {showFilters && (
-          <div className="pricing-advanced-filters">
-            <div className="pricing-filter-info">
-              <FileText size={16} />
-
-              <span>
-                Product, supplier, customer, price list and
-                effective-date filters will become available
-                with backend data.
-              </span>
-            </div>
-
-            <Button
-              variant="ghost"
-              onClick={clearFilters}
-            >
-              Clear Filters
-            </Button>
+              </tbody>
+            </table>
           </div>
         )}
-      </Card>
-
-      <Card
-        className="pricing-structures-card"
-        title="Pricing Configuration"
-        description="Pricing structures prepared for the product master."
-        padding={false}
-      >
-        <div className="pricing-structures-header">
-          <div>
-            <span>
-              Configured Structures
-            </span>
-
-            <strong>
-              {filteredStructures.length} pricing structures
-            </strong>
-          </div>
-
-          <Badge variant="success">
-            Structure Ready
-          </Badge>
-        </div>
-
-        <div className="pricing-structures-grid">
-          {filteredStructures.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <article
-                className="pricing-structure"
-                key={item.id}
-              >
-                <div className="pricing-structure__top">
-                  <div className="pricing-structure__icon">
-                    <Icon
-                      size={20}
-                      strokeWidth={1.8}
-                    />
-                  </div>
-
-                  <Badge variant="success">
-                    Ready
-                  </Badge>
-                </div>
-
-                <div className="pricing-structure__body">
-                  <div className="pricing-structure__title">
-                    <h3>
-                      {item.title}
-                    </h3>
-
-                    <ArrowUpRight
-                      size={16}
-                      strokeWidth={1.8}
-                    />
-                  </div>
-
-                  <p>
-                    {item.description}
-                  </p>
-                </div>
-
-                <div className="pricing-structure__fields">
-                  <span>
-                    Configuration fields
-                  </span>
-
-                  <div>
-                    {item.fields.map(
-                      (field) => (
-                        <span key={field}>
-                          {field}
-                        </span>
-                      )
-                    )}
-                  </div>
-                </div>
-
-                <div className="pricing-structure__footer">
-                  <span>
-                    Records
-                  </span>
-
-                  <strong>0</strong>
-                </div>
-              </article>
-            );
-          })}
-
-          {filteredStructures.length === 0 && (
-            <div className="pricing-empty">
-              <Search size={21} />
-
-              <h3>
-                No pricing structure found
-              </h3>
-
-              <p>
-                Try another search term.
-              </p>
-
-              <Button
-                variant="secondary"
-                onClick={clearFilters}
-              >
-                Clear Search
-              </Button>
-            </div>
-          )}
-        </div>
-      </Card>
-
-      <section className="pricing-rules">
-        <div className="pricing-section-heading">
-          <span>
-            Pricing Logic
-          </span>
-
-          <h2>
-            Pricing Flow
-          </h2>
-
-          <p>
-            Product pricing will connect procurement cost,
-            inventory valuation, sales pricing, margins and
-            tax treatment across the ERP.
-          </p>
-        </div>
-
-        <div className="pricing-flow">
-          <div className="pricing-flow-step">
-            <span>01</span>
-
-            <div>
-              <strong>
-                Cost
-              </strong>
-
-              <p>
-                Purchase and standard cost.
-              </p>
-            </div>
-          </div>
-
-          <div className="pricing-flow-arrow">
-            <ArrowUpRight size={17} />
-          </div>
-
-          <div className="pricing-flow-step">
-            <span>02</span>
-
-            <div>
-              <strong>
-                Margin
-              </strong>
-
-              <p>
-                Target and minimum margin.
-              </p>
-            </div>
-          </div>
-
-          <div className="pricing-flow-arrow">
-            <ArrowUpRight size={17} />
-          </div>
-
-          <div className="pricing-flow-step">
-            <span>03</span>
-
-            <div>
-              <strong>
-                Sales Price
-              </strong>
-
-              <p>
-                Retail, wholesale and customer pricing.
-              </p>
-            </div>
-          </div>
-
-          <div className="pricing-flow-arrow">
-            <ArrowUpRight size={17} />
-          </div>
-
-          <div className="pricing-flow-step">
-            <span>04</span>
-
-            <div>
-              <strong>
-                Tax
-              </strong>
-
-              <p>
-                Applicable tax treatment and rate.
-              </p>
-            </div>
-          </div>
-        </div>
+        <InventoryPager page={page} hasMore={history.data?.hasMore} onChange={setPage} disabled={history.loading} />
       </section>
-    </div>
+    </main>
   );
 }

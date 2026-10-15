@@ -1,640 +1,129 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowUpRight,
-  Award,
-  ChevronDown,
-  ClipboardCheck,
-  Download,
-  FileCheck2,
-  FileText,
-  FolderOpen,
-  Plus,
-  Search,
-  Settings2,
-  ShieldCheck,
-  Upload,
-} from "lucide-react";
+import { useState } from "react";
 
-import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
+import Modal from "@/components/ui/Modal";
+import InventoryPager from "@/components/inventory/InventoryPager";
+import ItemPicker from "@/components/inventory/ItemPicker";
+import { apiRequest, downloadFile } from "@/lib/api/client";
+import useCurrentUser from "@/lib/auth/useCurrentUser";
+import useApiData, { toQuery } from "@/lib/inventory/useApiData";
 
-import "./Documents.css";
+import "@/components/inventory/InventoryWorkspace.css";
 
-const DOCUMENT_TYPES = [
-  {
-    id: "technical-sheet",
-    title: "Technical Sheet",
-    description:
-      "Product specifications, measurements, construction details and technical requirements.",
-    icon: FileText,
-    formats: ["PDF", "DOC", "DOCX"],
-  },
-  {
-    id: "certificate",
-    title: "Certificate",
-    description:
-      "Material, quality, sustainability and certification documents associated with a product.",
-    icon: Award,
-    formats: ["PDF", "JPG", "PNG"],
-  },
-  {
-    id: "compliance",
-    title: "Compliance Document",
-    description:
-      "Regulatory, customer compliance and product conformity documentation.",
-    icon: ShieldCheck,
-    formats: ["PDF", "DOC", "DOCX"],
-  },
-  {
-    id: "test-report",
-    title: "Test Report",
-    description:
-      "Laboratory reports, performance tests and quality verification records.",
-    icon: ClipboardCheck,
-    formats: ["PDF", "XLS", "XLSX"],
-  },
-  {
-    id: "supplier-document",
-    title: "Supplier Document",
-    description:
-      "Supplier specifications, declarations, catalogues and supporting documentation.",
-    icon: FolderOpen,
-    formats: ["PDF", "DOC", "DOCX", "XLS", "XLSX"],
-  },
-  {
-    id: "specification",
-    title: "Specification",
-    description:
-      "Detailed product specifications and customer-specific requirements.",
-    icon: FileCheck2,
-    formats: ["PDF", "DOC", "DOCX"],
-  },
-];
+const TYPES = { SPECIFICATION: "Specification", DRAWING: "Drawing", TEST_REPORT: "Test report", CERTIFICATE: "Certificate", IMAGE: "Image", OTHER: "Other" };
+const size = (bytes) => (bytes >= 1048576 ? `${(bytes / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`);
 
-const DOCUMENT_STATUS = [
-  "All Status",
-  "Active",
-  "Pending Review",
-  "Expired",
-  "Archived",
-];
+function UploadDialog({ onClose, onSaved }) {
+  const [item, setItem] = useState(null);
+  const [title, setTitle] = useState("");
+  const [documentType, setDocumentType] = useState("SPECIFICATION");
+  const [file, setFile] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
-const DOCUMENT_CATEGORIES = [
-  "All Types",
-  "Technical Sheet",
-  "Certificate",
-  "Compliance Document",
-  "Test Report",
-  "Supplier Document",
-  "Specification",
-];
-
-const ACCEPTED_FILES =
-  ".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png";
-
-export default function ProductDocumentsPage() {
-  const fileInputRef = useRef(null);
-
-  const [search, setSearch] = useState("");
-  const [status, setStatus] =
-    useState("All Status");
-  const [category, setCategory] =
-    useState("All Types");
-  const [showFilters, setShowFilters] =
-    useState(false);
-  const [selectedFiles, setSelectedFiles] =
-    useState([]);
-
-  const filteredTypes = useMemo(() => {
-    const query = search.trim().toLowerCase();
-
-    if (!query) {
-      return DOCUMENT_TYPES;
+  async function submit(event) {
+    event.preventDefault();
+    if (saving || !file || !item) return;
+    if (file.size > 5 * 1024 * 1024) { setError("Files can be at most 5 MB."); return; }
+    setSaving(true);
+    setError("");
+    const form = new FormData();
+    form.set("productId", item.id);
+    form.set("title", title);
+    form.set("documentType", documentType);
+    form.set("file", file);
+    try {
+      await apiRequest("/api/products/documents", { method: "POST", body: form });
+      onSaved();
+    } catch (cause) {
+      setError(cause.message);
+      setSaving(false);
     }
-
-    return DOCUMENT_TYPES.filter((item) => {
-      return (
-        item.title.toLowerCase().includes(query) ||
-        item.description
-          .toLowerCase()
-          .includes(query) ||
-        item.formats.some((format) =>
-          format.toLowerCase().includes(query)
-        )
-      );
-    });
-  }, [search]);
-
-  function clearFilters() {
-    setSearch("");
-    setStatus("All Status");
-    setCategory("All Types");
-  }
-
-  function handleFiles(event) {
-    const files = Array.from(
-      event.target.files || []
-    );
-
-    setSelectedFiles(files);
-
-    event.target.value = "";
   }
 
   return (
-    <div className="documents-page">
-      <PageHeader
-        eyebrow="Product Master"
-        title="Documents"
-        description="Manage technical, compliance, certification and supporting product documentation."
-        action={
-          <div className="documents-page__header-actions">
-            <Link href="/products">
-              <Button
-                variant="secondary"
-                icon={ArrowLeft}
-              >
-                Products
-              </Button>
-            </Link>
-
-            <Button
-              icon={Upload}
-              onClick={() =>
-                fileInputRef.current?.click()
-              }
-            >
-              Upload Document
-            </Button>
-          </div>
-        }
-      />
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        multiple
-        accept={ACCEPTED_FILES}
-        className="documents-hidden-input"
-        onChange={handleFiles}
-      />
-
-      <div className="documents-notice">
-        <div className="documents-notice__icon">
-          <Settings2
-            size={17}
-            strokeWidth={1.8}
-          />
+    <Modal open onClose={saving ? undefined : onClose} title="Upload a document" description="PDF, PNG, JPEG, WebP, text or CSV, up to 5 MB. The file's contents must match its type." size="medium">
+      <form className="inv-dialog" onSubmit={submit}>
+        <ItemPicker label="Item" value={item} onChange={setItem} required />
+        <div className="inv-dialog__grid">
+          <div className="inv-field"><label htmlFor="pd-title">Title *</label><input id="pd-title" required minLength={2} maxLength={160} value={title} onChange={(event) => setTitle(event.target.value)} /></div>
+          <div className="inv-field"><label htmlFor="pd-type">Type *</label><select id="pd-type" value={documentType} onChange={(event) => setDocumentType(event.target.value)}>{Object.entries(TYPES).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
         </div>
-
-        <div className="documents-notice__content">
-          <strong>
-            Document storage is waiting for the backend
-          </strong>
-
-          <p>
-            The document management interface is ready.
-            Uploaded files, product associations, versions,
-            permissions and storage locations will be persisted
-            after backend integration.
-          </p>
+        <div className="inv-field"><label htmlFor="pd-file">File *</label><input id="pd-file" type="file" required accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,.csv,application/pdf,image/png,image/jpeg,image/webp,text/plain,text/csv" onChange={(event) => setFile(event.target.files?.[0] ?? null)} /></div>
+        {error && <p className="inv-dialog__error" role="alert">{error}</p>}
+        <div className="inv-dialog__actions">
+          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button type="submit" variant="primary" loading={saving} disabled={!file || !item}>Upload</Button>
         </div>
-
-        <Badge variant="success">
-          Frontend Ready
-        </Badge>
-      </div>
-
-      <section className="documents-stats">
-        <Card className="documents-stat">
-          <span>Total Documents</span>
-          <strong>0</strong>
-          <small>
-            No documents uploaded
-          </small>
-        </Card>
-
-        <Card className="documents-stat">
-          <span>Certificates</span>
-          <strong>0</strong>
-          <small>
-            Certification records
-          </small>
-        </Card>
-
-        <Card className="documents-stat">
-          <span>Compliance</span>
-          <strong>0</strong>
-          <small>
-            Compliance documents
-          </small>
-        </Card>
-
-        <Card className="documents-stat">
-          <span>Pending Review</span>
-          <strong>0</strong>
-          <small>
-            Awaiting verification
-          </small>
-        </Card>
-      </section>
-
-      {selectedFiles.length > 0 && (
-        <Card
-          className="documents-upload-preview"
-          padding={false}
-        >
-          <div className="documents-upload-preview__header">
-            <div>
-              <span>
-                Selected Files
-              </span>
-
-              <strong>
-                {selectedFiles.length} file
-                {selectedFiles.length === 1
-                  ? ""
-                  : "s"} ready for upload
-              </strong>
-            </div>
-
-            <Badge variant="warning">
-              Not Uploaded
-            </Badge>
-          </div>
-
-          <div className="documents-upload-preview__list">
-            {selectedFiles.map((file) => (
-              <div
-                className="documents-upload-file"
-                key={`${file.name}-${file.size}`}
-              >
-                <FileText
-                  size={17}
-                  strokeWidth={1.8}
-                />
-
-                <div>
-                  <strong>
-                    {file.name}
-                  </strong>
-
-                  <span>
-                    {formatFileSize(file.size)}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="documents-upload-preview__footer">
-            <span>
-              File upload will become persistent when
-              storage and API services are connected.
-            </span>
-
-            <Button
-              variant="ghost"
-              onClick={() =>
-                setSelectedFiles([])
-              }
-            >
-              Clear Selection
-            </Button>
-          </div>
-        </Card>
-      )}
-
-      <Card
-        className="documents-toolbar-card"
-        padding={false}
-      >
-        <div className="documents-toolbar">
-          <div className="documents-search">
-            <Search
-              size={17}
-              strokeWidth={1.8}
-            />
-
-            <input
-              type="search"
-              value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
-              placeholder="Search document type..."
-              aria-label="Search documents"
-            />
-          </div>
-
-          <div className="documents-toolbar__filters">
-            <div className="documents-select">
-              <select
-                value={category}
-                onChange={(event) =>
-                  setCategory(event.target.value)
-                }
-                aria-label="Filter by document type"
-              >
-                {DOCUMENT_CATEGORIES.map(
-                  (item) => (
-                    <option
-                      key={item}
-                      value={item}
-                    >
-                      {item}
-                    </option>
-                  )
-                )}
-              </select>
-
-              <ChevronDown size={15} />
-            </div>
-
-            <div className="documents-select">
-              <select
-                value={status}
-                onChange={(event) =>
-                  setStatus(event.target.value)
-                }
-                aria-label="Filter by document status"
-              >
-                {DOCUMENT_STATUS.map(
-                  (item) => (
-                    <option
-                      key={item}
-                      value={item}
-                    >
-                      {item}
-                    </option>
-                  )
-                )}
-              </select>
-
-              <ChevronDown size={15} />
-            </div>
-
-            <Button
-              variant={
-                showFilters
-                  ? "secondary"
-                  : "ghost"
-              }
-              onClick={() =>
-                setShowFilters(
-                  (current) => !current
-                )
-              }
-            >
-              <Settings2 size={16} />
-              Filters
-            </Button>
-          </div>
-        </div>
-
-        {showFilters && (
-          <div className="documents-advanced-filters">
-            <div className="documents-filter-info">
-              <FileCheck2 size={16} />
-
-              <span>
-                Product, supplier, expiry date, version and
-                verification filters will become available
-                with backend data.
-              </span>
-            </div>
-
-            <Button
-              variant="ghost"
-              onClick={clearFilters}
-            >
-              Clear Filters
-            </Button>
-          </div>
-        )}
-      </Card>
-
-      <Card
-        className="documents-types-card"
-        title="Document Configuration"
-        description="Document structures available to the product master."
-        padding={false}
-      >
-        <div className="documents-types-header">
-          <div>
-            <span>
-              Supported Document Types
-            </span>
-
-            <strong>
-              {filteredTypes.length} document types
-            </strong>
-          </div>
-
-          <Badge variant="success">
-            Structure Ready
-          </Badge>
-        </div>
-
-        <div className="documents-types-grid">
-          {filteredTypes.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <article
-                className="document-type"
-                key={item.id}
-              >
-                <div className="document-type__top">
-                  <div className="document-type__icon">
-                    <Icon
-                      size={20}
-                      strokeWidth={1.8}
-                    />
-                  </div>
-
-                  <Badge variant="success">
-                    Active
-                  </Badge>
-                </div>
-
-                <div className="document-type__body">
-                  <div className="document-type__title">
-                    <h3>
-                      {item.title}
-                    </h3>
-
-                    <ArrowUpRight
-                      size={16}
-                      strokeWidth={1.8}
-                    />
-                  </div>
-
-                  <p>
-                    {item.description}
-                  </p>
-                </div>
-
-                <div className="document-type__formats">
-                  <span>
-                    Supported formats
-                  </span>
-
-                  <div>
-                    {item.formats.map(
-                      (format) => (
-                        <span key={format}>
-                          {format}
-                        </span>
-                      )
-                    )}
-                  </div>
-                </div>
-
-                <div className="document-type__footer">
-                  <span>
-                    Documents
-                  </span>
-
-                  <strong>0</strong>
-                </div>
-              </article>
-            );
-          })}
-
-          {filteredTypes.length === 0 && (
-            <div className="documents-empty">
-              <Search size={21} />
-
-              <h3>
-                No document type found
-              </h3>
-
-              <p>
-                Try another search term.
-              </p>
-
-              <Button
-                variant="secondary"
-                onClick={clearFilters}
-              >
-                Clear Search
-              </Button>
-            </div>
-          )}
-        </div>
-      </Card>
-
-      <section className="documents-workflow">
-        <div className="documents-section-heading">
-          <span>
-            Document Lifecycle
-          </span>
-
-          <h2>
-            Product Documentation Flow
-          </h2>
-
-          <p>
-            Documents will be linked to products and variants,
-            versioned, reviewed and retained throughout the
-            product lifecycle.
-          </p>
-        </div>
-
-        <div className="documents-workflow-grid">
-          <div className="documents-workflow-step">
-            <span>01</span>
-
-            <div>
-              <strong>
-                Upload
-              </strong>
-
-              <p>
-                Add technical and supporting files.
-              </p>
-            </div>
-          </div>
-
-          <div className="documents-workflow-arrow">
-            <ArrowUpRight size={17} />
-          </div>
-
-          <div className="documents-workflow-step">
-            <span>02</span>
-
-            <div>
-              <strong>
-                Associate
-              </strong>
-
-              <p>
-                Link documents to products or variants.
-              </p>
-            </div>
-          </div>
-
-          <div className="documents-workflow-arrow">
-            <ArrowUpRight size={17} />
-          </div>
-
-          <div className="documents-workflow-step">
-            <span>03</span>
-
-            <div>
-              <strong>
-                Review
-              </strong>
-
-              <p>
-                Verify certificates and compliance records.
-              </p>
-            </div>
-          </div>
-
-          <div className="documents-workflow-arrow">
-            <ArrowUpRight size={17} />
-          </div>
-
-          <div className="documents-workflow-step">
-            <span>04</span>
-
-            <div>
-              <strong>
-                Version
-              </strong>
-
-              <p>
-                Maintain document history and expiry.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
+      </form>
+    </Modal>
   );
 }
 
-function formatFileSize(bytes) {
-  if (!bytes) {
-    return "0 KB";
+export default function DocumentsPage() {
+  const { can } = useCurrentUser();
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("ACTIVE");
+  const [page, setPage] = useState(1);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const list = useApiData(`/api/products/documents${toQuery({ search, status, page, pageSize: 50 })}`);
+  const rows = list.data?.documents ?? [];
+
+  async function download(row) {
+    setError("");
+    try { await downloadFile(`/api/products/documents/${row.id}`, row.fileName); } catch (cause) { setError(cause.message); }
+  }
+  async function archive(row) {
+    if (!window.confirm(`Archive "${row.title}"? It stays on record but is no longer listed as current.`)) return;
+    setError("");
+    try { await apiRequest(`/api/products/documents/${row.id}`, { method: "DELETE" }); list.reload(); } catch (cause) { setError(cause.message); }
   }
 
-  const megabytes = bytes / (1024 * 1024);
-
-  if (megabytes >= 1) {
-    return `${megabytes.toFixed(2)} MB`;
-  }
-
-  return `${Math.max(
-    1,
-    Math.round(bytes / 1024)
-  )} KB`;
+  return (
+    <main className="inv-page">
+      <header className="inv-header">
+        <div>
+          <p className="inv-header__eyebrow"><Link href="/products">Products</Link></p>
+          <h1>Product documents</h1>
+          <p>Specifications, drawings, test reports and certificates attached to items. Files are stored with a SHA-256 checksum and archived rather than deleted.</p>
+        </div>
+        <div className="inv-header__actions">{can("products:update") && <Button variant="primary" onClick={() => setUploading(true)}>Upload document</Button>}</div>
+      </header>
+      {error && <p className="inv-dialog__error" role="alert">{error}</p>}
+      <section className="inv-card">
+        <div className="inv-toolbar">
+          <div className="inv-field"><label htmlFor="pd-search">Search</label><input id="pd-search" type="search" placeholder="Title, file name or SKU" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} /></div>
+          <div className="inv-field"><label htmlFor="pd-status">Status</label><select id="pd-status" value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }}><option value="ACTIVE">Current</option><option value="ARCHIVED">Archived</option><option value="">All</option></select></div>
+        </div>
+        {list.error ? <p className="inv-state inv-state--error" role="alert">{list.error}</p> : !list.data ? <p className="inv-state" role="status">Loading documents…</p> : rows.length === 0 ? <p className="inv-state">No documents{search ? " match" : " yet"}.</p> : (
+          <div className="inv-table-wrap">
+            <table className="inv-table">
+              <thead><tr><th>Document</th><th>Item</th><th>Type</th><th className="inv-num">Size</th><th>Uploaded</th><th /></tr></thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.id}>
+                    <td data-label="Document"><button type="button" className="inv-link-button" onClick={() => download(row)}><strong>{row.title}</strong></button><small>{row.fileName}</small></td>
+                    <td data-label="Item"><Link href={`/products/${row.productId}`}>{row.sku}</Link><small>{row.productName}</small></td>
+                    <td data-label="Type">{TYPES[row.documentType]}</td>
+                    <td data-label="Size" className="inv-num">{size(row.sizeBytes)}</td>
+                    <td data-label="Uploaded">{row.uploadedAt.slice(0, 10)}<small>{row.uploadedBy}</small></td>
+                    <td data-label="">
+                      {["application/pdf", "image/png", "image/jpeg", "image/webp", "text/plain"].includes(row.mimeType) && <a className="inv-link-button" href={`/api/products/documents/${row.id}?inline=1`} target="_blank" rel="noopener noreferrer">View</a>}
+                      {row.status === "ACTIVE" && can("products:update") && <> · <button type="button" className="inv-link-button" onClick={() => archive(row)}>Archive</button></>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <InventoryPager page={page} hasMore={list.data?.hasMore} onChange={setPage} disabled={list.loading} />
+      </section>
+      {uploading && <UploadDialog onClose={() => setUploading(false)} onSaved={() => { setUploading(false); list.reload(); }} />}
+    </main>
+  );
 }

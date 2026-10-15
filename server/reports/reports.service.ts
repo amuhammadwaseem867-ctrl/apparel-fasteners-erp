@@ -246,6 +246,47 @@ export const REPORTS: Record<string, ReportDefinition> = {
       group by q."inspectionType", p.sku order by q."inspectionType", p.sku
     `, REPORTS.quality.columns),
   },
+  "quality-ncr": {
+    title: "Non-conformance Reports",
+    description: "NCRs raised in the period with severity, source, status, linked item and open actions.",
+    permissions: VIEW_OR_REPORTS("quality"),
+    dated: true,
+    columns: [
+      text("ncrNumber", "NCR", "/quality/ncr?ncr={id}"), date("raised", "Raised"), text("severity", "Severity"), text("source", "Source"), text("title", "Title"),
+      text("sku", "Item"), number("quantityAffected", "Qty affected"), text("disposition", "Disposition"), text("status", "Status"),
+      number("actions", "Actions"), number("openActions", "Open actions"), number("daysOpen", "Days open", false),
+    ],
+    query: ({ from, to }) => plan(db.raw.sql`
+      select n.id::text as id, n."ncrNumber", to_char(n."createdAt", 'YYYY-MM-DD') as raised, n.severity, n.source, n.title, coalesce(p.sku, '') as sku,
+        coalesce(n."quantityAffected"::text, '') as "quantityAffected", coalesce(n.disposition, '') as disposition, n.status,
+        (select count(*) from erp_capas c where c."ncrId" = n.id)::text as actions,
+        (select count(*) from erp_capas c where c."ncrId" = n.id and c.status not in ('VERIFIED', 'CANCELLED'))::text as "openActions",
+        (coalesce(n."closedAt", now())::date - n."createdAt"::date)::text as "daysOpen"
+      from erp_ncrs n left join erp_products p on p.id = n."productId"
+      where n."createdAt" >= ${from}::date and n."createdAt" < ${dayAfter(to)}::date
+      order by n."createdAt", n."ncrNumber"
+    `, REPORTS["quality-ncr"].columns, ["id"]),
+  },
+  "quality-capa": {
+    title: "Corrective and Preventive Actions",
+    description: "Actions due in the period with owner, status and whether they were completed on time.",
+    permissions: VIEW_OR_REPORTS("quality"),
+    dated: true,
+    columns: [
+      text("capaNumber", "CAPA"), text("actionType", "Type"), text("ncrNumber", "NCR"), text("title", "Title"), text("ownerName", "Owner"),
+      date("dueDate", "Due"), text("status", "Status"), date("completed", "Completed"), text("onTime", "On time"),
+    ],
+    query: ({ from, to }) => plan(db.raw.sql`
+      select c.id::text as id, c."capaNumber", c."actionType", coalesce(n."ncrNumber", '') as "ncrNumber", c.title, c."ownerName", c."dueDate", c.status,
+        coalesce(to_char(c."completedAt", 'YYYY-MM-DD'), '') as completed,
+        case when c.status = 'CANCELLED' then ''
+             when c."completedAt" is not null then case when c."completedAt"::date <= c."dueDate"::date then 'Yes' else 'No' end
+             when c."dueDate" < to_char(now(), 'YYYY-MM-DD') then 'Overdue' else '' end as "onTime"
+      from erp_capas c left join erp_ncrs n on n.id = c."ncrId"
+      where c."dueDate" between ${from} and ${to}
+      order by c."dueDate", c."capaNumber"
+    `, REPORTS["quality-capa"].columns, ["id"]),
+  },
   inventory: {
     title: "Stock Position",
     description: "Current stock by item and location. Available = on hand − reserved − quality hold. No valuation: item costs are not recorded.",

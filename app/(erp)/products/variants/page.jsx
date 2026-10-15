@@ -1,187 +1,53 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Layers3,
-  Plus,
-  Search,
-  Settings2,
-} from "lucide-react";
+import { useState } from "react";
 
-import PageHeader from "@/components/ui/PageHeader";
-import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
-import Input from "@/components/ui/Input";
+import useApiData, { toQuery } from "@/lib/inventory/useApiData";
 
-import "./Variants.css";
+import "@/components/inventory/InventoryWorkspace.css";
 
-const VARIANT_TYPES = [
-  {
-    id: "garments",
-    name: "Garments",
-    description: "Size and color based product variations.",
-    attributes: ["Size", "Color"],
-  },
-  {
-    id: "fabrics",
-    name: "Fabrics",
-    description: "Color and width based material variations.",
-    attributes: ["Color", "Width"],
-  },
-  {
-    id: "accessories",
-    name: "Garment Accessories",
-    description: "Size, color and finish based variations.",
-    attributes: ["Size", "Color", "Finish"],
-  },
-];
+const LABELS = { size: "Size", material: "Material", finish: "Finish", color: "Colour", logoType: "Logo" };
 
-export default function ProductVariantsPage() {
+export default function VariantsPage() {
   const [search, setSearch] = useState("");
-
-  const filteredTypes = useMemo(() => {
-    const query = search.trim().toLowerCase();
-
-    if (!query) {
-      return VARIANT_TYPES;
-    }
-
-    return VARIANT_TYPES.filter(
-      (item) =>
-        item.name.toLowerCase().includes(query) ||
-        item.description.toLowerCase().includes(query) ||
-        item.attributes.some((attribute) =>
-          attribute.toLowerCase().includes(query)
-        )
-    );
-  }, [search]);
+  const result = useApiData(`/api/products/variants${toQuery({ search })}`);
+  const families = result.data?.families ?? [];
 
   return (
-    <div className="variants-page">
-      <PageHeader
-        eyebrow="Product Master"
-        title="Variants"
-        description="Configure product variation attributes across garments, fabrics and garment accessories."
-        action={
-          <div className="variants-page__actions">
-            <Link href="/products">
-              <Button variant="secondary" icon={ArrowLeft}>
-                Products
-              </Button>
-            </Link>
-
-            <Button icon={Plus} disabled>
-              Add Variant
-            </Button>
-          </div>
-        }
-      />
-
-      <div className="variants-page__notice">
-        <div className="variants-page__notice-icon">
-          <Settings2 size={17} strokeWidth={1.8} />
-        </div>
-
+    <main className="inv-page">
+      <header className="inv-header">
         <div>
-          <strong>Variant data is waiting for the backend</strong>
-          <p>
-            Variant records, SKU generation and product associations will be
-            loaded from the database once the API layer is connected.
-          </p>
+          <p className="inv-header__eyebrow"><Link href="/products">Products</Link></p>
+          <h1>Product variants</h1>
+          <p>Each size, material, finish, colour and logo combination is its own item and SKU, so fastener types are never merged. Items with the same category, item type and name are shown together as one family, with the attributes that differ.</p>
         </div>
-      </div>
-
-      <div className="variants-page__stats">
-        <Card>
-          <span>Variant Records</span>
-          <strong>0</strong>
-          <small>No database records yet</small>
-        </Card>
-
-        <Card>
-          <span>Variant Types</span>
-          <strong>{VARIANT_TYPES.length}</strong>
-          <small>Configured product divisions</small>
-        </Card>
-
-        <Card>
-          <span>Attributes</span>
-          <strong>7</strong>
-          <small>Available variation attributes</small>
-        </Card>
-      </div>
-
-      <Card
-        title="Variant Configuration"
-        description="Variation rules prepared for the product master."
-        className="variants-card"
-      >
-        <div className="variants-toolbar">
-          <div className="variants-search">
-            <Search size={17} strokeWidth={1.8} />
-
-            <Input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search variant types..."
-              aria-label="Search variant types"
-            />
-          </div>
-
-          <Badge variant="success">Backend Ready</Badge>
-        </div>
-
-        <div className="variants-grid">
-          {filteredTypes.map((item) => (
-            <article className="variant-type" key={item.id}>
-              <div className="variant-type__top">
-                <div className="variant-type__icon">
-                  <Layers3 size={19} strokeWidth={1.8} />
-                </div>
-
-                <Badge variant="success">Active</Badge>
-              </div>
-
-              <h3>{item.name}</h3>
-
-              <p>{item.description}</p>
-
-              <div className="variant-type__attributes">
-                {item.attributes.map((attribute) => (
-                  <span key={attribute}>{attribute}</span>
-                ))}
-              </div>
-
-              <div className="variant-type__footer">
-                <span>Products</span>
-                <strong>0</strong>
-              </div>
-            </article>
-          ))}
-
-          {filteredTypes.length === 0 && (
-            <div className="variants-empty">
-              <Search size={20} />
-
-              <h3>No variant type found</h3>
-
-              <p>
-                Try another search term.
-              </p>
-
-              <Button
-                variant="secondary"
-                onClick={() => setSearch("")}
-              >
-                Clear Search
-              </Button>
+        <div className="inv-header__actions"><Link className="inv-link-button" href="/products/new">New item</Link></div>
+      </header>
+      <section className="inv-card">
+        <div className="inv-toolbar"><div className="inv-field"><label htmlFor="pv-search">Search</label><input id="pv-search" type="search" placeholder="SKU, name, category or type" value={search} onChange={(event) => setSearch(event.target.value)} /></div></div>
+        {result.error ? <p className="inv-state inv-state--error" role="alert">{result.error}</p> : !result.data ? <p className="inv-state" role="status">Loading…</p> : families.length === 0 ? <p className="inv-state">No items match.</p> : families.map((family) => (
+          <div key={family.key} style={{ padding: "8px 18px 16px" }}>
+            <h3 style={{ margin: "8px 0" }}>{family.name} <small style={{ fontWeight: 400 }}>· {family.category}{family.itemType ? ` · ${family.itemType}` : ""} · {family.variants.length} variant{family.variants.length === 1 ? "" : "s"}</small></h3>
+            <div className="inv-table-wrap">
+              <table className="inv-table">
+                <thead><tr><th>SKU</th>{family.attributes.map((attribute) => <th key={attribute}>{LABELS[attribute]}</th>)}<th>Unit</th><th className="inv-num">Price</th><th>Status</th></tr></thead>
+                <tbody>
+                  {family.variants.map((variant) => (
+                    <tr key={variant.id}>
+                      <td data-label="SKU"><Link href={`/products/${variant.id}`}>{variant.sku}</Link></td>
+                      {family.attributes.map((attribute) => <td key={attribute} data-label={LABELS[attribute]}>{variant[attribute] || "—"}</td>)}
+                      <td data-label="Unit">{variant.unit}</td>
+                      <td data-label="Price" className="inv-num">{variant.unitPrice}</td>
+                      <td data-label="Status">{variant.status === "ACTIVE" ? "Active" : variant.status.toLowerCase()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          )}
-        </div>
-      </Card>
-    </div>
+          </div>
+        ))}
+      </section>
+    </main>
   );
 }

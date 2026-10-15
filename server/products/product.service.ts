@@ -4,7 +4,7 @@ import { db } from "../core/database/client";
 import { AppError } from "../core/errors/app-error";
 import { recordAuditEvent } from "../auth/audit.service";
 import type { ProductInput, ProductQuery } from "./product.validation";
-import { toPlainDecimalString } from "../core/utils/decimal";
+import { normalizeDecimalString, toPlainDecimalString } from "../core/utils/decimal";
 
 function toProductInput(input: ProductInput) {
   return {
@@ -163,9 +163,18 @@ export async function updateProduct(
   }
   await assertBarcodeAvailable(input.barcode, id);
 
-  await db.orm.public.Product.where({ id }).update({
-    ...toProductInput(input),
-    updatedAt: new Date().toISOString(),
+  const fields = toProductInput(input);
+  await db.transaction(async (tx) => {
+    const [before] = (await tx.query(db.raw.sql`select "unitPrice"::text as price from erp_products where id = ${id}::uuid for update`
+      .returnsRow({ price: "pg/text@1" }).build() as never)) as unknown as Array<{ price: string }>;
+    await tx.orm.public.Product.where({ id }).update({ ...fields, updatedAt: new Date().toISOString() });
+    // Price edits on the item form are kept in the price history too (D-033).
+    if (before && normalizeDecimalString(before.price) !== normalizeDecimalString(String(fields.unitPrice))) {
+      await tx.orm.public.ProductPriceChange.create({
+        productId: id, previousPrice: normalizeDecimalString(before.price), newPrice: normalizeDecimalString(String(fields.unitPrice)),
+        effectiveDate: new Date().toISOString().slice(0, 10), reason: "Edited on the item form", changedBy: actorId,
+      });
+    }
   });
   await recordAuditEvent({
     actorId,

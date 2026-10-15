@@ -1,239 +1,93 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
-import { Activity, ClipboardList, RefreshCcw } from "lucide-react";
 
-import PageHeader from "@/components/ui/PageHeader";
-import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
-import Modal from "@/components/ui/Modal";
-import Input from "@/components/ui/Input";
-import EmptyState from "@/components/ui/EmptyState";
-import { useToast } from "@/components/ui/ToastProvider";
+import InventoryPager from "@/components/inventory/InventoryPager";
+import CapaDialog from "@/components/quality/CapaDialog";
+import { QBadge } from "@/components/quality/qualityUi";
+import { apiRequest } from "@/lib/api/client";
+import useCurrentUser from "@/lib/auth/useCurrentUser";
+import useApiData, { toQuery } from "@/lib/inventory/useApiData";
 
-import useQualityStore from "@/lib/useQualityStore";
-import { backendUnavailableReason } from "@/lib/backendUnavailable";
+import "@/components/inventory/InventoryWorkspace.css";
 
-const UNAVAILABLE_REASON = backendUnavailableReason("Quality control");
+const PROMPTS = { complete: "What was done?", verify: "Verification evidence?", reopen: "Why was it not effective?", cancel: "Reason for cancelling?" };
 
-export default function CAPAPage() {
-  const toast = useToast();
+export default function CapaPage() {
+  const { can } = useCurrentUser();
+  const [status, setStatus] = useState("ACTIVE");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState("");
+  const list = useApiData(`/api/quality/capas${toQuery({ status, search, page, pageSize: 25 })}`);
+  const rows = list.data?.capas ?? [];
 
-  const { capas, createCapa, setCapaStatus } = useQualityStore();
-
-  const [createOpen, setCreateOpen] = useState(false);
-  const [ncrRef, setNcrRef] = useState("");
-  const [action, setAction] = useState("");
-  const [owner, setOwner] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-
-  const open = capas.filter((capa) => capa.status === "open").length;
-  const inProgress = capas.filter((capa) => capa.status === "in-progress").length;
-  const closed = capas.filter((capa) => capa.status === "closed").length;
-
-  function handleCreate() {
-    if (!action.trim()) return;
-
-    setSubmitting(true);
-
-    const capa = createCapa({
-      ncrId: ncrRef.trim(),
-      action: action.trim(),
-      owner: owner.trim(),
-    });
-
-    setSubmitting(false);
-    setCreateOpen(false);
-    setNcrRef("");
-    setAction("");
-    setOwner("");
-
-    toast.success({
-      title: "CAPA created",
-      message: `${capa.code} created.`,
-    });
+  async function act(capa, action) {
+    const note = action === "start" ? "" : window.prompt(PROMPTS[action]);
+    if (note === null || (action !== "start" && !note)) return;
+    setError("");
+    try {
+      await apiRequest(`/api/quality/capas/${capa.id}`, { method: "PATCH", body: JSON.stringify({ action, note }) });
+      list.reload();
+    } catch (cause) {
+      setError(cause.message);
+    }
   }
 
-  const statusLabel = {
-    open: "Open",
-    "in-progress": "In progress",
-    closed: "Closed",
-  };
-
   return (
-    <main style={{ display: "grid", gap: "24px", padding: "24px 0" }}>
-      <PageHeader
-        eyebrow="Quality Control"
-        title="Corrective and Preventive Action"
-        description="Follow through on quality corrective actions to prevent recurrence."
-        action={
-          <div style={{ display: "flex", gap: "8px" }}>
-            <Button
-              variant="secondary"
-              icon={RefreshCcw}
-              disabled
-              title={UNAVAILABLE_REASON}
-            >
-              Refresh actions
-            </Button>
-
-            <Button
-              variant="primary"
-              icon={ClipboardList}
-              onClick={() => setCreateOpen(true)} disabled title={UNAVAILABLE_REASON}
-            >
-              Create CAPA
-            </Button>
+    <main className="inv-page">
+      <header className="inv-header">
+        <div>
+          <p className="inv-header__eyebrow"><Link href="/quality">Quality</Link></p>
+          <h1>Corrective and preventive actions</h1>
+          <p>Open → in progress → done → verified. Verification (or &quot;not effective&quot;, which sends it back) needs quality approval.</p>
+        </div>
+        <div className="inv-header__actions">
+          <Link className="inv-link-button" href="/reports/quality/capa">CAPA report</Link>
+          {can("quality:create") && <Button variant="primary" onClick={() => setCreating(true)}>New CAPA</Button>}
+        </div>
+      </header>
+      {error && <p className="inv-dialog__error" role="alert">{error}</p>}
+      <section className="inv-card">
+        <div className="inv-toolbar">
+          <div className="inv-field"><label htmlFor="cp-search">Search</label><input id="cp-search" type="search" placeholder="CAPA, title, owner or NCR" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} /></div>
+          <div className="inv-field">
+            <label htmlFor="cp-status">Status</label>
+            <select id="cp-status" value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }}>
+              <option value="ACTIVE">Not yet verified</option><option value="OVERDUE">Overdue</option><option value="OPEN">Open</option><option value="IN_PROGRESS">In progress</option><option value="DONE">Done (to verify)</option><option value="VERIFIED">Verified</option><option value="CANCELLED">Cancelled</option><option value="">All</option>
+            </select>
           </div>
-        }
-      />
-
-      <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px" }}>
-        <Card compact>
-          <div style={{ fontSize: "12px", color: "#667085" }}>Open</div>
-          <strong style={{ fontSize: "28px", display: "block", marginTop: "8px" }}>{open}</strong>
-        </Card>
-
-        <Card compact>
-          <div style={{ fontSize: "12px", color: "#667085" }}>In progress</div>
-          <strong style={{ fontSize: "28px", display: "block", marginTop: "8px" }}>{inProgress}</strong>
-        </Card>
-
-        <Card compact>
-          <div style={{ fontSize: "12px", color: "#667085" }}>Closed</div>
-          <strong style={{ fontSize: "28px", display: "block", marginTop: "8px" }}>{closed}</strong>
-        </Card>
-      </section>
-
-      <Card title="Action log" description="Current corrective and preventive activities">
-        {capas.length === 0 ? (
-          <EmptyState
-            icon={ClipboardList}
-            title="No CAPA records"
-            description="Corrective and preventive actions appear here once created, typically linked to an NCR."
-            action={
-              <Button
-                variant="primary"
-                icon={ClipboardList}
-                onClick={() => setCreateOpen(true)} disabled title={UNAVAILABLE_REASON}
-              >
-                Create CAPA
-              </Button>
-            }
-          />
-        ) : (
-          <div style={{ display: "grid", gap: "12px" }}>
-            {capas.map((capa) => (
-              <div key={capa.id} style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr auto", gap: "12px", alignItems: "center", border: "1px solid #e5e7eb", borderRadius: "10px", padding: "12px 14px" }}>
-                <div>
-                  <div style={{ fontSize: "12px", color: "#667085" }}>Code</div>
-                  <strong>{capa.code}</strong>
-                </div>
-
-                <div>
-                  <div style={{ fontSize: "12px", color: "#667085" }}>Action</div>
-                  <strong>{capa.action}</strong>
-                </div>
-
-                <div>
-                  <div style={{ fontSize: "12px", color: "#667085" }}>Owner</div>
-                  <strong>{capa.owner || "—"}</strong>
-                </div>
-
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", fontWeight: 700, color: capa.status === "open" ? "#b91c1c" : capa.status === "in-progress" ? "#1d4ed8" : "#166534", background: capa.status === "open" ? "#fee2e2" : capa.status === "in-progress" ? "#dbeafe" : "#dcfce7", borderRadius: "999px", padding: "6px 8px" }}>
-                    <Activity size={12} />
-                    {statusLabel[capa.status]}
-                  </span>
-
-                  {capa.status === "open" && (
-                    <Button
-                      variant="secondary"
-                      size="small"
-                      onClick={() => setCapaStatus(capa.id, "in-progress")}
-                    >
-                      Start
-                    </Button>
-                  )}
-
-                  {capa.status === "in-progress" && (
-                    <Button
-                      variant="primary"
-                      size="small"
-                      onClick={() => {
-                        setCapaStatus(capa.id, "closed");
-                        toast.success({
-                          title: "CAPA closed",
-                          message: `${capa.code} closed.`,
-                        });
-                      }}
-                    >
-                      Close
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
+        </div>
+        {list.error ? <p className="inv-state inv-state--error" role="alert">{list.error}</p> : !list.data ? <p className="inv-state" role="status">Loading actions…</p> : rows.length === 0 ? <p className="inv-state">No actions match.</p> : (
+          <div className="inv-table-wrap">
+            <table className="inv-table">
+              <thead><tr><th>CAPA</th><th>NCR</th><th>Owner</th><th>Due</th><th>Status</th><th /></tr></thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.id}>
+                    <td data-label="CAPA"><strong>{row.capaNumber}</strong> {row.title}<small>{row.actionType.toLowerCase()}</small></td>
+                    <td data-label="NCR">{row.ncrId ? <Link href={`/quality/ncr?ncr=${row.ncrId}`}>{row.ncrNumber}</Link> : "—"}</td>
+                    <td data-label="Owner">{row.ownerName}</td>
+                    <td data-label="Due">{row.dueDate}{row.overdue && <small className="inv-neg">Overdue</small>}</td>
+                    <td data-label="Status"><QBadge value={row.status} /></td>
+                    <td data-label="">
+                      {row.status === "OPEN" && can("quality:create") && <button type="button" className="inv-link-button" onClick={() => act(row, "start")}>Start</button>}
+                      {["OPEN", "IN_PROGRESS"].includes(row.status) && can("quality:create") && <> <button type="button" className="inv-link-button" onClick={() => act(row, "complete")}>Complete</button></>}
+                      {["OPEN", "IN_PROGRESS"].includes(row.status) && can("quality:approve") && <> <button type="button" className="inv-link-button" onClick={() => act(row, "cancel")}>Cancel</button></>}
+                      {row.status === "DONE" && can("quality:approve") && <><button type="button" className="inv-link-button" onClick={() => act(row, "verify")}>Verify</button> <button type="button" className="inv-link-button" onClick={() => act(row, "reopen")}>Not effective</button></>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
-      </Card>
-
-      <Card title="CAPA workflow" description="Root cause -> corrective action -> verification">
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "12px" }}>
-          {["Issue identified", "Root cause", "Corrective action", "Prevention", "Verification"].map((item, idx) => (
-            <div key={item} style={{ border: "1px solid #e5e7eb", borderRadius: "10px", padding: "12px", background: "#fafafa" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-                <Activity size={14} />
-                <strong style={{ fontSize: "14px" }}>{idx + 1}. {item}</strong>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <Modal
-        open={createOpen}
-        onClose={() => setCreateOpen(false)}
-        title="Create CAPA"
-        description="Define a corrective or preventive action."
-      >
-        <div style={{ display: "grid", gap: "14px", padding: "6px 0 2px" }}>
-          <Input
-            label="Linked NCR (optional)"
-            placeholder="e.g. NCR-2041"
-            value={ncrRef}
-            onChange={(event) => setNcrRef(event.target.value)}
-          />
-
-          <Input
-            label="Action *"
-            placeholder="Describe the corrective or preventive action"
-            value={action}
-            onChange={(event) => setAction(event.target.value)}
-          />
-
-          <Input
-            label="Owner"
-            placeholder="Responsible person / department"
-            value={owner}
-            onChange={(event) => setOwner(event.target.value)}
-          />
-
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
-            <Button variant="secondary" onClick={() => setCreateOpen(false)}>
-              Cancel
-            </Button>
-
-            <Button
-              variant="primary"
-              disabled={!action.trim() || submitting}
-              onClick={handleCreate}
-            >
-              Create CAPA
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        <InventoryPager page={page} hasMore={list.data?.hasMore} onChange={setPage} disabled={list.loading} />
+      </section>
+      {creating && <CapaDialog onClose={() => setCreating(false)} onSaved={() => { setCreating(false); list.reload(); }} />}
     </main>
   );
 }

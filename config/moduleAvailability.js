@@ -5,7 +5,7 @@
  * cannot load or save records says so. Routes with a working backend
  * (dashboard, products, BOM, sales orders, customers, inventory, MRP,
  * production, quality inspections, packing, dispatch, invoicing and
- * receivables, procurement and payables, general ledger, users, roles, audit, gate passes, HR and payroll, reports,
+ * receivables, procurement and payables, general ledger, NCR/CAPA, shifts and leave, product catalogue, users, roles, audit, gate passes, HR and payroll, reports,
  * profile) are not listed.
  * Inventory pages render their own notice (InventoryBackendNotice).
  *
@@ -16,23 +16,13 @@ const UNAVAILABLE_AREAS = [
   { prefix: "/planning/capacity", label: "Capacity planning" },
   { prefix: "/planning/calendar", label: "Planning calendar" },
   { prefix: "/planning/production-plans", label: "Production plans" },
-  { prefix: "/quality/ncr", label: "Non-conformance reports" },
-  { prefix: "/quality/capa", label: "Corrective and preventive actions" },
   { prefix: "/packing/instructions", label: "Packing instructions" },
-  { prefix: "/people-payroll/shifts", label: "Shifts" },
-  { prefix: "/people-payroll/leave", label: "Leave balances", message: "Leave balances and requests are not implemented yet. Record paid and unpaid leave on the Attendance page; payroll uses it." },
-  { prefix: "/products/categories", label: "Product categories" },
-  { prefix: "/products/variants", label: "Product variants" },
-  { prefix: "/products/pricing", label: "Product pricing" },
-  { prefix: "/products/documents", label: "Product documents" },
   {
     prefix: "/administration/settings",
     label: "System settings",
     message:
       "This page lists built-in configuration for reference only; it cannot be changed here. Users, roles and the audit log are managed on their own pages.",
   },
-  { prefix: "/reports/quality/ncr", label: "NCR reports" },
-  { prefix: "/reports/quality/capa", label: "CAPA reports" },
 ];
 
 const AVAILABLE_ROUTES = [
