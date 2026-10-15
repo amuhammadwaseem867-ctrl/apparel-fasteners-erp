@@ -29,10 +29,11 @@ committed repository.** Statuses below describe the committed code only.
 | Finance (invoicing) | `/api/finance/{invoices,invoices/[id],uninvoiced-shipments,credit-notes,credit-notes/[id],receipts,receipts/[id],receivables,summary}` | `server/finance/*` | `erp_invoices`, `erp_invoice_lines`, `erp_credit_notes`, `erp_credit_note_lines`, `erp_customer_receipts` |
 | Administration | `/api/admin/{users,users/[id],users/[id]/password,roles,roles/[id],permissions,audit,audit/actions}` | `server/admin/*` | existing RBAC and audit tables |
 | Gate passes | `/api/gate-passes`, `/api/gate-passes/[id]`, `/api/gate-passes/[id]/returns` | `server/gate/*` | `erp_gate_passes`, `erp_gate_pass_lines` |
+| HR and payroll | `/api/hr/{departments,departments/[id],employees,employees/[id],employees/[id]/pay,attendance}`, `/api/payroll/{advances,advances/[id],runs,runs/[id],runs/[id]/lines/[lineId]}` | `server/payroll/*` | `erp_departments`, `erp_employees`, `erp_attendance_records`, `erp_salary_advances`, `erp_payroll_runs`, `erp_payroll_lines` |
 | Sales orders | `/api/sales/orders`, `/api/sales/orders/[id]` | `server/sales/*` | `erp_sales_orders`, `erp_sales_order_lines` (has `productId`) |
 | Dashboard | `/api/dashboard` | `server/dashboard/*` | reads the above |
 
-Migrations: `20261008T1419_migration` (base) → `20261014T1134_inventory_foundation` → `20261014T1624_bom_mrp` → `20261014T1640_production_stages` → `20261015T1506_quality_packing_dispatch` → `20261015T1605_invoicing_receivables` → `20261015T1641_login_attempt_counters` → `20261015T1645_gate_passes` (all additive; applied and verified only on the isolated test database).
+Migrations: `20261008T1419_migration` (base) → `20261014T1134_inventory_foundation` → `20261014T1624_bom_mrp` → `20261014T1640_production_stages` → `20261015T1506_quality_packing_dispatch` → `20261015T1605_invoicing_receivables` → `20261015T1641_login_attempt_counters` → `20261015T1645_gate_passes` → `20261015T1652_hr_payroll` → `20261015T1656_salary_advance_idempotency` (all additive; applied and verified only on the isolated test database).
 
 ## Module status
 
@@ -58,10 +59,10 @@ and reports success; data is lost on reload and never reaches the server.
 | Packing | 5 pages | **Working** (4) / static (1) | Overview, packing lists (create with packages and quick fill, confirm, cancel), list detail, packed & shipped, printable packing list. Confirming records the packing stage and receives finished goods. Packages redirects to packing lists. Packing instructions are not implemented (banner). |
 | Dispatch | 6 pages | **Working** | Overview, ready for delivery (packed lists by sales order), dispatch (drafts), shipments, delivered, shipment detail (dispatch, confirm delivery, cancel draft) and a printable delivery challan. Partial deliveries are supported; nothing ships past the ordered quantity. Verified in Chromium against the test DB. |
 | Finance | 12 pages | **Working** (5) / static (7) | Overview (live receivable, overdue, invoiced/received last 30 days), invoices (from dispatched shipments, issue/cancel draft), invoice detail (receipts, void, credit notes), receipts, receivables ageing; printable invoice, credit note and receipt (D-023). Accounts, income, expenses, payables, cash & bank, transactions and financial reports are not implemented (banner). Verified in Chromium against the test DB. |
-| People & Payroll | 11 pages | Static, honest | All 34 store mutations (incl. floating-point `computePayrollEntry`) throw; create/import/period buttons disabled; shell banner (Phase 1). |
+| People & Payroll | 11 pages | **Working** (8) / static (3) | Overview, employees (pay visible and editable only for payroll roles), departments, daily attendance with overtime, salary advances, payroll runs (calculate, adjust, recalculate, approve, pay) with payslips and register (D-027). Salary structure and deductions redirect to employees. Shifts, leave balances and HR reports show a banner. Verified in Chromium against the test DB, including pay hidden from an HR manager. |
 | Reports | 17 pages | Static, banner | No reporting API beyond the dashboard. |
 | Gate passes | 2 pages | **Working** | List (open, overdue, type filters), create (lines or from a dispatched shipment), approve, record gate exit/entry with guard, partial returns, cancel, printable pass (D-026). Verified in Chromium against the test DB. |
-| Printing / export | sales order sheet, stock slips, job card, packing list, delivery challan, invoice, credit note, receipt, gate pass | Partial | `/print/sales-orders/[id]`, `/print/stock-documents/[id]`, `/print/production-orders/[id]`, `/print/packing-lists/[id]`, `/print/shipments/[id]`, `/print/invoices/[id]`, `/print/credit-notes/[id]`, `/print/receipts/[id]`, `/print/gate-passes/[id]`, plus shell print CSS. Other documents depend on their modules' data. Sales order list CSV export (Excel-compatible). PDF comes from the browser's print dialog. |
+| Printing / export | sales order sheet, stock slips, job card, packing list, delivery challan, invoice, credit note, receipt, gate pass, payslip, payroll register | Partial | `/print/sales-orders/[id]`, `/print/stock-documents/[id]`, `/print/production-orders/[id]`, `/print/packing-lists/[id]`, `/print/shipments/[id]`, `/print/invoices/[id]`, `/print/credit-notes/[id]`, `/print/receipts/[id]`, `/print/gate-passes/[id]`, `/print/payroll/[id]`, plus shell print CSS. Other documents depend on their modules' data. Sales order list CSV export (Excel-compatible). PDF comes from the browser's print dialog. |
 
 ## Audit findings re-verified
 
@@ -115,3 +116,10 @@ should become "—" in the UI polish phase.
 The Finance rewrite left the old page stylesheets
 (`app/(erp)/finance/**/*.css`) unreferenced. The other finance pages still
 use `components/finance/FinanceWorkspace.jsx` and `financeConfigs`.
+
+The People & Payroll rewrite left these unreferenced:
+- `lib/usePeoplePayrollStore.js` and the `components/people-payroll/*`
+  components, if any are now unused;
+- the old page stylesheets under `app/(erp)/people-payroll`.
+
+Check them with a search before deleting.

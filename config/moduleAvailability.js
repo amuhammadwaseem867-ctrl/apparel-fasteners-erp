@@ -5,7 +5,8 @@
  * cannot load or save records says so. Routes with a working backend
  * (dashboard, products, BOM, sales orders, customers, inventory, MRP,
  * production, quality inspections, packing, dispatch, invoicing and
- * receivables, users, roles, audit, profile) are not listed.
+ * receivables, users, roles, audit, gate passes, HR and payroll, profile)
+ * are not listed.
  * Inventory pages render their own notice (InventoryBackendNotice).
  *
  * Remove an entry when that area's API and tables are in place.
@@ -26,7 +27,9 @@ const UNAVAILABLE_AREAS = [
   { prefix: "/finance/cash-bank", label: "Cash and bank" },
   { prefix: "/finance/transactions", label: "Financial transactions" },
   { prefix: "/finance/reports", label: "Financial reports" },
-  { prefix: "/people-payroll", label: "People and payroll" },
+  { prefix: "/people-payroll/shifts", label: "Shifts" },
+  { prefix: "/people-payroll/leave", label: "Leave balances", message: "Leave balances and requests are not implemented yet. Record paid and unpaid leave on the Attendance page; payroll uses it." },
+  { prefix: "/people-payroll/reports", label: "HR reports" },
   { prefix: "/products/categories", label: "Product categories" },
   { prefix: "/products/variants", label: "Product variants" },
   { prefix: "/products/pricing", label: "Product pricing" },

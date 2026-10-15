@@ -485,3 +485,75 @@ movement, not stock; inventory and dispatch documents post stock.
 
 **Screens**
 - Under Dispatch & Logistics → Gate Passes, with a printable pass.
+
+## D-027: HR and payroll (please confirm the pay rules)
+
+**Permissions (new, in the seed)**
+- `hr:view` and `hr:manage` cover employees, departments and attendance,
+  without pay.
+- `payroll:view` is needed to see pay rates, bank accounts, advances, runs
+  and payslips.
+- `payroll:process` sets pay, issues advances, and prepares and adjusts
+  runs.
+- `payroll:approve` approves runs and marks them paid.
+- New roles: HR_MANAGER and PAYROLL_OFFICER. The officer cannot approve.
+  Admin roles receive everything.
+- **Owner action:** run `seedSystemAccessControl()` on the live system to
+  add these permissions.
+- Pay fields are removed from API responses for users without
+  `payroll:view` (tested in Chromium).
+
+**Attendance**
+- One record per employee per day, only between the joining and leaving
+  dates.
+- Statuses: PRESENT, ABSENT, HALF_DAY, PAID_LEAVE, UNPAID_LEAVE, HOLIDAY,
+  WEEKLY_OFF. Overtime hours are recorded per day.
+- A month's attendance is locked once its payroll is approved. Saving
+  attendance and approving payroll share a per-month advisory lock.
+
+**Pay rules** (exact cents, each component rounded half up)
+- **Month length.** The month has its calendar days (28–31). Employed days
+  are the month's days within the employment dates.
+- **Monthly staff**
+  - Paid days = employed − absent − unpaid leave − ½ × half days.
+  - Days with no record are paid and shown as "unrecorded" on the run and
+    payslip.
+  - Basic and allowances are each prorated as amount × paid ÷ days in
+    month.
+- **Daily wage**
+  - Paid days = present + paid leave + ½ × half days.
+  - Holidays and unrecorded days are unpaid.
+  - Pay = rate × paid days, plus prorated monthly allowances.
+- **Overtime.** Hours × the employee's hourly rate.
+- **Deductions**
+  - The fixed monthly deduction is entered per employee. No tax or
+    statutory rate (income tax, EOBI, social security) is built in;
+    configure these per employee as advised.
+  - Advance instalments are then recovered, oldest first.
+  - Each deduction is limited so net pay is never negative.
+- **Manual adjustment.** A draft line can take one "other earning" and one
+  "other deduction" with a note.
+
+**Payroll runs**
+- One active run per month (partial unique index).
+- DRAFT → APPROVED → PAID. Only drafts can be recalculated, adjusted or
+  cancelled.
+- Approval recalculates and refuses if attendance, pay rates or advances
+  changed since the draft (`PAYROLL_STALE`). It then applies each advance
+  recovery once with a conditional update; fully recovered advances close.
+
+**Advances**
+- Issued with an instalment and idempotent (unique key).
+- Cancellable only before anything is recovered.
+- Interest-bearing loans are not supported.
+
+**Prints:** the payroll register and payslips.
+
+**Not implemented:** shifts, leave balances or requests (leave is recorded
+on attendance), and HR reports. These pages show a banner. The salary
+structure and deductions pages redirect to Employees, where pay is set.
+
+**Please confirm:**
+- calendar-day proration, against a fixed 26- or 30-day basis;
+- paying monthly staff for unrecorded days;
+- daily wagers being unpaid on holidays.

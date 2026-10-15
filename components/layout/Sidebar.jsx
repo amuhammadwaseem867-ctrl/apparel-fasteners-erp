@@ -438,20 +438,12 @@ const NAV_GROUPS = [
             href: "/people-payroll/leave",
           },
           {
-            label: "Salary Structures",
-            href: "/people-payroll/salary-structure",
-          },
-          {
             label: "Payroll",
             href: "/people-payroll/payroll",
           },
           {
-            label: "Advances & Loans",
+            label: "Salary Advances",
             href: "/people-payroll/advances-loans",
-          },
-          {
-            label: "Deductions",
-            href: "/people-payroll/deductions",
           },
           {
             label: "Payroll Reports",

@@ -51,7 +51,7 @@ tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
 | 5 | Production: 9 stages | Yes | **Done.** Stage runs with `input = accepted + rejected + wastage + rework` (D-021); server-enforced sequence; partial runs; hold/resume; rework; append-only history; material issue linked to orders; job card. |
 | 6 | QC, packing, dispatch, delivery | Yes | **Done.** QC gates packing (final inspections drive stage 7); packing receives FG (stage 8); dispatch cannot exceed ordered quantity or available FG; partial deliveries; delivery drives stage 9; incoming inspection releases or scraps held stock (D-022). |
 | 7 | Finance | Yes | **Done (invoicing and receivables).** Invoices from shipments at sales-order terms (no invented tax); credit notes instead of deletion; receipts with voiding; receivables ageing (D-023). Not a general ledger. Payables wait for procurement. |
-| 8 | HR, payroll, admin, gate passes | Yes | Least-privilege payroll access; user/role admin over existing RBAC tables; gate passes. Durable login limiter (shared store). |
+| 8 | HR, payroll, admin, gate passes | Yes | **Done.** User/role admin with lockout protection (D-024); shared login limiter (D-025); gate passes (D-026); HR, attendance, advances and exact payroll with separate payroll permissions (D-027). |
 | 9 | Print/export, UI polish, E2E | Partly | Print CSS + document layouts; real CSV/XLSX export; Playwright E2E against an isolated test DB. |
 
 ## Migration dependencies
@@ -110,26 +110,38 @@ tests), diff review, and an update to `ERP_MODULE_STATUS.md`.
 | 2026-10-15 | `2e78acd` | Administration services and API; disabled roles grant nothing; lockout protection. |
 | 2026-10-15 | `d8c557b` | Administration screens: users, roles, audit log. |
 | 2026-10-15 | `0facbea` | Login limiter shared across instances; migration `20261015T1641_login_attempt_counters` (additive). |
-| 2026-10-15 | (this commit) | Gate passes: schema + migration `20261015T1645_gate_passes` (additive), service, API, screens, print. |
+| 2026-10-15 | `b628415` | Gate passes: schema + migration `20261015T1645_gate_passes` (additive), service, API, screens, print. |
+| 2026-10-15 | `d1e0a1c` | HR/payroll schema + migration `20261015T1652_hr_payroll` (additive); HR and payroll permissions in the seed. |
+| 2026-10-15 | `30264f7` | HR and payroll services and API; migration `20261015T1656_salary_advance_idempotency` (additive). |
+| 2026-10-15 | (this commit) | People & Payroll screens; payslips and payroll register. |
 
 ## Next step
 
-Phases 3–7 (invoicing and receivables) are complete and verified on the
-isolated test database.
-Next: Phase 8. This covers HR and payroll (least-privilege access; payroll
-maths in exact decimals), user and role administration over the existing
-RBAC tables, gate passes, and a durable login limiter.
+Phases 3–8 are complete and verified on the isolated test database.
+Next: Phase 9. This covers the remaining reports (sales, stock, production,
+quality, receivables and payroll summaries from live data), CSV export for
+the main lists, UI polish (placeholder KPIs, empty states, removal of
+superseded files once the branches are reconciled), and a full regression
+pass.
 
 Owner actions still open:
 - Push the local `D:\` work (D-001).
 - Confirm sub-cent prices (D-012).
-- Supply company legal details and tax registration (D-013). Invoices need
-  these before going to customers.
-- Confirm the permission mappings (D-019, D-021, D-022, D-023).
-- Approve applying migrations `20261014T1134_inventory_foundation`,
-  `20261014T1624_bom_mrp`, `20261014T1640_production_stages`,
-  `20261015T1506_quality_packing_dispatch` and
-  `20261015T1605_invoicing_receivables` to the live database after a
-  verified backup.
+- Supply company legal details (D-013).
+- Confirm the permission mappings (D-019, D-021–D-023, D-026) and the
+  payroll rules (D-027).
+- Run the access-control seed on the live system (new HR and payroll
+  permissions).
+- Approve applying these migrations to the live database after a verified
+  backup:
+  - `20261014T1134_inventory_foundation`
+  - `20261014T1624_bom_mrp`
+  - `20261014T1640_production_stages`
+  - `20261015T1506_quality_packing_dispatch`
+  - `20261015T1605_invoicing_receivables`
+  - `20261015T1641_login_attempt_counters`
+  - `20261015T1645_gate_passes`
+  - `20261015T1652_hr_payroll`
+  - `20261015T1656_salary_advance_idempotency`
 
 Nothing has been applied to any live database.
