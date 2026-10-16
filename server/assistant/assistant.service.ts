@@ -8,7 +8,7 @@
  */
 
 import { AppError } from "../core/errors/app-error";
-import { chat, type ChatMessage } from "./grok";
+import { chat, grokSettings, type ChatMessage } from "./grok";
 import { executeTool, toolsFor, type Proposal, type ReportTable, type User } from "./tools";
 
 export { executeTool, toolsFor } from "./tools";
@@ -42,6 +42,9 @@ function parseArguments(raw: string) {
 }
 
 export async function runAssistant(user: User, history: ChatMessage[], userText: string, today: string): Promise<AssistantTurn> {
+  if (!grokSettings().enabled) {
+    throw new AppError("The AI assistant is switched off. An administrator can turn it on with AI_ASSISTANT_ENABLED=true.", { code: "ASSISTANT_DISABLED", status: 503 });
+  }
   const tools = toolsFor(user);
   if (!tools.some((tool) => tool.name.startsWith("propose_") || tool.name === "show_report")) {
     throw new AppError("Your role cannot use any of the assistant's entries or reports.", { code: "FORBIDDEN", status: 403 });

@@ -33,14 +33,16 @@ async function signedInUser(request) {
   return user;
 }
 
-/* Which entries this user's role lets the assistant prepare. */
+/* Which entries this user's role lets the assistant prepare. Switched off, it lists none, so the panel stays hidden. */
 export function GET(request) {
   return runRoute(request, async () => {
     const user = await signedInUser(request);
+    const { enabled, configured } = grokSettings();
     return {
       data: {
-        configured: grokSettings().configured,
-        tools: toolsFor(user).map((tool) => tool.name),
+        enabled,
+        configured,
+        tools: enabled ? toolsFor(user).map((tool) => tool.name) : [],
       },
     };
   });

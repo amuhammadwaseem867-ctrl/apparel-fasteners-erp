@@ -1,6 +1,7 @@
 /*
  * Minimal client for xAI's OpenAI-compatible Chat Completions API (Grok).
- * Settings: XAI_API_KEY (required), XAI_MODEL (optional), XAI_BASE_URL
+ * Settings: AI_ASSISTANT_ENABLED=true (the on switch; off when unset),
+ * XAI_API_KEY (required), XAI_MODEL (optional), XAI_BASE_URL
  * (optional, default https://api.x.ai/v1). Failures become AppErrors that
  * say what to fix; a model name the account does not have is answered with
  * the list of models it does have.
@@ -23,6 +24,7 @@ export type ChatResult = { message: Extract<ChatMessage, { role: "assistant" }>;
 export function grokSettings() {
   const apiKey = process.env.XAI_API_KEY?.trim();
   return {
+    enabled: process.env.AI_ASSISTANT_ENABLED?.trim().toLowerCase() === "true",
     configured: Boolean(apiKey),
     apiKey,
     model: process.env.XAI_MODEL?.trim() || DEFAULT_MODEL,

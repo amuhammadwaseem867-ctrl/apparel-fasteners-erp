@@ -17,6 +17,9 @@ const ctx = {};
 const everything = { id: actor, name: "Tester", permissions: ["customers:view", "customers:create", "products:view", "sales:view", "sales:create", "finance:view", "finance:create"] };
 const viewer = { id: randomUUID(), name: "Viewer", permissions: ["dashboard:view", "reports:view"] };
 
+// The assistant is off unless switched on; these tests exercise it switched on.
+process.env.AI_ASSISTANT_ENABLED = "true";
+
 test.before(async () => {
   ctx.product = await createProduct({ sku: `SLI-5-BR-${run}`, name: `#5 Brass slider ${run}`, category: "Sliders", productType: "Finished Good", unit: "Pcs", unitPrice: 12, status: "ACTIVE", minimumStock: 0 }, actor);
   ctx.customer = await createCustomer(customerInputSchema.parse({ code: `C-${run}`, name: `Ali Traders ${run}`, email: "", phone: "" }), actor);
@@ -251,5 +254,17 @@ test("Grok failures become clear messages", async () => {
   });
   await withFakeGrok(() => ({ status: 429, body: { error: "rate limited" } }), async () => {
     await assert.rejects(runAssistant(everything, [], "hi", "2026-10-16"), (error) => error.code === "ASSISTANT_RATE_LIMITED");
+  });
+});
+
+test("switched off, the assistant refuses before calling any AI service", async () => {
+  await withFakeGrok(() => ({ body: answer("should not be called") }), async (requests) => {
+    process.env.AI_ASSISTANT_ENABLED = "false";
+    try {
+      await assert.rejects(runAssistant(everything, [], "hi", "2026-10-16"), (error) => error.code === "ASSISTANT_DISABLED");
+      assert.equal(requests.length, 0);
+    } finally {
+      process.env.AI_ASSISTANT_ENABLED = "true";
+    }
   });
 });

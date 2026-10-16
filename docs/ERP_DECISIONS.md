@@ -1044,3 +1044,15 @@ its CSV link.
 
 **Not tested here.** Real Grok was not called from this environment,
 because no key is available.
+
+**Switched off by default (2026-10-16).** The owner turned the assistant
+off until a proper xAI key is in place. It runs only when the server
+environment has `AI_ASSISTANT_ENABLED=true` (and `XAI_API_KEY`).
+
+While it is off:
+- `GET /api/assistant` lists no tools, so the panel and its button are
+  hidden on every page.
+- Every turn is refused with `ASSISTANT_DISABLED` before any AI service
+  is called.
+
+To turn it on, add `AI_ASSISTANT_ENABLED=true` and redeploy.
