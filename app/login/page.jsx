@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
+  Check,
   Eye,
   EyeOff,
   LockKeyhole,
@@ -15,6 +16,7 @@ import {
 import "./login.css";
 
 const SAVED_EMAIL_KEY = "erp_login_email";
+const TEETH = 18;
 
 function subscribeToNothing() {
   return () => {};
@@ -32,8 +34,30 @@ function readNoSavedEmail() {
   return "";
 }
 
+/* Decorative zipper: two rows of teeth that interlock as the slider passes. */
+function ZipperArt() {
+  return (
+    <div className="erp-zip" aria-hidden="true">
+      <div className="erp-zip__track">
+        {Array.from({ length: TEETH }, (_, index) => (
+          <span key={`l${index}`} className="erp-zip__tooth erp-zip__tooth--left" style={{ "--i": index }} />
+        ))}
+      </div>
+      <div className="erp-zip__track erp-zip__track--right">
+        {Array.from({ length: TEETH }, (_, index) => (
+          <span key={`r${index}`} className="erp-zip__tooth erp-zip__tooth--right" style={{ "--i": index }} />
+        ))}
+      </div>
+      <span className="erp-zip__slider">
+        <span className="erp-zip__pull" />
+      </span>
+    </div>
+  );
+}
+
 export default function LoginPage() {
   const router = useRouter();
+  const brandRef = useRef(null);
 
   /*
    * The remembered email lives in localStorage, which only exists in the
@@ -55,24 +79,41 @@ export default function LoginPage() {
   const rememberMe = rememberMeInput ?? Boolean(savedEmail);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  // Each failure alternates between two identical shake animations so it replays.
+  const [attempt, setAttempt] = useState(0);
+
+  function fail(message) {
+    setError(message);
+    setAttempt((current) => current + 1);
+  }
+
+  /* Spotlight follows the pointer; CSS variables avoid re-rendering. */
+  function moveSpotlight(event) {
+    const element = brandRef.current;
+    if (!element) return;
+    const box = element.getBoundingClientRect();
+    element.style.setProperty("--spot-x", `${event.clientX - box.left}px`);
+    element.style.setProperty("--spot-y", `${event.clientY - box.top}px`);
+  }
 
   async function handleSubmit(event) {
     event.preventDefault();
 
-    if (loading) {
+    if (loading || success) {
       return;
     }
 
     setError("");
 
     if (!email.trim()) {
-      setError("Please enter your email address.");
+      fail("Please enter your email address.");
       return;
     }
 
     if (!password) {
-      setError("Please enter your password.");
+      fail("Please enter your password.");
       return;
     }
 
@@ -114,10 +155,11 @@ export default function LoginPage() {
         // Remembering the email is a convenience; the login succeeded.
       }
 
+      setSuccess(true);
       router.replace("/administration");
       router.refresh();
     } catch (err) {
-      setError(
+      fail(
         err instanceof Error
           ? err.message
           : "Authentication is temporarily unavailable.",
@@ -127,11 +169,25 @@ export default function LoginPage() {
     }
   }
 
+  const busy = loading || success;
+
   return (
     <main className="erp-login">
-      <section className="erp-login__brand">
+      <section
+        ref={brandRef}
+        className="erp-login__brand"
+        onPointerMove={moveSpotlight}
+      >
+        <div className="erp-login__aurora" aria-hidden="true">
+          <span className="erp-login__orb erp-login__orb--one" />
+          <span className="erp-login__orb erp-login__orb--two" />
+          <span className="erp-login__orb erp-login__orb--three" />
+        </div>
+        <div className="erp-login__grid" aria-hidden="true" />
+        <div className="erp-login__spotlight" aria-hidden="true" />
+
         <div className="erp-login__brand-inner">
-          <div className="erp-login__logo">
+          <div className="erp-login__logo erp-rise" style={{ "--d": "0ms" }}>
             <Image
               src="/logo in white.png"
               alt="Apparel Fastener"
@@ -142,23 +198,26 @@ export default function LoginPage() {
           </div>
 
           <div className="erp-login__brand-content">
-            <span className="erp-login__eyebrow">
+            <span className="erp-login__eyebrow erp-rise" style={{ "--d": "120ms" }}>
               APPAREL FASTENER ERP
             </span>
 
             <h1>
-              Your operations,
-              <br />
-              in one system.
+              <span className="erp-rise" style={{ "--d": "220ms" }}>Your operations,</span>
+              <span className="erp-rise erp-login__headline-accent" style={{ "--d": "340ms" }}>in one system.</span>
             </h1>
 
-            <p>
-              Manage commercial and manufacturing operations
-              through one connected business platform.
+            <p className="erp-rise" style={{ "--d": "460ms" }}>
+              Sales, production, quality, dispatch, procurement and
+              finance, connected end to end.
             </p>
+
+            <div className="erp-rise" style={{ "--d": "580ms" }}>
+              <ZipperArt />
+            </div>
           </div>
 
-          <div className="erp-login__brand-footer">
+          <div className="erp-login__brand-footer erp-rise" style={{ "--d": "700ms" }}>
             <span>SECURE BUSINESS PLATFORM</span>
             <span>LAHORE · PAKISTAN</span>
           </div>
@@ -166,10 +225,12 @@ export default function LoginPage() {
       </section>
 
       <section className="erp-login__panel">
-        <div className="erp-login__form-area">
+        <div
+          className={`erp-login__form-area ${attempt ? `erp-login__form-area--shake-${attempt % 2}` : ""}`}
+        >
           <div className="erp-login__mobile-logo">
             <Image
-              src="/logo in navy.png"
+              src="/logo in white.png"
               alt="Apparel Fastener"
               width={300}
               height={90}
@@ -178,17 +239,17 @@ export default function LoginPage() {
           </div>
 
           <div className="erp-login__heading">
-            <div className="erp-login__security-icon">
+            <div className="erp-login__security-icon erp-rise" style={{ "--d": "150ms" }}>
               <ShieldCheck size={18} strokeWidth={1.9} />
             </div>
 
-            <span className="erp-login__section-label">
+            <span className="erp-login__section-label erp-rise" style={{ "--d": "220ms" }}>
               SECURE ACCESS
             </span>
 
-            <h2>Welcome back</h2>
+            <h2 className="erp-rise" style={{ "--d": "290ms" }}>Welcome back</h2>
 
-            <p>
+            <p className="erp-rise" style={{ "--d": "360ms" }}>
               Sign in to continue to the Apparel Fastener ERP.
             </p>
           </div>
@@ -204,7 +265,7 @@ export default function LoginPage() {
             className="erp-login__form"
             onSubmit={handleSubmit}
           >
-            <div className="erp-login__field">
+            <div className="erp-login__field erp-rise" style={{ "--d": "430ms" }}>
               <label htmlFor="erp-login-email">
                 Email address
               </label>
@@ -232,12 +293,12 @@ export default function LoginPage() {
                   autoComplete="email"
                   autoFocus
                   required
-                  disabled={loading}
+                  disabled={busy}
                 />
               </div>
             </div>
 
-            <div className="erp-login__field">
+            <div className="erp-login__field erp-rise" style={{ "--d": "500ms" }}>
               <div className="erp-login__label-row">
                 <label htmlFor="erp-login-password">
                   Password
@@ -248,10 +309,10 @@ export default function LoginPage() {
                   className="erp-login__forgot"
                   onClick={() =>
                     setError(
-                      "Password recovery will be connected to the authentication system.",
+                      "Ask an administrator to reset your password (Administration → Users).",
                     )
                   }
-                  disabled={loading}
+                  disabled={busy}
                 >
                   Forgot password?
                 </button>
@@ -280,7 +341,7 @@ export default function LoginPage() {
                   autoComplete="current-password"
                   minLength={8}
                   required
-                  disabled={loading}
+                  disabled={busy}
                 />
 
                 <button
@@ -294,25 +355,27 @@ export default function LoginPage() {
                       ? "Hide password"
                       : "Show password"
                   }
-                  disabled={loading}
+                  disabled={busy}
                 >
-                  {showPassword ? (
-                    <EyeOff size={17} strokeWidth={1.8} />
-                  ) : (
-                    <Eye size={17} strokeWidth={1.8} />
-                  )}
+                  <span key={showPassword ? "hide" : "show"} className="erp-login__toggle-icon">
+                    {showPassword ? (
+                      <EyeOff size={17} strokeWidth={1.8} />
+                    ) : (
+                      <Eye size={17} strokeWidth={1.8} />
+                    )}
+                  </span>
                 </button>
               </div>
             </div>
 
-            <label className="erp-login__remember">
+            <label className="erp-login__remember erp-rise" style={{ "--d": "570ms" }}>
               <input
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(event) =>
                   setRememberMe(event.target.checked)
                 }
-                disabled={loading}
+                disabled={busy}
               />
 
               <span className="erp-login__checkbox">
@@ -322,28 +385,32 @@ export default function LoginPage() {
               <span>Remember this email</span>
             </label>
 
-            <button
-              type="submit"
-              className="erp-login__submit"
-              disabled={
-                loading ||
-                !email.trim() ||
-                password.length < 8
-              }
-            >
-              <span>
-                {loading ? "Signing in..." : "Sign in to ERP"}
-              </span>
+            <div className="erp-rise" style={{ "--d": "640ms" }}>
+              <button
+                type="submit"
+                className={`erp-login__submit ${success ? "erp-login__submit--success" : ""}`}
+                disabled={
+                  busy ||
+                  !email.trim() ||
+                  password.length < 8
+                }
+              >
+                <span>
+                  {success ? "Welcome" : loading ? "Signing in..." : "Sign in to ERP"}
+                </span>
 
-              {loading ? (
-                <span className="erp-login__spinner" />
-              ) : (
-                <ArrowRight size={18} strokeWidth={2} />
-              )}
-            </button>
+                {success ? (
+                  <Check size={18} strokeWidth={2.4} className="erp-login__success-icon" />
+                ) : loading ? (
+                  <span className="erp-login__spinner" />
+                ) : (
+                  <ArrowRight size={18} strokeWidth={2} className="erp-login__arrow" />
+                )}
+              </button>
+            </div>
           </form>
 
-          <div className="erp-login__notice">
+          <div className="erp-login__notice erp-rise" style={{ "--d": "720ms" }}>
             <ShieldCheck size={15} strokeWidth={1.8} />
 
             <span>
@@ -352,7 +419,7 @@ export default function LoginPage() {
             </span>
           </div>
 
-          <footer className="erp-login__footer">
+          <footer className="erp-login__footer erp-rise" style={{ "--d": "780ms" }}>
             <span>APPAREL FASTENER ERP</span>
             <span>v1.0</span>
           </footer>
