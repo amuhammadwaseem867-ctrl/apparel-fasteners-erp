@@ -43,3 +43,6 @@ next-env.d.ts
 node_modules/
 dist/
 .env
+
+# Database backups made by scripts/go-live.mjs (contain business data)
+backups/

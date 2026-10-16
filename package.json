@@ -10,6 +10,8 @@
     "lint": "eslint",
     "postinstall": "prisma skills sync || exit 0",
     "contract:emit": "prisma contract emit",
+    "db:seed-access": "node --env-file-if-exists=.env scripts/seed-access-control.mjs",
+    "go-live": "node --env-file-if-exists=.env scripts/go-live.mjs",
     "test:db": "node --experimental-strip-types --import ./tests/support/test-database.mjs --test --test-concurrency=1 tests/server/auth-rbac.test.mjs tests/server/inventory.db.test.mjs tests/server/planning.db.test.mjs tests/server/production.db.test.mjs tests/server/fulfilment.db.test.mjs tests/server/finance.db.test.mjs tests/server/admin.db.test.mjs tests/server/login-rate-limit.db.test.mjs tests/server/gate-pass.db.test.mjs tests/server/payroll.db.test.mjs tests/server/reports.db.test.mjs tests/server/procurement.db.test.mjs tests/server/ledger.db.test.mjs tests/server/phase12.db.test.mjs"
   },
   "dependencies": {
