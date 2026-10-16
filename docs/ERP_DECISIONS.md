@@ -766,3 +766,174 @@ idempotent and audited, and needs `finance:approve`.
 - `finance:create` records expenses, income and transfers.
 - `finance:approve` creates or edits accounts, posts or reverses manual
   journals, voids cash transactions, and runs the backfill.
+
+## D-031 Non-conformance reports and CAPA (2026-10-15)
+
+**NCR lifecycle.** OPEN → INVESTIGATING → CLOSED. An open or
+investigating NCR can also be CANCELLED, with a reason.
+- An NCR closes only when:
+  - it has a root cause and a disposition (rework, scrap, use as is,
+    return to supplier, regrade); and
+  - every action on it is VERIFIED or CANCELLED.
+- It can be cancelled only when every action on it is cancelled.
+- Investigation fields are frozen once it is closed.
+
+**NCR links.** An NCR can link to an item, a production order, an
+inspection, a supplier and a customer. Each link is checked when the NCR
+is raised.
+
+**CAPA lifecycle.** OPEN → IN_PROGRESS → DONE → VERIFIED.
+- "Not effective" sends a DONE action back to IN_PROGRESS.
+- OPEN and IN_PROGRESS actions can be cancelled.
+- An action is overdue when it is open or in progress past its due date.
+- Actions cannot be added to a closed NCR.
+
+**Reports.** `quality-ncr` and `quality-capa` were added to the report
+registry, so they have date filters and CSV export.
+
+**Permissions**
+- `quality:create` raises, edits and starts or completes actions.
+- `quality:approve` closes or cancels NCRs, and verifies, sends back or
+  cancels actions.
+
+## D-032 Shifts and leave (2026-10-15)
+
+**Shifts**
+- A shift has a start, an end and a break. An end time earlier than the
+  start is an overnight shift.
+- Paid minutes are shown for each shift.
+- Each employee can be assigned one shift (nullable `shiftId`).
+- Attendance and overtime are still recorded per day.
+
+**Leave types.** Each type is paid or unpaid, with annual days.
+0 annual days means the type is not limited and no balance is tracked.
+
+**Leave requests**
+- A request counts the dates in its range that are not company holidays
+  or shutdowns on the planning calendar.
+- Weekly off days are counted. Confirm this with the owner.
+
+**Approval.** Approval runs in one transaction under the employee's lock
+and the payroll-period locks. It refuses:
+- an overlapping pending or approved request;
+- going over the year's entitlement;
+- a payroll period that is already approved;
+- dates already marked present or half day.
+
+It then writes PAID_LEAVE or UNPAID_LEAVE attendance, so payroll picks
+the leave up.
+
+**Cancelling an approved request** removes only the attendance it wrote
+(remark `Leave <number>`), and only while the period is still open.
+
+**Permissions.** `hr:manage` manages shifts and leave; `hr:view` reads
+them.
+
+## D-033 Product catalogue extras (2026-10-15)
+
+**Categories**
+- The category is still text on each product, so the item form is
+  unchanged.
+- The category register adds a description and a status, and lists
+  categories that are used but not registered.
+- Renaming a registered category renames it on every product in the same
+  transaction.
+
+**Variants.** There is no separate variant table: every specification
+combination is its own SKU (fastener categories are never merged). The
+variants page groups SKUs by category, item type and name, and shows the
+attributes that differ.
+
+**Pricing**
+- Every change records the previous price, the new price, the effective
+  date, the reason and who made it.
+- This includes edits on the item form.
+- Bulk percentage changes by category preview first and round half up to
+  6 decimals.
+- Existing sales orders keep their prices.
+
+**Documents**
+- Files are stored in the database (`bytea`), 5 MB each.
+- Allowed types are PDF, PNG, JPEG, WebP, text and CSV. The file's bytes
+  must match the declared type.
+- A SHA-256 checksum is recorded and file names are sanitised.
+- Downloads use `nosniff`, a sandboxing CSP and `attachment` by default.
+- Documents are archived, never deleted.
+
+**Permissions.** `products:update` changes categories, prices and
+documents; `products:view` reads them.
+
+## D-034 Planning, packing instructions and batches (2026-10-15)
+
+**Work centres**
+- There is one work centre per production stage, with capacity per shift
+  in one unit and 1–3 shifts per day.
+- Load is the quantity still to pass each stage of open production
+  orders.
+- Load is compared only in the capacity's unit. Other units are listed,
+  never converted or added.
+- Utilisation = days of work ÷ working days in the horizon.
+
+**Calendar**
+- Weekly off days come from the D-035 setting.
+- Dated overrides are holiday, shutdown or extra working day.
+- The month view shows production orders due, customer deliveries due and
+  supplier deliveries expected.
+
+**Production plans**
+- DRAFT plans are editable. A plan then goes to APPROVED, and on to
+  CLOSED, which cancels lines not yet released. Draft plans can be
+  cancelled.
+- Line due dates must fall inside the plan period, and quantities follow
+  the unit precision rules.
+- Releasing a line creates the production order, with its nine stages,
+  in the same transaction that marks the line released. It happens at
+  most once per line, even concurrently.
+- `insertProductionOrderInTransaction` was extracted from
+  `createProductionOrder` for this; its behaviour is unchanged.
+- Each plan shows a capacity check for that plan alone.
+
+**Packing instructions**
+- An instruction gives the pack type, units per pack, packs per carton,
+  carton and labelling, as a default or for one customer.
+- Partial unique indexes allow one active instruction per item and
+  customer, and one active default per item.
+- A customer's instruction wins over the item's default.
+
+**Batch register**
+- A batch is a quantity of one item from one source: a production order,
+  a goods receipt (with the supplier lot) or opening stock.
+- Batches never exceed the source quantity. The source is locked, and
+  rejected batches do not count.
+- Status moves only forward: ACTIVE, ON_HOLD, RELEASED, REJECTED,
+  CONSUMED.
+- The batch view traces to the production order, the receipt, PO and
+  supplier, the inspections and related NCRs.
+- **Limitation:** stock balances are not split by batch, and shipments
+  do not record batches.
+
+**Permissions**
+- Planning and packing instructions: `production:view` to read,
+  `production:create` or `production:update` to change.
+- Batches: `inventory:create` or `quality:create` to register;
+  `quality:approve` to hold, release or reject.
+
+## D-035 Settings (2026-10-15)
+
+**Storage.** Settings are stored in `erp_app_settings` as validated JSON
+per key. Every change is audited.
+
+**`company.profile`**
+- Every print now reads this through `useCompany()`, falling back to
+  `config/company.js`.
+- No company details are invented: until the owner fills them in, only
+  the trading name prints.
+
+**`planning.weeklyOff`.** The default is Sunday, flagged as "Default"
+until saved.
+
+**Permissions.** `roles:update` edits settings and `roles:view` reads the
+list. The company profile is readable by any signed-in user.
+
+**Banner list.** The module-availability list is now empty: every area
+in the navigation has its API and tables.
