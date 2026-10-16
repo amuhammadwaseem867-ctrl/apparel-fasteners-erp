@@ -4,14 +4,16 @@
  *   2. shows the pending migrations and asks you to type YES,
  *   3. applies them (all additive) and verifies the schema,
  *   4. seeds the built-in permissions and roles.
- * It stops at the first failure. Usage (DATABASE_URL in your .env):
- *   node --env-file=.env scripts/go-live.mjs
+ * It stops at the first failure. Usage (DATABASE_URL in .env.local or .env):
+ *   npm run go-live
  * Options: --backup=<file.dump> to use a backup you already took and checked.
  */
 
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, statSync } from "node:fs";
 import { createInterface } from "node:readline/promises";
+
+import "./load-env.mjs";
 
 const url = process.env.DATABASE_URL;
 const option = (name) => process.argv.find((arg) => arg.startsWith(`--${name}=`))?.slice(name.length + 3);
@@ -29,7 +31,7 @@ function run(label, command, args, { capture = false } = {}) {
   return result.stdout ?? "";
 }
 
-if (!url) stop("DATABASE_URL is not set. Put it in .env and run: node --env-file=.env scripts/go-live.mjs");
+if (!url) stop("DATABASE_URL is not set. Put it in .env.local (or .env) and run: npm run go-live");
 let host = "?";
 let database = "?";
 try {

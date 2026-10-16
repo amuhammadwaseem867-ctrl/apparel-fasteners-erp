@@ -1,10 +1,11 @@
 /*
  * Creates or updates the built-in permissions and roles (idempotent).
  * Run against the database in DATABASE_URL:
- *   node --env-file=.env scripts/seed-access-control.mjs
+ *   npm run db:seed-access   (DATABASE_URL from .env.local or .env)
  * Never creates users and never removes anything.
  */
 
+import "./load-env.mjs";
 import "../tests/support/register.mjs";
 
 if (!process.env.DATABASE_URL) {
