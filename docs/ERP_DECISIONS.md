@@ -937,3 +937,56 @@ list. The company profile is readable by any signed-in user.
 
 **Banner list.** The module-availability list is now empty: every area
 in the navigation has its API and tables.
+
+## D-036 AI entry assistant (2026-10-16)
+
+**What it does.** A panel on every ERP page ("AI se entry") where staff
+type what happened in English, Urdu or Roman Urdu. Claude
+(`claude-opus-5-5`, server-side fallback `"default"`) prepares the
+matching entry. It can prepare six kinds:
+- customers
+- suppliers
+- draft sales orders
+- draft purchase requisitions
+- expenses, income and cash/bank transfers
+- leave requests
+
+**Claude never writes.**
+- Read-only lookup tools find customers, items, suppliers, employees,
+  leave types and accounts. Each lookup checks the user's own view
+  permission.
+- Propose tools build the exact JSON body of the existing API route. The
+  body is validated with that route's own zod schema, and the ids are
+  checked to exist.
+- The user reviews each proposal on a card and presses **Confirm**. The
+  browser then posts the body to the normal route with the user's
+  session, so permissions, validation, idempotency and audit apply
+  unchanged.
+- Entries that create money or stock movements carry an idempotency key,
+  so a double confirm saves once.
+
+**Who sees it.** Only users whose role allows at least one of the six
+entries. Tools are filtered per user, and the server re-checks
+permissions on every tool call.
+
+**Conversation storage.** The conversation lives in the browser
+(sessionStorage) and is sent back each turn. It is capped at 200 messages
+and 600 KB.
+
+**Setup.** Without `ANTHROPIC_API_KEY` in the server environment, the
+panel says the assistant is not set up. It never answers with made-up
+data.
+
+**Not covered.** Approvals, stock posting, invoices and payroll stay on
+their screens. The assistant names the screen to use.
+
+**Tests.** `tests/server/assistant.db.test.mjs` covers:
+- permission filtering
+- real lookups
+- every proposal body accepted by the real service
+- invalid input refused
+- cash-entry idempotency
+- the not-configured error
+
+A browser run on the isolated test database confirmed that Confirm saves
+through the normal route.

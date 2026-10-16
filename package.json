@@ -15,9 +15,10 @@
     "db:schema-report": "node scripts/schema-report.mjs",
     "db:park-outside-tables": "node scripts/park-outside-tables.mjs",
     "db:set-accounts": "node scripts/set-user-accounts.mjs",
-    "test:db": "node --experimental-strip-types --import ./tests/support/test-database.mjs --test --test-concurrency=1 tests/server/auth-rbac.test.mjs tests/server/inventory.db.test.mjs tests/server/planning.db.test.mjs tests/server/production.db.test.mjs tests/server/fulfilment.db.test.mjs tests/server/finance.db.test.mjs tests/server/admin.db.test.mjs tests/server/login-rate-limit.db.test.mjs tests/server/gate-pass.db.test.mjs tests/server/payroll.db.test.mjs tests/server/reports.db.test.mjs tests/server/procurement.db.test.mjs tests/server/ledger.db.test.mjs tests/server/phase12.db.test.mjs"
+    "test:db": "node --experimental-strip-types --import ./tests/support/test-database.mjs --test --test-concurrency=1 tests/server/auth-rbac.test.mjs tests/server/inventory.db.test.mjs tests/server/planning.db.test.mjs tests/server/production.db.test.mjs tests/server/fulfilment.db.test.mjs tests/server/finance.db.test.mjs tests/server/admin.db.test.mjs tests/server/login-rate-limit.db.test.mjs tests/server/gate-pass.db.test.mjs tests/server/payroll.db.test.mjs tests/server/reports.db.test.mjs tests/server/procurement.db.test.mjs tests/server/ledger.db.test.mjs tests/server/phase12.db.test.mjs tests/server/assistant.db.test.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
     "@prisma/orm-postgres": "^8.0.0-rc.16",
     "lucide-react": "^1.52.0",
     "next": "16.4.0",

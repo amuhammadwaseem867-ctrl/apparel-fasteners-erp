@@ -4,6 +4,7 @@ import { useState } from "react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import ModuleAvailabilityBanner from "./ModuleAvailabilityBanner";
+import AssistantPanel from "@/components/assistant/AssistantPanel";
 
 import "./AppShell.css";
 
@@ -44,6 +45,8 @@ export default function AppShell({ children }) {
           </div>
         </main>
       </div>
+
+      <AssistantPanel />
 
       {mobileOpen && (
         <button
