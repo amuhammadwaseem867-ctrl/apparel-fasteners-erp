@@ -990,3 +990,57 @@ their screens. The assistant names the screen to use.
 
 A browser run on the isolated test database confirmed that Confirm saves
 through the normal route.
+
+## D-037 Assistant on Grok, with report tables and multi-step work (2026-10-16)
+
+**Provider.** The owner chose Grok, so the assistant now calls xAI's
+OpenAI-compatible Chat Completions API (`server/assistant/grok.ts`) with
+plain `fetch`. The Anthropic SDK was removed. This replaces the
+Claude/`ANTHROPIC_API_KEY` setup in D-036.
+
+**Settings**
+- `XAI_API_KEY` (required)
+- `XAI_MODEL` (optional, default `grok-4.3`)
+- `XAI_BASE_URL` (optional, default `https://api.x.ai/v1`)
+
+**Errors.** Every failure from Grok is turned into a message that says
+what to fix:
+- bad key
+- usage limit
+- unreachable service or timeout
+- unknown model (the message lists the models the account has)
+
+**Tables.** `show_report` runs any of the ERP reports the user may open:
+orders, deliveries, dispatches, packing, production, wastage, quality,
+NCR/CAPA, stock, movements, receivables and payroll.
+- The result is shown as a table with totals and a CSV link, straight
+  from the database. Grok never types a figure into it.
+- An optional search keeps only matching rows, and the totals are
+  recomputed exactly (decimal strings) for those rows.
+- Up to 200 rows are shown. When more exist, the footer says the total
+  covers all rows.
+- Grok receives only a summary and the first 40 rows to answer from.
+
+**More work per request**
+- New entry kinds:
+  - items (duplicate SKUs refused)
+  - draft purchase orders
+  - requisitions built from open MRP buy suggestions (`list_buy_suggestions`)
+- Up to 16 tool rounds per turn, so one request can prepare several
+  entries.
+- **Confirm all** saves each card in turn through its normal route.
+- A report viewer now sees the panel too, for reports only.
+- The assistant cannot create or change database tables or settings.
+
+**Tests.** `tests/server/assistant.db.test.mjs` (11 tests) adds:
+- product and purchase-order bodies accepted by the real services
+- report permissions and exact filtered totals
+- a full scripted Grok turn against a local stand-in server (test only):
+  lookup, proposal and report returned, nothing written
+- clear errors for 401, unknown model and 429
+
+A browser run against that local stand-in rendered the report table and
+its CSV link.
+
+**Not tested here.** Real Grok was not called from this environment,
+because no key is available.

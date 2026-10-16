@@ -1,20 +1,29 @@
 import { z } from "zod";
 
 import { runAssistant, toolsFor } from "@/server/assistant/assistant.service";
+import { grokSettings } from "@/server/assistant/grok";
 import { getCurrentUser } from "@/server/auth/auth.service";
 import { extractSessionTokenFromRequest } from "@/server/auth/session.service";
 import { parseRequestBody } from "@/server/core/api/request";
 import { runRoute } from "@/server/core/api/route";
 import { AppError } from "@/server/core/errors/app-error";
 
-/* A turn can take several model calls; allow up to a minute on serverless hosts. */
-export const maxDuration = 60;
+/* A turn can take several model calls; allow up to two minutes on serverless hosts. */
+export const maxDuration = 120;
 
 /* The conversation lives in the browser and comes back on every turn; it is size-capped and shape-checked. */
 const MAX_BODY_CHARS = 600_000;
 const turnSchema = z.object({
   message: z.string().trim().min(1).max(4000),
-  history: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.union([z.string(), z.array(z.record(z.string(), z.unknown()))]) })).max(200).default([]),
+  history: z.array(z.union([
+    z.object({ role: z.literal("user"), content: z.string().max(8000) }),
+    z.object({
+      role: z.literal("assistant"),
+      content: z.string().nullable(),
+      tool_calls: z.array(z.object({ id: z.string().max(200), type: z.literal("function"), function: z.object({ name: z.string().max(80), arguments: z.string().max(60000) }) })).max(40).optional(),
+    }),
+    z.object({ role: z.literal("tool"), tool_call_id: z.string().max(200), content: z.string().max(200000) }),
+  ])).max(300).default([]),
   today: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 });
 
@@ -30,7 +39,7 @@ export function GET(request) {
     const user = await signedInUser(request);
     return {
       data: {
-        configured: Boolean(process.env.ANTHROPIC_API_KEY),
+        configured: grokSettings().configured,
         tools: toolsFor(user).map((tool) => tool.name),
       },
     };

@@ -2,19 +2,73 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { Check, Loader2, RotateCcw, Send, Sparkles, X } from "lucide-react";
+import { Check, CheckCheck, Download, Loader2, Maximize2, Minimize2, RotateCcw, Send, Sparkles, X } from "lucide-react";
 
 import { apiRequest } from "@/lib/api/client";
 
 import "./AssistantPanel.css";
 
-const STORAGE_KEY = "erp-assistant-v1";
+const STORAGE_KEY = "erp-assistant-v2";
 const EXAMPLES = [
   "New order for Ali Traders: 5000 #5 brass sliders at Rs 12, delivery on the 30th",
   "Paid the electricity bill of Rs 18,500 in cash today",
   "New supplier: Star Metals, Lahore, 0300-1234567",
   "Casual leave for Bilal for 2 days from tomorrow",
+  "Show this month's deliveries",
+  "Which invoices are overdue?",
+  "Raise a requisition for everything MRP says we must buy",
 ];
+
+/* Thousands separators on exact decimal strings (no float rounding). */
+function formatCell(value, type) {
+  if (value === null || value === undefined || value === "") return "";
+  const textValue = String(value);
+  if ((type === "number" || type === "money") && /^-?\d+(\.\d+)?$/.test(textValue)) {
+    const [whole, fraction] = textValue.split(".");
+    const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return fraction ? `${grouped}.${type === "money" ? fraction.padEnd(2, "0").slice(0, 2) : fraction}` : type === "money" ? `${grouped}.00` : grouped;
+  }
+  if (type === "percent" && /^-?\d+(\.\d+)?$/.test(textValue)) return `${textValue}%`;
+  if (type === "datetime") return textValue.slice(0, 16).replace("T", " ");
+  return textValue;
+}
+
+function ReportTableView({ table }) {
+  const numeric = (type) => type === "number" || type === "money" || type === "percent";
+  const hasTotals = Object.keys(table.totals ?? {}).length > 0 && table.rows.length > 0;
+  return (
+    <div className="ai-table">
+      <div className="ai-table__head">
+        <div>
+          <strong>{table.title}</strong>
+          <small>{table.from ? `${table.from} to ${table.to} · ` : ""}{table.totalRows} row{table.totalRows === 1 ? "" : "s"}{table.truncated ? ` (first ${table.rows.length} shown)` : ""}</small>
+        </div>
+        <a className="ai-btn" href={table.csvPath}><Download size={14} /> CSV</a>
+      </div>
+      {table.rows.length === 0 ? (
+        <p className="ai-card__note">No rows for this period.</p>
+      ) : (
+        <div className="ai-table__scroll">
+          <table>
+            <thead>
+              <tr>{table.columns.map((column) => <th key={column.key} className={numeric(column.type) ? "is-num" : ""}>{column.label}</th>)}</tr>
+            </thead>
+            <tbody>
+              {table.rows.map((row, index) => (
+                <tr key={index}>{table.columns.map((column) => <td key={column.key} className={numeric(column.type) ? "is-num" : ""}>{formatCell(row[column.key], column.type)}</td>)}</tr>
+              ))}
+            </tbody>
+            {hasTotals && (
+              <tfoot>
+                <tr>{table.columns.map((column, index) => <td key={column.key} className={numeric(column.type) ? "is-num" : ""}>{table.totals[column.key] !== undefined ? formatCell(table.totals[column.key], column.type) : index === 0 ? (table.truncated ? `Total (all ${table.totalRows})` : "Total") : ""}</td>)}</tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const localToday = () => {
   const now = new Date();
@@ -73,6 +127,7 @@ export default function AssistantPanel() {
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [wide, setWide] = useState(false);
   const loaded = useRef(false);
   const listRef = useRef(null);
 
@@ -104,7 +159,7 @@ export default function AssistantPanel() {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [history, chat, cards]);
 
-  const canPrepare = setup?.tools?.some((name) => name.startsWith("propose_"));
+  const canPrepare = setup?.tools?.some((name) => name.startsWith("propose_") || name === "show_report");
   if (!setup || !canPrepare) return null;
 
   async function send(text) {
@@ -117,7 +172,7 @@ export default function AssistantPanel() {
     try {
       const turn = await apiRequest("/api/assistant", { method: "POST", body: JSON.stringify({ message, history, today: localToday() }) });
       setHistory(turn.messages);
-      setChat((items) => [...items, { role: "assistant", text: turn.reply, proposals: turn.proposals }]);
+      setChat((items) => [...items, { role: "assistant", text: turn.reply, proposals: turn.proposals, tables: turn.tables }]);
     } catch (cause) {
       setError(cause.message);
       setChat((items) => items.slice(0, -1));
@@ -137,6 +192,13 @@ export default function AssistantPanel() {
     }
   }
 
+  async function confirmAll(proposals) {
+    for (const proposal of proposals) {
+      const status = cards[proposal.id]?.status;
+      if (!status || status === "failed") await confirm(proposal);
+    }
+  }
+
   function reset() {
     setHistory([]);
     setChat([]);
@@ -146,19 +208,20 @@ export default function AssistantPanel() {
 
   return (
     <>
-      <button type="button" className={`ai-launcher${open ? " ai-launcher--hidden" : ""}`} onClick={() => setOpen(true)} aria-label="Open the AI entry assistant">
+      <button type="button" className={`ai-launcher${open ? " ai-launcher--hidden" : ""}`} onClick={() => setOpen(true)} aria-label="Open the AI assistant">
         <Sparkles size={18} />
-        <span>AI entry</span>
+        <span>AI assistant</span>
       </button>
 
       {open && (
-        <aside className="ai-panel" role="dialog" aria-label="AI entry assistant">
+        <aside className={`ai-panel${wide ? " ai-panel--wide" : ""}`} role="dialog" aria-label="AI assistant">
           <header className="ai-panel__head">
             <div>
-              <strong><Sparkles size={15} /> AI entry assistant</strong>
-              <small>Tell me what happened; I prepare the entry and you confirm it.</small>
+              <strong><Sparkles size={15} /> AI assistant</strong>
+              <small>Tell me what happened or what you need to see. I prepare entries and reports; you confirm.</small>
             </div>
             <div className="ai-panel__tools">
+              <button type="button" className="ai-icon" onClick={() => setWide((value) => !value)} aria-label={wide ? "Narrow panel" : "Widen panel"} title={wide ? "Narrow panel" : "Widen panel"}>{wide ? <Minimize2 size={15} /> : <Maximize2 size={15} />}</button>
               <button type="button" className="ai-icon" onClick={reset} aria-label="New conversation" title="New conversation"><RotateCcw size={15} /></button>
               <button type="button" className="ai-icon" onClick={() => setOpen(false)} aria-label="Close"><X size={16} /></button>
             </div>
@@ -166,7 +229,7 @@ export default function AssistantPanel() {
 
           <div className="ai-panel__list" ref={listRef}>
             {!setup.configured && (
-              <p className="ai-notice">The assistant is not set up yet. An administrator must add <code>ANTHROPIC_API_KEY</code> to the server environment.</p>
+              <p className="ai-notice">The assistant is not set up yet. An administrator must add <code>XAI_API_KEY</code> to the server environment.</p>
             )}
             {chat.length === 0 && setup.configured && (
               <div className="ai-examples">
@@ -179,6 +242,12 @@ export default function AssistantPanel() {
             {chat.map((item, index) => (
               <div key={index} className={`ai-msg ai-msg--${item.role}`}>
                 {item.text && <p>{item.text}</p>}
+                {item.tables?.map((table) => <ReportTableView key={table.id} table={table} />)}
+                {item.proposals?.filter((proposal) => !cards[proposal.id] || cards[proposal.id].status === "failed").length > 1 && (
+                  <button type="button" className="ai-btn ai-btn--primary ai-confirm-all" onClick={() => confirmAll(item.proposals)}>
+                    <CheckCheck size={14} /> Confirm all {item.proposals.filter((proposal) => !cards[proposal.id] || cards[proposal.id].status === "failed").length}
+                  </button>
+                )}
                 {item.proposals?.map((proposal) => (
                   <ProposalCard
                     key={proposal.id}
@@ -204,7 +273,7 @@ export default function AssistantPanel() {
             <textarea
               value={draft}
               rows={2}
-              placeholder="Type, for example: New order for Ali Traders, 5000 sliders…"
+              placeholder="Type, for example: Show this month's deliveries…"
               disabled={!setup.configured || busy}
               onChange={(event) => setDraft(event.target.value)}
               onKeyDown={(event) => {

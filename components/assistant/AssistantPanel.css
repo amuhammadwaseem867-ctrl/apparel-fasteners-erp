@@ -191,3 +191,36 @@
 @media print {
   .ai-launcher, .ai-panel { display: none !important; }
 }
+
+/* Wide mode and report tables (D-037). */
+.ai-panel--wide { width: min(860px, 100vw); }
+.ai-msg:has(.ai-table) { max-width: 100%; }
+.ai-confirm-all { margin-top: 8px; }
+
+.ai-table {
+  margin-top: 8px;
+  border: 1px solid #e3e8ee;
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.ai-table__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e3e8ee;
+}
+
+.ai-table__head strong { display: block; font-size: 14px; color: #0b2a40; }
+.ai-table__head small { color: #667085; font-size: 12px; }
+.ai-table__head .ai-btn { text-decoration: none; }
+.ai-table__scroll { max-height: 360px; overflow: auto; }
+.ai-table table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.ai-table th, .ai-table td { padding: 7px 10px; border-bottom: 1px solid #f0f3f6; text-align: left; white-space: nowrap; }
+.ai-table th { position: sticky; top: 0; background: #f6f8fa; color: #475467; font-weight: 600; }
+.ai-table .is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.ai-table tfoot td { position: sticky; bottom: 0; background: #f6f8fa; font-weight: 600; color: #0b2a40; }
+.ai-table tbody tr:hover td { background: #f9fbfd; }
