@@ -10,6 +10,11 @@
  * input <= available. Rework units go back into the same stage's queue.
  * A stage completes when the previous stage is complete and nothing is
  * left in its queue; the order then moves to the next stage.
+ *
+ * Tape is weighed, not counted: when a production order carries tapeKg,
+ * Tape Dyeing receives that many kilograms and Tape Press the kilograms
+ * Tape Dyeing accepted. Teeth Making starts again from the order quantity
+ * (pieces). Orders without tapeKg keep every stage in the order's unit.
  */
 
 import { PRODUCTION_STAGES } from "../../config/production.js";
@@ -30,6 +35,14 @@ export const STAGES = PRODUCTION_STAGES.map((stage: { key: string; sequence: num
 
 export const FINAL_STAGE = STAGES[STAGES.length - 1];
 
+/* Stages measured in kilograms when the order carries a tape weight. */
+export const TAPE_STAGE_KEYS = ["tape-dyeing", "tape-press"];
+const TAPE_SEQUENCES = new Set(STAGES.filter((stage) => TAPE_STAGE_KEYS.includes(stage.key)).map((stage) => stage.sequence));
+
+export function stageInKg(sequence: number, tapeKg?: string | null) {
+  return Boolean(tapeKg && decimalSign(tapeKg) > 0) && TAPE_SEQUENCES.has(sequence);
+}
+
 export interface StageTotals {
   sequence: number;
   status: string;
@@ -48,7 +61,7 @@ export interface RunInput {
   reworkQuantity: string;
 }
 
-export function stageQuantities(stages: StageTotals[], orderQuantity: string, sequence: number) {
+export function stageQuantities(stages: StageTotals[], orderQuantity: string, sequence: number, tapeKg?: string | null) {
   const stage = stages.find((item) => item.sequence === sequence);
   const previous = stages.find((item) => item.sequence === sequence - 1);
 
@@ -56,13 +69,18 @@ export function stageQuantities(stages: StageTotals[], orderQuantity: string, se
     throw new RangeError(`Unknown stage sequence ${sequence}`);
   }
 
-  const received = sequence === 1 ? orderQuantity : previous?.acceptedQuantity ?? "0";
+  const inKg = stageInKg(sequence, tapeKg);
+  let received: string;
+  if (sequence === 1) received = inKg ? String(tapeKg) : orderQuantity;
+  else if (inKg !== stageInKg(sequence - 1, tapeKg)) received = orderQuantity; // kilograms of tape → pieces
+  else received = previous?.acceptedQuantity ?? "0";
   const available = subtractDecimalStrings(addDecimalStrings(received, stage.reworkQuantity), stage.processedQuantity);
 
   return {
     received: normalizeDecimalString(received),
     available: normalizeDecimalString(available),
     previousCompleted: sequence === 1 || previous?.status === "COMPLETED",
+    inKg,
   };
 }
 

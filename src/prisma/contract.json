@@ -1804,8 +1804,22 @@
           },
           "Customer": {
             "fields": {
+              "address": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "code": {
                 "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "contactPerson": {
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -1839,6 +1853,13 @@
                   "kind": "scalar"
                 }
               },
+              "ntn": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "phone": {
                 "nullable": true,
                 "type": {
@@ -1848,6 +1869,13 @@
               },
               "status": {
                 "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "strn": {
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -1895,8 +1923,14 @@
             },
             "storage": {
               "fields": {
+                "address": {
+                  "column": "address"
+                },
                 "code": {
                   "column": "code"
+                },
+                "contactPerson": {
+                  "column": "contactPerson"
                 },
                 "createdAt": {
                   "column": "createdAt"
@@ -1910,11 +1944,17 @@
                 "name": {
                   "column": "name"
                 },
+                "ntn": {
+                  "column": "ntn"
+                },
                 "phone": {
                   "column": "phone"
                 },
                 "status": {
                   "column": "status"
+                },
+                "strn": {
+                  "column": "strn"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -6948,6 +6988,13 @@
                   "kind": "scalar"
                 }
               },
+              "tapeKg": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
               "unit": {
                 "nullable": false,
                 "type": {
@@ -7096,6 +7143,9 @@
                 },
                 "status": {
                   "column": "status"
+                },
+                "tapeKg": {
+                  "column": "tapeKg"
                 },
                 "unit": {
                   "column": "unit"
@@ -9733,6 +9783,13 @@
                   "kind": "scalar"
                 }
               },
+              "customerPo": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "deliveryDate": {
                 "nullable": true,
                 "type": {
@@ -9885,6 +9942,9 @@
                 "customerId": {
                   "column": "customerId"
                 },
+                "customerPo": {
+                  "column": "customerPo"
+                },
                 "deliveryDate": {
                   "column": "deliveryDate"
                 },
@@ -9946,6 +10006,13 @@
                   "kind": "scalar"
                 }
               },
+              "finish": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -9957,6 +10024,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "lineNo": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
@@ -10002,7 +10076,21 @@
                   "kind": "scalar"
                 }
               },
+              "size": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "skuReference": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "tapeColor": {
                 "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
@@ -10083,11 +10171,17 @@
                 "discountPercent": {
                   "column": "discountPercent"
                 },
+                "finish": {
+                  "column": "finish"
+                },
                 "id": {
                   "column": "id"
                 },
                 "isCustom": {
                   "column": "isCustom"
+                },
+                "lineNo": {
+                  "column": "lineNo"
                 },
                 "lineTotal": {
                   "column": "lineTotal"
@@ -10107,8 +10201,14 @@
                 "salesOrderId": {
                   "column": "salesOrderId"
                 },
+                "size": {
+                  "column": "size"
+                },
                 "skuReference": {
                   "column": "skuReference"
+                },
+                "tapeColor": {
+                  "column": "tapeColor"
                 },
                 "taxPercent": {
                   "column": "taxPercent"
@@ -14189,10 +14289,20 @@
             },
             "erp_customers": {
               "columns": {
+                "address": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "code": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": false
+                },
+                "contactPerson": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
                 },
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
@@ -14218,6 +14328,11 @@
                   "dataType": "pg/text",
                   "nullable": false
                 },
+                "ntn": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "phone": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -14231,6 +14346,11 @@
                     "value": "ACTIVE"
                   },
                   "nullable": false
+                },
+                "strn": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-string@1",
@@ -17870,6 +17990,11 @@
                   },
                   "nullable": false
                 },
+                "tapeKg": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "nullable": true
+                },
                 "unit": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -20375,6 +20500,11 @@
                   },
                   "nullable": false
                 },
+                "finish": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "id": {
                   "codecId": "pg/uuid@1",
                   "dataType": "pg/uuid",
@@ -20388,6 +20518,11 @@
                     "value": false
                   },
                   "nullable": false
+                },
+                "lineNo": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
                 },
                 "lineTotal": {
                   "codecId": "pg/numeric@1",
@@ -20419,7 +20554,17 @@
                   "dataType": "pg/uuid",
                   "nullable": false
                 },
+                "size": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "skuReference": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "tapeColor": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": true
@@ -20530,6 +20675,11 @@
                   "codecId": "pg/uuid@1",
                   "dataType": "pg/uuid",
                   "nullable": false
+                },
+                "customerPo": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
                 },
                 "deliveryDate": {
                   "codecId": "pg/text@1",
@@ -22880,7 +23030,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "8aeedc4fd6f3349fbed4f1cde04011c0594649daeda6416d28526f0d36218ae1"
+    "storageHash": "a39cbea48f2b55ecf80dac45815da339e22c8c0e97cf74d7c28b44021cb0ee15"
   },
   "execution": {
     "executionHash": "e65a19f75aec7c5ebdf256588f2adc798dac8b5a6693004414e0b85db734570d",

@@ -5,6 +5,7 @@ import { AppError } from "../core/errors/app-error";
 import { recordAuditEvent } from "../auth/audit.service";
 import type {
   CustomerInput,
+  CustomerUpdateInput,
   SalesOrderInput,
   SalesOrderQuery,
 } from "./sales.validation";
@@ -63,6 +64,10 @@ export async function createCustomer(input: CustomerInput, actorId: string) {
     ...input,
     email: cleanOptional(input.email),
     phone: cleanOptional(input.phone),
+    address: cleanOptional(input.address),
+    contactPerson: cleanOptional(input.contactPerson),
+    ntn: cleanOptional(input.ntn),
+    strn: cleanOptional(input.strn),
     status: "ACTIVE",
   });
   await recordAuditEvent({
@@ -73,6 +78,26 @@ export async function createCustomer(input: CustomerInput, actorId: string) {
     metadata: { code: customer.code },
   });
   return customer;
+}
+
+/* Name, contact and tax details; the code never changes (documents carry it). */
+export async function updateCustomer(id: string, input: CustomerUpdateInput, actorId: string) {
+  const existing = await db.orm.public.Customer.where({ id }).first();
+  if (!existing) {
+    throw new AppError("Customer not found.", { code: "CUSTOMER_NOT_FOUND", status: 404 });
+  }
+  await db.orm.public.Customer.where({ id }).update({
+    name: input.name,
+    email: cleanOptional(input.email),
+    phone: cleanOptional(input.phone),
+    address: cleanOptional(input.address),
+    contactPerson: cleanOptional(input.contactPerson),
+    ntn: cleanOptional(input.ntn),
+    strn: cleanOptional(input.strn),
+    updatedAt: new Date().toISOString(),
+  });
+  await recordAuditEvent({ actorId, action: "CUSTOMER_UPDATED", entityType: "Customer", entityId: id, metadata: { code: existing.code } });
+  return db.orm.public.Customer.where({ id }).first();
 }
 
 function lineSnapshot(
@@ -96,6 +121,9 @@ function lineSnapshot(
       skuReference: product.sku,
       category: product.category,
       variant: product.variant,
+      tapeColor: cleanOptional(line.tapeColor),
+      finish: cleanOptional(line.finish) ?? product.finish ?? null,
+      size: cleanOptional(line.size) ?? product.size ?? null,
       unit: product.unit,
       quantity: toPlainDecimalString(line.quantity),
       unitPrice: toPlainDecimalString(line.unitPrice),
@@ -114,6 +142,9 @@ function lineSnapshot(
     skuReference: cleanOptional(line.skuReference),
     category: cleanOptional(line.category),
     variant: cleanOptional(line.variant),
+    tapeColor: cleanOptional(line.tapeColor),
+    finish: cleanOptional(line.finish),
+    size: cleanOptional(line.size),
     unit: line.unit,
     quantity: toPlainDecimalString(line.quantity),
     unitPrice: toPlainDecimalString(line.unitPrice),
@@ -180,10 +211,11 @@ async function saveOrderLines(
   input: SalesOrderInput,
   products: Awaited<ReturnType<typeof validateOrderReferences>>,
 ) {
-  for (const line of input.lines) {
+  for (const [index, line] of input.lines.entries()) {
     const product = line.kind === "catalog" ? products.get(line.productId) : undefined;
     await tx.orm.public.SalesOrderLine.create({
       salesOrderId: orderId,
+      lineNo: index + 1,
       ...lineSnapshot(line, product),
     });
   }
@@ -223,7 +255,8 @@ export async function getSalesOrder(id: string) {
     taxTotal: Number(order.taxTotal),
     totalAmount: Number(order.totalAmount),
     customer,
-    lines: lines.map((line) => ({
+    // Order-sheet order; lines saved before line numbers existed keep their old order after them.
+    lines: [...lines].sort((a, b) => (a.lineNo ?? Number.MAX_SAFE_INTEGER) - (b.lineNo ?? Number.MAX_SAFE_INTEGER)).map((line) => ({
       ...line,
       quantity: Number(line.quantity),
       unitPrice: Number(line.unitPrice),
@@ -339,6 +372,7 @@ export async function createSalesOrder(input: SalesOrderInput, actorId: string) 
       customerId: input.customerId,
       orderDate: input.orderDate,
       deliveryDate: cleanOptional(input.deliveryDate),
+      customerPo: cleanOptional(input.customerPo),
       status: "DRAFT",
       notes: cleanOptional(input.notes),
       ...totals,
@@ -404,6 +438,7 @@ export async function updateSalesOrder(
       customerId: input.customerId,
       orderDate: input.orderDate,
       deliveryDate: cleanOptional(input.deliveryDate),
+      customerPo: cleanOptional(input.customerPo),
       notes: cleanOptional(input.notes),
       ...totals,
       updatedAt: new Date().toISOString(),

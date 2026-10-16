@@ -139,6 +139,11 @@ model Customer {
   name      String
   email     String?
   phone     String?
+  // Consignee details printed on the AF7 sales tax invoice.
+  address       String?
+  contactPerson String?
+  ntn           String?
+  strn          String?
   status    String            @default("ACTIVE")
   createdAt TimestamptzString @default(now())
   updatedAt TimestamptzString @default(now())
@@ -201,6 +206,8 @@ model SalesOrder {
   customerId     Uuid
   orderDate      String
   deliveryDate   String?
+  // The customer's own purchase order number (AF7 order sheet and invoice).
+  customerPo     String?
   status         String            @default("DRAFT")
   notes          String?
   subtotal       Decimal           @default(0)
@@ -225,6 +232,8 @@ model SalesOrder {
 model SalesOrderLine {
   id                Uuid    @id @default(uuid())
   salesOrderId      Uuid
+  // Position on the order sheet (1, 2, 3 ...); older lines have none.
+  lineNo            Int?
   productId         Uuid?
   isCustom          Boolean @default(false)
   productName       String
@@ -232,6 +241,10 @@ model SalesOrderLine {
   skuReference      String?
   category          String?
   variant           String?
+  // Order sheet columns (AF7): tape colour, finish and size of this line.
+  tapeColor         String?
+  finish            String?
+  size              String?
   unit              String
   quantity          Decimal
   unitPrice         Decimal
@@ -567,6 +580,8 @@ model ProductionOrder {
   currentStage     String?
   dueDate          String?
   notes            String?
+  // Tape for this order in kilograms: Tape Dyeing and Tape Press are measured in kg.
+  tapeKg           Decimal?
   createdBy        Uuid
   createdAt        TimestamptzString  @default(now())
   updatedAt        TimestamptzString  @default(now())

@@ -1,0 +1,380 @@
+[
+  {
+    "id": "column.public.erp_customers.address",
+    "label": "Add column \"address\" to \"erp_customers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "address",
+        "table": "erp_customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"address\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_customers",
+          "address"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"address\"",
+        "sql": "ALTER TABLE \"public\".\"erp_customers\" ADD COLUMN \"address\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"address\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_customers",
+          "address"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_customers.contactPerson",
+    "label": "Add column \"contactPerson\" to \"erp_customers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "contactPerson",
+        "table": "erp_customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"contactPerson\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_customers",
+          "contactPerson"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"contactPerson\"",
+        "sql": "ALTER TABLE \"public\".\"erp_customers\" ADD COLUMN \"contactPerson\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"contactPerson\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_customers",
+          "contactPerson"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_customers.ntn",
+    "label": "Add column \"ntn\" to \"erp_customers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "ntn",
+        "table": "erp_customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"ntn\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_customers",
+          "ntn"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"ntn\"",
+        "sql": "ALTER TABLE \"public\".\"erp_customers\" ADD COLUMN \"ntn\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"ntn\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_customers",
+          "ntn"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_customers.strn",
+    "label": "Add column \"strn\" to \"erp_customers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "strn",
+        "table": "erp_customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"strn\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_customers",
+          "strn"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"strn\"",
+        "sql": "ALTER TABLE \"public\".\"erp_customers\" ADD COLUMN \"strn\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"strn\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_customers",
+          "strn"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_production_orders.tapeKg",
+    "label": "Add column \"tapeKg\" to \"erp_production_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "tapeKg",
+        "table": "erp_production_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"tapeKg\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_production_orders",
+          "tapeKg"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"tapeKg\"",
+        "sql": "ALTER TABLE \"public\".\"erp_production_orders\" ADD COLUMN \"tapeKg\" numeric"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"tapeKg\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_production_orders",
+          "tapeKg"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_sales_order_lines.finish",
+    "label": "Add column \"finish\" to \"erp_sales_order_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "finish",
+        "table": "erp_sales_order_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"finish\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_sales_order_lines",
+          "finish"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"finish\"",
+        "sql": "ALTER TABLE \"public\".\"erp_sales_order_lines\" ADD COLUMN \"finish\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"finish\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_sales_order_lines",
+          "finish"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_sales_order_lines.size",
+    "label": "Add column \"size\" to \"erp_sales_order_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "size",
+        "table": "erp_sales_order_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"size\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_sales_order_lines",
+          "size"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"size\"",
+        "sql": "ALTER TABLE \"public\".\"erp_sales_order_lines\" ADD COLUMN \"size\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"size\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_sales_order_lines",
+          "size"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_sales_order_lines.tapeColor",
+    "label": "Add column \"tapeColor\" to \"erp_sales_order_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "tapeColor",
+        "table": "erp_sales_order_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"tapeColor\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_sales_order_lines",
+          "tapeColor"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"tapeColor\"",
+        "sql": "ALTER TABLE \"public\".\"erp_sales_order_lines\" ADD COLUMN \"tapeColor\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"tapeColor\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_sales_order_lines",
+          "tapeColor"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_sales_orders.customerPo",
+    "label": "Add column \"customerPo\" to \"erp_sales_orders\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "customerPo",
+        "table": "erp_sales_orders"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"customerPo\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_sales_orders",
+          "customerPo"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"customerPo\"",
+        "sql": "ALTER TABLE \"public\".\"erp_sales_orders\" ADD COLUMN \"customerPo\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"customerPo\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_sales_orders",
+          "customerPo"
+        ]
+      }
+    ]
+  }
+]

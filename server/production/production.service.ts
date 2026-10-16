@@ -29,6 +29,7 @@ import {
   nextOrderStatus,
   runError,
   stageProgress,
+  stageInKg,
   stageQuantities,
   type StageTotals,
 } from "./production-rules";
@@ -108,6 +109,7 @@ export async function insertProductionOrderInTransaction(
     priority: input.priority,
     dueDate: input.dueDate || null,
     notes: input.notes || null,
+    tapeKg: input.tapeKg === undefined ? null : toPlainDecimalString(input.tapeKg),
     currentStage: STAGES[0].key,
     createdBy: actorId,
   });
@@ -254,7 +256,7 @@ export async function getProductionOrder(id: string) {
     deliveredQuantity: totals.find((stage) => stage.sequence === FINAL_STAGE.sequence)?.acceptedQuantity ?? "0",
     stages: stages.map((stage, index) => {
       const definition = STAGES[index];
-      const quantities = stageQuantities(totals, quantity, stage.sequence);
+      const quantities = stageQuantities(totals, quantity, stage.sequence, order.tapeKg ? dec(order.tapeKg) : null);
       return {
         ...totals[index],
         id: stage.id,
@@ -265,6 +267,7 @@ export async function getProductionOrder(id: string) {
         received: quantities.received,
         available: quantities.available,
         previousCompleted: quantities.previousCompleted,
+        unit: quantities.inKg ? "Kg" : order.unit,
         startedAt: stage.startedAt,
         completedAt: stage.completedAt,
         runs: runs.filter((run) => run.stageId === stage.id).map((run) => ({
@@ -438,8 +441,11 @@ export async function recordStageRunInTransaction(
 
   await lockOrder(tx, id);
   const order = await tx.orm.public.ProductionOrder.where({ id }).first();
+  // Tape stages of an order with a tape weight are in kilograms (3 decimals).
+  const sequence = STAGES.find((item) => item.key === stageKey)?.sequence ?? 0;
+  const runUnit = stageInKg(sequence, order?.tapeKg ? dec(order.tapeKg) : null) ? "Kgs" : order!.unit;
   const precision = [input.inputQuantity, input.acceptedQuantity, input.rejectedQuantity, input.wastageQuantity, input.reworkQuantity]
-    .map((value) => quantityPrecisionError(value ?? 0, order!.unit))
+    .map((value) => quantityPrecisionError(value ?? 0, runUnit))
     .find(Boolean);
   if (precision) {
     throw new AppError(precision, { code: "QUANTITY_PRECISION", status: 400 });
@@ -452,7 +458,7 @@ export async function recordStageRunInTransaction(
   if (managedBy && managedBy !== source) {
     throw new AppError(MANAGED_STAGE_MESSAGES[managedBy], { code: "STAGE_MANAGED_ELSEWHERE", status: 409 });
   }
-  const quantities = stageQuantities(totals, dec(order!.quantity), stage.sequence);
+  const quantities = stageQuantities(totals, dec(order!.quantity), stage.sequence, order!.tapeKg ? dec(order!.tapeKg) : null);
   const problem = runError(run, { available: quantities.available, stageStatus: stage.status, orderStatus: order!.status });
 
   if (problem) {
@@ -528,7 +534,7 @@ export async function completeStage(id: string, stageKey: string, actorId: strin
     const stages = await tx.orm.public.ProductionStage.where({ productionOrderId: id }).orderBy((row) => row.sequence.asc()).all();
     const totals = stages.map((stage) => stageTotals(stage as unknown as Record<string, unknown>));
     const stage = stages.find((item) => item.stageKey === stageKey)!;
-    const problem = completionError(stageQuantities(totals, dec(order!.quantity), stage.sequence), stage.status);
+    const problem = completionError(stageQuantities(totals, dec(order!.quantity), stage.sequence, order!.tapeKg ? dec(order!.tapeKg) : null), stage.status);
 
     if (problem) {
       throw new AppError(problem, { code: "STAGE_NOT_COMPLETABLE", status: 409 });

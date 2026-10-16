@@ -21,6 +21,8 @@ export const productionOrderInputSchema = z.object({
   salesOrderLineId: uuid.optional(),
   plannedOrderId: uuid.optional(),
   notes: z.string().trim().max(2000).optional().or(z.literal("")),
+  // Tape for Tape Dyeing and Tape Press, in kilograms (up to 3 decimals).
+  tapeKg: z.number().finite().positive().max(1000000).refine((value) => toScaledDecimal(value).scale <= 3, "Tape weight can have at most 3 decimal places.").optional(),
 });
 
 export const productionActionSchema = z.object({

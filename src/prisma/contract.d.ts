@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'8aeedc4fd6f3349fbed4f1cde04011c0594649daeda6416d28526f0d36218ae1'>;
+  StorageHashBase<'a39cbea48f2b55ecf80dac45815da339e22c8c0e97cf74d7c28b44021cb0ee15'>;
 export type ExecutionHash =
   ExecutionHashBase<'e65a19f75aec7c5ebdf256588f2adc798dac8b5a6693004414e0b85db734570d'>;
 export type ProfileHash =
@@ -373,13 +373,17 @@ export type FieldOutputTypes = {
       readonly taxAmount: CodecTypes['pg/numeric@1']['output'];
     };
     readonly Customer: {
+      readonly address: CodecTypes['pg/text@1']['output'] | null;
       readonly code: CodecTypes['pg/text@1']['output'];
+      readonly contactPerson: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly email: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
+      readonly ntn: CodecTypes['pg/text@1']['output'] | null;
       readonly phone: CodecTypes['pg/text@1']['output'] | null;
       readonly status: CodecTypes['pg/text@1']['output'];
+      readonly strn: CodecTypes['pg/text@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
     readonly CustomerReceipt: {
@@ -822,6 +826,7 @@ export type FieldOutputTypes = {
       readonly salesOrderId: CodecTypes['pg/uuid@1']['output'] | null;
       readonly salesOrderLineId: CodecTypes['pg/uuid@1']['output'] | null;
       readonly status: CodecTypes['pg/text@1']['output'];
+      readonly tapeKg: CodecTypes['pg/numeric@1']['output'] | null;
       readonly unit: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
@@ -1074,6 +1079,7 @@ export type FieldOutputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly createdBy: CodecTypes['pg/uuid@1']['output'];
       readonly customerId: CodecTypes['pg/uuid@1']['output'];
+      readonly customerPo: CodecTypes['pg/text@1']['output'] | null;
       readonly deliveryDate: CodecTypes['pg/text@1']['output'] | null;
       readonly discountTotal: CodecTypes['pg/numeric@1']['output'];
       readonly id: CodecTypes['pg/uuid@1']['output'];
@@ -1090,15 +1096,19 @@ export type FieldOutputTypes = {
       readonly category: CodecTypes['pg/text@1']['output'] | null;
       readonly customerReference: CodecTypes['pg/text@1']['output'] | null;
       readonly discountPercent: CodecTypes['pg/int4@1']['output'];
+      readonly finish: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly isCustom: CodecTypes['pg/bool@1']['output'];
+      readonly lineNo: CodecTypes['pg/int4@1']['output'] | null;
       readonly lineTotal: CodecTypes['pg/numeric@1']['output'];
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly productId: CodecTypes['pg/uuid@1']['output'] | null;
       readonly productName: CodecTypes['pg/text@1']['output'];
       readonly quantity: CodecTypes['pg/numeric@1']['output'];
       readonly salesOrderId: CodecTypes['pg/uuid@1']['output'];
+      readonly size: CodecTypes['pg/text@1']['output'] | null;
       readonly skuReference: CodecTypes['pg/text@1']['output'] | null;
+      readonly tapeColor: CodecTypes['pg/text@1']['output'] | null;
       readonly taxPercent: CodecTypes['pg/int4@1']['output'];
       readonly unit: CodecTypes['pg/text@1']['output'];
       readonly unitPrice: CodecTypes['pg/numeric@1']['output'];
@@ -1474,13 +1484,17 @@ export type FieldInputTypes = {
       readonly taxAmount: CodecTypes['pg/numeric@1']['input'];
     };
     readonly Customer: {
+      readonly address: CodecTypes['pg/text@1']['input'] | null;
       readonly code: CodecTypes['pg/text@1']['input'];
+      readonly contactPerson: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly email: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
+      readonly ntn: CodecTypes['pg/text@1']['input'] | null;
       readonly phone: CodecTypes['pg/text@1']['input'] | null;
       readonly status: CodecTypes['pg/text@1']['input'];
+      readonly strn: CodecTypes['pg/text@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
     readonly CustomerReceipt: {
@@ -1923,6 +1937,7 @@ export type FieldInputTypes = {
       readonly salesOrderId: CodecTypes['pg/uuid@1']['input'] | null;
       readonly salesOrderLineId: CodecTypes['pg/uuid@1']['input'] | null;
       readonly status: CodecTypes['pg/text@1']['input'];
+      readonly tapeKg: CodecTypes['pg/numeric@1']['input'] | null;
       readonly unit: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
@@ -2175,6 +2190,7 @@ export type FieldInputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly createdBy: CodecTypes['pg/uuid@1']['input'];
       readonly customerId: CodecTypes['pg/uuid@1']['input'];
+      readonly customerPo: CodecTypes['pg/text@1']['input'] | null;
       readonly deliveryDate: CodecTypes['pg/text@1']['input'] | null;
       readonly discountTotal: CodecTypes['pg/numeric@1']['input'];
       readonly id: CodecTypes['pg/uuid@1']['input'];
@@ -2191,15 +2207,19 @@ export type FieldInputTypes = {
       readonly category: CodecTypes['pg/text@1']['input'] | null;
       readonly customerReference: CodecTypes['pg/text@1']['input'] | null;
       readonly discountPercent: CodecTypes['pg/int4@1']['input'];
+      readonly finish: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly isCustom: CodecTypes['pg/bool@1']['input'];
+      readonly lineNo: CodecTypes['pg/int4@1']['input'] | null;
       readonly lineTotal: CodecTypes['pg/numeric@1']['input'];
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly productId: CodecTypes['pg/uuid@1']['input'] | null;
       readonly productName: CodecTypes['pg/text@1']['input'];
       readonly quantity: CodecTypes['pg/numeric@1']['input'];
       readonly salesOrderId: CodecTypes['pg/uuid@1']['input'];
+      readonly size: CodecTypes['pg/text@1']['input'] | null;
       readonly skuReference: CodecTypes['pg/text@1']['input'] | null;
+      readonly tapeColor: CodecTypes['pg/text@1']['input'] | null;
       readonly taxPercent: CodecTypes['pg/int4@1']['input'];
       readonly unit: CodecTypes['pg/text@1']['input'];
       readonly unitPrice: CodecTypes['pg/numeric@1']['input'];
@@ -2593,13 +2613,17 @@ export type StorageColumnTypes = {
       readonly voidReason: CodecTypes['pg/text@1']['output'] | null;
     };
     readonly erp_customers: {
+      readonly address: CodecTypes['pg/text@1']['output'] | null;
       readonly code: CodecTypes['pg/text@1']['output'];
+      readonly contactPerson: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly email: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
+      readonly ntn: CodecTypes['pg/text@1']['output'] | null;
       readonly phone: CodecTypes['pg/text@1']['output'] | null;
       readonly status: CodecTypes['pg/text@1']['output'];
+      readonly strn: CodecTypes['pg/text@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
     readonly erp_departments: {
@@ -3012,6 +3036,7 @@ export type StorageColumnTypes = {
       readonly salesOrderId: CodecTypes['pg/uuid@1']['output'] | null;
       readonly salesOrderLineId: CodecTypes['pg/uuid@1']['output'] | null;
       readonly status: CodecTypes['pg/text@1']['output'];
+      readonly tapeKg: CodecTypes['pg/numeric@1']['output'] | null;
       readonly unit: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
@@ -3276,15 +3301,19 @@ export type StorageColumnTypes = {
       readonly category: CodecTypes['pg/text@1']['output'] | null;
       readonly customerReference: CodecTypes['pg/text@1']['output'] | null;
       readonly discountPercent: CodecTypes['pg/int4@1']['output'];
+      readonly finish: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly isCustom: CodecTypes['pg/bool@1']['output'];
+      readonly lineNo: CodecTypes['pg/int4@1']['output'] | null;
       readonly lineTotal: CodecTypes['pg/numeric@1']['output'];
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly productId: CodecTypes['pg/uuid@1']['output'] | null;
       readonly productName: CodecTypes['pg/text@1']['output'];
       readonly quantity: CodecTypes['pg/numeric@1']['output'];
       readonly salesOrderId: CodecTypes['pg/uuid@1']['output'];
+      readonly size: CodecTypes['pg/text@1']['output'] | null;
       readonly skuReference: CodecTypes['pg/text@1']['output'] | null;
+      readonly tapeColor: CodecTypes['pg/text@1']['output'] | null;
       readonly taxPercent: CodecTypes['pg/int4@1']['output'];
       readonly unit: CodecTypes['pg/text@1']['output'];
       readonly unitPrice: CodecTypes['pg/numeric@1']['output'];
@@ -3294,6 +3323,7 @@ export type StorageColumnTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly createdBy: CodecTypes['pg/uuid@1']['output'];
       readonly customerId: CodecTypes['pg/uuid@1']['output'];
+      readonly customerPo: CodecTypes['pg/text@1']['output'] | null;
       readonly deliveryDate: CodecTypes['pg/text@1']['output'] | null;
       readonly discountTotal: CodecTypes['pg/numeric@1']['output'];
       readonly id: CodecTypes['pg/uuid@1']['output'];
@@ -3694,13 +3724,17 @@ export type StorageColumnInputTypes = {
       readonly voidReason: CodecTypes['pg/text@1']['input'] | null;
     };
     readonly erp_customers: {
+      readonly address: CodecTypes['pg/text@1']['input'] | null;
       readonly code: CodecTypes['pg/text@1']['input'];
+      readonly contactPerson: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly email: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
+      readonly ntn: CodecTypes['pg/text@1']['input'] | null;
       readonly phone: CodecTypes['pg/text@1']['input'] | null;
       readonly status: CodecTypes['pg/text@1']['input'];
+      readonly strn: CodecTypes['pg/text@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
     readonly erp_departments: {
@@ -4113,6 +4147,7 @@ export type StorageColumnInputTypes = {
       readonly salesOrderId: CodecTypes['pg/uuid@1']['input'] | null;
       readonly salesOrderLineId: CodecTypes['pg/uuid@1']['input'] | null;
       readonly status: CodecTypes['pg/text@1']['input'];
+      readonly tapeKg: CodecTypes['pg/numeric@1']['input'] | null;
       readonly unit: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
@@ -4377,15 +4412,19 @@ export type StorageColumnInputTypes = {
       readonly category: CodecTypes['pg/text@1']['input'] | null;
       readonly customerReference: CodecTypes['pg/text@1']['input'] | null;
       readonly discountPercent: CodecTypes['pg/int4@1']['input'];
+      readonly finish: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly isCustom: CodecTypes['pg/bool@1']['input'];
+      readonly lineNo: CodecTypes['pg/int4@1']['input'] | null;
       readonly lineTotal: CodecTypes['pg/numeric@1']['input'];
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly productId: CodecTypes['pg/uuid@1']['input'] | null;
       readonly productName: CodecTypes['pg/text@1']['input'];
       readonly quantity: CodecTypes['pg/numeric@1']['input'];
       readonly salesOrderId: CodecTypes['pg/uuid@1']['input'];
+      readonly size: CodecTypes['pg/text@1']['input'] | null;
       readonly skuReference: CodecTypes['pg/text@1']['input'] | null;
+      readonly tapeColor: CodecTypes['pg/text@1']['input'] | null;
       readonly taxPercent: CodecTypes['pg/int4@1']['input'];
       readonly unit: CodecTypes['pg/text@1']['input'];
       readonly unitPrice: CodecTypes['pg/numeric@1']['input'];
@@ -4395,6 +4434,7 @@ export type StorageColumnInputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly createdBy: CodecTypes['pg/uuid@1']['input'];
       readonly customerId: CodecTypes['pg/uuid@1']['input'];
+      readonly customerPo: CodecTypes['pg/text@1']['input'] | null;
       readonly deliveryDate: CodecTypes['pg/text@1']['input'] | null;
       readonly discountTotal: CodecTypes['pg/numeric@1']['input'];
       readonly id: CodecTypes['pg/uuid@1']['input'];
@@ -4798,13 +4838,17 @@ export namespace Models {
     readonly [RelationKeys]?: 'creditNote' | 'invoiceLine';
   };
   export type public_Customer = {
+    address: CodecTypes['pg/text@1']['output'] | null;
     code: CodecTypes['pg/text@1']['output'];
+    contactPerson: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
     email: CodecTypes['pg/text@1']['output'] | null;
     id: CodecTypes['pg/uuid@1']['output'];
     name: CodecTypes['pg/text@1']['output'];
+    ntn: CodecTypes['pg/text@1']['output'] | null;
     phone: CodecTypes['pg/text@1']['output'] | null;
     status: CodecTypes['pg/text@1']['output'];
+    strn: CodecTypes['pg/text@1']['output'] | null;
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     invoices: public_Invoice[];
     salesOrders: public_SalesOrder[];
@@ -5357,6 +5401,7 @@ export namespace Models {
     salesOrderId: CodecTypes['pg/uuid@1']['output'] | null;
     salesOrderLineId: CodecTypes['pg/uuid@1']['output'] | null;
     status: CodecTypes['pg/text@1']['output'];
+    tapeKg: CodecTypes['pg/numeric@1']['output'] | null;
     unit: CodecTypes['pg/text@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     events: public_ProductionEvent[];
@@ -5649,6 +5694,7 @@ export namespace Models {
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
     createdBy: CodecTypes['pg/uuid@1']['output'];
     customerId: CodecTypes['pg/uuid@1']['output'];
+    customerPo: CodecTypes['pg/text@1']['output'] | null;
     deliveryDate: CodecTypes['pg/text@1']['output'] | null;
     discountTotal: CodecTypes['pg/numeric@1']['output'];
     id: CodecTypes['pg/uuid@1']['output'];
@@ -5670,15 +5716,19 @@ export namespace Models {
     category: CodecTypes['pg/text@1']['output'] | null;
     customerReference: CodecTypes['pg/text@1']['output'] | null;
     discountPercent: CodecTypes['pg/int4@1']['output'];
+    finish: CodecTypes['pg/text@1']['output'] | null;
     id: CodecTypes['pg/uuid@1']['output'];
     isCustom: CodecTypes['pg/bool@1']['output'];
+    lineNo: CodecTypes['pg/int4@1']['output'] | null;
     lineTotal: CodecTypes['pg/numeric@1']['output'];
     notes: CodecTypes['pg/text@1']['output'] | null;
     productId: CodecTypes['pg/uuid@1']['output'] | null;
     productName: CodecTypes['pg/text@1']['output'];
     quantity: CodecTypes['pg/numeric@1']['output'];
     salesOrderId: CodecTypes['pg/uuid@1']['output'];
+    size: CodecTypes['pg/text@1']['output'] | null;
     skuReference: CodecTypes['pg/text@1']['output'] | null;
+    tapeColor: CodecTypes['pg/text@1']['output'] | null;
     taxPercent: CodecTypes['pg/int4@1']['output'];
     unit: CodecTypes['pg/text@1']['output'];
     unitPrice: CodecTypes['pg/numeric@1']['output'];
@@ -7271,10 +7321,22 @@ type ContractBase = Omit<
             };
             readonly erp_customers: {
               columns: {
+                readonly address: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly code: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly contactPerson: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly createdAt: {
@@ -7302,6 +7364,12 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
+                readonly ntn: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly phone: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -7316,6 +7384,12 @@ type ContractBase = Omit<
                     readonly kind: 'literal';
                     readonly value: DefaultLiteralValue<'pg/text@1', 'ACTIVE'>;
                   };
+                  readonly many: false;
+                };
+                readonly strn: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly updatedAt: {
@@ -10426,6 +10500,12 @@ type ContractBase = Omit<
                   };
                   readonly many: false;
                 };
+                readonly tapeKg: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly unit: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -12522,6 +12602,12 @@ type ContractBase = Omit<
                   };
                   readonly many: false;
                 };
+                readonly finish: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly id: {
                   readonly dataType: 'pg/uuid';
                   readonly codecId: 'pg/uuid@1';
@@ -12536,6 +12622,12 @@ type ContractBase = Omit<
                     readonly kind: 'literal';
                     readonly value: DefaultLiteralValue<'pg/bool@1', false>;
                   };
+                  readonly many: false;
+                };
+                readonly lineNo: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly lineTotal: {
@@ -12574,7 +12666,19 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
+                readonly size: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly skuReference: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly tapeColor: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
@@ -12671,6 +12775,12 @@ type ContractBase = Omit<
                   readonly dataType: 'pg/uuid';
                   readonly codecId: 'pg/uuid@1';
                   readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly customerPo: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly deliveryDate: {
@@ -15822,8 +15932,16 @@ type ContractBase = Omit<
           };
           readonly Customer: {
             readonly fields: {
+              readonly address: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly code: {
                 readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly contactPerson: {
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly createdAt: {
@@ -15845,12 +15963,20 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly ntn: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly phone: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly status: {
                 readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly strn: {
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly updatedAt: {
@@ -15889,13 +16015,17 @@ type ContractBase = Omit<
               readonly table: 'erp_customers';
               readonly namespaceId: 'public';
               readonly fields: {
+                readonly address: { readonly column: 'address' };
                 readonly code: { readonly column: 'code' };
+                readonly contactPerson: { readonly column: 'contactPerson' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly email: { readonly column: 'email' };
                 readonly id: { readonly column: 'id' };
                 readonly name: { readonly column: 'name' };
+                readonly ntn: { readonly column: 'ntn' };
                 readonly phone: { readonly column: 'phone' };
                 readonly status: { readonly column: 'status' };
+                readonly strn: { readonly column: 'strn' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
               };
             };
@@ -18874,6 +19004,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly tapeKg: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
               readonly unit: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -18966,6 +19100,7 @@ type ContractBase = Omit<
                 readonly salesOrderId: { readonly column: 'salesOrderId' };
                 readonly salesOrderLineId: { readonly column: 'salesOrderLineId' };
                 readonly status: { readonly column: 'status' };
+                readonly tapeKg: { readonly column: 'tapeKg' };
                 readonly unit: { readonly column: 'unit' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
               };
@@ -20603,6 +20738,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
               };
+              readonly customerPo: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly deliveryDate: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -20705,6 +20844,7 @@ type ContractBase = Omit<
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly createdBy: { readonly column: 'createdBy' };
                 readonly customerId: { readonly column: 'customerId' };
+                readonly customerPo: { readonly column: 'customerPo' };
                 readonly deliveryDate: { readonly column: 'deliveryDate' };
                 readonly discountTotal: { readonly column: 'discountTotal' };
                 readonly id: { readonly column: 'id' };
@@ -20733,6 +20873,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly finish: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly id: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
@@ -20740,6 +20884,10 @@ type ContractBase = Omit<
               readonly isCustom: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly lineNo: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
               readonly lineTotal: {
                 readonly nullable: false;
@@ -20765,7 +20913,15 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
               };
+              readonly size: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly skuReference: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly tapeColor: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
@@ -20819,15 +20975,19 @@ type ContractBase = Omit<
                 readonly category: { readonly column: 'category' };
                 readonly customerReference: { readonly column: 'customerReference' };
                 readonly discountPercent: { readonly column: 'discountPercent' };
+                readonly finish: { readonly column: 'finish' };
                 readonly id: { readonly column: 'id' };
                 readonly isCustom: { readonly column: 'isCustom' };
+                readonly lineNo: { readonly column: 'lineNo' };
                 readonly lineTotal: { readonly column: 'lineTotal' };
                 readonly notes: { readonly column: 'notes' };
                 readonly productId: { readonly column: 'productId' };
                 readonly productName: { readonly column: 'productName' };
                 readonly quantity: { readonly column: 'quantity' };
                 readonly salesOrderId: { readonly column: 'salesOrderId' };
+                readonly size: { readonly column: 'size' };
                 readonly skuReference: { readonly column: 'skuReference' };
+                readonly tapeColor: { readonly column: 'tapeColor' };
                 readonly taxPercent: { readonly column: 'taxPercent' };
                 readonly unit: { readonly column: 'unit' };
                 readonly unitPrice: { readonly column: 'unitPrice' };

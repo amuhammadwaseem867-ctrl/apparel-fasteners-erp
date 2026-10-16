@@ -31,8 +31,16 @@ const percentage = z
   .min(0)
   .max(100);
 
+/* AF7 order sheet columns, on every line. */
+const orderSheetFields = {
+  tapeColor: z.string().trim().max(120).optional().or(z.literal("")),
+  finish: z.string().trim().max(120).optional().or(z.literal("")),
+  size: z.string().trim().max(60).optional().or(z.literal("")),
+};
+
 const catalogLineSchema = z.object({
   kind: z.literal("catalog"),
+  ...orderSheetFields,
   productId: z.string().uuid(),
   quantity: positiveQuantity,
   unitPrice: nonNegativePrice,
@@ -48,6 +56,7 @@ const catalogLineSchema = z.object({
 
 const customLineSchema = z.object({
   kind: z.literal("custom"),
+  ...orderSheetFields,
   productName: z.string().trim().min(1).max(180),
   customerReference: z
     .string()
@@ -97,6 +106,13 @@ export const salesOrderInputSchema = z
     deliveryDate: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional()
+      .or(z.literal("")),
+
+    customerPo: z
+      .string()
+      .trim()
+      .max(80)
       .optional()
       .or(z.literal("")),
 
@@ -221,7 +237,15 @@ export const customerInputSchema = z.object({
     .max(60)
     .optional()
     .or(z.literal("")),
+
+  // Consignee details for the AF7 sales tax invoice.
+  address: z.string().trim().max(300).optional().or(z.literal("")),
+  contactPerson: z.string().trim().max(120).optional().or(z.literal("")),
+  ntn: z.string().trim().max(40).optional().or(z.literal("")),
+  strn: z.string().trim().max(40).optional().or(z.literal("")),
 });
+
+export const customerUpdateSchema = customerInputSchema.omit({ code: true });
 
 export type SalesOrderInput =
   z.infer<typeof salesOrderInputSchema>;
@@ -229,6 +253,7 @@ export type SalesOrderInput =
 export type SalesOrderQuery =
   z.infer<typeof salesOrderQuerySchema>;
 
+export type CustomerUpdateInput = z.infer<typeof customerUpdateSchema>;
 export type CustomerInput =
   z.infer<typeof customerInputSchema>;
 
