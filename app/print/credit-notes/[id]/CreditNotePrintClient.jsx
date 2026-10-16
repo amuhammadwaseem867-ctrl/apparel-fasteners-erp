@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { COMPANY } from "@/config/company";
 import { apiRequest } from "@/lib/api/client";
 import { formatAmount } from "@/lib/formatters/formatters";
+import useCompany from "@/lib/useCompany";
 
 /* Printable credit note (GET /api/finance/credit-notes/[id]). */
 export default function CreditNotePrintClient({ id }) {
+  const COMPANY = useCompany();
   const [note, setNote] = useState(null);
   const [error, setError] = useState("");
 

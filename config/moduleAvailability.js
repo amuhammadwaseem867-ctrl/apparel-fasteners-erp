@@ -2,28 +2,14 @@
  * Which ERP areas have no server API or database tables yet.
  *
  * AppShell shows a banner on matching routes so a page that renders but
- * cannot load or save records says so. Routes with a working backend
- * (dashboard, products, BOM, sales orders, customers, inventory, MRP,
- * production, quality inspections, packing, dispatch, invoicing and
- * receivables, procurement and payables, general ledger, NCR/CAPA, shifts and leave, product catalogue, users, roles, audit, gate passes, HR and payroll, reports,
- * profile) are not listed.
- * Inventory pages render their own notice (InventoryBackendNotice).
+ * cannot load or save records says so. Since Phase 12 every area in the
+ * navigation is connected, so the list is empty.
  *
- * Remove an entry when that area's API and tables are in place.
+ * Add an entry when a new area ships its screens before its API.
  */
 
-const UNAVAILABLE_AREAS = [
-  { prefix: "/planning/capacity", label: "Capacity planning" },
-  { prefix: "/planning/calendar", label: "Planning calendar" },
-  { prefix: "/planning/production-plans", label: "Production plans" },
-  { prefix: "/packing/instructions", label: "Packing instructions" },
-  {
-    prefix: "/administration/settings",
-    label: "System settings",
-    message:
-      "This page lists built-in configuration for reference only; it cannot be changed here. Users, roles and the audit log are managed on their own pages.",
-  },
-];
+// Every area has its backend now; keep the mechanism for future modules.
+const UNAVAILABLE_AREAS = [];
 
 const AVAILABLE_ROUTES = [
   "/administration/profile",

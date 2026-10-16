@@ -20,17 +20,14 @@ test("routes without a backend get a banner; connected routes do not", () => {
   for (const path of ["/quality", "/quality/final", "/packing/orders", "/dispatch/shipments", "/finance", "/finance/invoices", "/finance/receivables"]) {
     assert.equal(getModuleAvailability(path), null, `${path} is connected`);
   }
-  for (const path of ["/procurement", "/procurement/purchase-orders", "/procurement/suppliers", "/finance/payables", "/finance/expenses", "/finance/accounts", "/finance/reports", "/finance/transactions", "/finance/cash-bank", "/finance/income", "/quality/ncr", "/quality/capa", "/people-payroll/shifts", "/people-payroll/leave", "/products/categories", "/products/variants", "/products/pricing", "/products/documents", "/reports/quality/ncr", "/reports/quality/capa"]) {
+  for (const path of ["/procurement", "/procurement/purchase-orders", "/procurement/suppliers", "/finance/payables", "/finance/expenses", "/finance/accounts", "/finance/reports", "/finance/transactions", "/finance/cash-bank", "/finance/income", "/quality/ncr", "/quality/capa", "/people-payroll/shifts", "/people-payroll/leave", "/products/categories", "/products/variants", "/products/pricing", "/products/documents", "/reports/quality/ncr", "/reports/quality/capa", "/planning/capacity", "/planning/calendar", "/planning/production-plans", "/packing/instructions", "/inventory/batches-lots", "/administration/settings"]) {
     assert.equal(getModuleAvailability(path), null, `${path} is connected`);
   }
   assert.equal(getModuleAvailability("/people-payroll/payroll"), null, "payroll is connected");
   assert.equal(getModuleAvailability("/products/bom"), null, "BOM authoring is connected");
   assert.equal(getModuleAvailability("/planning/mrp-runs"), null, "MRP is connected");
   assert.equal(getModuleAvailability("/production/orders"), null, "production is connected");
-  assert.equal(getModuleAvailability("/planning/production-plans")?.label, "Production plans");
-  assert.equal(getModuleAvailability("/planning/capacity")?.label, "Capacity planning");
   assert.equal(getModuleAvailability("/administration/users"), null, "user administration is connected");
-  assert.equal(getModuleAvailability("/administration/settings")?.label, "System settings");
   assert.equal(getModuleAvailability("/reports/orders"), null, "reports are connected");
   assert.equal(getModuleAvailability("/productionx"), null, "prefix must match a whole path segment");
   assert.equal(getModuleAvailability(null), null);

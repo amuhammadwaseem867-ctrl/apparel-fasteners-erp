@@ -1,414 +1,104 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import {
-  RefreshCw,
-  Search,
-  Factory,
-  CalendarDays,
-  AlertTriangle,
-  CheckCircle2,
-  Clock3,
-} from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
-import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
-import EmptyState from "@/components/ui/EmptyState";
+import Modal from "@/components/ui/Modal";
+import { apiRequest } from "@/lib/api/client";
+import useCurrentUser from "@/lib/auth/useCurrentUser";
+import useApiData, { toQuery } from "@/lib/inventory/useApiData";
 
-import "./CapacityPlanning.css";
-import { backendUnavailableReason } from "@/lib/backendUnavailable";
+import "@/components/inventory/InventoryWorkspace.css";
 
-const UNAVAILABLE_REASON = backendUnavailableReason("Planning and MRP");
+const UNITS = ["Pcs", "Meters", "Kgs", "Yards", "Sets"];
 
-const STATUS_CONFIG = {
-  available: {
-    label: "Available",
-    icon: CheckCircle2,
-    className: "available",
-  },
-  balanced: {
-    label: "Balanced",
-    icon: CheckCircle2,
-    className: "balanced",
-  },
-  near_capacity: {
-    label: "Near Capacity",
-    icon: Clock3,
-    className: "warning",
-  },
-  overloaded: {
-    label: "Overloaded",
-    icon: AlertTriangle,
-    className: "danger",
-  },
-};
+function CenterDialog({ center, onClose, onSaved }) {
+  const [values, setValues] = useState({ name: center.name, dailyCapacity: center.dailyCapacity ?? "", capacityUnit: center.capacityUnit ?? "Pcs", shiftsPerDay: String(center.shiftsPerDay ?? 1), notes: center.notes ?? "" });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const set = (field) => (event) => setValues((current) => ({ ...current, [field]: event.target.value }));
 
-export default function CapacityPlanningPage() {
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("all");
-
-  /*
-   * Backend integration point.
-   *
-   * Capacity data will later come from:
-   *
-   * Work Centers
-   *      +
-   * Working Calendars
-   *      +
-   * Production Plans
-   *      +
-   * Routing / Operations
-   *      ↓
-   * Capacity Engine
-   *
-   * No mock records are intentionally used.
-   */
-  const workCenters = useMemo(() => [], []);
-
-  const filteredWorkCenters = useMemo(() => {
-    return workCenters.filter((workCenter) => {
-      const searchableText = [
-        workCenter.code,
-        workCenter.name,
-        workCenter.department,
-        workCenter.location,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-
-      const matchesSearch =
-        !search ||
-        searchableText.includes(
-          search.toLowerCase()
-        );
-
-      const matchesStatus =
-        status === "all" ||
-        workCenter.status === status;
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [workCenters, search, status]);
-
-  const handleRefresh = () => {
-    /*
-     * API refresh will be implemented later.
-     */
-  };
+  async function submit(event) {
+    event.preventDefault();
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      await apiRequest(`/api/planning/work-centers/${center.stageKey}`, { method: "PUT", body: JSON.stringify({ ...values, dailyCapacity: Number(values.dailyCapacity), shiftsPerDay: Number(values.shiftsPerDay) }) });
+      onSaved();
+    } catch (cause) {
+      setError(cause.message);
+      setSaving(false);
+    }
+  }
 
   return (
-    <main className="capacity-planning">
-      <PageHeader
-        eyebrow="PLANNING / CAPACITY"
-        title="Capacity Planning"
-        description="Monitor available production capacity against planned workloads and identify potential bottlenecks."
-        action={
-          <Button
-            variant="primary"
-            size="md"
-            icon={RefreshCw}
-            onClick={handleRefresh}
-            disabled
-            title={UNAVAILABLE_REASON}
-          >
-            Refresh
-          </Button>
-        }
-      />
+    <Modal open onClose={saving ? undefined : onClose} title={`Capacity: ${center.label}`} description="What this stage can process in one shift, in one unit. Load in other units is shown but not compared." size="medium">
+      <form className="inv-dialog" onSubmit={submit}>
+        <div className="inv-dialog__grid">
+          <div className="inv-field"><label htmlFor="wc-name">Work centre name *</label><input id="wc-name" required minLength={2} maxLength={80} value={values.name} onChange={set("name")} /></div>
+          <div className="inv-field"><label htmlFor="wc-cap">Capacity per shift *</label><input id="wc-cap" type="number" min="0" step="any" required value={values.dailyCapacity} onChange={set("dailyCapacity")} /></div>
+          <div className="inv-field"><label htmlFor="wc-unit">Unit *</label><select id="wc-unit" value={values.capacityUnit} onChange={set("capacityUnit")}>{UNITS.map((unit) => <option key={unit} value={unit}>{unit}</option>)}</select></div>
+          <div className="inv-field"><label htmlFor="wc-shifts">Shifts per day *</label><select id="wc-shifts" value={values.shiftsPerDay} onChange={set("shiftsPerDay")}><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+        </div>
+        <div className="inv-field"><label htmlFor="wc-notes">Notes</label><input id="wc-notes" maxLength={300} value={values.notes} onChange={set("notes")} /></div>
+        {error && <p className="inv-dialog__error" role="alert">{error}</p>}
+        <div className="inv-dialog__actions">
+          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button type="submit" variant="primary" loading={saving}>Save capacity</Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
 
-      <div className="capacity-planning__content">
-        <section className="capacity-planning__summary">
-          <div className="capacity-planning__summary-item">
-            <span className="capacity-planning__summary-label">
-              Available Capacity
-            </span>
+export default function CapacityPage() {
+  const { can } = useCurrentUser();
+  const [horizon, setHorizon] = useState(30);
+  const [editing, setEditing] = useState(null);
+  const result = useApiData(`/api/planning/capacity${toQuery({ horizon })}`);
+  const data = result.data;
 
-            <strong>—</strong>
-
-            <span>
-              Hours available
-            </span>
+  return (
+    <main className="inv-page">
+      <header className="inv-header">
+        <div>
+          <p className="inv-header__eyebrow"><Link href="/planning">Planning</Link></p>
+          <h1>Capacity planning</h1>
+          <p>Quantity still to pass each production stage on open orders, against that stage&apos;s capacity over the working days ahead (weekly off days and holidays from the planning calendar are excluded).</p>
+        </div>
+        <div className="inv-header__actions"><Link className="inv-link-button" href="/planning/calendar">Calendar</Link></div>
+      </header>
+      <section className="inv-card">
+        <div className="inv-toolbar">
+          <div className="inv-field">
+            <label htmlFor="cp-horizon">Horizon</label>
+            <select id="cp-horizon" value={horizon} onChange={(event) => setHorizon(Number(event.target.value))}><option value={7}>Next 7 days</option><option value={14}>Next 14 days</option><option value={30}>Next 30 days</option><option value={60}>Next 60 days</option><option value={90}>Next 90 days</option></select>
           </div>
-
-          <div className="capacity-planning__summary-item">
-            <span className="capacity-planning__summary-label">
-              Planned Load
-            </span>
-
-            <strong>—</strong>
-
-            <span>
-              Hours scheduled
-            </span>
-          </div>
-
-          <div className="capacity-planning__summary-item">
-            <span className="capacity-planning__summary-label">
-              Utilization
-            </span>
-
-            <strong>—</strong>
-
-            <span>
-              Current planned utilization
-            </span>
-          </div>
-
-          <div className="capacity-planning__summary-item capacity-planning__summary-item--alert">
-            <span className="capacity-planning__summary-label">
-              Overloaded Centers
-            </span>
-
-            <strong>—</strong>
-
-            <span>
-              Require scheduling action
-            </span>
-          </div>
-        </section>
-
-        <section className="capacity-planning__toolbar">
-          <div className="capacity-planning__search">
-            <Search
-              size={16}
-              strokeWidth={1.8}
-              aria-hidden="true"
-            />
-
-            <Input
-              value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
-              placeholder="Search work center, department..."
-              aria-label="Search work centers"
-            />
-          </div>
-
-          <div className="capacity-planning__filters">
-            <label htmlFor="capacity-status">
-              Status
-            </label>
-
-            <select
-              id="capacity-status"
-              value={status}
-              onChange={(event) =>
-                setStatus(event.target.value)
-              }
-            >
-              <option value="all">
-                All statuses
-              </option>
-
-              <option value="available">
-                Available
-              </option>
-
-              <option value="balanced">
-                Balanced
-              </option>
-
-              <option value="near_capacity">
-                Near Capacity
-              </option>
-
-              <option value="overloaded">
-                Overloaded
-              </option>
-            </select>
-          </div>
-        </section>
-
-        <section className="capacity-planning__table-card">
-          <div className="capacity-planning__table-header">
-            <div>
-              <h2>
-                Work Center Capacity
-              </h2>
-
-              <p>
-                {workCenters.length} work center
-                {workCenters.length === 1
-                  ? ""
-                  : "s"} available
-              </p>
-            </div>
-
-            <div className="capacity-planning__header-summary">
-              <span>
-                Planning Horizon: —
-              </span>
-
-              <span>
-                Last Calculation: —
-              </span>
-            </div>
-          </div>
-
-          {filteredWorkCenters.length > 0 ? (
-            <div className="capacity-planning__table-wrap">
-              <table className="capacity-planning__table">
-                <thead>
-                  <tr>
-                    <th>Work Center</th>
-                    <th>Department</th>
-                    <th>Available Hours</th>
-                    <th>Planned Hours</th>
-                    <th>Remaining</th>
-                    <th>Utilization</th>
-                    <th>Scheduled Jobs</th>
-                    <th>Next Available</th>
-                    <th>Status</th>
+          {data && <p className="inv-field__hint" style={{ alignSelf: "end" }}>{data.workingDays} working days from {data.asOf}.</p>}
+        </div>
+        {result.error ? <p className="inv-state inv-state--error" role="alert">{result.error}</p> : !data ? <p className="inv-state" role="status">Loading capacity…</p> : (
+          <div className="inv-table-wrap">
+            <table className="inv-table">
+              <thead><tr><th>Stage</th><th>Capacity</th><th>Open load</th><th className="inv-num">Days of work</th><th className="inv-num">Utilisation</th><th /></tr></thead>
+              <tbody>
+                {data.stages.map((stage) => (
+                  <tr key={stage.stageKey}>
+                    <td data-label="Stage"><strong>{stage.sequence}. {stage.label}</strong><small>{stage.configured ? stage.name : stage.department}</small></td>
+                    <td data-label="Capacity">{stage.configured ? `${stage.dailyCapacity} ${stage.capacityUnit} × ${stage.shiftsPerDay} shift${stage.shiftsPerDay > 1 ? "s" : ""}` : <span className="inv-badge inv-badge--warning">Not set</span>}</td>
+                    <td data-label="Open load">{stage.load.length === 0 ? "—" : stage.load.map((load) => <div key={load.unit}>{load.quantity} {load.unit} · {load.orders} order{load.orders === 1 ? "" : "s"}{load.overdueOrders ? <span className="inv-neg"> · {load.overdueOrders} overdue</span> : ""}</div>)}{stage.otherUnits.length > 0 && stage.configured && <small>{stage.otherUnits.join(", ")} not comparable with {stage.capacityUnit}</small>}</td>
+                    <td data-label="Days of work" className="inv-num">{stage.loadDays ?? "—"}</td>
+                    <td data-label="Utilisation" className={`inv-num ${stage.utilisationPercent > 100 ? "inv-neg" : ""}`}>{stage.utilisationPercent === null ? "—" : `${stage.utilisationPercent}%`}</td>
+                    <td data-label="">{can("production:update") && <button type="button" className="inv-link-button" onClick={() => setEditing(stage)}>{stage.configured ? "Edit" : "Set capacity"}</button>}</td>
                   </tr>
-                </thead>
-
-                <tbody>
-                  {filteredWorkCenters.map(
-                    (workCenter) => {
-                      const statusConfig =
-                        STATUS_CONFIG[
-                          workCenter.status
-                        ] ||
-                        STATUS_CONFIG.available;
-
-                      const StatusIcon =
-                        statusConfig.icon;
-
-                      const utilization =
-                        workCenter.utilization ??
-                        null;
-
-                      return (
-                        <tr
-                          key={workCenter.id}
-                        >
-                          <td>
-                            <div className="capacity-planning__work-center">
-                              <div className="capacity-planning__work-center-icon">
-                                <Factory
-                                  size={16}
-                                  strokeWidth={1.8}
-                                  aria-hidden="true"
-                                />
-                              </div>
-
-                              <div>
-                                <strong>
-                                  {workCenter.name ||
-                                    "—"}
-                                </strong>
-
-                                <span>
-                                  {workCenter.code ||
-                                    "—"}
-                                </span>
-                              </div>
-                            </div>
-                          </td>
-
-                          <td>
-                            {workCenter.department ||
-                              "—"}
-                          </td>
-
-                          <td>
-                            {workCenter.availableHours ??
-                              "—"}
-                          </td>
-
-                          <td>
-                            {workCenter.plannedHours ??
-                              "—"}
-                          </td>
-
-                          <td>
-                            {workCenter.remainingHours ??
-                              "—"}
-                          </td>
-
-                          <td>
-                            <div className="capacity-planning__utilization">
-                              <div className="capacity-planning__utilization-bar">
-                                <span
-                                  style={{
-                                    width:
-                                      utilization !==
-                                      null
-                                        ? `${Math.min(
-                                            Math.max(
-                                              utilization,
-                                              0
-                                            ),
-                                            100
-                                          )}%`
-                                        : "0%",
-                                  }}
-                                />
-                              </div>
-
-                              <strong>
-                                {utilization !== null
-                                  ? `${utilization}%`
-                                  : "—"}
-                              </strong>
-                            </div>
-                          </td>
-
-                          <td>
-                            {workCenter.scheduledJobs ??
-                              "—"}
-                          </td>
-
-                          <td>
-                            <span className="capacity-planning__date">
-                              <CalendarDays
-                                size={14}
-                                strokeWidth={1.8}
-                                aria-hidden="true"
-                              />
-
-                              {workCenter.nextAvailable ||
-                                "—"}
-                            </span>
-                          </td>
-
-                          <td>
-                            <span
-                              className={`capacity-planning__status capacity-planning__status--${statusConfig.className}`}
-                            >
-                              <StatusIcon
-                                size={13}
-                                strokeWidth={1.9}
-                                aria-hidden="true"
-                              />
-
-                              {statusConfig.label}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    }
-                  )}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <EmptyState
-              icon={Factory}
-              title="No capacity data"
-              description={
-                search || status !== "all"
-                  ? "No work centers match the selected filters."
-                  : "Work center capacity and planned production load will appear here once planning data is available."
-              }
-            />
-          )}
-        </section>
-      </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+      {editing && <CenterDialog center={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); result.reload(); }} />}
     </main>
   );
 }

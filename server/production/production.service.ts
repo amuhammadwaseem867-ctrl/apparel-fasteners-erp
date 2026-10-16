@@ -83,6 +83,51 @@ async function logEvent(
 /* Create                                                              */
 /* ------------------------------------------------------------------ */
 
+/*
+ * Inserts a validated production order with its nine stages inside the
+ * caller's transaction (used directly by production plans, D-034).
+ */
+export async function insertProductionOrderInTransaction(
+  tx: Tx,
+  product: { id: string; unit: string },
+  input: ProductionOrderInput,
+  actorId: string,
+) {
+  const bom = await tx.orm.public.Bom.where({ productId: product.id, isActive: true }).first();
+  const orderNumber = await allocateDocumentNumber(tx, "PRD");
+  const order = await tx.orm.public.ProductionOrder.create({
+    orderNumber,
+    productId: product.id,
+    quantity: toPlainDecimalString(input.quantity),
+    unit: product.unit,
+    salesOrderId: input.salesOrderId ?? null,
+    salesOrderLineId: input.salesOrderLineId ?? null,
+    plannedOrderId: input.plannedOrderId ?? null,
+    bomId: bom?.id ?? null,
+    bomRevision: bom?.revision ?? null,
+    priority: input.priority,
+    dueDate: input.dueDate || null,
+    notes: input.notes || null,
+    currentStage: STAGES[0].key,
+    createdBy: actorId,
+  });
+
+  for (const stage of STAGES) {
+    await tx.orm.public.ProductionStage.create({
+      productionOrderId: order.id,
+      stageKey: stage.key,
+      sequence: stage.sequence,
+      department: stage.department,
+    });
+  }
+
+  await logEvent(tx, order.id, actorId, "CREATED", {
+    toValue: "PLANNED",
+    details: { orderNumber, quantity: toPlainDecimalString(input.quantity), plannedOrderId: input.plannedOrderId ?? null },
+  });
+  return order.id;
+}
+
 export async function createProductionOrder(input: ProductionOrderInput, actorId: string) {
   const product = await db.orm.public.Product.where({ id: input.productId }).first();
 
@@ -118,43 +163,8 @@ export async function createProductionOrder(input: ProductionOrderInput, actorId
     }
   }
 
-  const bom = await db.orm.public.Bom.where({ productId: product.id, isActive: true }).first();
-
   try {
-    const id = await db.transaction(async (tx) => {
-      const orderNumber = await allocateDocumentNumber(tx, "PRD");
-      const order = await tx.orm.public.ProductionOrder.create({
-        orderNumber,
-        productId: product.id,
-        quantity: toPlainDecimalString(input.quantity),
-        unit: product.unit,
-        salesOrderId: input.salesOrderId ?? null,
-        salesOrderLineId: input.salesOrderLineId ?? null,
-        plannedOrderId: input.plannedOrderId ?? null,
-        bomId: bom?.id ?? null,
-        bomRevision: bom?.revision ?? null,
-        priority: input.priority,
-        dueDate: input.dueDate || null,
-        notes: input.notes || null,
-        currentStage: STAGES[0].key,
-        createdBy: actorId,
-      });
-
-      for (const stage of STAGES) {
-        await tx.orm.public.ProductionStage.create({
-          productionOrderId: order.id,
-          stageKey: stage.key,
-          sequence: stage.sequence,
-          department: stage.department,
-        });
-      }
-
-      await logEvent(tx, order.id, actorId, "CREATED", {
-        toValue: "PLANNED",
-        details: { orderNumber, quantity: toPlainDecimalString(input.quantity), plannedOrderId: input.plannedOrderId ?? null },
-      });
-      return order.id;
-    });
+    const id = await db.transaction((tx) => insertProductionOrderInTransaction(tx, product, input, actorId));
 
     return getProductionOrder(id);
   } catch (error) {

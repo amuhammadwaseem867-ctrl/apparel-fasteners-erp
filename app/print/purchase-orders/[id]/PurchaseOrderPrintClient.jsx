@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { COMPANY } from "@/config/company";
 import { apiRequest } from "@/lib/api/client";
 import { formatAmount } from "@/lib/formatters/formatters";
+import useCompany from "@/lib/useCompany";
 
 /* Printable purchase order (GET /api/procurement/purchase-orders/[id]). */
 export default function PurchaseOrderPrintClient({ id }) {
+  const COMPANY = useCompany();
   const [order, setOrder] = useState(null);
   const [error, setError] = useState("");
 

@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { COMPANY } from "@/config/company";
 import { apiRequest } from "@/lib/api/client";
 import { addDecimalStrings } from "@/server/core/utils/decimal";
+import useCompany from "@/lib/useCompany";
 
 /* Printable packing list (GET /api/packing/lists/[id]); totals are exact. */
 export default function PackingListPrintClient({ id }) {
+  const COMPANY = useCompany();
   const [list, setList] = useState(null);
   const [error, setError] = useState("");
 

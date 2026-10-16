@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { COMPANY } from "@/config/company";
 import { apiRequest } from "@/lib/api/client";
 import { formatAmount } from "@/lib/formatters/formatters";
 import { subtractDecimalStrings } from "@/server/core/utils/decimal";
+import useCompany from "@/lib/useCompany";
 
 /* Payroll register, or payslips (one per page), from GET /api/payroll/runs/[id] (payroll:view). */
 export default function PayrollPrintClient({ id, view, employeeId }) {
+  const COMPANY = useCompany();
   const [run, setRun] = useState(null);
   const [error, setError] = useState("");
 

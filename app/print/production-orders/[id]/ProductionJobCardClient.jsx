@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { COMPANY } from "@/config/company";
 import { apiRequest } from "@/lib/api/client";
+import useCompany from "@/lib/useCompany";
 
 const STATUS_LABELS = { PENDING: "Pending", IN_PROGRESS: "In progress", COMPLETED: "Completed" };
 
@@ -15,6 +15,7 @@ const STATUS_LABELS = { PENDING: "Pending", IN_PROGRESS: "In progress", COMPLETE
  * so it works both as a traveller for the floor and as a completion record.
  */
 export default function ProductionJobCardClient({ id }) {
+  const COMPANY = useCompany();
   const [order, setOrder] = useState(null);
   const [error, setError] = useState("");
 

@@ -145,3 +145,109 @@ test("documents: type must match the bytes, size is limited, content round-trips
   await expectCode(archiveDocument(saved.id, actor), "DOCUMENT_STATUS_CONFLICT");
   assert.equal((await getDocumentContent(saved.id)).status, "ARCHIVED");
 });
+
+/* ------------------------------------------------------------------ */
+/* Planning, packing instructions, batches, settings                    */
+/* ------------------------------------------------------------------ */
+
+test("settings: validated, audited, with honest defaults", async () => {
+  const { getSetting, setSetting } = await import("../../server/settings/settings.service.ts");
+  await expectCode(setSetting("nope", {}, actor), "SETTING_NOT_FOUND");
+  await expectCode(setSetting("company.profile", { name: "X", email: "not-an-email" }, actor), "VALIDATION_FAILED");
+  const saved = await setSetting("planning.weeklyOff", { days: [5, 0, 0] }, actor);
+  assert.deepEqual(saved.days, [0, 5], "deduplicated and sorted");
+  assert.equal(saved.configured, true);
+  assert.equal((await getSetting("company.profile")).name.length > 0, true);
+});
+
+test("calendar and capacity: holidays and weekly off are not working days; load is compared only in the capacity unit", async () => {
+  const { workingDays, setCalendarDay, clearCalendarDay, saveWorkCenter, getCapacityLoad } = await import("../../server/planning/scheduling.service.ts");
+  const { setSetting } = await import("../../server/settings/settings.service.ts");
+  await setSetting("planning.weeklyOff", { days: [0] }, actor);
+  // A week in the run's year; find its Sunday-free count first.
+  const start = day(5, 1);
+  const end = day(5, 7);
+  const before = (await workingDays(start, end)).length;
+  assert.equal(before, 6, "one Sunday in any 7 days");
+  await setCalendarDay({ date: day(5, 2), dayType: (new Date(`${day(5, 2)}T00:00:00Z`).getUTCDay() === 0 ? "WORKING" : "HOLIDAY"), note: "test" }, actor);
+  const after = (await workingDays(start, end)).length;
+  assert.notEqual(after, before);
+  await clearCalendarDay(day(5, 2), actor);
+  assert.equal((await workingDays(start, end)).length, before);
+  await expectCode(clearCalendarDay(day(5, 2), actor), "CALENDAR_DAY_NOT_FOUND");
+
+  await expectCode(saveWorkCenter("no-such-stage", { name: "x", dailyCapacity: 1, capacityUnit: "Pcs", shiftsPerDay: 1 }, actor), "STAGE_NOT_FOUND");
+  const center = await saveWorkCenter("assembling", { name: "Assembly line", dailyCapacity: 50000, capacityUnit: "Pcs", shiftsPerDay: 2 }, actor);
+  assert.equal(center.dailyCapacity, "50000");
+  const load = await getCapacityLoad(30);
+  const assembling = load.stages.find((row) => row.stageKey === "assembling");
+  assert.equal(assembling.perDayCapacity, "100000");
+  for (const entry of assembling.load) assert.ok(entry.unit === "Pcs" || assembling.otherUnits.includes(entry.unit), "other units are listed, never added");
+});
+
+test("production plans: draft edits, approval, one release per line (concurrently), close cancels the rest", async () => {
+  const { createPlan, updatePlanLines, changePlan, releasePlanLine, getPlan } = await import("../../server/planning/scheduling.service.ts");
+  const line = (quantity, dueDate) => ({ productId: ctx.item.id, quantity, dueDate, priority: "NORMAL" });
+  await expectCode(createPlan({ title: "Bad", periodStart: day(6, 1), periodEnd: day(6, 30), lines: [line(1000, day(7, 1))], idempotencyKey: key() }, actor), "PLAN_LINE_OUTSIDE_PERIOD");
+  await expectCode(createPlan({ title: "Bad", periodStart: day(6, 1), periodEnd: day(6, 30), lines: [line(10.5, day(6, 10))], idempotencyKey: key() }, actor), "QUANTITY_PRECISION");
+  const planKey = key();
+  const plan = await createPlan({ title: `June ${run}`, periodStart: day(6, 1), periodEnd: day(6, 30), lines: [line(1000, day(6, 10))], idempotencyKey: planKey }, actor);
+  assert.equal((await createPlan({ title: "again", periodStart: day(6, 1), periodEnd: day(6, 30), lines: [], idempotencyKey: planKey }, actor)).id, plan.id);
+  await updatePlanLines(plan.id, { title: plan.title, periodStart: day(6, 1), periodEnd: day(6, 30), lines: [line(1000, day(6, 10)), line(500, day(6, 20))] }, actor);
+  let current = await getPlan(plan.id);
+  await expectCode(releasePlanLine(plan.id, current.lines[0].id, actor), "PLAN_STATUS_CONFLICT");
+  await changePlan(plan.id, "approve", actor);
+  await expectCode(updatePlanLines(plan.id, { title: "x", periodStart: day(6, 1), periodEnd: day(6, 30), lines: [] }, actor), "PLAN_NOT_EDITABLE");
+
+  const outcomes = await Promise.allSettled([1, 2, 3].map(() => releasePlanLine(plan.id, current.lines[0].id, actor)));
+  assert.equal(outcomes.filter((outcome) => outcome.status === "fulfilled").length, 1, "a line becomes one production order");
+  current = await getPlan(plan.id);
+  const released = current.lines[0];
+  assert.equal(released.status, "RELEASED");
+  const order = await db.orm.public.ProductionOrder.where({ id: released.productionOrderId }).first();
+  assert.deepEqual([String(order.quantity), order.dueDate, order.productId], ["1000", day(6, 10), ctx.item.id]);
+  assert.equal((await db.orm.public.ProductionStage.where({ productionOrderId: order.id }).all()).length, 9, "with its nine stages");
+
+  await changePlan(plan.id, "close", actor);
+  current = await getPlan(plan.id);
+  assert.deepEqual(current.lines.map((row) => row.status), ["RELEASED", "CANCELLED"]);
+  await expectCode(changePlan(plan.id, "approve", actor), "PLAN_STATUS_CONFLICT");
+});
+
+test("packing instructions: one active per item and customer; customer-specific wins over default", async () => {
+  const { createInstruction, updateInstruction, resolveInstruction } = await import("../../server/packing/instructions.service.ts");
+  const { createCustomer } = await import("../../server/sales/sales.service.ts");
+  const customer = await createCustomer({ code: `PK-${run}`, name: `Packing customer ${run}` }, actor);
+  const base = { productId: ctx.item.id, packType: "Polybag", unitsPerPack: 100, packsPerCarton: 20 };
+  await expectCode(createInstruction({ ...base, unitsPerPack: 12.5 }, actor), "QUANTITY_PRECISION");
+  const fallback = await createInstruction(base, actor);
+  assert.equal(fallback.unitsPerCarton, "2000");
+  await expectCode(createInstruction(base, actor), "PACKING_INSTRUCTION_EXISTS");
+  const special = await createInstruction({ ...base, customerId: customer.id, packType: "Box", unitsPerPack: 50 }, actor);
+  assert.equal((await resolveInstruction(ctx.item.id, customer.id)).id, special.id);
+  assert.equal((await resolveInstruction(ctx.item.id, randomUUID())).id, fallback.id);
+  await updateInstruction(special.id, { packType: "Box", unitsPerPack: 50, packsPerCarton: 10, status: "INACTIVE" }, actor);
+  assert.equal((await resolveInstruction(ctx.item.id, customer.id)).id, fallback.id, "inactive falls back to the default");
+});
+
+test("batches: never exceed the source quantity; status moves are one-way; trace links the order", async () => {
+  const { createBatch, setBatchStatus, getBatch } = await import("../../server/inventory/batches.service.ts");
+  const { createProductionOrder } = await import("../../server/production/production.service.ts");
+  const order = await createProductionOrder({ productId: ctx.item.id, quantity: 1000, priority: "NORMAL" }, actor);
+  const batch = (quantity, extra = {}) => createBatch({ productId: ctx.item.id, sourceType: "PRODUCTION", productionOrderId: order.id, quantity, madeOn: day(8, 1), ...extra }, actor);
+  await expectCode(batch(600, { productId: ctx.item2.id }), "BATCH_SOURCE_MISMATCH");
+  await expectCode(batch(600, { expiresOn: day(7, 1) }), "BATCH_DATES_INVALID");
+  const outcomes = await Promise.allSettled([batch(600), batch(600)]);
+  assert.equal(outcomes.filter((outcome) => outcome.status === "fulfilled").length, 1, "two 600 batches cannot both fit a 1000 order");
+  await expectCode(batch(401), "BATCH_EXCEEDS_SOURCE");
+  const second = await batch(400);
+  assert.match(second.batchNumber, /^LOT-/);
+  assert.equal(second.trace.productionOrderNumber, order.orderNumber);
+
+  await setBatchStatus(second.id, "ON_HOLD", "pending QC", actor);
+  await setBatchStatus(second.id, "REJECTED", "failed", actor);
+  await expectCode(setBatchStatus(second.id, "RELEASED", "", actor), "BATCH_STATUS_CONFLICT");
+  // A rejected batch no longer counts against the source.
+  const third = await batch(400);
+  assert.equal((await getBatch(third.id)).status, "ACTIVE");
+});

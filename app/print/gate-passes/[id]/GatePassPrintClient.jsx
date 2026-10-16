@@ -4,11 +4,12 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { PASS_TYPES } from "@/components/gate/gatePassUi";
-import { COMPANY } from "@/config/company";
 import { apiRequest } from "@/lib/api/client";
+import useCompany from "@/lib/useCompany";
 
 /* Printable gate pass for the guard (GET /api/gate-passes/[id]). */
 export default function GatePassPrintClient({ id }) {
+  const COMPANY = useCompany();
   const [pass, setPass] = useState(null);
   const [error, setError] = useState("");
 

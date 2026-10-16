@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { COMPANY } from "@/config/company";
 import { apiRequest } from "@/lib/api/client";
 import { formatAmount } from "@/lib/formatters/formatters";
+import useCompany from "@/lib/useCompany";
 
 /* Printable tax invoice (GET /api/finance/invoices/[id]). */
 export default function InvoicePrintClient({ id }) {
+  const COMPANY = useCompany();
   const [invoice, setInvoice] = useState(null);
   const [error, setError] = useState("");
 

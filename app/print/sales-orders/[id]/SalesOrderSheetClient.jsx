@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { COMPANY } from "@/config/company";
 import { apiRequest } from "@/lib/api/client";
 import { toSalesOrderSheet } from "@/lib/print/salesOrderSheet";
+import useCompany from "@/lib/useCompany";
 
 export default function SalesOrderSheetClient({ id }) {
+  const COMPANY = useCompany();
   const [order, setOrder] = useState(null);
   const [error, setError] = useState("");
 

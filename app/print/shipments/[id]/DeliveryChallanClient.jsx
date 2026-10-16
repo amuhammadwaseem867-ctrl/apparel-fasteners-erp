@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { COMPANY } from "@/config/company";
 import { apiRequest } from "@/lib/api/client";
+import useCompany from "@/lib/useCompany";
 
 /* Printable delivery challan for a shipment (GET /api/dispatch/shipments/[id]). */
 export default function DeliveryChallanClient({ id }) {
+  const COMPANY = useCompany();
   const [shipment, setShipment] = useState(null);
   const [error, setError] = useState("");
 

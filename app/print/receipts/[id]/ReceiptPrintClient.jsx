@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { RECEIPT_METHOD_LABELS } from "@/components/finance/financeUi";
-import { COMPANY } from "@/config/company";
 import { apiRequest } from "@/lib/api/client";
 import { formatAmount } from "@/lib/formatters/formatters";
+import useCompany from "@/lib/useCompany";
 
 /* Printable payment receipt (GET /api/finance/receipts/[id]). */
 export default function ReceiptPrintClient({ id }) {
+  const COMPANY = useCompany();
   const [receipt, setReceipt] = useState(null);
   const [error, setError] = useState("");
 

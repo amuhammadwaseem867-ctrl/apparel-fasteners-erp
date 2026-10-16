@@ -1,563 +1,105 @@
 "use client";
 
-import {
-  useMemo,
-  useState,
-  useSyncExternalStore,
-} from "react";
-import {
-  CalendarDays,
-  ChevronLeft,
-  ChevronRight,
-  RefreshCw,
-  Search,
-  Filter,
-  Clock3,
-} from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
-import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
-import EmptyState from "@/components/ui/EmptyState";
+import Modal from "@/components/ui/Modal";
+import { apiRequest } from "@/lib/api/client";
+import useCurrentUser from "@/lib/auth/useCurrentUser";
+import useApiData, { toQuery } from "@/lib/inventory/useApiData";
 
-import "./PlanningCalendar.css";
-import { backendUnavailableReason } from "@/lib/backendUnavailable";
+import "@/components/inventory/InventoryWorkspace.css";
 
-const UNAVAILABLE_REASON = backendUnavailableReason("Planning and MRP");
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const TYPE_LABEL = { HOLIDAY: "Holiday", SHUTDOWN: "Shutdown", WORKING: "Extra working day" };
 
-const EVENT_TYPES = {
-  production: {
-    label: "Production",
-    className: "production",
-  },
-  material: {
-    label: "Material",
-    className: "material",
-  },
-  shortage: {
-    label: "Shortage",
-    className: "shortage",
-  },
-  mrp: {
-    label: "MRP Run",
-    className: "mrp",
-  },
-};
-
-const WEEKDAYS = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-];
-
-function getMonthLabel(date) {
-  return new Intl.DateTimeFormat("en", {
-    month: "long",
-    year: "numeric",
-  }).format(date);
+function shiftMonth(month, delta) {
+  const [y, m] = month.split("-").map(Number);
+  const date = new Date(Date.UTC(y, m - 1 + delta, 1));
+  return date.toISOString().slice(0, 7);
 }
 
-function getMonthDays(date) {
-  const year = date.getFullYear();
-  const month = date.getMonth();
+function DayDialog({ day, onClose, onSaved }) {
+  const { can } = useCurrentUser();
+  const [dayType, setDayType] = useState(day.override?.dayType ?? (day.working ? "HOLIDAY" : "WORKING"));
+  const [note, setNote] = useState(day.override?.note ?? "");
+  const [busy, setBusy] = useState("");
+  const [error, setError] = useState("");
 
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-
-  // Convert Sunday-first JS index into Monday-first index.
-  const leadingDays =
-    (firstDay.getDay() + 6) % 7;
-
-  const totalDays = lastDay.getDate();
-
-  const cells = [];
-
-  for (let i = 0; i < leadingDays; i += 1) {
-    cells.push(null);
+  async function run(label, request) {
+    setBusy(label);
+    setError("");
+    try { await request(); onSaved(); } catch (cause) { setError(cause.message); setBusy(""); }
   }
-
-  for (let day = 1; day <= totalDays; day += 1) {
-    cells.push(
-      new Date(year, month, day)
-    );
-  }
-
-  while (cells.length % 7 !== 0) {
-    cells.push(null);
-  }
-
-  return cells;
-}
-
-function formatDateKey(date) {
-  if (!date) return "";
-
-  const year = date.getFullYear();
-  const month = String(
-    date.getMonth() + 1
-  ).padStart(2, "0");
-  const day = String(
-    date.getDate()
-  ).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-}
-
-/*
- * Minute ticker for the live "today" value. This subscribes to the
- * system clock as an external store: the highlighted day updates when
- * the day changes, without setting state synchronously inside an
- * effect. Only runs on the client.
- */
-function subscribeToClock(onStoreChange) {
-  const timer = window.setInterval(
-    onStoreChange,
-    60 * 1000
-  );
-
-  return () => window.clearInterval(timer);
-}
-
-const PLACEHOLDER_DATE = new Date(2000, 0, 1);
-
-export default function PlanningCalendarPage() {
-  /*
-   * null means "follow the live current month". The month label and
-   * grid fall back to a fixed placeholder until the client has the
-   * live today value, which keeps server and hydration renders
-   * identical without a setState call inside an effect.
-   */
-  const [currentDate, setCurrentDate] = useState(null);
-
-  /*
-   * Live "today" key subscribed from the clock ticker (external
-   * system) instead of an interval that sets state inside an effect.
-   * The server snapshot is empty for hydration safety.
-   */
-  const todayKey = useSyncExternalStore(
-    subscribeToClock,
-    () => formatDateKey(new Date()),
-    () => ""
-  );
-
-  const [search, setSearch] = useState("");
-  const [eventType, setEventType] =
-    useState("all");
-
-  /*
-   * Backend integration point.
-   *
-   * Future API response:
-   *
-   * Production Plans
-   * Material Requirements
-   * Shortages
-   * MRP Runs
-   * Capacity Events
-   *        ↓
-   * Unified Planning Calendar
-   *
-   * No fake records are used.
-   */
-  const events = useMemo(() => [], []);
-
-  /*
-   * The displayed month is derived: an explicitly navigated month
-   * wins, otherwise the live current month is used (placeholder on
-   * the server / during hydration).
-   */
-  const viewDate = useMemo(() => {
-    if (currentDate) return currentDate;
-
-    if (!todayKey) return PLACEHOLDER_DATE;
-
-    return new Date();
-  }, [currentDate, todayKey]);
-
-  const days = useMemo(
-    () => getMonthDays(viewDate),
-    [viewDate]
-  );
-
-  const filteredEvents = useMemo(() => {
-    return events.filter((event) => {
-      const searchableText = [
-        event.title,
-        event.description,
-        event.reference,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-
-      const matchesSearch =
-        !search ||
-        searchableText.includes(
-          search.toLowerCase()
-        );
-
-      const matchesType =
-        eventType === "all" ||
-        event.type === eventType;
-
-      return matchesSearch && matchesType;
-    });
-  }, [events, search, eventType]);
-
-  const eventsByDate = useMemo(() => {
-    return filteredEvents.reduce(
-      (result, event) => {
-        if (!event.date) return result;
-
-        if (!result[event.date]) {
-          result[event.date] = [];
-        }
-
-        result[event.date].push(event);
-
-        return result;
-      },
-      {}
-    );
-  }, [filteredEvents]);
-
-  const goToPreviousMonth = () => {
-    setCurrentDate(
-      (previous) => {
-        const base = previous ?? new Date();
-
-        return new Date(
-          base.getFullYear(),
-          base.getMonth() - 1,
-          1
-        );
-      }
-    );
-  };
-
-  const goToNextMonth = () => {
-    setCurrentDate(
-      (previous) => {
-        const base = previous ?? new Date();
-
-        return new Date(
-          base.getFullYear(),
-          base.getMonth() + 1,
-          1
-        );
-      }
-    );
-  };
-
-  const goToToday = () => {
-    /*
-     * Follow the live current month again; the highlighted day is
-     * already kept up to date by the clock subscription.
-     */
-    setCurrentDate(null);
-  };
-
-  const handleRefresh = () => {
-    /*
-     * API refresh will be connected later.
-     */
-  };
 
   return (
-    <main className="planning-calendar">
-      <PageHeader
-        eyebrow="PLANNING / CALENDAR"
-        title="Planning Calendar"
-        description="Coordinate production schedules, material requirements, MRP activity and planning exceptions on a unified timeline."
-        action={
-          <Button
-            variant="primary"
-            size="md"
-            icon={RefreshCw}
-            onClick={handleRefresh}
-            disabled
-            title={UNAVAILABLE_REASON}
-          >
-            Refresh
-          </Button>
-        }
-      />
-
-      <div className="planning-calendar__content">
-        <section className="planning-calendar__toolbar">
-          <div className="planning-calendar__search">
-            <Search
-              size={16}
-              strokeWidth={1.8}
-              aria-hidden="true"
-            />
-
-            <Input
-              value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
-              placeholder="Search planning events..."
-              aria-label="Search planning events"
-            />
-          </div>
-
-          <div className="planning-calendar__filters">
-            <div className="planning-calendar__filter">
-              <Filter
-                size={15}
-                strokeWidth={1.8}
-                aria-hidden="true"
-              />
-
-              <label htmlFor="calendar-event-type">
-                Event Type
-              </label>
-
-              <select
-                id="calendar-event-type"
-                value={eventType}
-                onChange={(event) =>
-                  setEventType(
-                    event.target.value
-                  )
-                }
-              >
-                <option value="all">
-                  All Events
-                </option>
-
-                <option value="production">
-                  Production
-                </option>
-
-                <option value="material">
-                  Material
-                </option>
-
-                <option value="shortage">
-                  Shortage
-                </option>
-
-                <option value="mrp">
-                  MRP Run
-                </option>
-              </select>
+    <Modal open onClose={busy ? undefined : onClose} title={new Date(`${day.date}T00:00:00Z`).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })} size="medium">
+      <div className="inv-dialog">
+        <p>{day.working ? "Working day" : "Not a working day"}{day.override ? ` (${TYPE_LABEL[day.override.dayType].toLowerCase()}${day.override.note ? `: ${day.override.note}` : ""})` : ""}.</p>
+        {day.production.length > 0 && <div><strong>Production due</strong><ul>{day.production.map((row) => <li key={row.id}><Link href={`/production/orders/${row.id}`}>{row.number}</Link> · {row.sku} · {row.quantity} {row.unit} · {row.status.toLowerCase()}</li>)}</ul></div>}
+        {day.deliveries.length > 0 && <div><strong>Customer deliveries due</strong><ul>{day.deliveries.map((row) => <li key={row.id}><Link href={`/sales/orders/${row.id}`}>{row.number}</Link> · {row.customer}</li>)}</ul></div>}
+        {day.purchases.length > 0 && <div><strong>Supplier deliveries expected</strong><ul>{day.purchases.map((row) => <li key={row.id}><Link href={`/procurement/purchase-orders/${row.id}`}>{row.number}</Link> · {row.supplier}</li>)}</ul></div>}
+        {can("production:update") && (
+          <>
+            <div className="inv-dialog__grid">
+              <div className="inv-field"><label htmlFor="cd-type">Mark as</label><select id="cd-type" value={dayType} onChange={(event) => setDayType(event.target.value)}>{Object.entries(TYPE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+              <div className="inv-field"><label htmlFor="cd-note">Note</label><input id="cd-note" maxLength={120} placeholder="e.g. Eid ul-Fitr" value={note} onChange={(event) => setNote(event.target.value)} /></div>
             </div>
-          </div>
-        </section>
+            <p className="inv-field__hint">Holidays and shutdowns are not counted as leave days and reduce capacity.</p>
+          </>
+        )}
+        {error && <p className="inv-dialog__error" role="alert">{error}</p>}
+        <div className="inv-dialog__actions">
+          {day.override && can("production:update") && <Button variant="secondary" loading={busy === "clear"} onClick={() => run("clear", () => apiRequest(`/api/planning/calendar${toQuery({ date: day.date })}`, { method: "DELETE" }))}>Remove override</Button>}
+          {can("production:update") && <Button variant="primary" loading={busy === "save"} onClick={() => run("save", () => apiRequest("/api/planning/calendar", { method: "PUT", body: JSON.stringify({ date: day.date, dayType, note }) }))}>Save</Button>}
+          <Button variant="secondary" onClick={onClose}>Close</Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
 
-        <section className="planning-calendar__legend">
-          {Object.entries(EVENT_TYPES).map(
-            ([key, config]) => (
-              <span
-                key={key}
-                className={`planning-calendar__legend-item planning-calendar__legend-item--${config.className}`}
-              >
-                <span className="planning-calendar__legend-dot" />
-                {config.label}
-              </span>
-            )
-          )}
-        </section>
+export default function CalendarPage() {
+  const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [selected, setSelected] = useState(null);
+  const result = useApiData(`/api/planning/calendar${toQuery({ month })}`);
+  const data = result.data;
+  const lead = data ? data.days[0].weekday : 0;
 
-        <section className="planning-calendar__card">
-          <header className="planning-calendar__calendar-header">
-            <div className="planning-calendar__month">
-              <button
-                type="button"
-                className="planning-calendar__nav-button"
-                onClick={goToPreviousMonth}
-                aria-label="Previous month"
-              >
-                <ChevronLeft
-                  size={18}
-                  strokeWidth={1.8}
-                />
+  return (
+    <main className="inv-page">
+      <header className="inv-header">
+        <div>
+          <p className="inv-header__eyebrow"><Link href="/planning">Planning</Link></p>
+          <h1>Planning calendar</h1>
+          <p>Working days, holidays and what is due: production orders, customer deliveries and supplier deliveries. Weekly off days are set in Administration → Settings{data && !data.weeklyOffConfigured ? " (currently the default: Sunday)" : ""}.</p>
+        </div>
+        <div className="inv-header__actions">
+          <Button variant="secondary" onClick={() => setMonth(shiftMonth(month, -1))}>‹ Previous</Button>
+          <input aria-label="Month" type="month" value={month} onChange={(event) => event.target.value && setMonth(event.target.value)} />
+          <Button variant="secondary" onClick={() => setMonth(shiftMonth(month, 1))}>Next ›</Button>
+        </div>
+      </header>
+      <section className="inv-card">
+        {result.error ? <p className="inv-state inv-state--error" role="alert">{result.error}</p> : !data ? <p className="inv-state" role="status">Loading calendar…</p> : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4, padding: 12 }}>
+            {WEEKDAYS.map((name) => <div key={name} style={{ fontWeight: 600, fontSize: 12, textAlign: "center" }}>{name}</div>)}
+            {Array.from({ length: lead }, (_, index) => <div key={`lead-${index}`} />)}
+            {data.days.map((day) => (
+              <button key={day.date} type="button" onClick={() => setSelected(day)} aria-label={`${day.date}${day.working ? "" : ", not working"}`}
+                style={{ minHeight: 76, textAlign: "left", padding: 6, border: "1px solid #e5e7eb", borderRadius: 6, background: day.working ? "#fff" : "#f3f4f6", cursor: "pointer", overflow: "hidden", fontSize: 11 }}>
+                <strong style={{ fontSize: 13 }}>{Number(day.date.slice(8))}</strong>
+                {day.override && <div style={{ color: day.override.dayType === "WORKING" ? "#166534" : "#991b1b" }}>{day.override.note || TYPE_LABEL[day.override.dayType]}</div>}
+                {day.production.length > 0 && <div>⚙ {day.production.length} due</div>}
+                {day.deliveries.length > 0 && <div>🚚 {day.deliveries.length} to ship</div>}
+                {day.purchases.length > 0 && <div>📦 {day.purchases.length} arriving</div>}
               </button>
-
-              <h2>
-                {getMonthLabel(viewDate)}
-              </h2>
-
-              <button
-                type="button"
-                className="planning-calendar__nav-button"
-                onClick={goToNextMonth}
-                aria-label="Next month"
-              >
-                <ChevronRight
-                  size={18}
-                  strokeWidth={1.8}
-                />
-              </button>
-            </div>
-
-            <Button
-              variant="secondary"
-              size="small"
-              icon={CalendarDays}
-              onClick={goToToday}
-            >
-              Today
-            </Button>
-          </header>
-
-          <div className="planning-calendar__weekdays">
-            {WEEKDAYS.map((weekday) => (
-              <div key={weekday}>
-                {weekday}
-              </div>
             ))}
           </div>
-
-          {events.length === 0 ? (
-            <div className="planning-calendar__empty-wrapper">
-              <EmptyState
-                icon={CalendarDays}
-                title="No planning events"
-                description="Planning events will appear here when production plans, material requirements, shortages and MRP schedules are available."
-              />
-            </div>
-          ) : (
-            <div className="planning-calendar__grid">
-              {days.map((day, index) => {
-                if (!day) {
-                  return (
-                    <div
-                      key={`empty-${index}`}
-                      className="planning-calendar__day planning-calendar__day--empty"
-                    />
-                  );
-                }
-
-                const dateKey =
-                  formatDateKey(day);
-
-                const dayEvents =
-                  eventsByDate[dateKey] || [];
-
-                return (
-                  <div
-                    key={dateKey}
-                    className={`planning-calendar__day ${
-                      formatDateKey(day) === todayKey
-                        ? "planning-calendar__day--today"
-                        : ""
-                    }`}
-                  >
-                    <div className="planning-calendar__day-number">
-                      {day.getDate()}
-                    </div>
-
-                    <div className="planning-calendar__events">
-                      {dayEvents.map(
-                        (event) => {
-                          const config =
-                            EVENT_TYPES[
-                              event.type
-                            ] ||
-                            EVENT_TYPES.production;
-
-                          return (
-                            <button
-                              type="button"
-                              key={event.id}
-                              className={`planning-calendar__event planning-calendar__event--${config.className}`}
-                            >
-                              <span>
-                                {event.title}
-                              </span>
-
-                              {event.reference && (
-                                <small>
-                                  {
-                                    event.reference
-                                  }
-                                </small>
-                              )}
-                            </button>
-                          );
-                        }
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
-
-        <section className="planning-calendar__upcoming">
-          <div className="planning-calendar__section-heading">
-            <div>
-              <h2>Upcoming Planning Activity</h2>
-              <p>
-                Scheduled planning events within
-                the current planning horizon.
-              </p>
-            </div>
-
-            <span>
-              {filteredEvents.length} event
-              {filteredEvents.length === 1
-                ? ""
-                : "s"}
-            </span>
-          </div>
-
-          {filteredEvents.length === 0 ? (
-            <EmptyState
-              size="small"
-              icon={Clock3}
-              title="No upcoming activity"
-              description="Upcoming planning activity will appear here once scheduling data is available."
-            />
-          ) : (
-            <div className="planning-calendar__upcoming-list">
-              {filteredEvents.map((event) => {
-                const config =
-                  EVENT_TYPES[event.type] ||
-                  EVENT_TYPES.production;
-
-                return (
-                  <div
-                    key={event.id}
-                    className="planning-calendar__upcoming-item"
-                  >
-                    <span
-                      className={`planning-calendar__upcoming-marker planning-calendar__upcoming-marker--${config.className}`}
-                    />
-
-                    <div>
-                      <strong>
-                        {event.title}
-                      </strong>
-
-                      <span>
-                        {event.date || "—"}
-                        {event.reference
-                          ? ` · ${event.reference}`
-                          : ""}
-                      </span>
-                    </div>
-
-                    <span
-                      className={`planning-calendar__upcoming-type planning-calendar__upcoming-type--${config.className}`}
-                    >
-                      {config.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
-      </div>
+        )}
+      </section>
+      {selected && <DayDialog key={selected.date} day={selected} onClose={() => setSelected(null)} onSaved={() => { setSelected(null); result.reload(); }} />}
     </main>
   );
 }

@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { COMPANY } from "@/config/company";
 import { apiRequest } from "@/lib/api/client";
 import { STOCK_DOCUMENT_TYPES } from "@/server/inventory/stock-rules";
+import useCompany from "@/lib/useCompany";
 
 const TITLES = {
   GOODS_RECEIPT: "Goods Receipt Note",
@@ -29,6 +29,7 @@ const BUCKET_LABELS = { ON_HAND: "On hand", RESERVED: "Reserved", QUALITY_HOLD: 
  * Shows every ledger movement the document posted.
  */
 export default function StockDocumentSlipClient({ id }) {
+  const COMPANY = useCompany();
   const [document, setDocument] = useState(null);
   const [error, setError] = useState("");
 
