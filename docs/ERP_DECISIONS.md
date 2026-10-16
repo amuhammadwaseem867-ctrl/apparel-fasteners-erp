@@ -940,8 +940,8 @@ in the navigation has its API and tables.
 
 ## D-036 AI entry assistant (2026-10-16)
 
-**What it does.** A panel on every ERP page ("AI se entry") where staff
-type what happened in English, Urdu or Roman Urdu. Claude
+**What it does.** A panel on every ERP page ("AI entry") where staff
+type what happened (it replies in English; Urdu and Roman Urdu input is understood). Claude
 (`claude-opus-5-5`, server-side fallback `"default"`) prepares the
 matching entry. It can prepare six kinds:
 - customers

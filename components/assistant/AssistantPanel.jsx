@@ -10,10 +10,10 @@ import "./AssistantPanel.css";
 
 const STORAGE_KEY = "erp-assistant-v1";
 const EXAMPLES = [
-  "Ali Traders ka naya order: 5000 #5 brass sliders, 12 rupay, delivery 30 tareekh",
-  "Aaj bijli ka bill 18,500 cash se diya",
-  "Naya supplier: Star Metals, Lahore, 0300-1234567",
-  "Bilal ko kal se 2 din ki casual leave",
+  "New order for Ali Traders: 5000 #5 brass sliders at Rs 12, delivery on the 30th",
+  "Paid the electricity bill of Rs 18,500 in cash today",
+  "New supplier: Star Metals, Lahore, 0300-1234567",
+  "Casual leave for Bilal for 2 days from tomorrow",
 ];
 
 const localToday = () => {
@@ -148,7 +148,7 @@ export default function AssistantPanel() {
     <>
       <button type="button" className={`ai-launcher${open ? " ai-launcher--hidden" : ""}`} onClick={() => setOpen(true)} aria-label="Open the AI entry assistant">
         <Sparkles size={18} />
-        <span>AI se entry</span>
+        <span>AI entry</span>
       </button>
 
       {open && (
@@ -156,7 +156,7 @@ export default function AssistantPanel() {
           <header className="ai-panel__head">
             <div>
               <strong><Sparkles size={15} /> AI entry assistant</strong>
-              <small>Batayen kya hua; main entry tayyar karunga, aap confirm karenge.</small>
+              <small>Tell me what happened; I prepare the entry and you confirm it.</small>
             </div>
             <div className="ai-panel__tools">
               <button type="button" className="ai-icon" onClick={reset} aria-label="New conversation" title="New conversation"><RotateCcw size={15} /></button>
@@ -170,7 +170,7 @@ export default function AssistantPanel() {
             )}
             {chat.length === 0 && setup.configured && (
               <div className="ai-examples">
-                <p>Misaal ke taur par:</p>
+                <p>For example:</p>
                 {EXAMPLES.map((example) => (
                   <button type="button" key={example} onClick={() => send(example)}>{example}</button>
                 ))}
@@ -190,7 +190,7 @@ export default function AssistantPanel() {
                 ))}
               </div>
             ))}
-            {busy && <div className="ai-msg ai-msg--assistant ai-msg--typing"><Loader2 size={15} className="ai-spin" /> Soch raha hun…</div>}
+            {busy && <div className="ai-msg ai-msg--assistant ai-msg--typing"><Loader2 size={15} className="ai-spin" /> Working on it…</div>}
             {error && <p className="ai-notice ai-notice--error">{error}</p>}
           </div>
 
@@ -204,7 +204,7 @@ export default function AssistantPanel() {
             <textarea
               value={draft}
               rows={2}
-              placeholder="Likhein, maslan: Ali Traders ka order 5000 sliders…"
+              placeholder="Type, for example: New order for Ali Traders, 5000 sliders…"
               disabled={!setup.configured || busy}
               onChange={(event) => setDraft(event.target.value)}
               onKeyDown={(event) => {
@@ -216,7 +216,7 @@ export default function AssistantPanel() {
             />
             <button type="submit" className="ai-send" disabled={!setup.configured || busy || !draft.trim()} aria-label="Send"><Send size={16} /></button>
           </form>
-          <p className="ai-panel__foot">Kuch bhi Confirm dabaye baghair save nahi hota.</p>
+          <p className="ai-panel__foot">Nothing is saved until you press Confirm.</p>
         </aside>
       )}
     </>

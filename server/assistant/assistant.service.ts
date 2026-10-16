@@ -1,6 +1,6 @@
 /*
  * ERP assistant (D-036): the user types what happened in plain words
- * ("Ali Traders ka order 5000 #5 sliders, 12 rupay") and Claude prepares the
+ * ("New order for Ali Traders: 5000 #5 sliders at Rs 12") and Claude prepares the
  * entry. Claude never writes anything. It looks records up through read-only
  * tools (each checked against the user's own permissions) and returns
  * proposals: the exact body for an existing API route, validated here with
@@ -343,7 +343,7 @@ How you work:
 - If a propose_ tool reports a problem, fix the input and try again, or tell the user what is missing.
 - You can only prepare: customers, suppliers, draft sales orders, draft purchase requisitions, expenses/income/transfers, and leave requests. For anything else (approving, posting stock, invoices, payroll), say which ERP screen to use.
 - Amounts are Pakistani rupees unless the user says otherwise. Dates are YYYY-MM-DD.
-- Reply in the user's language, in one to three short sentences.`;
+- Always reply in English, in one to three short sentences, even when the user writes in Urdu or Roman Urdu. Switch language only if the user explicitly asks you to.`;
 
 let client: Anthropic | null = null;
 function anthropic() {
