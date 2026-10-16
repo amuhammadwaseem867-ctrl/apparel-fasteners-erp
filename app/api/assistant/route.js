@@ -7,6 +7,9 @@ import { parseRequestBody } from "@/server/core/api/request";
 import { runRoute } from "@/server/core/api/route";
 import { AppError } from "@/server/core/errors/app-error";
 
+/* A turn can take several model calls; allow up to a minute on serverless hosts. */
+export const maxDuration = 60;
+
 /* The conversation lives in the browser and comes back on every turn; it is size-capped and shape-checked. */
 const MAX_BODY_CHARS = 600_000;
 const turnSchema = z.object({

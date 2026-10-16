@@ -354,6 +354,47 @@ function anthropic() {
   return client;
 }
 
+/* Turns an Anthropic API failure into a message the user and the administrator can act on. */
+function explainApiError(error: unknown): never {
+  if (error instanceof Anthropic.AuthenticationError) {
+    throw new AppError("The AI service rejected the API key. An administrator must check ANTHROPIC_API_KEY.", { code: "ASSISTANT_KEY_INVALID", status: 502 });
+  }
+  if (error instanceof Anthropic.PermissionDeniedError || error instanceof Anthropic.NotFoundError) {
+    throw new AppError(`The AI service refused this request for the API key (${error.message}). An administrator must check the Anthropic account.`, { code: "ASSISTANT_ACCESS_DENIED", status: 502 });
+  }
+  if (error instanceof Anthropic.RateLimitError) {
+    throw new AppError("The AI service is busy or the account's usage limit was reached. Try again in a minute.", { code: "ASSISTANT_RATE_LIMITED", status: 503 });
+  }
+  if (error instanceof Anthropic.BadRequestError) {
+    throw new AppError(`The AI service could not take this request: ${error.message}`, { code: "ASSISTANT_REQUEST_REJECTED", status: 502 });
+  }
+  if (error instanceof Anthropic.APIConnectionError) {
+    throw new AppError("The server could not reach the AI service. Try again shortly.", { code: "ASSISTANT_UNREACHABLE", status: 503 });
+  }
+  if (error instanceof Anthropic.APIError) {
+    throw new AppError(`The AI service returned an error (${error.status ?? "unknown"}). Try again shortly.`, { code: "ASSISTANT_SERVICE_ERROR", status: 502 });
+  }
+  throw error;
+}
+
+async function callClaude(tools: Anthropic.Beta.BetaTool[], context: string, messages: Anthropic.Beta.BetaMessageParam[]) {
+  try {
+    return await anthropic().beta.messages.create({
+      model: ASSISTANT_MODEL,
+      max_tokens: 16000,
+      betas: ["server-side-fallback-2026-07-01"],
+      fallbacks: "default",
+      output_config: { effort: "medium" },
+      system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }, { type: "text", text: context }],
+      tools,
+      tool_choice: { type: "auto" },
+      messages,
+    });
+  } catch (error) {
+    return explainApiError(error);
+  }
+}
+
 export type AssistantTurn = { messages: Anthropic.Beta.BetaMessageParam[]; reply: string; proposals: Proposal[] };
 
 export async function runAssistant(user: User, history: Anthropic.Beta.BetaMessageParam[], userText: string, today: string): Promise<AssistantTurn> {
@@ -366,17 +407,7 @@ export async function runAssistant(user: User, history: Anthropic.Beta.BetaMessa
   const context = `Today is ${today}. The user is ${user.name ?? user.email ?? "a staff member"}.`;
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round += 1) {
-    const response = await anthropic().beta.messages.create({
-      model: ASSISTANT_MODEL,
-      max_tokens: 16000,
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",
-      output_config: { effort: "medium" },
-      system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }, { type: "text", text: context }],
-      tools,
-      tool_choice: { type: "auto" },
-      messages,
-    });
+    const response = await callClaude(tools, context, messages);
     messages.push({ role: "assistant", content: response.content });
 
     if (response.stop_reason === "refusal") {
