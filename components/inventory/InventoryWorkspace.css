@@ -1008,3 +1008,8 @@
     box-shadow: none;
   }
 }
+
+/* Optional, folded group of fields inside a dialog. */
+.inv-details { margin: 4px 0 12px; border: 1px solid var(--inv-border); border-radius: 10px; padding: 8px 12px; }
+.inv-details summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--inv-secondary); }
+.inv-details[open] summary { margin-bottom: 10px; }

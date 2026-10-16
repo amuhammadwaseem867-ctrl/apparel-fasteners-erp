@@ -27,498 +27,114 @@ import {
 
 import "./Sidebar.css";
 
+/*
+ * Simple navigation (D-038): the factory's own flow, in order, from the
+ * order sheet to the payment, then stock, purchasing and people. Pages left
+ * out of this menu still work by link (and from the Order Profile); they
+ * are only hidden to keep the menu short.
+ */
 const NAV_GROUPS = [
   {
-    title: "Command Center",
+    title: "Home",
     items: [
-      {
-        label: "Dashboard",
-        href: "/dashboard",
-        icon: LayoutDashboard,
-      },
+      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     ],
   },
-
   {
-    title: "Business",
+    title: "Order to delivery",
     items: [
       {
-        label: "Sales & CRM",
-        href: "/sales",
-        icon: BriefcaseBusiness,
-        children: [
-          {
-            label: "Customers",
-            href: "/sales/customers",
-          },
-          {
-            label: "Orders",
-            href: "/sales/orders",
-          },
-        ],
-      },
-
-      {
-        label: "Products",
-        href: "/products",
-        icon: Package,
-      },
-
-      {
-        label: "Procurement",
-        href: "/procurement",
+        label: "1. Orders",
+        href: "/sales/orders",
         icon: ShoppingCart,
         children: [
-          {
-            label: "Suppliers",
-            href: "/procurement/suppliers",
-          },
-          {
-            label: "Requisitions",
-            href: "/procurement/requisitions",
-          },
-          {
-            label: "RFQs",
-            href: "/procurement/rfqs",
-          },
-          {
-            label: "Purchase Orders",
-            href: "/procurement/purchase-orders",
-          },
-          {
-            label: "Goods Receipts",
-            href: "/procurement/goods-receipts",
-          },
-          {
-            label: "Supplier Performance",
-            href: "/procurement/supplier-performance",
-          },
+          { label: "All orders", href: "/sales/orders" },
+          { label: "New order", href: "/sales/orders/new" },
+          { label: "Customers", href: "/sales/customers" },
+        ],
+      },
+      {
+        label: "2. Production",
+        href: "/production",
+        icon: Factory,
+        children: [
+          { label: "Production orders", href: "/production/orders" },
+          { label: "Stage board", href: "/production/stage-board" },
+          { label: "Issue raw material", href: "/production/material-issue" },
+        ],
+      },
+      { label: "3. Quality check", href: "/quality/inspections", icon: ClipboardCheck },
+      { label: "4. Packing", href: "/packing/orders", icon: Package },
+      {
+        label: "5. Dispatch",
+        href: "/dispatch",
+        icon: Truck,
+        children: [
+          { label: "Shipments", href: "/dispatch/shipments" },
+          { label: "Gate passes", href: "/dispatch/gate-passes" },
+        ],
+      },
+      {
+        label: "6. Invoice & payment",
+        href: "/finance",
+        icon: Receipt,
+        children: [
+          { label: "Invoices", href: "/finance/invoices" },
+          { label: "Payments received", href: "/finance/payments" },
+          { label: "Customer balances", href: "/finance/receivables" },
         ],
       },
     ],
   },
-
   {
-    title: "Materials & Inventory",
+    title: "Stock & buying",
     items: [
       {
         label: "Inventory",
         href: "/inventory",
         icon: Boxes,
         children: [
-          {
-            label: "Overview",
-            href: "/inventory",
-          },
-          {
-            label: "Item Master",
-            href: "/inventory/item-master",
-          },
-          {
-            label: "Stock",
-            href: "/inventory/stock",
-          },
-          {
-            label: "WIP Stock",
-            href: "/inventory/wip-stock",
-          },
-          {
-            label: "Finished Goods",
-            href: "/inventory/finished-goods",
-          },
-          {
-            label: "Warehouses",
-            href: "/inventory/warehouses",
-          },
-          {
-            label: "Movements",
-            href: "/inventory/movements",
-          },
-          {
-            label: "Transfers",
-            href: "/inventory/transfers",
-          },
-          {
-            label: "Adjustments",
-            href: "/inventory/adjustments",
-          },
-          {
-            label: "Reservations",
-            href: "/inventory/reservations",
-          },
-          {
-            label: "Batches & Lots",
-            href: "/inventory/batches-lots",
-          },
-          {
-            label: "Stock Counts",
-            href: "/inventory/stock-counts",
-          },
+          { label: "Items", href: "/inventory/item-master" },
+          { label: "Stock", href: "/inventory/stock" },
+          { label: "Warehouses & shelves", href: "/inventory/warehouses" },
+          { label: "Movement history", href: "/inventory/movements" },
         ],
       },
-
       {
-        label: "Planning / MRP",
-        href: "/planning",
-        icon: GitBranch,
+        label: "Purchasing",
+        href: "/procurement",
+        icon: ClipboardList,
         children: [
-          {
-            label: "Overview",
-            href: "/planning",
-          },
-          {
-            label: "Material Requirements",
-            href: "/planning/material-requirements",
-          },
-          {
-            label: "MRP Runs",
-            href: "/planning/mrp-runs",
-          },
-          {
-            label: "Production Plans",
-            href: "/planning/production-plans",
-          },
-          {
-            label: "Material Reservations",
-            href: "/planning/material-reservations",
-          },
-          {
-            label: "Shortages",
-            href: "/planning/shortages",
-          },
-          {
-            label: "Capacity",
-            href: "/planning/capacity",
-          },
-          {
-            label: "Calendar",
-            href: "/planning/calendar",
-          },
+          { label: "Suppliers", href: "/procurement/suppliers" },
+          { label: "Purchase orders", href: "/procurement/purchase-orders" },
+          { label: "Goods received", href: "/procurement/goods-receipts" },
+          { label: "Supplier bills", href: "/finance/payables" },
         ],
       },
-
-      /*
-       * Production
-       *
-       * Lean operational structure:
-       *
-       * Production Plan
-       *       ↓
-       * Work Order
-       *       ↓
-       * Schedule
-       *       ↓
-       * Operations
-       *       ↓
-       * Material Issue
-       *       ↓
-       * Shop Floor
-       *       ↓
-       * Production Output
-       *       ↓
-       * Production Completion
-       */
-      {
-        label: "Production",
-        href: "/production",
-        icon: Factory,
-        children: [
-          {
-            label: "Overview",
-            href: "/production",
-          },
-          {
-            label: "Orders",
-            href: "/production/orders",
-          },
-          {
-            label: "Stage Board",
-            href: "/production/stage-board",
-          },
-          {
-            label: "Production Schedule",
-            href: "/production/schedule",
-          },
-          {
-            label: "Operations",
-            href: "/production/operations",
-          },
-          {
-            label: "Material Issue",
-            href: "/production/material-issue",
-          },
-          {
-            label: "Output",
-            href: "/production/output",
-          },
-          {
-            label: "Completion",
-            href: "/production/completion",
-          },
-        ],
-      },
-
-      {
-        label: "Quality Control",
-        href: "/quality",
-        icon: ClipboardCheck,
-        children: [
-          {
-            label: "Overview",
-            href: "/quality",
-          },
-          {
-            label: "Incoming",
-            href: "/quality/incoming",
-          },
-          {
-            label: "In-Process",
-            href: "/quality/in-process",
-          },
-          {
-            label: "Final Inspection",
-            href: "/quality/final",
-          },
-          {
-            label: "Inspections",
-            href: "/quality/inspections",
-          },
-          {
-            label: "NCR",
-            href: "/quality/ncr",
-          },
-          {
-            label: "CAPA",
-            href: "/quality/capa",
-          },
-          {
-            label: "Rejections",
-            href: "/quality/rejections",
-          },
-        ],
-      },
-
-      {
-        label: "Packing",
-        href: "/packing",
-        icon: Package,
-        children: [
-          {
-            label: "Overview",
-            href: "/packing",
-          },
-          {
-            label: "Packing Lists",
-            href: "/packing/orders",
-          },
-          {
-            label: "Packing Instructions",
-            href: "/packing/instructions",
-          },
-          {
-            label: "Completed Packing",
-            href: "/packing/completed",
-          },
-        ],
-      },
-
-      {
-        label: "Dispatch & Logistics",
-        href: "/dispatch",
-        icon: Truck,
-        children: [
-          {
-            label: "Overview",
-            href: "/dispatch",
-          },
-          {
-            label: "Ready for Delivery",
-            href: "/dispatch/ready",
-          },
-          {
-            label: "Dispatch",
-            href: "/dispatch/dispatch",
-          },
-          {
-            label: "Shipments",
-            href: "/dispatch/shipments",
-          },
-          {
-            label: "Delivered",
-            href: "/dispatch/delivered",
-          },
-          {
-            label: "Gate Passes",
-            href: "/dispatch/gate-passes",
-          },
-        ],
-      },
-
     ],
   },
-
   {
-    title: "Finance & People",
+    title: "People & reports",
     items: [
       {
-        label: "Finance",
-        href: "/finance",
-        icon: Receipt,
-        children: [
-          {
-            label: "Overview",
-            href: "/finance",
-          },
-          {
-            label: "Accounts",
-            href: "/finance/accounts",
-          },
-          {
-            label: "Income",
-            href: "/finance/income",
-          },
-          {
-            label: "Expenses",
-            href: "/finance/expenses",
-          },
-          {
-            label: "Invoices",
-            href: "/finance/invoices",
-          },
-          {
-            label: "Receipts",
-            href: "/finance/payments",
-          },
-          {
-            label: "Receivables",
-            href: "/finance/receivables",
-          },
-          {
-            label: "Payables",
-            href: "/finance/payables",
-          },
-          {
-            label: "Cash & Bank",
-            href: "/finance/cash-bank",
-          },
-          {
-            label: "Transactions",
-            href: "/finance/transactions",
-          },
-          {
-            label: "Financial Reports",
-            href: "/finance/reports",
-          },
-        ],
-      },
-
-      {
-        label: "People & Payroll",
+        label: "HR & Payroll",
         href: "/people-payroll",
         icon: Users,
         children: [
-          {
-            label: "Employees",
-            href: "/people-payroll/employees",
-          },
-          {
-            label: "Departments",
-            href: "/people-payroll/departments",
-          },
-          {
-            label: "Attendance",
-            href: "/people-payroll/attendance",
-          },
-          {
-            label: "Shifts",
-            href: "/people-payroll/shifts",
-          },
-          {
-            label: "Leave",
-            href: "/people-payroll/leave",
-          },
-          {
-            label: "Payroll",
-            href: "/people-payroll/payroll",
-          },
-          {
-            label: "Salary Advances",
-            href: "/people-payroll/advances-loans",
-          },
-          {
-            label: "Payroll Reports",
-            href: "/people-payroll/reports",
-          },
+          { label: "Employees", href: "/people-payroll/employees" },
+          { label: "Attendance", href: "/people-payroll/attendance" },
+          { label: "Leave", href: "/people-payroll/leave" },
+          { label: "Payroll", href: "/people-payroll/payroll" },
         ],
       },
-    ],
-  },
-
-  {
-    title: "Reporting",
-    items: [
-      {
-        label: "Reports & Analytics",
-        href: "/reports",
-        icon: BarChart3,
-        children: [
-          {
-            label: "Overview",
-            href: "/reports",
-          },
-          {
-            label: "Orders",
-            href: "/reports/orders",
-          },
-          {
-            label: "Production",
-            href: "/reports/production",
-          },
-          {
-            label: "Quality",
-            href: "/reports/quality",
-          },
-          {
-            label: "Inventory",
-            href: "/reports/inventory",
-          },
-          {
-            label: "Packing",
-            href: "/reports/packing",
-          },
-          {
-            label: "Dispatch",
-            href: "/reports/dispatch",
-          },
-        ],
-      },
-    ],
-  },
-
-  {
-    title: "Administration",
-    items: [
+      { label: "Reports", href: "/reports", icon: BarChart3 },
       {
         label: "Settings",
         href: "/administration",
         icon: Settings,
         children: [
-          {
-            label: "Users",
-            href: "/administration/users",
-          },
-          {
-            label: "Roles",
-            href: "/administration/roles",
-          },
-          {
-            label: "Audit Logs",
-            href: "/administration/audit",
-          },
-          {
-            label: "System Settings",
-            href: "/administration/settings",
-          },
+          { label: "Users", href: "/administration/users" },
+          { label: "Company & documents", href: "/administration/settings" },
         ],
       },
     ],

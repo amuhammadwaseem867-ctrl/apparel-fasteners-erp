@@ -96,3 +96,54 @@ test("the simple board: start and complete each stage; Tape Dyeing takes its tot
   assert.equal(state.currentStage, "quality-check");
   await assert.rejects(finishStage(production.id, "quality-check", {}, actor), code("STAGE_MANAGED_ELSEWHERE"));
 });
+
+test("the order sheet ties each line to the item for its exact specification, reusing items it already has", async () => {
+  const { createOrderFromSheet } = await import("../../server/sales/order-sheet.service.ts");
+  const { orderSheetSchema } = await import("../../server/sales/sales.validation.ts");
+  const line = (tapeColor) => ({ product: `Metal Zipper Open End ${run}`, variant: "Right Insert", finish: "Gun Metal", teethType: "Plain Teeth", tapeColor, slider: "Picture Puller", size: "32 Inch", unit: "Pcs", quantity: 200 });
+  const sheet = (orderNumber, colors) => orderSheetSchema.parse({ customerId: ctx.customer.id, customerPo: "PO-77", orderNumber, orderDate: "2026-09-17", lines: colors.map(line) });
+
+  const first = await getSalesOrder((await createOrderFromSheet(sheet(`AF-${run}-1`, ["Black", "Navy"]), actor)).id);
+  assert.equal(first.orderNumber, `AF-${run}-1`);
+  assert.equal(first.customerPo, "PO-77");
+  assert.equal(first.status, "DRAFT");
+  const [black, navy] = first.lines;
+  assert.notEqual(black.productId, navy.productId, "a different tape colour is a different item");
+  assert.deepEqual([black.teethType, black.slider, black.tapeColor, black.size, black.finish], ["Plain Teeth", "Picture Puller", "Black", "32 Inch", "Gun Metal"]);
+  assert.equal(black.unitPrice, 0);
+
+  const second = await getSalesOrder((await createOrderFromSheet(sheet(`AF-${run}-2`, ["Black"]), actor)).id);
+  assert.equal(second.lines[0].productId, black.productId, "the same specification reuses its item");
+  await assert.rejects(createOrderFromSheet(sheet(`AF-${run}-2`, ["Grey"]), actor), (error) => error.code === "ORDER_NUMBER_EXISTS");
+});
+
+test("Order Profile: send to production once per line, and the status follows the slowest line", async () => {
+  const { createOrderFromSheet } = await import("../../server/sales/order-sheet.service.ts");
+  const { getOrderTrace, overallStatus, sendOrderToProduction } = await import("../../server/sales/order-trace.service.ts");
+  const { orderSheetSchema } = await import("../../server/sales/sales.validation.ts");
+  const order = await createOrderFromSheet(orderSheetSchema.parse({
+    customerId: ctx.customer.id, orderDate: "2026-09-17", deliveryDate: "2026-10-20",
+    lines: ["Grey", "Brown"].map((tapeColor) => ({ product: `Metal Zipper ${run}`, finish: "Gun Metal", teethType: "Y-Cut", tapeColor, unit: "Pcs", quantity: 150 })),
+  }), actor);
+  let trace = await getOrderTrace(order.id);
+  assert.equal(trace.status, "New");
+  await assert.rejects(sendOrderToProduction(order.id, actor), (error) => error.code === "SALES_ORDER_NOT_APPROVED");
+  await changeSalesOrderStatus(order.id, "approve", actor);
+  assert.equal((await getOrderTrace(order.id)).status, "Confirmed");
+
+  trace = await sendOrderToProduction(order.id, actor);
+  assert.equal(trace.production.length, 2);
+  assert.ok(trace.production.every((item) => item.status === "RELEASED" && item.dueDate === "2026-10-20"));
+  assert.equal(trace.status, "In Production");
+  await assert.rejects(sendOrderToProduction(order.id, actor), (error) => error.code === "ALREADY_IN_PRODUCTION");
+
+  // The status names from the requirements, by the slowest production order.
+  const at = (currentStage, status = "IN_PROGRESS", packing = "PENDING") => ({ status, currentStage, stages: [{ stageKey: "packing", status: packing }] });
+  assert.equal(overallStatus("APPROVED", [at("quality-check"), at("packing")]), "QC Pending");
+  assert.equal(overallStatus("APPROVED", [at("packing")]), "QC Approved");
+  assert.equal(overallStatus("APPROVED", [at("packing", "IN_PROGRESS", "IN_PROGRESS")]), "Packing");
+  assert.equal(overallStatus("APPROVED", [at("delivered")]), "Ready for Delivery");
+  assert.equal(overallStatus("APPROVED", [at("delivered", "COMPLETED")]), "Delivered");
+  assert.equal(overallStatus("APPROVED", [at("plating", "ON_HOLD")]), "On Hold");
+  assert.equal(overallStatus("CANCELLED", []), "Cancelled");
+});

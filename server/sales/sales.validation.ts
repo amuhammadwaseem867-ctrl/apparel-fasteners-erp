@@ -178,6 +178,34 @@ export const salesOrderInputSchema = z
     }
   });
 
+/* The order sheet (requirements 1.2, section 6): what the order form sends. */
+const sheetText = (max: number) => z.string().trim().max(max).optional().or(z.literal(""));
+export const orderSheetSchema = z
+  .object({
+    customerId: z.string().uuid(),
+    customerPo: sheetText(80),
+    orderNumber: z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9/-]{1,39}$/, "Use letters, digits, dashes or slashes.").optional().or(z.literal("")),
+    orderDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    deliveryDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
+    notes: sheetText(4000),
+    lines: z.array(z.object({
+      product: z.string().trim().min(1, "Product is required.").max(120),
+      variant: sheetText(120),
+      finish: sheetText(120),
+      teethType: sheetText(60),
+      tapeColor: sheetText(120),
+      slider: sheetText(120),
+      size: sheetText(60),
+      unit: z.string().trim().min(1).max(40),
+      quantity: positiveQuantity,
+      unitPrice: nonNegativePrice.default(0),
+      taxPercent: percentage.default(18),
+    })).min(1, "Add at least one line.").max(200),
+  })
+  .refine((input) => !input.deliveryDate || input.deliveryDate >= input.orderDate, { message: "Delivery date cannot be earlier than the order date.", path: ["deliveryDate"] });
+
+export type OrderSheetInput = z.infer<typeof orderSheetSchema>;
+
 export const salesOrderQuerySchema = z.object({
   search: z
     .string()
