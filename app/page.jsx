@@ -1,109 +1,164 @@
 "use client";
 
 import Image from "next/image";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { useRef } from "react";
+import {
+  ArrowRight,
+  BarChart3,
+  Boxes,
+  ClipboardCheck,
+  Factory,
+  Landmark,
+  ShieldCheck,
+  ShoppingCart,
+  Truck,
+  Users,
+} from "lucide-react";
+
 import "./welcome.css";
 
-export default function WelcomePage() {
+const HEADLINE = [["Manufacturing"], ["operations,"], ["connected.", true]];
+
+const MODULES = [
+  { icon: ShoppingCart, title: "Sales & CRM", text: "Customers, orders, approvals" },
+  { icon: Boxes, title: "Products & Inventory", text: "Item master, stock, batches" },
+  { icon: Factory, title: "Planning & Production", text: "BOM, MRP, nine-stage flow" },
+  { icon: ClipboardCheck, title: "Quality", text: "Inspections, NCR, CAPA" },
+  { icon: Truck, title: "Packing & Dispatch", text: "Packing lists, challans" },
+  { icon: Landmark, title: "Finance", text: "Invoices, payables, ledger" },
+  { icon: Users, title: "People & Payroll", text: "Attendance, leave, payslips" },
+  { icon: BarChart3, title: "Reports", text: "Live reports, CSV export" },
+];
+
+const TEETH = 22;
+
+/* Decorative zipper: two rows of teeth that interlock as the slider passes. */
+function ZipperArt() {
   return (
-    <main className="welcome-page">
-      <section className="welcome-visual">
-        <div className="welcome-visual__inner">
-          <div className="welcome-top">
-            <Image
-              src="/logo in white.png"
-              alt="Apparel Fastener"
-              width={320}
-              height={92}
-              priority
-              className="welcome-logo"
-            />
-          </div>
+    <div className="wz" aria-hidden="true">
+      <div className="wz__track">
+        {Array.from({ length: TEETH }, (_, index) => <span key={`l${index}`} className="wz__tooth wz__tooth--left" style={{ "--i": index }} />)}
+      </div>
+      <div className="wz__track wz__track--right">
+        {Array.from({ length: TEETH }, (_, index) => <span key={`r${index}`} className="wz__tooth wz__tooth--right" style={{ "--i": index }} />)}
+      </div>
+      <span className="wz__slider"><span className="wz__pull" /></span>
+    </div>
+  );
+}
 
-          <div className="welcome-content">
-            <span className="welcome-eyebrow">
-              APPAREL FASTENER ERP
+export default function WelcomePage() {
+  const pageRef = useRef(null);
+  const ctaRef = useRef(null);
+
+  /* Pointer-driven light and a gentle pull on the main button (CSS variables, no re-render). */
+  function onPointerMove(event) {
+    const page = pageRef.current;
+    if (page) {
+      page.style.setProperty("--spot-x", `${event.clientX}px`);
+      page.style.setProperty("--spot-y", `${event.clientY}px`);
+    }
+  }
+
+  function onCtaMove(event) {
+    const button = ctaRef.current;
+    if (!button) return;
+    const box = button.getBoundingClientRect();
+    button.style.setProperty("--pull-x", `${(event.clientX - box.left - box.width / 2) * 0.18}px`);
+    button.style.setProperty("--pull-y", `${(event.clientY - box.top - box.height / 2) * 0.25}px`);
+  }
+
+  function onCtaLeave() {
+    ctaRef.current?.style.setProperty("--pull-x", "0px");
+    ctaRef.current?.style.setProperty("--pull-y", "0px");
+  }
+
+  function onCardMove(event) {
+    const card = event.currentTarget;
+    const box = card.getBoundingClientRect();
+    card.style.setProperty("--mx", `${event.clientX - box.left}px`);
+    card.style.setProperty("--my", `${event.clientY - box.top}px`);
+  }
+
+  return (
+    <main ref={pageRef} className="welcome" onPointerMove={onPointerMove}>
+      <div className="welcome__aurora" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
+      <div className="welcome__grid" aria-hidden="true" />
+      <div className="welcome__spotlight" aria-hidden="true" />
+
+      <header className="welcome__bar">
+        <Image src="/logo in white.png" alt="Apparel Fastener" width={320} height={92} priority className="welcome__logo" />
+        <Link href="/login" className="welcome__signin">
+          Sign in
+          <ArrowRight size={15} strokeWidth={2.2} />
+        </Link>
+      </header>
+
+      <section className="welcome__hero">
+        <span className="welcome__eyebrow w-rise" style={{ "--d": "100ms" }}>
+          <span className="welcome__dot" />
+          APPAREL FASTENER ERP
+        </span>
+
+        <h1 className="welcome__title">
+          {HEADLINE.map(([word, accent], index) => (
+            <span key={word} className="welcome__line">
+              <span className={`welcome__word${accent ? " welcome__word--accent" : ""}`} style={{ "--d": `${250 + index * 140}ms` }}>
+                {word}
+              </span>
             </span>
+          ))}
+        </h1>
 
-            <h1>
-              Manufacturing
-              <br />
-              operations,
-              <br />
-              connected.
-            </h1>
+        <p className="w-rise" style={{ "--d": "720ms" }}>
+          One platform for sales, products, inventory, production, quality,
+          dispatch, procurement, finance and payroll, from the first order to
+          the last payment.
+        </p>
 
-            <p>
-              A centralized business platform for managing sales,
-              products, inventory, production, quality, dispatch
-              and financial operations.
-            </p>
-
-            <div className="welcome-actions">
-              <a href="/login" className="welcome-button">
-                <span>Enter ERP</span>
-                <ArrowRight size={19} strokeWidth={2} />
-              </a>
-            </div>
-          </div>
-
-          <div className="welcome-bottom">
-            <div>
-              <ShieldCheck size={16} strokeWidth={1.8} />
-              <span>SECURE BUSINESS PLATFORM</span>
-            </div>
-
-            <span>LAHORE · PAKISTAN</span>
-          </div>
-        </div>
-      </section>
-
-      <section className="welcome-side">
-        <div className="welcome-side__content">
-          <span className="welcome-side__label">
-            OPERATIONS PLATFORM
+        <div className="welcome__actions w-rise" style={{ "--d": "860ms" }}>
+          <Link
+            ref={ctaRef}
+            href="/login"
+            className="welcome__cta"
+            onPointerMove={onCtaMove}
+            onPointerLeave={onCtaLeave}
+          >
+            <span>Enter ERP</span>
+            <ArrowRight size={19} strokeWidth={2} />
+          </Link>
+          <span className="welcome__secure">
+            <ShieldCheck size={16} strokeWidth={1.8} />
+            Authorised personnel only
           </span>
-
-          <h2>
-            One system.
-            <br />
-            Every operation.
-          </h2>
-
-          <p>
-            Apparel Fastener ERP brings your commercial and
-            manufacturing workflows into one connected operating
-            environment.
-          </p>
-
-          <div className="welcome-side__modules">
-            <div>
-              <span>01</span>
-              <strong>Sales & CRM</strong>
-            </div>
-
-            <div>
-              <span>02</span>
-              <strong>Products & Inventory</strong>
-            </div>
-
-            <div>
-              <span>03</span>
-              <strong>Production & Quality</strong>
-            </div>
-
-            <div>
-              <span>04</span>
-              <strong>Dispatch & Finance</strong>
-            </div>
-          </div>
         </div>
 
-        <footer className="welcome-footer">
-          <span>APPAREL FASTENER ERP</span>
-          <span>v1.0</span>
-        </footer>
+        <div className="w-rise" style={{ "--d": "1000ms" }}>
+          <ZipperArt />
+        </div>
       </section>
+
+      <section className="welcome__modules" aria-label="Modules">
+        {MODULES.map(({ icon: Icon, title, text }, index) => (
+          <article key={title} className="welcome__card" style={{ "--d": `${1050 + index * 80}ms` }} onPointerMove={onCardMove}>
+            <span className="welcome__card-icon"><Icon size={19} strokeWidth={1.9} /></span>
+            <span className="welcome__card-number">{String(index + 1).padStart(2, "0")}</span>
+            <strong>{title}</strong>
+            <small>{text}</small>
+          </article>
+        ))}
+      </section>
+
+      <footer className="welcome__footer">
+        <span>SECURE BUSINESS PLATFORM</span>
+        <span>LAHORE · PAKISTAN</span>
+        <span>v1.0</span>
+      </footer>
     </main>
   );
 }
