@@ -13,7 +13,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
-import { createInterface } from "node:readline/promises";
+import { createInterface } from "node:readline";
 
 import "./load-env.mjs";
 
@@ -25,13 +25,18 @@ function stop(message) {
   process.exit(1);
 }
 
-function run(label, command, args, { capture = false } = {}) {
+function run(label, command, args, { capture = false, quiet = false } = {}) {
   console.log(`\n▶ ${label}`);
   // Never through a shell: a connection string with & or % must reach the tool unchanged.
-  const result = spawnSync(command, args, { stdio: capture ? ["ignore", "pipe", "inherit"] : "inherit", encoding: "utf8" });
+  // stdin is not shared, so a child cannot close it before we ask for YES.
+  const result = spawnSync(command, args, { stdio: ["ignore", capture ? "pipe" : "inherit", capture ? "pipe" : "inherit"], encoding: "utf8" });
+  if (capture && !quiet) {
+    process.stdout.write(result.stdout ?? "");
+    process.stderr.write(result.stderr ?? "");
+  }
   if (result.error) stop(`${label} could not start: ${result.error.message}`);
   if (result.status !== 0) stop(`${label} failed (exit ${result.status}).`);
-  return result.stdout ?? "";
+  return `${result.stdout ?? ""}${result.stderr ?? ""}`;
 }
 
 /*
@@ -53,6 +58,25 @@ function pgTool(name) {
     }
   }
   stop(`${name} was not found. Install the PostgreSQL 17 (or newer) "Command Line Tools" from https://www.enterprisedb.com/downloads/postgres-postgresql-downloads and run npm run go-live again.`);
+}
+
+/* Prints the JSON result of `prisma migration status` (piped output) as a short list. */
+function printStatus(output) {
+  const line = output.split("\n").find((text) => text.includes('"commandId":"migration.status"') && text.includes('"kind":"result"'));
+  let envelope;
+  try {
+    envelope = JSON.parse(line).envelope;
+  } catch {
+    process.stdout.write(output);
+    return;
+  }
+  for (const space of envelope.result?.spaces ?? []) {
+    for (const migration of [...space.migrations].reverse()) {
+      console.log(`  ${migration.status === "applied" ? "✓ applied" : "· pending"}  ${migration.name}  (${migration.operationCount} ops)`);
+    }
+  }
+  if (envelope.result?.summary) console.log(`  ${envelope.result.summary}`);
+  for (const diagnostic of envelope.diagnostics ?? []) console.log(`  ⚠ [${diagnostic.code}] ${diagnostic.summary}`);
 }
 
 /* The Prisma CLI from node_modules, run by this Node (no npx, no shell). */
@@ -83,16 +107,28 @@ if (!backup) {
   run("Backing up the database (pg_dump)", pgDump, ["--format=custom", `--file=${backup}`, url]);
 }
 if (!existsSync(backup) || statSync(backup).size === 0) stop(`Backup ${backup} is missing or empty.`);
-const listing = run("Checking the backup can be restored (pg_restore --list)", pgTool("pg_restore"), ["--list", backup], { capture: true });
+const listing = run("Checking the backup can be restored (pg_restore --list)", pgTool("pg_restore"), ["--list", backup], { capture: true })
+  .split("\n").filter((line) => !line.startsWith(";")).join("\n");
 const tables = listing.split("\n").filter((line) => / TABLE DATA /.test(line)).length;
 if (tables === 0) stop(`Backup ${backup} contains no table data; refusing to continue.`);
 console.log(`✔ Backup ${backup} (${(statSync(backup).size / 1048576).toFixed(1)} MB, ${tables} tables with data) is readable.`);
 
 // 2. Show what will change and ask.
-run("Pending migrations", ...prisma("migration", "status", "--db", url));
-const answer = await createInterface({ input: process.stdin, output: process.stdout }).question(
-  `\nApply the pending migrations to "${database}" on ${host}? Type YES to continue: `,
-);
+const status = run("Pending migrations", ...prisma("migration", "status", "--db", url), { capture: true, quiet: true });
+printStatus(status);
+if (/MARKER_NOT_IN_HISTORY|not in the on-disk migration graph/.test(status)) {
+  stop(
+    "The database's migration marker does not match any migration in this repository, so it is not known which migrations are already in it.\n" +
+      "  Run:  npm run db:schema-report   (read-only) and send its output. No migration was applied.",
+  );
+}
+const prompt = createInterface({ input: process.stdin, output: process.stdout });
+const answer = await new Promise((resolve) => {
+  prompt.on("close", () => resolve(null));
+  prompt.question(`\nApply the pending migrations to "${database}" on ${host}? Type YES to continue: `, resolve);
+});
+prompt.close();
+if (answer === null) stop("No answer was read (input closed). Run npm run go-live again in a terminal.");
 if (answer.trim() !== "YES") stop("Not confirmed.");
 
 // 3. Apply and verify.
