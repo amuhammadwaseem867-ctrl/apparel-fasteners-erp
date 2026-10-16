@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
   Ban,
@@ -11,11 +11,13 @@ import {
   Package,
   RefreshCw,
   ShoppingCart,
+  Sparkles,
   Users,
 } from "lucide-react";
 
 import Alert from "@/components/ui/Alert";
 import { apiRequest } from "@/lib/api/client";
+import useCurrentUser from "@/lib/auth/useCurrentUser";
 import {
   DASHBOARD_PERIODS,
   DEFAULT_DASHBOARD_PERIOD,
@@ -35,10 +37,55 @@ import "./Dashboard.css";
  * being displayed as zero.
  */
 
-function StatCard({ icon: Icon, label, value, note, tone }) {
+/*
+ * Counts a formatted number up from zero once, by writing the DOM text
+ * directly (no re-render). The rendered text is always the exact value,
+ * so without JavaScript, with reduced motion, or after the animation the
+ * figure shown is the API's.
+ */
+function AnimatedValue({ text }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const element = ref.current;
+    const match = /^(-?)([\d,]+)(?:\.(\d+))?$/.exec(String(text));
+    if (!element || !match || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
+    const decimals = match[3]?.length ?? 0;
+    const target = Number(`${match[1]}${match[2].replace(/,/g, "")}.${match[3] ?? "0"}`);
+    if (!Number.isFinite(target) || target === 0) return undefined;
+    const format = (value) => value.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    const started = performance.now();
+    let frame = 0;
+    const step = (now) => {
+      const progress = Math.min(1, (now - started) / 1100);
+      const eased = 1 - (1 - progress) ** 3;
+      element.textContent = progress < 1 ? format(target * eased) : text;
+      if (progress < 1) frame = requestAnimationFrame(step);
+    };
+    frame = requestAnimationFrame(step);
+    return () => {
+      cancelAnimationFrame(frame);
+      element.textContent = text;
+    };
+  }, [text]);
+
+  return <span ref={ref}>{text}</span>;
+}
+
+/* Moves the card's light with the pointer through CSS variables. */
+function trackPointer(event) {
+  const card = event.currentTarget;
+  const box = card.getBoundingClientRect();
+  card.style.setProperty("--mx", `${event.clientX - box.left}px`);
+  card.style.setProperty("--my", `${event.clientY - box.top}px`);
+}
+
+function StatCard({ icon: Icon, label, value, note, tone, index = 0 }) {
   return (
     <article
-      className={`dashboard__stat${tone ? ` dashboard__stat--${tone}` : ""}`}
+      className={`dashboard__stat dash-rise${tone ? ` dashboard__stat--${tone}` : ""}`}
+      style={{ "--d": `${120 + index * 70}ms` }}
+      onPointerMove={trackPointer}
     >
       <div className="dashboard__stat-top">
         <div className="dashboard__stat-icon">
@@ -46,13 +93,53 @@ function StatCard({ icon: Icon, label, value, note, tone }) {
         </div>
       </div>
 
-      <div className="dashboard__stat-value">{value}</div>
+      <div className="dashboard__stat-value"><AnimatedValue text={value} /></div>
 
       <div className="dashboard__stat-label">{label}</div>
 
       {note && <div className="dashboard__stat-note">{note}</div>}
     </article>
   );
+}
+
+const STATUS_TONE = { APPROVED: "good", DRAFT: "warning", CANCELLED: "critical" };
+
+/* Order value by status as labelled bars; the text carries every number. */
+function StatusBars({ rows }) {
+  const total = rows.reduce((sum, row) => sum + (row.amount ?? 0), 0);
+  return (
+    <ul className="dashboard__bars">
+      {rows.map((row, index) => {
+        const share = total > 0 ? ((row.amount ?? 0) / total) * 100 : 0;
+        return (
+          <li
+            key={row.status}
+            className="dashboard__bar-row"
+            title={`${row.status}: ${formatCount(row.count)} orders, ${formatAmount(row.amount)} (${share.toFixed(1)}% of value)`}
+          >
+            <div className="dashboard__bar-head">
+              <span className={`dashboard__status dashboard__status--${String(row.status).toLowerCase()}`}>{row.status}</span>
+              <span className="dashboard__bar-figures">
+                <strong>{formatAmount(row.amount)}</strong>
+                <small>{formatCount(row.count)} orders · {share.toFixed(1)}%</small>
+              </span>
+            </div>
+            <div className="dashboard__bar-track">
+              <span
+                className={`dashboard__bar-fill dashboard__bar-fill--${STATUS_TONE[row.status] ?? "neutral"}`}
+                style={{ "--w": `${Math.max(share, row.amount ? 1.5 : 0)}%`, "--d": `${300 + index * 120}ms` }}
+              />
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function greeting() {
+  const hour = new Date().getHours();
+  return hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 }
 
 function formatDate(value) {
@@ -84,6 +171,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refresh, setRefresh] = useState(0);
+  const { user } = useCurrentUser();
 
   useEffect(() => {
     let active = true;
@@ -123,14 +211,25 @@ export default function DashboardPage() {
 
   return (
     <div className="dashboard">
-      <section className="dashboard__header">
-        <div>
-          <span className="dashboard__kicker">Operational overview</span>
+      <section className="dashboard__hero dash-rise" style={{ "--d": "0ms" }}>
+        <div className="dashboard__hero-glow" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
 
-          <h2>Command Center</h2>
+        <div className="dashboard__hero-text">
+          <span className="dashboard__kicker">
+            <Sparkles size={13} /> Operational overview
+          </span>
+
+          <h2>
+            {greeting()}
+            {user?.name ? `, ${user.name.split(" ")[0]}` : ""}
+          </h2>
 
           <p>
-            Sales orders, customers, products and inventory from the ERP database.
+            Your command center for sales, inventory and operations, straight from the ERP database.
             {view?.period &&
               ` Period: ${view.period.dateFrom} to ${view.period.dateTo}.`}
           </p>
@@ -158,7 +257,7 @@ export default function DashboardPage() {
 
           <button
             type="button"
-            className="dashboard__date"
+            className={`dashboard__date dashboard__refresh${loading ? " dashboard__refresh--spinning" : ""}`}
             disabled={loading}
             onClick={() => setRefresh((current) => current + 1)}
           >
@@ -221,6 +320,7 @@ export default function DashboardPage() {
           >
             <StatCard
               icon={ShoppingCart}
+              index={0}
               label="Sales Orders"
               value={formatCount(kpis.totalOrders)}
               note="placed in period, all statuses"
@@ -228,6 +328,7 @@ export default function DashboardPage() {
 
             <StatCard
               icon={CheckCircle2}
+              index={1}
               label="Approved Order Value"
               value={formatAmount(kpis.approvedSales)}
               note={`${formatCount(kpis.approvedOrders)} approved orders`}
@@ -235,6 +336,7 @@ export default function DashboardPage() {
 
             <StatCard
               icon={FilePen}
+              index={2}
               label="Draft Order Value"
               value={formatAmount(kpis.draftSales)}
               note={`${formatCount(kpis.draftOrders)} draft orders`}
@@ -242,6 +344,7 @@ export default function DashboardPage() {
 
             <StatCard
               icon={Ban}
+              index={3}
               label="Cancelled Order Value"
               value={formatAmount(kpis.cancelledSales)}
               note={`${formatCount(kpis.cancelledOrders)} cancelled orders`}
@@ -251,6 +354,7 @@ export default function DashboardPage() {
           <section className="dashboard__stats">
             <StatCard
               icon={AlertTriangle}
+              index={0}
               label="Overdue Draft Orders"
               value={formatCount(kpis.overdueOrders)}
               note="placed in period, delivery date passed"
@@ -259,6 +363,7 @@ export default function DashboardPage() {
 
             <StatCard
               icon={Clock3}
+              index={1}
               label="Orders Due Soon"
               value={formatCount(kpis.dueSoonOrders)}
               note="placed in period, due within 7 days"
@@ -267,6 +372,7 @@ export default function DashboardPage() {
 
             <StatCard
               icon={Users}
+              index={2}
               label="Active Customers"
               value={formatCount(kpis.activeCustomers)}
               note="customer master, status active"
@@ -274,6 +380,7 @@ export default function DashboardPage() {
 
             <StatCard
               icon={Package}
+              index={3}
               label="Products"
               value={formatCount(kpis.activeProducts)}
               note="product master, not archived"
@@ -281,7 +388,7 @@ export default function DashboardPage() {
           </section>
 
           <div className="dashboard__grid dashboard__grid--bottom">
-            <section className="dashboard__panel">
+            <section className="dashboard__panel dash-rise">
               <div className="dashboard__panel-header">
                 <div>
                   <span className="dashboard__panel-kicker">Sales</span>
@@ -345,7 +452,7 @@ export default function DashboardPage() {
               )}
             </section>
 
-            <section className="dashboard__panel">
+            <section className="dashboard__panel dash-rise">
               <div className="dashboard__panel-header">
                 <div>
                   <span className="dashboard__panel-kicker">Sales</span>
@@ -355,31 +462,7 @@ export default function DashboardPage() {
               </div>
 
               {view.orderStatus.length ? (
-                <div className="dashboard__table-wrap">
-                  <table className="dashboard__table">
-                    <thead>
-                      <tr>
-                        <th>Status</th>
-                        <th className="dashboard__num">Orders</th>
-                        <th className="dashboard__num">Value</th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      {view.orderStatus.map((row) => (
-                        <tr key={row.status}>
-                          <td>{row.status}</td>
-                          <td className="dashboard__num">
-                            {formatCount(row.count)}
-                          </td>
-                          <td className="dashboard__num">
-                            {formatAmount(row.amount)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <StatusBars rows={view.orderStatus} />
               ) : (
                 <p className="dashboard__panel-empty">
                   No status breakdown returned for this period.
@@ -388,7 +471,7 @@ export default function DashboardPage() {
             </section>
           </div>
 
-          <section className="dashboard__panel">
+          <section className="dashboard__panel dash-rise">
             <div className="dashboard__panel-header">
               <div>
                 <span className="dashboard__panel-kicker">Audit trail</span>
@@ -426,7 +509,7 @@ export default function DashboardPage() {
           </section>
 
           {view.inventory && (
-            <section className="dashboard__panel">
+            <section className="dashboard__panel dash-rise">
               <div className="dashboard__panel-header">
                 <div>
                   <span className="dashboard__panel-kicker">Inventory</span>
@@ -463,7 +546,7 @@ export default function DashboardPage() {
           )}
 
           {Object.keys(view.operations).length > 0 && (
-            <section className="dashboard__panel">
+            <section className="dashboard__panel dash-rise">
               <div className="dashboard__panel-header">
                 <div>
                   <span className="dashboard__panel-kicker">Operations</span>
