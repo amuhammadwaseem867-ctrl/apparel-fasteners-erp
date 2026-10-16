@@ -72,8 +72,8 @@ export default function AdministrationPage() {
           <Settings size={17} strokeWidth={1.8} />
 
           <span>
-            Authentication, permissions enforcement and audit
-            recording are handled by the backend once connected.
+            Authentication, permission checks and audit recording
+            are enforced on the server for every request.
           </span>
         </section>
       </div>

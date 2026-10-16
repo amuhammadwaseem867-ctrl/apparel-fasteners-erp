@@ -1,0 +1,197 @@
+/*
+ * Premium look for the pages that predate the shared inv-* styles
+ * (products, sales, customers, orders, administration, profile): the same
+ * navy hero header and staggered entrance as the rest of the ERP.
+ * Selectors are prefixed with `body` so they win over each page's own
+ * header rules without editing them. Print and reduced motion stay plain.
+ */
+
+/* Headers */
+body .ui-page-header,
+body .product-master__header,
+body .customer-master__header,
+body .order-list__header,
+body .order-detail__header,
+body .profile-page__header,
+body .order-editor__header,
+body .product-editor__header {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 24px 26px;
+  border: 0;
+  border-radius: 20px;
+  color: #ffffff;
+  background:
+    radial-gradient(70% 140% at 85% 20%, rgba(227, 185, 100, 0.22), transparent 60%),
+    radial-gradient(80% 140% at 10% 0%, rgba(95, 180, 232, 0.35), transparent 60%),
+    linear-gradient(150deg, #144467 0%, #0b2a40 60%, #071d2e 100%);
+  background-size: 160% 160%, 160% 160%, 100% 100%;
+  box-shadow: 0 22px 46px -30px rgba(7, 29, 46, 0.8);
+  animation:
+    theme-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both,
+    theme-aurora 18s ease-in-out infinite alternate;
+}
+
+body .ui-page-header::before,
+body .product-master__header::before,
+body .customer-master__header::before,
+body .order-list__header::before,
+body .order-detail__header::before,
+body .profile-page__header::before,
+body .order-editor__header::before,
+body .product-editor__header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: linear-gradient(90deg, transparent, #000 40%, #000 75%, transparent);
+  animation: theme-grid 34s linear infinite;
+}
+
+@keyframes theme-aurora {
+  from { background-position: 0% 0%, 100% 0%, 0 0; }
+  to { background-position: 100% 100%, 0% 100%, 0 0; }
+}
+
+@keyframes theme-grid {
+  to { background-position: 40px 40px, 40px 40px; }
+}
+
+/* PageHeader sits in layouts without a grid gap. */
+body .ui-page-header {
+  margin-bottom: 18px;
+}
+
+/* Overview tiles that are links: lift on hover. */
+.administration a:has(> svg, > div),
+.sales-dashboard a:has(> svg, > div) {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s;
+}
+
+.administration a:has(> svg, > div):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px -22px rgba(16, 24, 40, 0.4);
+}
+
+/* Header text */
+body :is(.ui-page-header, .product-master__header, .customer-master__header, .order-list__header, .order-detail__header, .profile-page__header, .order-editor__header, .product-editor__header) :is(h1, h2) {
+  color: #ffffff;
+  letter-spacing: -0.025em;
+}
+
+body :is(.ui-page-header, .product-master__header, .customer-master__header, .order-list__header, .order-detail__header, .profile-page__header, .order-editor__header, .product-editor__header) :is(p, span, small, dd, dt):not(:is(button, a, .erp-button) *) {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* Header controls: glass, with the primary action in solid white */
+body :is(.ui-page-header, .product-master__header, .customer-master__header, .order-list__header, .order-detail__header, .profile-page__header, .order-editor__header, .product-editor__header) :is(a, button):not(:disabled) {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), background 0.25s, border-color 0.25s;
+}
+
+body :is(.ui-page-header, .product-master__header, .customer-master__header, .order-list__header, .order-detail__header, .profile-page__header, .order-editor__header, .product-editor__header) :is(a, button, .erp-button) {
+  border-color: rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: #ffffff;
+}
+
+body :is(.ui-page-header, .product-master__header, .customer-master__header, .order-list__header, .order-detail__header, .profile-page__header, .order-editor__header, .product-editor__header) :is(a, button, .erp-button) * {
+  color: inherit;
+}
+
+body :is(.ui-page-header, .product-master__header, .customer-master__header, .order-list__header, .order-detail__header, .profile-page__header, .order-editor__header, .product-editor__header) :is(a, button):hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+body :is(.ui-page-header, .product-master__header, .customer-master__header, .order-list__header, .order-detail__header, .profile-page__header, .order-editor__header, .product-editor__header) :is([class*="primary"], .erp-button--primary) {
+  border-color: #ffffff;
+  background: #ffffff;
+  color: #144467;
+  box-shadow: 0 10px 22px -12px rgba(0, 0, 0, 0.6);
+}
+
+body :is(.ui-page-header, .product-master__header, .customer-master__header, .order-list__header, .order-detail__header, .profile-page__header, .order-editor__header, .product-editor__header) :is([class*="primary"], .erp-button--primary):hover:not(:disabled) {
+  background: #eef6fc;
+  color: #0b2a40;
+}
+
+body :is(.ui-page-header, .product-master__header, .customer-master__header, .order-list__header, .order-detail__header, .profile-page__header, .order-editor__header, .product-editor__header) :is(input, select) {
+  border-color: rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  color-scheme: dark;
+}
+
+/* Page sections rise one after another */
+:is(.product-master, .customer-master, .order-list, .profile-page, .order-editor, .product-editor, .sales-dashboard, .administration) > * {
+  animation: theme-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+:is(.product-master, .customer-master, .order-list, .profile-page, .order-editor, .product-editor, .sales-dashboard, .administration) > *:nth-child(2) { animation-delay: 70ms; }
+:is(.product-master, .customer-master, .order-list, .profile-page, .order-editor, .product-editor, .sales-dashboard, .administration) > *:nth-child(3) { animation-delay: 140ms; }
+:is(.product-master, .customer-master, .order-list, .profile-page, .order-editor, .product-editor, .sales-dashboard, .administration) > *:nth-child(4) { animation-delay: 210ms; }
+:is(.product-master, .customer-master, .order-list, .profile-page, .order-editor, .product-editor, .sales-dashboard, .administration) > *:nth-child(n + 5) { animation-delay: 280ms; }
+
+@keyframes theme-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Table rows: gentle hover */
+:is(.product-master, .customer-master, .order-list, .administration) tbody tr {
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+:is(.product-master, .customer-master, .order-list, .administration) tbody tr:hover {
+  background: #f5f9fd;
+  box-shadow: inset 3px 0 0 #5fb4e8;
+}
+
+@media (max-width: 640px) {
+  body :is(.ui-page-header, .product-master__header, .customer-master__header, .order-list__header, .order-detail__header, .profile-page__header, .order-editor__header, .product-editor__header) {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body :is(.ui-page-header, .product-master__header, .customer-master__header, .order-list__header, .order-detail__header, .profile-page__header, .order-editor__header, .product-editor__header),
+  body :is(.ui-page-header, .product-master__header, .customer-master__header, .order-list__header, .order-detail__header, .profile-page__header, .order-editor__header, .product-editor__header)::before,
+  :is(.product-master, .customer-master, .order-list, .profile-page, .order-editor, .product-editor, .sales-dashboard, .administration) > * {
+    animation: none !important;
+  }
+}
+
+@media print {
+  body :is(.ui-page-header, .product-master__header, .customer-master__header, .order-list__header, .order-detail__header, .profile-page__header, .order-editor__header, .product-editor__header) {
+    padding: 0;
+    background: none;
+    box-shadow: none;
+    color: #000000;
+    animation: none;
+  }
+
+  body :is(.ui-page-header, .product-master__header, .customer-master__header, .order-list__header, .order-detail__header, .profile-page__header, .order-editor__header, .product-editor__header)::before {
+    display: none;
+  }
+
+  body :is(.ui-page-header, .product-master__header, .customer-master__header, .order-list__header, .order-detail__header, .profile-page__header, .order-editor__header, .product-editor__header) :is(h1, h2, p, span) {
+    color: #000000 !important;
+  }
+}

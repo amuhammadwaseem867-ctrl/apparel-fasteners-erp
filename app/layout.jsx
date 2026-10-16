@@ -1,4 +1,5 @@
 import "./globals.css";
+import "./premium-theme.css";
 
 export const metadata = {
   title: "Apparel Fastener ERP",
