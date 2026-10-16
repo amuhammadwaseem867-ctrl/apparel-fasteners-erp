@@ -1,0 +1,86 @@
+.os-head {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.os-customer select,
+.os-customer input {
+  margin-bottom: 6px;
+}
+
+.os-lines-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.os-lines-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.os-lines-head span {
+  color: var(--af-text-muted);
+  font-size: 0.85rem;
+}
+
+.os-lines input,
+.os-lines select {
+  width: 100%;
+  min-width: 90px;
+  padding: 6px 8px;
+  border: 1px solid var(--af-border-dark);
+  border-radius: 6px;
+  font: inherit;
+  background: var(--af-surface);
+  color: inherit;
+}
+
+.os-lines td:nth-child(2) input {
+  min-width: 180px;
+}
+
+.os-row-actions {
+  white-space: nowrap;
+}
+
+.os-icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--af-border-dark);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.os-icon-button + .os-icon-button {
+  margin-left: 4px;
+}
+
+.os-notes {
+  margin-top: 14px;
+}
+
+.os-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.os-head,
+.os-head + .inv-card {
+  padding: 18px;
+}
+
+.os-lines td:nth-child(4) input,
+.os-lines td:nth-child(5) select,
+.os-lines td:nth-child(7) input {
+  min-width: 130px;
+}

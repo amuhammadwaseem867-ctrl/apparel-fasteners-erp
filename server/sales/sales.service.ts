@@ -130,7 +130,7 @@ function lineSnapshot(
     return {
       productId: product.id,
       isCustom: false,
-      productName: product.name,
+      productName: cleanOptional(line.description) ?? product.name,
       customerReference: null,
       skuReference: product.sku,
       category: product.category,

@@ -64,7 +64,7 @@ export async function getOrderTrace(id: string) {
     order,
     status,
     production: production.map((item: Row) => ({
-      id: item.id, orderNumber: item.orderNumber, status: item.status, currentStage: item.currentStage, quantity: item.quantity, unit: item.unit,
+      id: item.id, orderNumber: item.orderNumber, salesOrderLineId: item.salesOrderLineId, status: item.status, currentStage: item.currentStage, quantity: item.quantity, unit: item.unit,
       tapeKg: num(item.tapeKg), sku: item.sku, productName: item.productName, progress: item.progress, dueDate: item.dueDate,
       stages: item.stages, materialIssues: item.materialIssues ?? [], events: item.events ?? [],
     })),

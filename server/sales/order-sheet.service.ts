@@ -105,6 +105,7 @@ async function toSalesOrderInput(input: OrderSheetInput, actorId: string) {
       size: line.size,
       teethType: line.teethType,
       slider: line.slider,
+      description: line.product,
     })),
   };
 }

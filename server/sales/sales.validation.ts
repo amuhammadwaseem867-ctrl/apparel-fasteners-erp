@@ -38,6 +38,8 @@ const orderSheetFields = {
   size: z.string().trim().max(60).optional().or(z.literal("")),
   teethType: z.string().trim().max(60).optional().or(z.literal("")),
   slider: z.string().trim().max(120).optional().or(z.literal("")),
+  // The product as written on the order sheet; defaults to the item name.
+  description: z.string().trim().max(180).optional().or(z.literal("")),
 };
 
 const catalogLineSchema = z.object({

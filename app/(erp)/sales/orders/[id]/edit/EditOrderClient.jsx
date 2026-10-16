@@ -1,5 +1,5 @@
-import OrderEditor from "@/components/sales/OrderEditor";
+import OrderSheetForm from "@/components/orders/OrderSheetForm";
 
 export default function EditOrderClient({ id }) {
-  return <OrderEditor orderId={id} />;
+  return <OrderSheetForm orderId={id} />;
 }
