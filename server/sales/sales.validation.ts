@@ -36,6 +36,8 @@ const orderSheetFields = {
   tapeColor: z.string().trim().max(120).optional().or(z.literal("")),
   finish: z.string().trim().max(120).optional().or(z.literal("")),
   size: z.string().trim().max(60).optional().or(z.literal("")),
+  teethType: z.string().trim().max(60).optional().or(z.literal("")),
+  slider: z.string().trim().max(120).optional().or(z.literal("")),
 };
 
 const catalogLineSchema = z.object({
@@ -113,6 +115,14 @@ export const salesOrderInputSchema = z
       .string()
       .trim()
       .max(80)
+      .optional()
+      .or(z.literal("")),
+
+    // The factory's own order number (e.g. AF-26-1154); generated when empty.
+    orderNumber: z
+      .string()
+      .trim()
+      .regex(/^[A-Za-z0-9][A-Za-z0-9/-]{1,39}$/, "Use letters, digits, dashes or slashes.")
       .optional()
       .or(z.literal("")),
 
@@ -220,7 +230,8 @@ export const salesOrderQuerySchema = z.object({
 });
 
 export const customerInputSchema = z.object({
-  code: z.string().trim().min(1).max(80),
+  // Generated from the name when left empty.
+  code: z.string().trim().max(80).optional().or(z.literal("")),
   name: z.string().trim().min(1).max(180),
 
   email: z

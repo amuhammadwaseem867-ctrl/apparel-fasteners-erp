@@ -10090,6 +10090,13 @@
                   "kind": "scalar"
                 }
               },
+              "slider": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "tapeColor": {
                 "nullable": true,
                 "type": {
@@ -10101,6 +10108,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "teethType": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -10207,11 +10221,17 @@
                 "skuReference": {
                   "column": "skuReference"
                 },
+                "slider": {
+                  "column": "slider"
+                },
                 "tapeColor": {
                   "column": "tapeColor"
                 },
                 "taxPercent": {
                   "column": "taxPercent"
+                },
+                "teethType": {
+                  "column": "teethType"
                 },
                 "unit": {
                   "column": "unit"
@@ -20564,6 +20584,11 @@
                   "dataType": "pg/text",
                   "nullable": true
                 },
+                "slider": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "tapeColor": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -20577,6 +20602,11 @@
                     "value": 0
                   },
                   "nullable": false
+                },
+                "teethType": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
                 },
                 "unit": {
                   "codecId": "pg/text@1",
@@ -23030,7 +23060,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "a39cbea48f2b55ecf80dac45815da339e22c8c0e97cf74d7c28b44021cb0ee15"
+    "storageHash": "d45f4f3a3c2e0ceb4506e824eb8deb6e4f56f32f59e87865f91cf894c3dc36d9"
   },
   "execution": {
     "executionHash": "e65a19f75aec7c5ebdf256588f2adc798dac8b5a6693004414e0b85db734570d",

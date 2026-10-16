@@ -1,0 +1,86 @@
+[
+  {
+    "id": "column.public.erp_sales_order_lines.slider",
+    "label": "Add column \"slider\" to \"erp_sales_order_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "slider",
+        "table": "erp_sales_order_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"slider\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_sales_order_lines",
+          "slider"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"slider\"",
+        "sql": "ALTER TABLE \"public\".\"erp_sales_order_lines\" ADD COLUMN \"slider\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"slider\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_sales_order_lines",
+          "slider"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_sales_order_lines.teethType",
+    "label": "Add column \"teethType\" to \"erp_sales_order_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "teethType",
+        "table": "erp_sales_order_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"teethType\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_sales_order_lines",
+          "teethType"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"teethType\"",
+        "sql": "ALTER TABLE \"public\".\"erp_sales_order_lines\" ADD COLUMN \"teethType\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"teethType\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_sales_order_lines",
+          "teethType"
+        ]
+      }
+    ]
+  }
+]

@@ -245,6 +245,9 @@ model SalesOrderLine {
   tapeColor         String?
   finish            String?
   size              String?
+  // Order creation sequence (requirements 1.2): teeth type and slider.
+  teethType         String?
+  slider            String?
   unit              String
   quantity          Decimal
   unitPrice         Decimal

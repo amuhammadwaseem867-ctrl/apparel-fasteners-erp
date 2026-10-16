@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'a39cbea48f2b55ecf80dac45815da339e22c8c0e97cf74d7c28b44021cb0ee15'>;
+  StorageHashBase<'d45f4f3a3c2e0ceb4506e824eb8deb6e4f56f32f59e87865f91cf894c3dc36d9'>;
 export type ExecutionHash =
   ExecutionHashBase<'e65a19f75aec7c5ebdf256588f2adc798dac8b5a6693004414e0b85db734570d'>;
 export type ProfileHash =
@@ -1108,8 +1108,10 @@ export type FieldOutputTypes = {
       readonly salesOrderId: CodecTypes['pg/uuid@1']['output'];
       readonly size: CodecTypes['pg/text@1']['output'] | null;
       readonly skuReference: CodecTypes['pg/text@1']['output'] | null;
+      readonly slider: CodecTypes['pg/text@1']['output'] | null;
       readonly tapeColor: CodecTypes['pg/text@1']['output'] | null;
       readonly taxPercent: CodecTypes['pg/int4@1']['output'];
+      readonly teethType: CodecTypes['pg/text@1']['output'] | null;
       readonly unit: CodecTypes['pg/text@1']['output'];
       readonly unitPrice: CodecTypes['pg/numeric@1']['output'];
       readonly variant: CodecTypes['pg/text@1']['output'] | null;
@@ -2219,8 +2221,10 @@ export type FieldInputTypes = {
       readonly salesOrderId: CodecTypes['pg/uuid@1']['input'];
       readonly size: CodecTypes['pg/text@1']['input'] | null;
       readonly skuReference: CodecTypes['pg/text@1']['input'] | null;
+      readonly slider: CodecTypes['pg/text@1']['input'] | null;
       readonly tapeColor: CodecTypes['pg/text@1']['input'] | null;
       readonly taxPercent: CodecTypes['pg/int4@1']['input'];
+      readonly teethType: CodecTypes['pg/text@1']['input'] | null;
       readonly unit: CodecTypes['pg/text@1']['input'];
       readonly unitPrice: CodecTypes['pg/numeric@1']['input'];
       readonly variant: CodecTypes['pg/text@1']['input'] | null;
@@ -3313,8 +3317,10 @@ export type StorageColumnTypes = {
       readonly salesOrderId: CodecTypes['pg/uuid@1']['output'];
       readonly size: CodecTypes['pg/text@1']['output'] | null;
       readonly skuReference: CodecTypes['pg/text@1']['output'] | null;
+      readonly slider: CodecTypes['pg/text@1']['output'] | null;
       readonly tapeColor: CodecTypes['pg/text@1']['output'] | null;
       readonly taxPercent: CodecTypes['pg/int4@1']['output'];
+      readonly teethType: CodecTypes['pg/text@1']['output'] | null;
       readonly unit: CodecTypes['pg/text@1']['output'];
       readonly unitPrice: CodecTypes['pg/numeric@1']['output'];
       readonly variant: CodecTypes['pg/text@1']['output'] | null;
@@ -4424,8 +4430,10 @@ export type StorageColumnInputTypes = {
       readonly salesOrderId: CodecTypes['pg/uuid@1']['input'];
       readonly size: CodecTypes['pg/text@1']['input'] | null;
       readonly skuReference: CodecTypes['pg/text@1']['input'] | null;
+      readonly slider: CodecTypes['pg/text@1']['input'] | null;
       readonly tapeColor: CodecTypes['pg/text@1']['input'] | null;
       readonly taxPercent: CodecTypes['pg/int4@1']['input'];
+      readonly teethType: CodecTypes['pg/text@1']['input'] | null;
       readonly unit: CodecTypes['pg/text@1']['input'];
       readonly unitPrice: CodecTypes['pg/numeric@1']['input'];
       readonly variant: CodecTypes['pg/text@1']['input'] | null;
@@ -5728,8 +5736,10 @@ export namespace Models {
     salesOrderId: CodecTypes['pg/uuid@1']['output'];
     size: CodecTypes['pg/text@1']['output'] | null;
     skuReference: CodecTypes['pg/text@1']['output'] | null;
+    slider: CodecTypes['pg/text@1']['output'] | null;
     tapeColor: CodecTypes['pg/text@1']['output'] | null;
     taxPercent: CodecTypes['pg/int4@1']['output'];
+    teethType: CodecTypes['pg/text@1']['output'] | null;
     unit: CodecTypes['pg/text@1']['output'];
     unitPrice: CodecTypes['pg/numeric@1']['output'];
     variant: CodecTypes['pg/text@1']['output'] | null;
@@ -12678,6 +12688,12 @@ type ContractBase = Omit<
                   readonly nullable: true;
                   readonly many: false;
                 };
+                readonly slider: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly tapeColor: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -12692,6 +12708,12 @@ type ContractBase = Omit<
                     readonly kind: 'literal';
                     readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
                   };
+                  readonly many: false;
+                };
+                readonly teethType: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly unit: {
@@ -20921,6 +20943,10 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly slider: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly tapeColor: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -20928,6 +20954,10 @@ type ContractBase = Omit<
               readonly taxPercent: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly teethType: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly unit: {
                 readonly nullable: false;
@@ -20987,8 +21017,10 @@ type ContractBase = Omit<
                 readonly salesOrderId: { readonly column: 'salesOrderId' };
                 readonly size: { readonly column: 'size' };
                 readonly skuReference: { readonly column: 'skuReference' };
+                readonly slider: { readonly column: 'slider' };
                 readonly tapeColor: { readonly column: 'tapeColor' };
                 readonly taxPercent: { readonly column: 'taxPercent' };
+                readonly teethType: { readonly column: 'teethType' };
                 readonly unit: { readonly column: 'unit' };
                 readonly unitPrice: { readonly column: 'unitPrice' };
                 readonly variant: { readonly column: 'variant' };

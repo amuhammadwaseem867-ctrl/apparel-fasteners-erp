@@ -16,6 +16,7 @@ import { AppError } from "../core/errors/app-error";
 import { findSqlQueryError } from "../core/errors/database-errors";
 import {
   addDecimalStrings,
+  decimalSign,
   multiplyDecimalStrings,
   normalizeDecimalString,
   toPlainDecimalString,
@@ -29,6 +30,7 @@ import {
   nextOrderStatus,
   runError,
   stageProgress,
+  TAPE_STAGE_KEYS,
   stageInKg,
   stageQuantities,
   type StageTotals,
@@ -557,6 +559,77 @@ export async function completeStage(id: string, stageKey: string, actorId: strin
   });
 
   return getProductionOrder(id);
+}
+
+/*
+ * The simple production board (requirements 1.2): a stage is only started
+ * and completed. Start stamps the start time. Complete records the whole
+ * remaining quantity as accepted and closes the stage, so the next stage
+ * receives everything. Tape Dyeing's "Total Qty" is the tape weight in kg,
+ * entered with its completion when the order did not carry one. Stages run
+ * by Quality, Packing and Dispatch stay with those screens.
+ */
+export async function startStage(id: string, stageKey: string, actorId: string) {
+  await db.transaction(async (tx) => {
+    await lockOrder(tx, id);
+    const order = await tx.orm.public.ProductionOrder.where({ id }).first();
+    if (!["RELEASED", "IN_PROGRESS"].includes(order!.status)) {
+      throw new AppError(`A stage cannot be started while the order is ${order!.status.toLowerCase().replace("_", " ")}. Release it first.`, { code: "PRODUCTION_STATUS_CONFLICT", status: 409 });
+    }
+    const stages = await tx.orm.public.ProductionStage.where({ productionOrderId: id }).orderBy((row) => row.sequence.asc()).all();
+    const stage = stages.find((item) => item.stageKey === stageKey);
+    if (!stage) throw new AppError("Unknown stage.", { code: "STAGE_NOT_FOUND", status: 404 });
+    if (stage.status !== "PENDING") throw new AppError("This stage has already started.", { code: "STAGE_STATUS_CONFLICT", status: 409 });
+    const previous = stages.find((item) => item.sequence === stage.sequence - 1);
+    if (previous && previous.status !== "COMPLETED") throw new AppError("The previous stage must be completed first.", { code: "STAGE_NOT_STARTABLE", status: 409 });
+    const now = new Date().toISOString();
+    await tx.orm.public.ProductionStage.where({ id: stage.id }).update({ status: "IN_PROGRESS", startedAt: now, updatedAt: now });
+    await logEvent(tx, id, actorId, "STAGE_STARTED", { stageKey, toValue: "IN_PROGRESS" });
+    if (order!.status === "RELEASED") {
+      await tx.orm.public.ProductionOrder.where({ id }).update({ status: "IN_PROGRESS", updatedAt: now });
+      await logEvent(tx, id, actorId, "STATUS_STARTED", { fromValue: "RELEASED", toValue: "IN_PROGRESS" });
+    }
+  });
+  return getProductionOrder(id);
+}
+
+/* A fixed key per order and stage, so a double click records the run once. */
+function completionKey(id: string, stageKey: string) {
+  return `simple-complete:${id}:${stageKey}`;
+}
+
+export async function finishStage(id: string, stageKey: string, input: { totalQuantity?: number }, actorId: string) {
+  const order = await db.orm.public.ProductionOrder.where({ id }).first();
+  if (!order) throw new AppError("Production order not found.", { code: "PRODUCTION_ORDER_NOT_FOUND", status: 404 });
+  const managedBy = stageManagedBy(stageKey, order.salesOrderId);
+  if (managedBy) throw new AppError(MANAGED_STAGE_MESSAGES[managedBy], { code: "STAGE_MANAGED_ELSEWHERE", status: 409 });
+
+  if (stageKey === TAPE_STAGE_KEYS[0] && !order.tapeKg) {
+    if (!input.totalQuantity || input.totalQuantity <= 0) {
+      throw new AppError("Enter the total tape quantity in kg for Tape Dyeing.", { code: "TAPE_QUANTITY_REQUIRED", status: 400 });
+    }
+    const precision = quantityPrecisionError(input.totalQuantity, "Kgs");
+    if (precision) throw new AppError(precision, { code: "QUANTITY_PRECISION", status: 400 });
+    await db.transaction(async (tx) => {
+      await lockOrder(tx, id);
+      const runs = await tx.orm.public.ProductionStage.where({ productionOrderId: id, stageKey }).first();
+      if (runs && decimalSign(dec(runs.processedQuantity)) > 0) {
+        throw new AppError("Tape Dyeing already has recorded output; its total cannot change.", { code: "TAPE_QUANTITY_LOCKED", status: 409 });
+      }
+      await tx.orm.public.ProductionOrder.where({ id }).update({ tapeKg: toPlainDecimalString(input.totalQuantity!), updatedAt: new Date().toISOString() });
+      await logEvent(tx, id, actorId, "TAPE_WEIGHT_SET", { stageKey, toValue: toPlainDecimalString(input.totalQuantity!) });
+    });
+  }
+
+  const current = await getProductionOrder(id);
+  const stage = current.stages.find((item: { stageKey: string }) => item.stageKey === stageKey);
+  if (!stage) throw new AppError("Unknown stage.", { code: "STAGE_NOT_FOUND", status: 404 });
+  if (stage.status === "COMPLETED") return current;
+  if (decimalSign(String(stage.available)) > 0) {
+    const quantity = Number(stage.available);
+    await recordStageRun(id, stageKey, { idempotencyKey: completionKey(id, stageKey), inputQuantity: quantity, acceptedQuantity: quantity, rejectedQuantity: 0, wastageQuantity: 0, reworkQuantity: 0 }, actorId);
+  }
+  return completeStage(id, stageKey, actorId);
 }
 
 /* Counts for the production dashboard and stage board, straight from the tables. */

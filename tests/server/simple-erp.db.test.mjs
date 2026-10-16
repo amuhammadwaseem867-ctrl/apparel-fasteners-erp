@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import test from "node:test";
 
-import { changeProductionStatus, completeStage, createProductionOrder, getProductionOrder, recordStageRun } from "../../server/production/production.service.ts";
+import { changeProductionStatus, completeStage, createProductionOrder, finishStage, getProductionOrder, recordStageRun, startStage } from "../../server/production/production.service.ts";
 import { productionOrderInputSchema, stageRunInputSchema } from "../../server/production/production.validation.ts";
 import { createProduct } from "../../server/products/product.service.ts";
 import { changeSalesOrderStatus, createCustomer, createSalesOrder, getSalesOrder, updateCustomer } from "../../server/sales/sales.service.ts";
@@ -62,4 +62,37 @@ test("tape is weighed in kg through Tape Dyeing and Tape Press; Teeth Making cou
   await runStage("teeth-making", 400, 398, 2);
   state = await getProductionOrder(production.id);
   assert.equal(state.stages[3].received, "398");
+});
+
+test("the simple board: start and complete each stage; Tape Dyeing takes its total kg; QC stays with Quality", async () => {
+  const production = await createProductionOrder(productionOrderInputSchema.parse({ productId: ctx.zip.id, quantity: 300, salesOrderId: ctx.order.id }), actor);
+  const code = (expected) => (error) => error.code === expected;
+  await assert.rejects(startStage(production.id, "tape-dyeing", actor), code("PRODUCTION_STATUS_CONFLICT"));
+  await changeProductionStatus(production.id, "release", "", actor);
+  await assert.rejects(startStage(production.id, "tape-press", actor), code("STAGE_NOT_STARTABLE"));
+
+  let state = await startStage(production.id, "tape-dyeing", actor);
+  assert.equal(state.status, "IN_PROGRESS");
+  assert.equal(state.stages[0].status, "IN_PROGRESS");
+  assert.ok(state.stages[0].startedAt);
+  await assert.rejects(startStage(production.id, "tape-dyeing", actor), code("STAGE_STATUS_CONFLICT"));
+  await assert.rejects(finishStage(production.id, "tape-dyeing", {}, actor), code("TAPE_QUANTITY_REQUIRED"));
+
+  state = await finishStage(production.id, "tape-dyeing", { totalQuantity: 18.25 }, actor);
+  assert.equal(String(state.tapeKg), "18.25");
+  assert.equal(state.stages[0].status, "COMPLETED");
+  assert.equal(state.stages[0].unit, "Kg");
+  assert.equal(state.stages[0].acceptedQuantity, "18.25");
+  // A second click changes nothing.
+  state = await finishStage(production.id, "tape-dyeing", { totalQuantity: 99 }, actor);
+  assert.equal(String(state.tapeKg), "18.25");
+
+  for (const stageKey of ["tape-press", "teeth-making", "plating", "lacquer-wax", "assembling"]) {
+    await startStage(production.id, stageKey, actor);
+    state = await finishStage(production.id, stageKey, {}, actor);
+  }
+  assert.equal(state.stages[1].acceptedQuantity, "18.25", "Tape Press carries the kilograms");
+  assert.equal(state.stages[5].acceptedQuantity, "300", "Assembling carries the order pieces");
+  assert.equal(state.currentStage, "quality-check");
+  await assert.rejects(finishStage(production.id, "quality-check", {}, actor), code("STAGE_MANAGED_ELSEWHERE"));
 });

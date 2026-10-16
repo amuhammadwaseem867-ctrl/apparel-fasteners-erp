@@ -1,3 +1,5 @@
+import { randomBytes } from "node:crypto";
+
 import { or } from "@prisma/orm-postgres/orm-client";
 
 import { db } from "../core/database/client";
@@ -51,8 +53,19 @@ export async function listCustomers(search: string, page: number, pageSize: numb
   };
 }
 
+/* A short readable code from the name, e.g. "Ali Traders" -> "ALI-TRADERS-4F2"; unique. */
+async function generatedCustomerCode(name: string) {
+  const stem = name.toUpperCase().replace(/[^A-Z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 20) || "CUSTOMER";
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const code = `${stem}-${randomBytes(2).toString("hex").toUpperCase().slice(0, 3)}`;
+    if (!(await db.orm.public.Customer.where({ code }).first())) return code;
+  }
+  return `${stem}-${randomBytes(4).toString("hex").toUpperCase()}`;
+}
+
 export async function createCustomer(input: CustomerInput, actorId: string) {
-  const duplicate = await db.orm.public.Customer.where({ code: input.code }).first();
+  const code = input.code?.trim() || await generatedCustomerCode(input.name);
+  const duplicate = await db.orm.public.Customer.where({ code }).first();
   if (duplicate) {
     throw new AppError("A customer with that code already exists.", {
       code: "CUSTOMER_CODE_EXISTS",
@@ -62,6 +75,7 @@ export async function createCustomer(input: CustomerInput, actorId: string) {
 
   const customer = await db.orm.public.Customer.create({
     ...input,
+    code,
     email: cleanOptional(input.email),
     phone: cleanOptional(input.phone),
     address: cleanOptional(input.address),
@@ -124,6 +138,8 @@ function lineSnapshot(
       tapeColor: cleanOptional(line.tapeColor),
       finish: cleanOptional(line.finish) ?? product.finish ?? null,
       size: cleanOptional(line.size) ?? product.size ?? null,
+      teethType: cleanOptional(line.teethType),
+      slider: cleanOptional(line.slider),
       unit: product.unit,
       quantity: toPlainDecimalString(line.quantity),
       unitPrice: toPlainDecimalString(line.unitPrice),
@@ -145,6 +161,8 @@ function lineSnapshot(
     tapeColor: cleanOptional(line.tapeColor),
     finish: cleanOptional(line.finish),
     size: cleanOptional(line.size),
+    teethType: cleanOptional(line.teethType),
+    slider: cleanOptional(line.slider),
     unit: line.unit,
     quantity: toPlainDecimalString(line.quantity),
     unitPrice: toPlainDecimalString(line.unitPrice),
@@ -367,8 +385,12 @@ export async function createSalesOrder(input: SalesOrderInput, actorId: string) 
   const products = await validateOrderReferences(input);
   const totals = orderTotals(input);
   const order = await db.transaction(async (tx) => {
+    const orderNumber = input.orderNumber?.trim() || newOrderNumber();
+    if (await tx.orm.public.SalesOrder.where({ orderNumber }).first()) {
+      throw new AppError(`Order number ${orderNumber} is already used.`, { code: "ORDER_NUMBER_EXISTS", status: 409 });
+    }
     const created = await tx.orm.public.SalesOrder.create({
-      orderNumber: newOrderNumber(),
+      orderNumber,
       customerId: input.customerId,
       orderDate: input.orderDate,
       deliveryDate: cleanOptional(input.deliveryDate),
