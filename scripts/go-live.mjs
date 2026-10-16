@@ -6,15 +6,16 @@
  *   4. seeds the built-in permissions and roles.
  * It stops at the first failure. Usage (DATABASE_URL in .env.local or .env):
  *   npm run go-live
- * Options: --backup=<file.dump> to use a backup you already took and checked.
+ * Options: --backup=<file.dump> to use a backup you already took and checked;
+ *          --confirm=YES instead of typing YES, where the terminal gives no keyboard input.
  */
 
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
-import { createInterface } from "node:readline";
 
+import { confirm } from "./confirm.mjs";
 import "./load-env.mjs";
 
 const url = process.env.DATABASE_URL;
@@ -122,14 +123,12 @@ if (/MARKER_NOT_IN_HISTORY|not in the on-disk migration graph/.test(status)) {
       "  Run:  npm run db:schema-report   (read-only) and send its output. No migration was applied.",
   );
 }
-const prompt = createInterface({ input: process.stdin, output: process.stdout });
-const answer = await new Promise((resolve) => {
-  prompt.on("close", () => resolve(null));
-  prompt.question(`\nApply the pending migrations to "${database}" on ${host}? Type YES to continue: `, resolve);
-});
-prompt.close();
-if (answer === null) stop("No answer was read (input closed). Run npm run go-live again in a terminal.");
-if (answer.trim() !== "YES") stop("Not confirmed.");
+const decision = await confirm(`Apply the pending migrations to "${database}" on ${host}?`, "YES");
+if (decision === "no-input") {
+  stop(`No keyboard input reached the script. After reading the list above, run it again with --confirm=YES:
+  npm run go-live -- --backup=${backup} --confirm=YES`);
+}
+if (decision !== "confirmed") stop("Not confirmed.");
 
 // 3. Apply and verify.
 run("Applying migrations", ...prisma("db", "migrate", "--db", url));

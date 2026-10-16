@@ -8,16 +8,16 @@
  * "erp_outside_legacy" (undo: ALTER TABLE erp_outside_legacy.<t> SET SCHEMA public),
  * then signs the database as being at the base migration so npm run go-live
  * can apply the rest. It needs a backup that contains every table it moves.
- *   npm run db:park-outside-tables -- --backup=backups/<file>.dump
+ *   npm run db:park-outside-tables -- --backup=backups/<file>.dump [--confirm=MOVE]
  */
 
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
-import { createInterface } from "node:readline";
 import pg from "pg";
 
+import { confirm } from "./confirm.mjs";
 import "./load-env.mjs";
 
 const BASE_MIGRATION = "20261008T1419_migration";
@@ -133,16 +133,19 @@ const notBackedUp = outside.filter((table) => !inBackup.has(table));
 if (notBackedUp.length) stop(`Backup ${backup} does not contain: ${notBackedUp.join(", ")}.`);
 console.log(`\n✔ Backup ${backup} contains all ${outside.length} of them.`);
 
-const prompt = createInterface({ input: process.stdin, output: process.stdout });
-const answer = await new Promise((resolve) => {
-  prompt.on("close", () => resolve(null));
-  prompt.question(
-    `\nMove these ${outside.length} tables (with their rows) from public to ${TARGET_SCHEMA} in "${database}", and mark it as at ${BASE_MIGRATION}? Type MOVE to continue: `,
-    resolve,
-  );
-});
-prompt.close();
-if (answer?.trim() !== "MOVE") stop("Not confirmed.");
+const decision = await confirm(
+  `Move these ${outside.length} tables (with their rows) from public to ${TARGET_SCHEMA} in "${database}", and mark it as at ${BASE_MIGRATION}?`,
+  "MOVE",
+);
+if (decision === "no-input") {
+  await client.end();
+  stop(`No keyboard input reached the script. After reading the list above, run it again with --confirm=MOVE:
+  npm run db:park-outside-tables -- --backup=${backup} --confirm=MOVE`);
+}
+if (decision !== "confirmed") {
+  await client.end();
+  stop("Not confirmed.");
+}
 
 try {
   await client.query("BEGIN");
