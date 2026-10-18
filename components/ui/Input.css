@@ -48,7 +48,7 @@
 
   font-size: 12px;
   line-height: 1.5;
-  font-weight: 400;
+  font-weight: 500;
 }
 
 /* =========================================
@@ -98,7 +98,7 @@
 .erp-input__field::placeholder {
   color: #98a2b3;
 
-  font-weight: 400;
+  font-weight: 500;
 
   opacity: 1;
 }

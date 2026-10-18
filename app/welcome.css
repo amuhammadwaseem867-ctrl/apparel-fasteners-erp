@@ -23,7 +23,7 @@
   overflow-x: clip;
   padding: 0 clamp(16px, 5vw, 80px);
   color: #fff;
-  font-family: Montserrat, ui-sans-serif, system-ui, sans-serif;
+  font-family: "Montserrat Variable", Montserrat, ui-sans-serif, system-ui, sans-serif;
   background:
     radial-gradient(80% 60% at 10% -10%, #2f4466 0%, transparent 60%),
     linear-gradient(180deg, var(--w-navy) 0%, var(--w-night) 38%, var(--w-deep) 100%);

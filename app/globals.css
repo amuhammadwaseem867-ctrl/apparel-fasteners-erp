@@ -1,5 +1,5 @@
 :root {
-  --af-font: Montserrat, ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
+  --af-font: "Montserrat Variable", Montserrat, ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
   --af-navy: #243146;
   --af-navy-dark: #182231;
   --af-navy-soft: #314057;
@@ -53,6 +53,7 @@ body {
   color: var(--af-text);
 
   font-family:
+    "Montserrat Variable",
     Montserrat,
     ui-sans-serif,
     -apple-system,
@@ -61,6 +62,7 @@ body {
     sans-serif;
 
   font-size: 14px;
+  font-weight: 500;
   line-height: 1.5;
 
   -webkit-font-smoothing: antialiased;

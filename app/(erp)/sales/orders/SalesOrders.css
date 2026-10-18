@@ -55,7 +55,7 @@
   color: #66727d;
 
   font-size: 13px;
-  font-weight: 400;
+  font-weight: 500;
   line-height: 19px;
 }
 
@@ -203,7 +203,7 @@
 
   font-family: inherit;
   font-size: 12px;
-  font-weight: 400;
+  font-weight: 500;
 
   transition:
     border-color 140ms ease,
@@ -437,7 +437,7 @@
   color: #202b35;
 
   font-size: 12px;
-  font-weight: 400;
+  font-weight: 500;
   line-height: 17px;
 
   vertical-align: middle;

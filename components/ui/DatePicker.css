@@ -96,7 +96,7 @@
 
 .date-picker__value--placeholder {
   color: var(--af-text-muted);
-  font-weight: 400;
+  font-weight: 500;
 }
 
 .date-picker__clear {

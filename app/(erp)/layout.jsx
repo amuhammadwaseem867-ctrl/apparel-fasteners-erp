@@ -42,7 +42,7 @@ function ERPAuthFallback() {
       <div
         style={{
           textAlign: "center",
-          fontFamily: "Montserrat, system-ui, sans-serif",
+          fontFamily: "'Montserrat Variable', Montserrat, system-ui, sans-serif",
         }}
       >
         <strong>Loading AF7 ERP...</strong>

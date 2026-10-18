@@ -28,7 +28,7 @@ export default function VariantsPage() {
         <div className="inv-toolbar"><div className="inv-field"><label htmlFor="pv-search">Search</label><input id="pv-search" type="search" placeholder="SKU, name, category or type" value={search} onChange={(event) => setSearch(event.target.value)} /></div></div>
         {result.error ? <p className="inv-state inv-state--error" role="alert">{result.error}</p> : !result.data ? <p className="inv-state" role="status">Loading…</p> : families.length === 0 ? <p className="inv-state">No items match.</p> : families.map((family) => (
           <div key={family.key} style={{ padding: "8px 18px 16px" }}>
-            <h3 style={{ margin: "8px 0" }}>{family.name} <small style={{ fontWeight: 400 }}>· {family.category}{family.itemType ? ` · ${family.itemType}` : ""} · {family.variants.length} variant{family.variants.length === 1 ? "" : "s"}</small></h3>
+            <h3 style={{ margin: "8px 0" }}>{family.name} <small style={{ fontWeight: 500 }}>· {family.category}{family.itemType ? ` · ${family.itemType}` : ""} · {family.variants.length} variant{family.variants.length === 1 ? "" : "s"}</small></h3>
             <div className="inv-table-wrap">
               <table className="inv-table">
                 <thead><tr><th>SKU</th>{family.attributes.map((attribute) => <th key={attribute}>{LABELS[attribute]}</th>)}<th>Unit</th><th className="inv-num">Price</th><th>Status</th></tr></thead>

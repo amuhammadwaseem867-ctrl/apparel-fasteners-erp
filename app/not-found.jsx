@@ -10,7 +10,7 @@ export default function NotFound() {
         background: "#f4f6f8",
         color: "#17202a",
         fontFamily:
-          'Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+          '"Montserrat Variable", Montserrat, ui-sans-serif, -apple-system, "Segoe UI", sans-serif',
       }}
     >
       <div

@@ -1,8 +1,5 @@
-// Montserrat (AF7 brand font), served from the app itself.
-import "@fontsource/montserrat/400.css";
-import "@fontsource/montserrat/500.css";
-import "@fontsource/montserrat/600.css";
-import "@fontsource/montserrat/700.css";
+// Montserrat (AF7 brand font), variable weights 100-900, served from the app itself.
+import "@fontsource-variable/montserrat/wght.css";
 import "./globals.css";
 import "./premium-theme.css";
 
