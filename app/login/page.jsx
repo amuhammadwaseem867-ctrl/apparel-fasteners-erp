@@ -13,10 +13,11 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
+import ProcessFlow from "@/components/brand/ProcessFlow";
+
 import "./login.css";
 
 const SAVED_EMAIL_KEY = "erp_login_email";
-const TEETH = 18;
 
 function subscribeToNothing() {
   return () => {};
@@ -32,27 +33,6 @@ function readSavedEmail() {
 
 function readNoSavedEmail() {
   return "";
-}
-
-/* Decorative zipper: two rows of teeth that interlock as the slider passes. */
-function ZipperArt() {
-  return (
-    <div className="erp-zip" aria-hidden="true">
-      <div className="erp-zip__track">
-        {Array.from({ length: TEETH }, (_, index) => (
-          <span key={`l${index}`} className="erp-zip__tooth erp-zip__tooth--left" style={{ "--i": index }} />
-        ))}
-      </div>
-      <div className="erp-zip__track erp-zip__track--right">
-        {Array.from({ length: TEETH }, (_, index) => (
-          <span key={`r${index}`} className="erp-zip__tooth erp-zip__tooth--right" style={{ "--i": index }} />
-        ))}
-      </div>
-      <span className="erp-zip__slider">
-        <span className="erp-zip__pull" />
-      </span>
-    </div>
-  );
 }
 
 export default function LoginPage() {
@@ -213,7 +193,9 @@ export default function LoginPage() {
             </p>
 
             <div className="erp-rise" style={{ "--d": "580ms" }}>
-              <ZipperArt />
+              <div className="erp-login__flow">
+                <ProcessFlow variant="row" />
+              </div>
             </div>
           </div>
 
