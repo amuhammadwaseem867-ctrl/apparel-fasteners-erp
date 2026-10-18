@@ -43,7 +43,7 @@ function parseArguments(raw: string) {
 
 export async function runAssistant(user: User, history: ChatMessage[], userText: string, today: string): Promise<AssistantTurn> {
   if (!grokSettings().enabled) {
-    throw new AppError("The AI assistant is switched off. An administrator can turn it on with AI_ASSISTANT_ENABLED=true.", { code: "ASSISTANT_DISABLED", status: 503 });
+    throw new AppError("The AI assistant is switched off. An administrator can turn it on by adding GROQ_API_KEY and removing AI_ASSISTANT_ENABLED=false.", { code: "ASSISTANT_DISABLED", status: 503 });
   }
   const tools = toolsFor(user);
   if (!tools.some((tool) => tool.name.startsWith("propose_") || tool.name === "show_report")) {

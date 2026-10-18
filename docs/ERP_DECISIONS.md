@@ -1229,3 +1229,8 @@ the real service was checked only on the owner's machine.
 live, with `npm run go-live`, before this code reaches main:
 - `20261018T1803_stage_checks`
 - `20261018T1812_order_process_notes`
+
+**Switch (2026-10-18).** At the owner's request, the assistant is now on
+as soon as `GROQ_API_KEY` (or `XAI_API_KEY`) is set; no separate flag is
+needed. `AI_ASSISTANT_ENABLED=false` still switches it off, and without
+a key it stays off.

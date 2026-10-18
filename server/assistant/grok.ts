@@ -1,6 +1,7 @@
 /*
  * Minimal client for an OpenAI-compatible Chat Completions API: Groq or
- * xAI (Grok). AI_ASSISTANT_ENABLED=true is the on switch (off when unset).
+ * xAI (Grok). The assistant is on as soon as an API key is set;
+ * AI_ASSISTANT_ENABLED=false switches it off.
  *   Groq: GROQ_API_KEY, optional GROQ_MODEL (default llama-3.3-70b-versatile).
  *   xAI:  XAI_API_KEY, optional XAI_MODEL (default grok-4.3) and XAI_BASE_URL.
  * When both keys are set, Groq is used. Failures become AppErrors that say
@@ -24,8 +25,10 @@ export type ChatMessage =
 export type ChatResult = { message: Extract<ChatMessage, { role: "assistant" }>; finishReason: string };
 
 export function grokSettings() {
-  const enabled = process.env.AI_ASSISTANT_ENABLED?.trim().toLowerCase() === "true";
   const groqKey = process.env.GROQ_API_KEY?.trim();
+  // On when an AI key is set, unless AI_ASSISTANT_ENABLED=false; AI_ASSISTANT_ENABLED=true forces it on.
+  const flag = process.env.AI_ASSISTANT_ENABLED?.trim().toLowerCase();
+  const enabled = flag === "true" || (flag !== "false" && Boolean(groqKey || process.env.XAI_API_KEY?.trim()));
   if (groqKey) {
     return {
       enabled,

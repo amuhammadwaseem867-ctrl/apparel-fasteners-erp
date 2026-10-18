@@ -294,3 +294,22 @@ test("switched off, the assistant refuses before calling any AI service", async 
     }
   });
 });
+
+test("the assistant switches on when an AI key is set, and AI_ASSISTANT_ENABLED=false keeps it off", () => {
+  const saved = { flag: process.env.AI_ASSISTANT_ENABLED, groq: process.env.GROQ_API_KEY, xai: process.env.XAI_API_KEY };
+  try {
+    delete process.env.AI_ASSISTANT_ENABLED;
+    delete process.env.XAI_API_KEY;
+    delete process.env.GROQ_API_KEY;
+    assert.equal(grokSettings().enabled, false, "no key: off");
+    process.env.GROQ_API_KEY = "gsk_test";
+    assert.equal(grokSettings().enabled, true, "key set: on");
+    process.env.AI_ASSISTANT_ENABLED = "false";
+    assert.equal(grokSettings().enabled, false, "explicitly switched off");
+  } finally {
+    for (const [name, value] of [["AI_ASSISTANT_ENABLED", saved.flag], ["GROQ_API_KEY", saved.groq], ["XAI_API_KEY", saved.xai]]) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
+  }
+});
