@@ -69,6 +69,9 @@ export default function InvoicePrintClient({ id }) {
 
         <Af7Section title="Product / item details">
           <table className="af7__table">
+            <colgroup>
+              <col style={{ width: "5%" }} /><col style={{ width: "29%" }} /><col style={{ width: "11%" }} /><col style={{ width: "11%" }} /><col style={{ width: "8%" }} /><col style={{ width: "6%" }} /><col style={{ width: "9%" }} /><col style={{ width: "9%" }} /><col style={{ width: "12%" }} />
+            </colgroup>
             <thead>
               <tr><th>#</th><th>Product description</th><th>Finish</th><th>Color</th><th>Size</th><th>Unit</th><th>Qty</th><th>Price</th><th>Total</th></tr>
             </thead>

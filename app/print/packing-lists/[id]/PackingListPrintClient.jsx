@@ -54,6 +54,9 @@ export default function PackingListPrintClient({ id }) {
 
         <Af7Section number="2" title="Packing details">
           <table className="af7__table">
+            <colgroup>
+              <col style={{ width: "7%" }} /><col style={{ width: "33%" }} /><col style={{ width: "13%" }} /><col style={{ width: "15%" }} /><col style={{ width: "14%" }} /><col style={{ width: "18%" }} />
+            </colgroup>
             <thead>
               <tr><th>Sr. no.</th><th>Description</th><th>Size (cm / inches)</th><th>Pcs / meters / rolls</th><th>No. of bags / cartons</th><th>Net weight / gross weight (kg)</th></tr>
             </thead>
@@ -71,15 +74,13 @@ export default function PackingListPrintClient({ id }) {
               {Array.from({ length: blanks }, (_, index) => (
                 <tr key={`blank-${index}`} className="af7__blank"><td className="center">{list.packages.length + index + 1}</td><td /><td /><td /><td /><td /></tr>
               ))}
-            </tbody>
-            <tfoot>
-              <tr>
+              <tr className="af7__total-row">
                 <td colSpan={3}>TOTAL</td>
                 <td className="num">{list.totalQuantity} {list.unit}</td>
                 <td className="center">{list.packageCount}</td>
                 <td className="num">{weight("netWeight")} / {weight("grossWeight")}</td>
               </tr>
-            </tfoot>
+            </tbody>
           </table>
           {list.notes && <p><strong>Notes:</strong> {list.notes}</p>}
         </Af7Section>

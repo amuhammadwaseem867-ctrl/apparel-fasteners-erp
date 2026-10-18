@@ -240,18 +240,6 @@
   min-height: 10px;
 }
 
-@media (max-width: 720px) {
-  .af7__head,
-  .af7__two {
-    grid-template-columns: 1fr;
-  }
-
-  .af7__title {
-    padding-left: 0;
-    border-left: 0;
-  }
-}
-
 @media print {
   .af7 {
     min-height: 265mm;
@@ -282,12 +270,6 @@
   padding-top: 2px;
 }
 
-@media (max-width: 720px) {
-  .af7__bank {
-    grid-template-columns: 1fr;
-  }
-}
-
 .af7__three {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -311,8 +293,141 @@
   font-size: 8pt;
 }
 
-@media (max-width: 720px) {
-  .af7__three {
-    grid-template-columns: 1fr;
+/* ---------- Alignment and page breaks (all AF7 documents) ---------- */
+
+/* Header: logo, company, title in fixed columns so nothing is squeezed. */
+.af7__head {
+  grid-template-columns: 30mm minmax(0, 1fr) 64mm;
+}
+
+.af7__company,
+.af7__title {
+  min-width: 0;
+}
+
+.af7__title h1 {
+  font-size: 14pt;
+  letter-spacing: 0.01em;
+}
+
+/* Tables keep the column widths set per document and wrap long text inside cells. */
+.af7__table {
+  table-layout: fixed;
+}
+
+.af7__table th,
+.af7__table td {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.af7__table th {
+  line-height: 1.25;
+  vertical-align: middle;
+}
+
+.af7__table td {
+  line-height: 1.35;
+}
+
+.af7__table .num,
+.af7__table .center {
+  overflow-wrap: normal;
+}
+
+.af7__table .af7__total-row td {
+  background: var(--af7-tint);
+  font-weight: 700;
+}
+
+.af7__fields dd {
+  overflow-wrap: anywhere;
+}
+
+/* Space between the last block and the footer band. */
+.af7__band {
+  flex: none;
+}
+
+.af7 > .af7__section:last-of-type,
+.af7 > p:last-of-type {
+  margin-bottom: 6mm;
+}
+
+@media print {
+  /* A row, the totals, the bank block or the signatures never split across pages. */
+  .af7__table tr,
+  .af7__totals,
+  .af7__bank,
+  .af7__signatures,
+  .af7__two,
+  .af7__three,
+  .af7__fields div {
+    break-inside: avoid;
   }
+
+  .af7__section h2 {
+    break-after: avoid;
+  }
+
+  .af7__table thead {
+    display: table-header-group;
+  }
+}
+
+/* On small screens the page keeps its A4 layout and scrolls sideways instead of being cut. */
+@media screen and (max-width: 860px) {
+  .print-doc__page.af7 {
+    min-width: 186mm;
+  }
+
+  .af7__head {
+    grid-template-columns: 30mm minmax(0, 1fr) 64mm;
+  }
+
+  .af7__two {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .af7__three {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .af7__bank {
+    grid-template-columns: 1.4fr 1fr 0.8fr;
+  }
+
+  .af7__title {
+    padding-left: 12px;
+    border-left: 2px solid var(--af7-navy);
+  }
+}
+
+/* Document number and date beside the title stay on one line. */
+.af7__title .af7__fields {
+  padding: 0;
+}
+
+.af7__title .af7__fields div {
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 8px;
+}
+
+.af7__title .af7__fields dd {
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
+/* Signature headings take two lines' height so Name / Signature / Date rows line up. */
+.af7__signature strong {
+  display: flex;
+  align-items: flex-end;
+  min-height: 2.5em;
+  line-height: 1.25;
+}
+
+.af7__stamp-box > span {
+  display: flex;
+  align-items: flex-end;
+  min-height: 2.5em;
 }

@@ -53,6 +53,9 @@ export default function SalesOrderSheetClient({ id }) {
 
         <Af7Section number="2" title="Order details">
           <table className="af7__table">
+            <colgroup>
+              <col style={{ width: "5%" }} /><col style={{ width: "35%" }} /><col style={{ width: "19%" }} /><col style={{ width: "12%" }} /><col style={{ width: "9%" }} /><col style={{ width: "7%" }} /><col style={{ width: "13%" }} />
+            </colgroup>
             <thead>
               <tr><th>#</th><th>Description</th><th>Tape color</th><th>Finish</th><th>Size</th><th>Unit</th><th>Quantity</th></tr>
             </thead>
@@ -68,10 +71,8 @@ export default function SalesOrderSheetClient({ id }) {
                   <td className="num">{qty(line.quantity)}</td>
                 </tr>
               ))}
+              <tr className="af7__total-row"><td colSpan={6}>TOTAL{units.length === 1 ? ` (${units[0]})` : ""}</td><td className="num">{units.length === 1 ? qty(total) : ""}</td></tr>
             </tbody>
-            <tfoot>
-              <tr><td colSpan={6}>TOTAL{units.length === 1 ? ` (${units[0]})` : ""}</td><td className="num">{units.length === 1 ? qty(total) : ""}</td></tr>
-            </tfoot>
           </table>
           {order.notes && <p><strong>Remarks:</strong> {order.notes}</p>}
         </Af7Section>

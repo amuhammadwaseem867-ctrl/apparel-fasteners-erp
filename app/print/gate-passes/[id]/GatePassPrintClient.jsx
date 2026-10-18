@@ -65,6 +65,9 @@ export default function GatePassPrintClient({ id }) {
 
         <Af7Section number="2" title="Material details">
           <table className="af7__table">
+            <colgroup>
+              <col style={{ width: "8%" }} /><col style={{ width: "40%" }} /><col style={{ width: "16%" }} /><col style={{ width: "12%" }} /><col style={{ width: "24%" }} />
+            </colgroup>
             <thead>
               <tr><th>Sr. no.</th><th>Product name</th><th>Quantity</th><th>No. of bags</th><th>Net weight / gross weight (kg)</th></tr>
             </thead>

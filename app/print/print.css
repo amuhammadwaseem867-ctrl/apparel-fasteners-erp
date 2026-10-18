@@ -265,7 +265,7 @@
   font-size: 10px;
 }
 
-@media (max-width: 640px) {
+@media screen and (max-width: 640px) {
   .print-doc__header,
   .print-doc__summary {
     display: flex;
