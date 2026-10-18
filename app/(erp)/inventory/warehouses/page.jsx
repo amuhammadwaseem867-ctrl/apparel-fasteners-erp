@@ -76,28 +76,63 @@ function WarehouseForm({ onClose, onSaved }) {
   );
 }
 
+/*
+ * Locations are shelf / row / column places (requirements 1.2): code
+ * S1-R2-C3, name "Shelf 1, Row 2, Column 3". A whole shelf can be laid out
+ * at once; codes that already exist are skipped. Other places (receiving
+ * area, tape room) keep a free code and name.
+ */
+const GRID_CODE = /^S([A-Za-z0-9]+)-R([A-Za-z0-9]+)-C([A-Za-z0-9]+)$/;
+const gridCode = (shelf, row, column) => `S${shelf}-R${row}-C${column}`;
+const gridName = (shelf, row, column) => `Shelf ${shelf}, Row ${row}, Column ${column}`;
+const PART = "[A-Za-z0-9]{1,6}";
+
 function Locations({ warehouse }) {
   const locations = useApiData(`/api/inventory/locations${toQuery({ warehouseId: warehouse.id })}`);
+  const [mode, setMode] = useState("place");
+  const [grid, setGrid] = useState({ shelf: "", row: "", column: "", rows: "", columns: "" });
   const [form, setForm] = useState({ code: "", name: "" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const setGridField = (field) => (event) => setGrid((current) => ({ ...current, [field]: event.target.value.trim() }));
+
+  function planned() {
+    if (mode === "other") return [form];
+    if (mode === "place") return [{ code: gridCode(grid.shelf, grid.row, grid.column), name: gridName(grid.shelf, grid.row, grid.column) }];
+    const out = [];
+    for (let row = 1; row <= Number(grid.rows); row += 1) {
+      for (let column = 1; column <= Number(grid.columns); column += 1) out.push({ code: gridCode(grid.shelf, row, column), name: gridName(grid.shelf, row, column) });
+    }
+    return out;
+  }
 
   async function add(event) {
     event.preventDefault();
     if (saving) return;
+    const existing = new Set((locations.data ?? []).map((location) => location.code.toUpperCase()));
+    const todo = planned().filter((item) => !existing.has(item.code.toUpperCase()));
+    if (todo.length === 0) {
+      setError("Those locations already exist.");
+      return;
+    }
     setSaving(true);
     setError("");
+    setNotice("");
+    let made = 0;
     try {
-      await apiRequest("/api/inventory/locations", {
-        method: "POST",
-        body: JSON.stringify({ warehouseId: warehouse.id, ...form }),
-      });
+      for (const item of todo) {
+        await apiRequest("/api/inventory/locations", { method: "POST", body: JSON.stringify({ warehouseId: warehouse.id, ...item }) });
+        made += 1;
+      }
       setForm({ code: "", name: "" });
-      locations.reload();
+      setGrid((current) => ({ ...current, row: "", column: "" }));
+      setNotice(`${made} location${made === 1 ? "" : "s"} added.`);
     } catch (cause) {
-      setError(cause.message);
+      setError(made ? `${made} added, then: ${cause.message}` : cause.message);
     } finally {
       setSaving(false);
+      locations.reload();
     }
   }
 
@@ -112,45 +147,86 @@ function Locations({ warehouse }) {
     }
   }
 
+  const bulkCount = Number(grid.rows) * Number(grid.columns) || 0;
+
   return (
     <div className="inv-locations">
       {locations.error && <p className="inv-state inv-state--error" role="alert">{locations.error}</p>}
       {(locations.data ?? []).length > 0 && (
         <table className="inv-table">
-          <thead><tr><th>Location</th><th>Name</th><th>Status</th><th /></tr></thead>
+          <thead><tr><th>Location</th><th>Shelf</th><th>Row</th><th>Column</th><th>Name</th><th>Status</th><th /></tr></thead>
           <tbody>
-            {locations.data.map((location) => (
-              <tr key={location.id}>
-                <td data-label="Location"><strong>{warehouse.code}/{location.code}</strong></td>
-                <td data-label="Name">{location.name}</td>
-                <td data-label="Status">{statusBadge(location.status)}</td>
-                <td data-label="Actions">
-                  {location.status === "ACTIVE" ? (
-                    <button type="button" className="inv-text-button" onClick={() => setStatus(location, "ARCHIVED")}>Archive</button>
-                  ) : (
-                    <button type="button" className="inv-text-button" onClick={() => setStatus(location, "ACTIVE")}>Reactivate</button>
-                  )}
-                </td>
-              </tr>
-            ))}
+            {locations.data.map((location) => {
+              const [, shelf = "", row = "", column = ""] = location.code.match(GRID_CODE) ?? [];
+              return (
+                <tr key={location.id}>
+                  <td data-label="Location"><strong>{warehouse.code}/{location.code}</strong></td>
+                  <td data-label="Shelf">{shelf || "—"}</td>
+                  <td data-label="Row">{row || "—"}</td>
+                  <td data-label="Column">{column || "—"}</td>
+                  <td data-label="Name">{location.name}</td>
+                  <td data-label="Status">{statusBadge(location.status)}</td>
+                  <td data-label="Actions">
+                    {location.status === "ACTIVE" ? (
+                      <button type="button" className="inv-text-button" onClick={() => setStatus(location, "ARCHIVED")}>Archive</button>
+                    ) : (
+                      <button type="button" className="inv-text-button" onClick={() => setStatus(location, "ACTIVE")}>Reactivate</button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
       {warehouse.status === "ACTIVE" ? (
         <form className="inv-toolbar" onSubmit={add}>
           <div className="inv-field">
-            <label htmlFor={`loc-code-${warehouse.id}`}>New location code *</label>
-            <input id={`loc-code-${warehouse.id}`} required maxLength={30} pattern="[A-Za-z0-9._\-]+" value={form.code} onChange={(event) => setForm({ ...form, code: event.target.value })} />
+            <label htmlFor={`loc-mode-${warehouse.id}`}>Add</label>
+            <select id={`loc-mode-${warehouse.id}`} value={mode} onChange={(event) => { setMode(event.target.value); setError(""); setNotice(""); }}>
+              <option value="place">One shelf place</option>
+              <option value="shelf">A whole shelf (all rows × columns)</option>
+              <option value="other">Other place (e.g. receiving area)</option>
+            </select>
           </div>
-          <div className="inv-field">
-            <label htmlFor={`loc-name-${warehouse.id}`}>Name *</label>
-            <input id={`loc-name-${warehouse.id}`} required maxLength={120} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
-          </div>
-          <Button type="submit" variant="secondary" loading={saving}>Add location</Button>
+          {mode !== "other" && (
+            <div className="inv-field">
+              <label htmlFor={`loc-shelf-${warehouse.id}`}>Shelf *</label>
+              <input id={`loc-shelf-${warehouse.id}`} required pattern={PART} maxLength={6} placeholder="1 or A" value={grid.shelf} onChange={setGridField("shelf")} />
+            </div>
+          )}
+          {mode === "place" && (
+            <>
+              <div className="inv-field"><label htmlFor={`loc-row-${warehouse.id}`}>Row *</label><input id={`loc-row-${warehouse.id}`} required pattern={PART} maxLength={6} value={grid.row} onChange={setGridField("row")} /></div>
+              <div className="inv-field"><label htmlFor={`loc-col-${warehouse.id}`}>Column *</label><input id={`loc-col-${warehouse.id}`} required pattern={PART} maxLength={6} value={grid.column} onChange={setGridField("column")} /></div>
+            </>
+          )}
+          {mode === "shelf" && (
+            <>
+              <div className="inv-field"><label htmlFor={`loc-rows-${warehouse.id}`}>Rows *</label><input id={`loc-rows-${warehouse.id}`} required type="number" min="1" max="50" value={grid.rows} onChange={setGridField("rows")} /></div>
+              <div className="inv-field"><label htmlFor={`loc-cols-${warehouse.id}`}>Columns *</label><input id={`loc-cols-${warehouse.id}`} required type="number" min="1" max="50" value={grid.columns} onChange={setGridField("columns")} /></div>
+            </>
+          )}
+          {mode === "other" && (
+            <>
+              <div className="inv-field">
+                <label htmlFor={`loc-code-${warehouse.id}`}>Code *</label>
+                <input id={`loc-code-${warehouse.id}`} required maxLength={30} pattern="[A-Za-z0-9._\-]+" value={form.code} onChange={(event) => setForm({ ...form, code: event.target.value })} />
+              </div>
+              <div className="inv-field">
+                <label htmlFor={`loc-name-${warehouse.id}`}>Name *</label>
+                <input id={`loc-name-${warehouse.id}`} required maxLength={120} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
+              </div>
+            </>
+          )}
+          <Button type="submit" variant="secondary" loading={saving} disabled={mode === "shelf" && (bulkCount < 1 || bulkCount > 500)}>
+            {mode === "shelf" ? `Add ${bulkCount || ""} locations` : "Add location"}
+          </Button>
         </form>
       ) : (
         <p className="inv-state">Reactivate the warehouse to add locations.</p>
       )}
+      {notice && <p className="inv-field__hint" role="status">{notice}</p>}
       {error && <p className="inv-state inv-state--error" role="alert">{error}</p>}
     </div>
   );
@@ -182,7 +258,7 @@ export default function WarehousesPage() {
         <div>
           <p className="inv-header__eyebrow">Inventory</p>
           <h1>Warehouses &amp; Locations</h1>
-          <p>Warehouses and their storage locations. Locations holding stock cannot be archived; transfer or adjust the stock out first.</p>
+          <p>Raw material, work in process and finished goods warehouses, each laid out in shelves, rows and columns. A location holding stock cannot be archived; adjust the stock out first.</p>
         </div>
         <div className="inv-header__actions">
           <Button variant="primary" onClick={() => setCreating(true)}>New warehouse</Button>

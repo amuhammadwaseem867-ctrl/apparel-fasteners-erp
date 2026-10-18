@@ -11,8 +11,7 @@ export default function FinishedGoodsPage() {
       actions={[
         { label: "Receive finished goods", types: ["FG_RECEIPT"], primary: true },
         { label: "Dispatch", types: ["FG_DISPATCH"] },
-        { label: "Transfer", types: ["TRANSFER"] },
-        { label: "Quality hold", types: ["QC_HOLD", "QC_RELEASE", "QC_REJECT"] },
+        { label: "Quality hold", types: ["QC_HOLD", "QC_RELEASE"] },
       ]}
       emptyText="No finished goods stock. Create a warehouse of type Finished Goods, then post a Finished Goods Receipt."
     />

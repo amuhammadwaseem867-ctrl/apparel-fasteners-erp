@@ -1,28 +1,40 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
+/*
+ * AF7 Inward / Outward Gate Pass (GET /api/gate-passes/[id]): document
+ * information, material details with bags and weights, totals, and the
+ * four signatures with the company stamp.
+ */
 
+import Link from "next/link";
+
+import { Af7Fields, Af7Page, Af7Section, Af7Signatures } from "@/components/print/Af7Document";
 import { PASS_TYPES } from "@/components/gate/gatePassUi";
-import { apiRequest } from "@/lib/api/client";
+import useApiData from "@/lib/inventory/useApiData";
+import { addDecimalStrings } from "@/server/core/utils/decimal";
 import useCompany from "@/lib/useCompany";
 
-/* Printable gate pass for the guard (GET /api/gate-passes/[id]). */
-export default function GatePassPrintClient({ id }) {
-  const COMPANY = useCompany();
-  const [pass, setPass] = useState(null);
-  const [error, setError] = useState("");
+const MIN_ROWS = 12;
 
-  useEffect(() => {
-    let active = true;
-    apiRequest(`/api/gate-passes/${encodeURIComponent(id)}`)
-      .then((value) => { if (active) setPass(value); })
-      .catch((cause) => { if (active) setError(cause?.message || "Unable to load this gate pass."); });
-    return () => { active = false; };
-  }, [id]);
+/* Sum of the lines that give a value; blank when none does. */
+function columnTotal(lines, field) {
+  const given = lines.filter((line) => line[field] !== null && line[field] !== undefined);
+  return given.length ? given.reduce((sum, line) => addDecimalStrings(sum, String(line[field])), "0") : "";
+}
+
+export default function GatePassPrintClient({ id }) {
+  const company = useCompany();
+  const { data: pass, error } = useApiData(`/api/gate-passes/${encodeURIComponent(id)}`);
 
   if (error) return <main className="print-doc print-doc--message"><p role="alert">{error}</p><Link href="/dispatch/gate-passes">Back to gate passes</Link></main>;
   if (!pass) return <main className="print-doc print-doc--message"><p role="status">Loading gate pass…</p></main>;
+
+  const inward = pass.passType === "INWARD";
+  const units = [...new Set(pass.lines.map((line) => line.unit))];
+  const weights = (line) => [line.netWeight, line.grossWeight].some((value) => value !== null) ? `${line.netWeight ?? "—"} / ${line.grossWeight ?? "—"}` : "";
+  const net = columnTotal(pass.lines, "netWeight");
+  const gross = columnTotal(pass.lines, "grossWeight");
+  const blanks = Math.max(0, MIN_ROWS - pass.lines.length);
 
   return (
     <main className="print-doc">
@@ -30,53 +42,63 @@ export default function GatePassPrintClient({ id }) {
         <Link href={`/dispatch/gate-passes/${pass.id}`}>Back to gate pass</Link>
         <button type="button" onClick={() => window.print()}>Print</button>
       </nav>
-      <article className="print-doc__page">
-        <header className="print-doc__header">
+      <Af7Page
+        company={company}
+        title={<>INWARD / OUTWARD<br />GATE PASS</>}
+        subtitle={(
           <div>
-            <strong className="print-doc__company">{COMPANY.legalName || COMPANY.name}</strong>
-            {[COMPANY.address, COMPANY.phone].filter(Boolean).map((line) => <span key={line}>{line}</span>)}
+            <span className="af7__check"><i>{inward ? "✓" : ""}</i>INWARD</span>
+            <span className="af7__check"><i>{inward ? "" : "✓"}</i>OUTWARD</span>
+            {!inward && <p className="af7__small">{PASS_TYPES[pass.passType]}</p>}
           </div>
-          <div className="print-doc__title">
-            <h1>Gate Pass</h1>
-            <dl>
-              <div><dt>Pass no.</dt><dd>{pass.passNumber}</dd></div>
-              <div><dt>Type</dt><dd>{PASS_TYPES[pass.passType]}</dd></div>
-              <div><dt>Date</dt><dd>{new Date(pass.createdAt).toLocaleDateString("en-GB")}</dd></div>
-              {pass.expectedReturnDate && <div><dt>Return by</dt><dd>{pass.expectedReturnDate}</dd></div>}
-            </dl>
+        )}
+      >
+        {pass.status === "DRAFT" && <p className="af7__notice">NOT APPROVED: goods may not pass the gate on this pass.</p>}
+        {pass.status === "CANCELLED" && <p className="af7__notice">CANCELLED: this gate pass is void.</p>}
+
+        <Af7Section number="1" title="Document information">
+          <div className="af7__two">
+            <Af7Fields rows={[["Date", new Date(pass.createdAt).toLocaleDateString("en-GB")], ["Gate pass no.", pass.passNumber], ["Reference no.", pass.referenceNo || pass.shipmentNumber]]} />
+            <Af7Fields rows={[["M/s / party name", pass.partyName], ["Purpose", pass.purpose], ["Vehicle / driver", [pass.vehicleNumber, pass.driverName].filter(Boolean).join(" · ")], ...(pass.expectedReturnDate ? [["Return by", pass.expectedReturnDate]] : [])]} />
           </div>
-        </header>
-        {pass.status === "DRAFT" && <p className="print-doc__notice">NOT APPROVED: goods may not pass the gate on this pass.</p>}
-        {pass.status === "CANCELLED" && <p className="print-doc__notice">CANCELLED: this gate pass is void.</p>}
-        <section className="print-doc__parties">
-          <h2>Party</h2>
-          <span><strong>{pass.partyName}</strong></span>
-          <h2>Purpose</h2>
-          <span>{pass.purpose}</span>
-          <h2>Transport</h2>
-          <span>{[pass.vehicleNumber && `Vehicle ${pass.vehicleNumber}`, pass.driverName, pass.shipmentNumber && `Shipment ${pass.shipmentNumber}`].filter(Boolean).join(" · ") || "—"}</span>
-        </section>
-        <table className="print-doc__table">
-          <thead><tr><th className="print-doc__num">#</th><th>Item</th><th className="print-doc__num">Quantity</th><th>Unit</th>{pass.passType === "OUTWARD_RETURNABLE" && <th className="print-doc__num">Returned</th>}</tr></thead>
-          <tbody>
-            {pass.lines.map((line) => (
-              <tr key={line.id}>
-                <td className="print-doc__num">{line.lineNo}</td>
-                <td>{line.description}</td>
-                <td className="print-doc__num">{line.quantity}</td>
-                <td>{line.unit}</td>
-                {pass.passType === "OUTWARD_RETURNABLE" && <td className="print-doc__num">{line.returnedQuantity}</td>}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {pass.passedAt && <p className="print-doc__notes">Passed the gate {new Date(pass.passedAt).toLocaleString("en-GB")} · guard {pass.guardName}</p>}
-        <section className="print-doc__signoff">
-          <div><span>Prepared by</span></div>
-          <div><span>Approved by{pass.approvedByName ? `: ${pass.approvedByName}` : ""}</span></div>
-          <div><span>Security guard</span></div>
-        </section>
-      </article>
+        </Af7Section>
+
+        <Af7Section number="2" title="Material details">
+          <table className="af7__table">
+            <thead>
+              <tr><th>Sr. no.</th><th>Product name</th><th>Quantity</th><th>No. of bags</th><th>Net weight / gross weight (kg)</th></tr>
+            </thead>
+            <tbody>
+              {pass.lines.map((line) => (
+                <tr key={line.id}>
+                  <td className="center">{line.lineNo}</td>
+                  <td>{line.description}</td>
+                  <td className="num">{line.quantity} {line.unit}</td>
+                  <td className="num">{line.bags ?? ""}</td>
+                  <td className="num">{weights(line)}</td>
+                </tr>
+              ))}
+              {Array.from({ length: blanks }, (_, index) => (
+                <tr key={`blank-${index}`} className="af7__blank"><td className="center">{pass.lines.length + index + 1}</td><td /><td /><td /><td /></tr>
+              ))}
+            </tbody>
+          </table>
+        </Af7Section>
+
+        <Af7Section number="3" title="Totals">
+          <div className="af7__three">
+            <Af7Fields rows={[["Total quantity", units.length === 1 ? `${columnTotal(pass.lines, "quantity")} ${units[0]}` : units.length > 1 ? "Mixed units, see lines" : ""]]} />
+            <Af7Fields rows={[["Total no. of bags", columnTotal(pass.lines, "bags")]]} />
+            <Af7Fields rows={[["Total weight (kg)", net || gross ? `${net || "—"} / ${gross || "—"}` : ""]]} />
+          </div>
+        </Af7Section>
+
+        {pass.passedAt && <p className="af7__small">Passed the gate {new Date(pass.passedAt).toLocaleString("en-GB")}{pass.guardName ? ` · guard ${pass.guardName}` : ""}</p>}
+        <div className="af7__spacer" />
+        <Af7Section number="4" title="Authorization / signature">
+          <Af7Signatures roles={[["PREPARED BY", pass.createdByName], ["CHECKED BY"], ["AUTHORIZED SIGNATURE", pass.approvedByName], ["RECEIVER / DRIVER SIGNATURE", pass.driverName]]} />
+        </Af7Section>
+      </Af7Page>
     </main>
   );
 }

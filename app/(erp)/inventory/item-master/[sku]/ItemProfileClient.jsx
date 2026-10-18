@@ -60,6 +60,7 @@ export default function ItemProfileClient({ itemRef }) {
     ["Minimum stock", item.minimumStock], ["Barcode", item.barcode], ["Status", item.status],
   ];
   const stockRows = balances.data?.balances ?? [];
+  const showReserved = stockRows.some((row) => Number(row.reserved) !== 0);
 
   return (
     <main className="inv-page">
@@ -94,13 +95,13 @@ export default function ItemProfileClient({ itemRef }) {
             : stockRows.length === 0 ? <p className="inv-state">No stock has been posted for this item.</p> : (
               <div className="inv-table-wrap">
                 <table className="inv-table">
-                  <thead><tr><th>Location</th><th className="inv-num">On hand</th><th className="inv-num">Reserved</th><th className="inv-num">QC hold</th><th className="inv-num">Available</th></tr></thead>
+                  <thead><tr><th>Location</th><th className="inv-num">On hand</th>{showReserved && <th className="inv-num">Reserved</th>}<th className="inv-num">QC hold</th><th className="inv-num">Available</th></tr></thead>
                   <tbody>
                     {stockRows.map((row) => (
                       <tr key={row.id}>
                         <td data-label="Location">{row.warehouseCode}/{row.locationCode}<small>{row.warehouseName}</small></td>
                         <td data-label="On hand" className="inv-num">{row.onHand}</td>
-                        <td data-label="Reserved" className="inv-num">{row.reserved}</td>
+                        {showReserved && <td data-label="Reserved" className="inv-num">{row.reserved}</td>}
                         <td data-label="QC hold" className="inv-num">{row.qualityHold}</td>
                         <td data-label="Available" className="inv-num"><strong>{row.available}</strong></td>
                       </tr>
@@ -111,6 +112,8 @@ export default function ItemProfileClient({ itemRef }) {
             )}
       </section>
 
+      {/* Reservations are not part of the simple process; shown only when an item has some. */}
+      {(reservations.error || (reservations.data?.reservations ?? []).length > 0) && (
       <section className="inv-card">
         <div className="inv-card__header"><h2>Active reservations</h2></div>
         {reservations.error ? <p className="inv-state inv-state--error" role="alert">{reservations.error}</p>
@@ -131,6 +134,7 @@ export default function ItemProfileClient({ itemRef }) {
             </div>
           )}
       </section>
+      )}
 
       <section className="inv-card">
         <div className="inv-card__header"><h2>Movement history</h2></div>

@@ -1,28 +1,34 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
+/*
+ * AF7 Sales Tax Invoice (GET /api/finance/invoices/[id]), laid out like the
+ * company's template: consignee with NTN / STRN, invoice details with the
+ * customer PO, item lines with finish, colour and size, GST totals,
+ * commercial terms, shipment details and bank details from Settings.
+ */
 
-import { apiRequest } from "@/lib/api/client";
+import Link from "next/link";
+
+import { Af7Fields, Af7Page, Af7Section, Af7Stamp } from "@/components/print/Af7Document";
+import useApiData from "@/lib/inventory/useApiData";
 import { formatAmount } from "@/lib/formatters/formatters";
+import { addDecimalStrings, subtractDecimalStrings } from "@/server/core/utils/decimal";
 import useCompany from "@/lib/useCompany";
 
-/* Printable tax invoice (GET /api/finance/invoices/[id]). */
-export default function InvoicePrintClient({ id }) {
-  const COMPANY = useCompany();
-  const [invoice, setInvoice] = useState(null);
-  const [error, setError] = useState("");
+const day = (value) => (value ? new Date(`${value}T00:00:00`).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "");
 
-  useEffect(() => {
-    let active = true;
-    apiRequest(`/api/finance/invoices/${encodeURIComponent(id)}`)
-      .then((value) => { if (active) setInvoice(value); })
-      .catch((cause) => { if (active) setError(cause?.message || "Unable to load this invoice."); });
-    return () => { active = false; };
-  }, [id]);
+export default function InvoicePrintClient({ id }) {
+  const company = useCompany();
+  const { data: invoice, error } = useApiData(`/api/finance/invoices/${encodeURIComponent(id)}`);
 
   if (error) return <main className="print-doc print-doc--message"><p role="alert">{error}</p><Link href="/finance/invoices">Back to invoices</Link></main>;
   if (!invoice) return <main className="print-doc print-doc--message"><p role="status">Loading invoice…</p></main>;
+
+  // Before GST = goods after discount; the GST is the invoice's own tax.
+  const beforeGst = subtractDecimalStrings(invoice.subtotal, invoice.discountTotal);
+  const rates = [...new Set(invoice.lines.map((line) => line.taxPercent))];
+  const gstLabel = rates.length === 1 ? `GST ${rates[0]}%` : "GST";
+  const paymentTerms = company.paymentTerms || (invoice.paymentTermsDays ? `${invoice.paymentTermsDays} days from invoice date` : "");
 
   return (
     <main className="print-doc">
@@ -30,71 +36,93 @@ export default function InvoicePrintClient({ id }) {
         <Link href={`/finance/invoices/${invoice.id}`}>Back to invoice</Link>
         <button type="button" onClick={() => window.print()}>Print</button>
       </nav>
-      <article className="print-doc__page">
-        <header className="print-doc__header">
-          <div>
-            <strong className="print-doc__company">{COMPANY.legalName || COMPANY.name}</strong>
-            {[COMPANY.address, COMPANY.phone, COMPANY.email, COMPANY.taxRegistration && `Tax reg. ${COMPANY.taxRegistration}`].filter(Boolean).map((line) => <span key={line}>{line}</span>)}
+      <Af7Page
+        company={company}
+        title="SALES TAX INVOICE"
+        subtitle={<Af7Fields rows={[["Invoice no.", invoice.invoiceNumber], ["Date", day(invoice.invoiceDate)]]} />}
+      >
+        {invoice.status === "DRAFT" && <p className="af7__notice">DRAFT: not issued. This is not a valid invoice.</p>}
+        {invoice.status === "CANCELLED" && <p className="af7__notice">CANCELLED: this invoice is void.</p>}
+
+        <div className="af7__two">
+          <Af7Section title="Consignee">
+            <Af7Fields rows={[
+              ["Consignee", invoice.customerName],
+              ["Address", invoice.customerAddress],
+              ["Contact #", invoice.customerPhone],
+              ["Contact person", invoice.customerContactPerson],
+              ["NTN #", invoice.customerNtn],
+              ["STRN #", invoice.customerStrn],
+            ]} />
+          </Af7Section>
+          <Af7Section title="Invoice details">
+            <Af7Fields rows={[
+              ["Customer PO #", invoice.customerPo],
+              ["Invoice no.", invoice.invoiceNumber],
+              ["Date", day(invoice.invoiceDate)],
+              ["Order no.", invoice.salesOrderNumber],
+              ["Delivery challan", invoice.shipmentNumber],
+              ["Due date", day(invoice.dueDate)],
+            ]} />
+          </Af7Section>
+        </div>
+
+        <Af7Section title="Product / item details">
+          <table className="af7__table">
+            <thead>
+              <tr><th>#</th><th>Product description</th><th>Finish</th><th>Color</th><th>Size</th><th>Unit</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+            </thead>
+            <tbody>
+              {invoice.lines.map((line) => (
+                <tr key={line.id}>
+                  <td className="center">{line.lineNo}</td>
+                  <td>{line.description}{Number(line.discountPercent) > 0 ? ` (less ${line.discountPercent}%)` : ""}</td>
+                  <td>{line.finish ?? ""}</td>
+                  <td>{line.color ?? ""}</td>
+                  <td>{line.size ?? ""}</td>
+                  <td className="center">{line.unit}</td>
+                  <td className="num">{line.quantity}</td>
+                  <td className="num">{line.unitPrice}</td>
+                  <td className="num">{formatAmount(subtractDecimalStrings(line.grossAmount, line.discountAmount))}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <table className="af7__totals">
+            <tbody>
+              <tr><th>Total amount before GST</th><td>{formatAmount(beforeGst)}</td></tr>
+              <tr><th>{gstLabel}</th><td>{formatAmount(invoice.taxTotal)}</td></tr>
+              <tr className="af7__strong"><th>Total amount including GST</th><td>{formatAmount(addDecimalStrings(beforeGst, invoice.taxTotal))}</td></tr>
+              <tr><th>Total amount without GST</th><td>{formatAmount(beforeGst)}</td></tr>
+            </tbody>
+          </table>
+          {invoice.status === "ISSUED" && (Number(invoice.credited) > 0 || Number(invoice.received) > 0) && (
+            <p>Credited {formatAmount(invoice.credited)} · received {formatAmount(invoice.received)} · balance due {formatAmount(invoice.outstanding)}</p>
+          )}
+        </Af7Section>
+
+        <div className="af7__two">
+          <Af7Section title="Commercial terms">
+            <Af7Fields rows={[["Production time", company.productionTime], ["Payment terms", paymentTerms], ["Shipment terms", company.shipmentTerms], ["Shipment mode", company.shipmentMode]]} />
+          </Af7Section>
+          <Af7Section title="Shipment details">
+            <Af7Fields rows={[["Port of loading", company.portOfLoading], ["Port of discharge", ""], ["Country of origin", company.countryOfOrigin]]} />
+          </Af7Section>
+        </div>
+
+        <div className="af7__spacer" />
+        <Af7Section title="Bank / payment details">
+          <div className="af7__bank">
+            <Af7Fields rows={[["Bank name", company.bankName], ["Account name", company.accountName], ["Account no.", company.accountNumber], ["IBAN", company.iban], ["SWIFT code", company.swiftCode], ["Branch / address", company.bankBranch]]} />
+            <div className="af7__signature">
+              <strong>AUTHORIZED SIGNATORY</strong>
+              <span className="af7__sign-line">Signature</span>
+            </div>
+            <Af7Stamp />
           </div>
-          <div className="print-doc__title">
-            <h1>Invoice</h1>
-            <dl>
-              <div><dt>Invoice no.</dt><dd>{invoice.invoiceNumber}</dd></div>
-              <div><dt>Date</dt><dd>{invoice.invoiceDate}</dd></div>
-              <div><dt>Due date</dt><dd>{invoice.dueDate}</dd></div>
-              <div><dt>Sales order</dt><dd>{invoice.salesOrderNumber}</dd></div>
-              <div><dt>Delivery challan</dt><dd>{invoice.shipmentNumber}</dd></div>
-            </dl>
-          </div>
-        </header>
-        {invoice.status === "DRAFT" && <p className="print-doc__notice">DRAFT: not issued. This is not a valid invoice.</p>}
-        {invoice.status === "CANCELLED" && <p className="print-doc__notice">CANCELLED: this invoice is void.</p>}
-        <section className="print-doc__parties">
-          <h2>Bill to</h2>
-          <span><strong>{invoice.customerName}</strong></span>
-          {[invoice.customerEmail, invoice.customerPhone].filter(Boolean).map((line) => <span key={line}>{line}</span>)}
-        </section>
-        <table className="print-doc__table">
-          <thead>
-            <tr><th className="print-doc__num">#</th><th>Description</th><th className="print-doc__num">Qty</th><th>Unit</th><th className="print-doc__num">Price</th><th className="print-doc__num">Disc %</th><th className="print-doc__num">Tax %</th><th className="print-doc__num">Tax</th><th className="print-doc__num">Amount</th></tr>
-          </thead>
-          <tbody>
-            {invoice.lines.map((line) => (
-              <tr key={line.id}>
-                <td className="print-doc__num">{line.lineNo}</td>
-                <td><strong>{line.description}</strong>{line.sku ? ` · ${line.sku}` : ""}</td>
-                <td className="print-doc__num">{line.quantity}</td>
-                <td>{line.unit}</td>
-                <td className="print-doc__num">{line.unitPrice}</td>
-                <td className="print-doc__num">{line.discountPercent}</td>
-                <td className="print-doc__num">{line.taxPercent}</td>
-                <td className="print-doc__num">{formatAmount(line.taxAmount)}</td>
-                <td className="print-doc__num">{formatAmount(line.lineTotal)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <section className="print-doc__summary">
-          <div className="print-doc__notes">
-            <h2>Notes</h2>
-            <p>{invoice.notes || "Payment due by the due date shown."}</p>
-            {invoice.status === "ISSUED" && (Number(invoice.credited) > 0 || Number(invoice.received) > 0) && (
-              <p>Credited {formatAmount(invoice.credited)} · received {formatAmount(invoice.received)} · balance due {formatAmount(invoice.outstanding)}</p>
-            )}
-          </div>
-          <dl className="print-doc__totals">
-            <div><dt>Subtotal</dt><dd>{formatAmount(invoice.subtotal)}</dd></div>
-            <div><dt>Discount</dt><dd>{formatAmount(invoice.discountTotal)}</dd></div>
-            <div><dt>Tax</dt><dd>{formatAmount(invoice.taxTotal)}</dd></div>
-            <div className="print-doc__grand"><dt>Invoice total</dt><dd>{formatAmount(invoice.totalAmount)}</dd></div>
-          </dl>
-        </section>
-        <section className="print-doc__signoff">
-          <div><span>Prepared by</span></div>
-          <div><span>Authorised signature</span></div>
-          <div><span>Received by customer</span></div>
-        </section>
-      </article>
+        </Af7Section>
+        {invoice.notes && <p><strong>Notes:</strong> {invoice.notes}</p>}
+      </Af7Page>
     </main>
   );
 }

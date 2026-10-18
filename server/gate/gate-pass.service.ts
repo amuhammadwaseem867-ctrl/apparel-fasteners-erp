@@ -35,7 +35,16 @@ export async function createGatePass(input: GatePassInput, actorId: string) {
   const replay = await db.orm.public.GatePass.where({ idempotencyKey: input.idempotencyKey }).first();
   if (replay) return getGatePass(replay.id);
 
-  let lines = input.lines.map((line) => ({ productId: line.productId ?? null, description: line.description, unit: line.unit, quantity: toPlainDecimalString(line.quantity) }));
+  const weight = (value?: number) => (value === undefined ? null : toPlainDecimalString(value));
+  let lines: Array<{ productId: string | null; description: string; unit: string; quantity: string; bags: number | null; netWeight: string | null; grossWeight: string | null }> = input.lines.map((line) => ({
+    productId: line.productId ?? null,
+    description: line.description,
+    unit: line.unit,
+    quantity: toPlainDecimalString(line.quantity),
+    bags: line.bags ?? null,
+    netWeight: weight(line.netWeight),
+    grossWeight: weight(line.grossWeight),
+  }));
 
   if (input.shipmentId) {
     const shipment = await db.orm.public.Shipment.where({ id: input.shipmentId }).first();
@@ -45,9 +54,24 @@ export async function createGatePass(input: GatePassInput, actorId: string) {
     if (!lines.length) {
       const shipmentLines = await db.orm.public.ShipmentLine.where({ shipmentId: shipment.id }).orderBy((line) => line.lineNo.asc()).all();
       const products = await db.orm.public.Product.where((product) => product.id.in(shipmentLines.map((line) => line.productId))).all();
+      // Bags and weights come from the packing list each line ships.
+      const listIds = shipmentLines.map((line) => line.packingListId).filter(Boolean) as string[];
+      const packages = listIds.length ? await db.orm.public.PackingPackage.where((item) => item.packingListId.in(listIds)).all() : [];
+      const total = (own: typeof packages, field: "netWeight" | "grossWeight") => (own.length && own.every((item) => item[field] !== null)
+        ? own.reduce((sum, item) => addDecimalStrings(sum, dec(item[field])), "0")
+        : null);
       lines = shipmentLines.map((line) => {
         const product = products.find((item) => item.id === line.productId);
-        return { productId: line.productId, description: `${product?.sku ?? ""} ${product?.name ?? ""}`.trim(), unit: product?.unit ?? "", quantity: dec(line.quantity) };
+        const own = line.packingListId ? packages.filter((item) => item.packingListId === line.packingListId) : [];
+        return {
+          productId: line.productId,
+          description: product?.name ?? product?.sku ?? "",
+          unit: product?.unit ?? "",
+          quantity: dec(line.quantity),
+          bags: own.length || null,
+          netWeight: total(own, "netWeight"),
+          grossWeight: total(own, "grossWeight"),
+        };
       });
     }
   }
@@ -69,6 +93,7 @@ export async function createGatePass(input: GatePassInput, actorId: string) {
         shipmentId: input.shipmentId ?? null,
         vehicleNumber: input.vehicleNumber || null,
         driverName: input.driverName || null,
+        referenceNo: input.referenceNo || null,
         expectedReturnDate: input.passType === "OUTWARD_RETURNABLE" ? input.expectedReturnDate || null : null,
         notes: input.notes || null,
         idempotencyKey: input.idempotencyKey,
@@ -180,6 +205,8 @@ export async function getGatePass(id: string) {
       ...line,
       quantity: dec(line.quantity),
       returnedQuantity: dec(line.returnedQuantity),
+      netWeight: line.netWeight === null ? null : dec(line.netWeight),
+      grossWeight: line.grossWeight === null ? null : dec(line.grossWeight),
       outstanding: subtractDecimalStrings(dec(line.quantity), dec(line.returnedQuantity)),
     })),
   };

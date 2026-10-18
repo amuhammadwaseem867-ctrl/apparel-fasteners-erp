@@ -1056,3 +1056,81 @@ While it is off:
   is called.
 
 To turn it on, add `AI_ASSISTANT_ENABLED=true` and redeploy.
+
+## D-038 Simple ERP on requirements 1.2 and the AF7 documents (2026-10-18)
+
+The owner found the ERP confusing and asked for it to follow the
+company's own forms and the requirements document (version 1.2), without
+rebuilding it and without deleting anything.
+
+**Navigation.** The menu follows one order from placement to payment:
+1. Orders
+2. Production
+3. Quality check
+4. Packing
+5. Dispatch
+6. Invoice & payment
+
+After those come Inventory, Purchasing, HR & Payroll, Reports and
+Settings. Other pages still exist and still open by address; their data
+is kept.
+
+**Orders.** The order form uses the requirements' sequence:
+- Customer, Customer PO number and Order no. (automatic when left empty).
+- Then per line: Product, Variant, Finish, Type (Plain Teeth / Y-Cut),
+  Tape color and Slider, followed by Size, Unit and Quantity.
+- A rate is optional. Production copies never show prices.
+- Each line is tied to the finished-good item for exactly that
+  specification. The item is found by SKU, or created once. A different
+  specification is never merged into an existing item.
+
+**Order Profile.**
+- Shows the requirement status names, judged by the slowest production
+  order.
+- Sends each line to production once.
+- Each stage has simple Start / Complete buttons. Completing records the
+  quantity still available as accepted. Tape Dyeing asks for its total kg.
+- QC, packing and dispatch remain with their own modules.
+- Also lists raw material issued, QC, packing lists, shipments, gate
+  passes, invoices and payments.
+
+**Tape in kg.** Tape Dyeing and Tape Press count kilograms. Teeth Making
+switches to the order's pieces.
+
+**AF7 documents.** The Order Sheet (no prices), Sales Tax Invoice, Gate
+Pass and Packing List print in the layout of the company's templates.
+- The company profile defaults to the address and website on those
+  templates.
+- Bank details and commercial terms are Settings fields. They print blank
+  until an administrator fills them; nothing is invented.
+- The invoice prints these totals:
+  - before GST (goods after discount)
+  - the invoice's own GST
+  - including GST
+  - without GST
+- A gate pass line has optional no. of bags and net / gross kg. The pass
+  has a reference no.
+  - A pass made from a shipment takes the bags and weights from the
+    packing lists it ships.
+  - Migration `20261018T1704_gate_pass_bags_weights` adds only nullable
+    columns and a non-negative check.
+
+**Locations.** Locations are Shelf / Row / Column places, code
+`S1-R2-C3`. A whole shelf can be laid out at once, and existing codes
+are skipped. No schema change.
+
+**Removed by 1.2, hidden in the UI (data and server rules kept):**
+- Stock transfer.
+- Damage / QC-reject write-offs.
+- Batch / lot.
+- Reserved quantity, which shows only where something is still reserved.
+
+**Go-live.** These migrations must be applied to the live database before
+this code reaches main:
+- `af7_documents`
+- `sales_order_line_numbers`
+- `order_line_type_slider`
+- `gate_pass_bags_weights`
+
+All four are additive. Apply them with `npm run go-live`, which takes a
+backup and asks for confirmation.

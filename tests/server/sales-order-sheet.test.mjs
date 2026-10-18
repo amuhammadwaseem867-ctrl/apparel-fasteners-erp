@@ -61,10 +61,12 @@ test("missing optional fields print as explicit placeholders, never invented val
   assert.equal(formatQuantity(undefined), "—");
 });
 
-test("company identity holds only the known trading name; legal details are not invented", () => {
-  assert.equal(COMPANY.name, "Apparel Fasteners");
+test("company identity holds only what the AF7 company documents show; other details are not invented", () => {
+  assert.equal(COMPANY.name, "AF7 / Apparel Fastener");
+  assert.match(COMPANY.address, /^Plot# 33 B Punjab Small Sundar Industrial Estate II/);
+  assert.equal(COMPANY.website, "www.af7.com.pk");
 
-  for (const field of ["legalName", "address", "phone", "email", "taxRegistration"]) {
+  for (const field of ["phone", "email", "taxRegistration", "bankName", "accountName", "accountNumber", "iban", "swiftCode", "bankBranch", "productionTime", "paymentTerms", "shipmentTerms", "shipmentMode", "portOfLoading"]) {
     assert.equal(COMPANY[field], "", `${field} must stay empty until the owner supplies it`);
   }
 });
@@ -76,5 +78,5 @@ test("print routes require a session and load data through the permission-checke
 
   assert.match(layout, /getCurrentUser\(sessionToken\)/);
   assert.match(layout, /redirect\("\/login"\)/);
-  assert.match(client, /apiRequest\(`\/api\/sales\/orders\//);
+  assert.match(client, /useApiData\(`\/api\/sales\/orders\//);
 });

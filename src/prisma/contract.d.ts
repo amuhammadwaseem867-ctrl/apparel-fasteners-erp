@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'d45f4f3a3c2e0ceb4506e824eb8deb6e4f56f32f59e87865f91cf894c3dc36d9'>;
+  StorageHashBase<'1f0fe750af6e14ac628139010801f61afe87e164e8bf3e7deebf8ffbf686d9ba'>;
 export type ExecutionHash =
   ExecutionHashBase<'e65a19f75aec7c5ebdf256588f2adc798dac8b5a6693004414e0b85db734570d'>;
 export type ProfileHash =
@@ -462,15 +462,19 @@ export type FieldOutputTypes = {
       readonly passedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
       readonly passedBy: CodecTypes['pg/uuid@1']['output'] | null;
       readonly purpose: CodecTypes['pg/text@1']['output'];
+      readonly referenceNo: CodecTypes['pg/text@1']['output'] | null;
       readonly shipmentId: CodecTypes['pg/uuid@1']['output'] | null;
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly vehicleNumber: CodecTypes['pg/text@1']['output'] | null;
     };
     readonly GatePassLine: {
+      readonly bags: CodecTypes['pg/int4@1']['output'] | null;
       readonly description: CodecTypes['pg/text@1']['output'];
       readonly gatePassId: CodecTypes['pg/uuid@1']['output'];
+      readonly grossWeight: CodecTypes['pg/numeric@1']['output'] | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly lineNo: CodecTypes['pg/int4@1']['output'];
+      readonly netWeight: CodecTypes['pg/numeric@1']['output'] | null;
       readonly productId: CodecTypes['pg/uuid@1']['output'] | null;
       readonly quantity: CodecTypes['pg/numeric@1']['output'];
       readonly returnedQuantity: CodecTypes['pg/numeric@1']['output'];
@@ -1575,15 +1579,19 @@ export type FieldInputTypes = {
       readonly passedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly passedBy: CodecTypes['pg/uuid@1']['input'] | null;
       readonly purpose: CodecTypes['pg/text@1']['input'];
+      readonly referenceNo: CodecTypes['pg/text@1']['input'] | null;
       readonly shipmentId: CodecTypes['pg/uuid@1']['input'] | null;
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly vehicleNumber: CodecTypes['pg/text@1']['input'] | null;
     };
     readonly GatePassLine: {
+      readonly bags: CodecTypes['pg/int4@1']['input'] | null;
       readonly description: CodecTypes['pg/text@1']['input'];
       readonly gatePassId: CodecTypes['pg/uuid@1']['input'];
+      readonly grossWeight: CodecTypes['pg/numeric@1']['input'] | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly lineNo: CodecTypes['pg/int4@1']['input'];
+      readonly netWeight: CodecTypes['pg/numeric@1']['input'] | null;
       readonly productId: CodecTypes['pg/uuid@1']['input'] | null;
       readonly quantity: CodecTypes['pg/numeric@1']['input'];
       readonly returnedQuantity: CodecTypes['pg/numeric@1']['input'];
@@ -2668,10 +2676,13 @@ export type StorageColumnTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
     readonly erp_gate_pass_lines: {
+      readonly bags: CodecTypes['pg/int4@1']['output'] | null;
       readonly description: CodecTypes['pg/text@1']['output'];
       readonly gatePassId: CodecTypes['pg/uuid@1']['output'];
+      readonly grossWeight: CodecTypes['pg/numeric@1']['output'] | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly lineNo: CodecTypes['pg/int4@1']['output'];
+      readonly netWeight: CodecTypes['pg/numeric@1']['output'] | null;
       readonly productId: CodecTypes['pg/uuid@1']['output'] | null;
       readonly quantity: CodecTypes['pg/numeric@1']['output'];
       readonly returnedQuantity: CodecTypes['pg/numeric@1']['output'];
@@ -2698,6 +2709,7 @@ export type StorageColumnTypes = {
       readonly passNumber: CodecTypes['pg/text@1']['output'];
       readonly passType: CodecTypes['pg/text@1']['output'];
       readonly purpose: CodecTypes['pg/text@1']['output'];
+      readonly referenceNo: CodecTypes['pg/text@1']['output'] | null;
       readonly shipmentId: CodecTypes['pg/uuid@1']['output'] | null;
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly vehicleNumber: CodecTypes['pg/text@1']['output'] | null;
@@ -3781,10 +3793,13 @@ export type StorageColumnInputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
     readonly erp_gate_pass_lines: {
+      readonly bags: CodecTypes['pg/int4@1']['input'] | null;
       readonly description: CodecTypes['pg/text@1']['input'];
       readonly gatePassId: CodecTypes['pg/uuid@1']['input'];
+      readonly grossWeight: CodecTypes['pg/numeric@1']['input'] | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly lineNo: CodecTypes['pg/int4@1']['input'];
+      readonly netWeight: CodecTypes['pg/numeric@1']['input'] | null;
       readonly productId: CodecTypes['pg/uuid@1']['input'] | null;
       readonly quantity: CodecTypes['pg/numeric@1']['input'];
       readonly returnedQuantity: CodecTypes['pg/numeric@1']['input'];
@@ -3811,6 +3826,7 @@ export type StorageColumnInputTypes = {
       readonly passNumber: CodecTypes['pg/text@1']['input'];
       readonly passType: CodecTypes['pg/text@1']['input'];
       readonly purpose: CodecTypes['pg/text@1']['input'];
+      readonly referenceNo: CodecTypes['pg/text@1']['input'] | null;
       readonly shipmentId: CodecTypes['pg/uuid@1']['input'] | null;
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly vehicleNumber: CodecTypes['pg/text@1']['input'] | null;
@@ -4951,6 +4967,7 @@ export namespace Models {
     passedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
     passedBy: CodecTypes['pg/uuid@1']['output'] | null;
     purpose: CodecTypes['pg/text@1']['output'];
+    referenceNo: CodecTypes['pg/text@1']['output'] | null;
     shipmentId: CodecTypes['pg/uuid@1']['output'] | null;
     status: CodecTypes['pg/text@1']['output'];
     vehicleNumber: CodecTypes['pg/text@1']['output'] | null;
@@ -4958,10 +4975,13 @@ export namespace Models {
     readonly [RelationKeys]?: 'lines';
   };
   export type public_GatePassLine = {
+    bags: CodecTypes['pg/int4@1']['output'] | null;
     description: CodecTypes['pg/text@1']['output'];
     gatePassId: CodecTypes['pg/uuid@1']['output'];
+    grossWeight: CodecTypes['pg/numeric@1']['output'] | null;
     id: CodecTypes['pg/uuid@1']['output'];
     lineNo: CodecTypes['pg/int4@1']['output'];
+    netWeight: CodecTypes['pg/numeric@1']['output'] | null;
     productId: CodecTypes['pg/uuid@1']['output'] | null;
     quantity: CodecTypes['pg/numeric@1']['output'];
     returnedQuantity: CodecTypes['pg/numeric@1']['output'];
@@ -7718,6 +7738,12 @@ type ContractBase = Omit<
             };
             readonly erp_gate_pass_lines: {
               columns: {
+                readonly bags: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly description: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -7730,6 +7756,12 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
+                readonly grossWeight: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly id: {
                   readonly dataType: 'pg/uuid';
                   readonly codecId: 'pg/uuid@1';
@@ -7740,6 +7772,12 @@ type ContractBase = Omit<
                   readonly dataType: 'pg/int4';
                   readonly codecId: 'pg/int4@1';
                   readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly netWeight: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly productId: {
@@ -7917,6 +7955,12 @@ type ContractBase = Omit<
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly referenceNo: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly shipmentId: {
@@ -16543,6 +16587,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly referenceNo: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly shipmentId: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
@@ -16593,6 +16641,7 @@ type ContractBase = Omit<
                 readonly passedAt: { readonly column: 'passedAt' };
                 readonly passedBy: { readonly column: 'passedBy' };
                 readonly purpose: { readonly column: 'purpose' };
+                readonly referenceNo: { readonly column: 'referenceNo' };
                 readonly shipmentId: { readonly column: 'shipmentId' };
                 readonly status: { readonly column: 'status' };
                 readonly vehicleNumber: { readonly column: 'vehicleNumber' };
@@ -16601,6 +16650,10 @@ type ContractBase = Omit<
           };
           readonly GatePassLine: {
             readonly fields: {
+              readonly bags: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly description: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -16609,6 +16662,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
               };
+              readonly grossWeight: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
               readonly id: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
@@ -16616,6 +16673,10 @@ type ContractBase = Omit<
               readonly lineNo: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly netWeight: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
               };
               readonly productId: {
                 readonly nullable: true;
@@ -16652,10 +16713,13 @@ type ContractBase = Omit<
               readonly table: 'erp_gate_pass_lines';
               readonly namespaceId: 'public';
               readonly fields: {
+                readonly bags: { readonly column: 'bags' };
                 readonly description: { readonly column: 'description' };
                 readonly gatePassId: { readonly column: 'gatePassId' };
+                readonly grossWeight: { readonly column: 'grossWeight' };
                 readonly id: { readonly column: 'id' };
                 readonly lineNo: { readonly column: 'lineNo' };
+                readonly netWeight: { readonly column: 'netWeight' };
                 readonly productId: { readonly column: 'productId' };
                 readonly quantity: { readonly column: 'quantity' };
                 readonly returnedQuantity: { readonly column: 'returnedQuantity' };

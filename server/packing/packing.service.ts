@@ -229,8 +229,15 @@ export async function getPackingList(id: string) {
   if (!row) notFound();
   const packages = await db.orm.public.PackingPackage.where({ packingListId: id }).orderBy((item) => item.packageNo.asc()).all();
   const documents = await db.orm.public.StockDocument.where({ sourceType: "PackingList", sourceId: id }).all();
+  const data = await lookups([row]);
+  // PO # and customer for the AF7 packing list.
+  const sale = data.sales.find((item) => item.id === row.salesOrderId);
+  const customer = sale ? await db.orm.public.Customer.where({ id: sale.customerId }).first() : null;
   return {
-    ...present(row as never, await lookups([row])),
+    ...present(row as never, data),
+    size: data.products.find((item) => item.id === row.productId)?.size ?? null,
+    customerPo: sale?.customerPo ?? null,
+    customerName: customer?.name ?? null,
     packages: packages.map((item) => ({
       ...item,
       quantity: dec(item.quantity),

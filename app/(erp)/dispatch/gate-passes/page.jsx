@@ -18,8 +18,8 @@ function newKey() {
 }
 
 function NewGatePassDialog({ onClose, onCreated }) {
-  const [values, setValues] = useState({ passType: "OUTWARD_RETURNABLE", partyName: "", purpose: "", vehicleNumber: "", driverName: "", expectedReturnDate: "", shipmentId: "", notes: "" });
-  const [lines, setLines] = useState([{ key: newKey(), description: "", unit: "Pcs", quantity: "" }]);
+  const [values, setValues] = useState({ passType: "OUTWARD_RETURNABLE", partyName: "", purpose: "", vehicleNumber: "", driverName: "", referenceNo: "", expectedReturnDate: "", shipmentId: "", notes: "" });
+  const [lines, setLines] = useState([{ key: newKey(), description: "", unit: "Pcs", quantity: "", bags: "", netWeight: "", grossWeight: "" }]);
   const [key] = useState(newKey);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -42,7 +42,14 @@ function NewGatePassDialog({ onClose, onCreated }) {
           ...values,
           idempotencyKey: key,
           shipmentId: values.shipmentId || undefined,
-          lines: fromShipment ? [] : filledLines.map((line) => ({ description: line.description, unit: line.unit, quantity: Number(line.quantity) })),
+          lines: fromShipment ? [] : filledLines.map((line) => ({
+            description: line.description,
+            unit: line.unit,
+            quantity: Number(line.quantity),
+            ...(line.bags === "" ? {} : { bags: Number(line.bags) }),
+            ...(line.netWeight === "" ? {} : { netWeight: Number(line.netWeight) }),
+            ...(line.grossWeight === "" ? {} : { grossWeight: Number(line.grossWeight) }),
+          })),
         }),
       }));
     } catch (cause) {
@@ -63,6 +70,7 @@ function NewGatePassDialog({ onClose, onCreated }) {
           </div>
           <div className="inv-field"><label htmlFor="gp-party">Party *</label><input id="gp-party" required minLength={2} maxLength={160} placeholder="Supplier, job worker or customer" value={values.partyName} onChange={set("partyName")} /></div>
           <div className="inv-field"><label htmlFor="gp-vehicle">Vehicle</label><input id="gp-vehicle" maxLength={40} value={values.vehicleNumber} onChange={set("vehicleNumber")} /></div>
+          <div className="inv-field"><label htmlFor="gp-ref">Reference no.</label><input id="gp-ref" maxLength={80} placeholder="PO, DC or order no." value={values.referenceNo} onChange={set("referenceNo")} /></div>
           <div className="inv-field"><label htmlFor="gp-driver">Driver / carrier</label><input id="gp-driver" maxLength={120} value={values.driverName} onChange={set("driverName")} /></div>
           {values.passType === "OUTWARD_RETURNABLE" && (
             <div className="inv-field"><label htmlFor="gp-return">Expected return *</label><input id="gp-return" type="date" required value={values.expectedReturnDate} onChange={set("expectedReturnDate")} /></div>
@@ -79,15 +87,18 @@ function NewGatePassDialog({ onClose, onCreated }) {
         </div>
         <div className="inv-field"><label htmlFor="gp-purpose">Purpose *</label><input id="gp-purpose" required minLength={3} maxLength={500} placeholder="e.g. Job work: nickel plating" value={values.purpose} onChange={set("purpose")} /></div>
         {fromShipment ? (
-          <p className="inv-field__hint">Lines are copied from the shipment.</p>
+          <p className="inv-field__hint">Lines, bags and weights are copied from the shipment and its packing lists.</p>
         ) : lines.map((line, index) => (
           <div key={line.key} className="inv-dialog__grid">
             <div className="inv-field"><label htmlFor={`gp-desc-${line.key}`}>Item {index + 1}</label><input id={`gp-desc-${line.key}`} maxLength={300} value={line.description} onChange={(event) => setLines((current) => current.map((row) => (row.key === line.key ? { ...row, description: event.target.value } : row)))} /></div>
             <div className="inv-field"><label htmlFor={`gp-qty-${line.key}`}>Quantity</label><input id={`gp-qty-${line.key}`} type="number" step="any" min="0" value={line.quantity} onChange={(event) => setLines((current) => current.map((row) => (row.key === line.key ? { ...row, quantity: event.target.value } : row)))} /></div>
             <div className="inv-field"><label htmlFor={`gp-unit-${line.key}`}>Unit</label><input id={`gp-unit-${line.key}`} maxLength={20} value={line.unit} onChange={(event) => setLines((current) => current.map((row) => (row.key === line.key ? { ...row, unit: event.target.value } : row)))} /></div>
+            <div className="inv-field"><label htmlFor={`gp-bags-${line.key}`}>No. of bags</label><input id={`gp-bags-${line.key}`} type="number" step="1" min="0" value={line.bags} onChange={(event) => setLines((current) => current.map((row) => (row.key === line.key ? { ...row, bags: event.target.value } : row)))} /></div>
+            <div className="inv-field"><label htmlFor={`gp-net-${line.key}`}>Net weight (kg)</label><input id={`gp-net-${line.key}`} type="number" step="any" min="0" value={line.netWeight} onChange={(event) => setLines((current) => current.map((row) => (row.key === line.key ? { ...row, netWeight: event.target.value } : row)))} /></div>
+            <div className="inv-field"><label htmlFor={`gp-gross-${line.key}`}>Gross weight (kg)</label><input id={`gp-gross-${line.key}`} type="number" step="any" min="0" value={line.grossWeight} onChange={(event) => setLines((current) => current.map((row) => (row.key === line.key ? { ...row, grossWeight: event.target.value } : row)))} /></div>
           </div>
         ))}
-        {!fromShipment && <button type="button" className="inv-text-button" onClick={() => setLines((current) => [...current, { key: newKey(), description: "", unit: "Pcs", quantity: "" }])}>+ Add item</button>}
+        {!fromShipment && <button type="button" className="inv-text-button" onClick={() => setLines((current) => [...current, { key: newKey(), description: "", unit: "Pcs", quantity: "", bags: "", netWeight: "", grossWeight: "" }])}>+ Add item</button>}
         <div className="inv-field"><label htmlFor="gp-notes">Notes</label><textarea id="gp-notes" rows={2} maxLength={1000} value={values.notes} onChange={set("notes")} /></div>
         {error && <p className="inv-dialog__error" role="alert">{error}</p>}
         <div className="inv-dialog__actions">

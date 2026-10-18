@@ -495,6 +495,11 @@ export async function getInvoice(id: string, today = new Date().toISOString().sl
   const products = lines.length
     ? await db.orm.public.Product.where((product) => product.id.in(lines.map((line) => line.productId).filter(Boolean) as string[])).all()
     : [];
+  // Order-sheet details (finish, tape colour, size) printed on the AF7 sales tax invoice.
+  const orderLineIds = lines.map((line) => line.salesOrderLineId).filter(Boolean) as string[];
+  const orderLines = orderLineIds.length
+    ? await db.orm.public.SalesOrderLine.where((line) => line.id.in(orderLineIds)).all()
+    : [];
   const total = cash(invoice.totalAmount);
   const outstanding = outstandingAmount(total, balance.credited, balance.received);
 
@@ -507,6 +512,11 @@ export async function getInvoice(id: string, today = new Date().toISOString().sl
     customerName: customer?.name ?? null,
     customerEmail: customer?.email ?? null,
     customerPhone: customer?.phone ?? null,
+    customerAddress: customer?.address ?? null,
+    customerContactPerson: customer?.contactPerson ?? null,
+    customerNtn: customer?.ntn ?? null,
+    customerStrn: customer?.strn ?? null,
+    customerPo: order?.customerPo ?? null,
     salesOrderNumber: order?.orderNumber ?? null,
     shipmentNumber: shipment?.shipmentNumber ?? null,
     credited: balance.credited,
@@ -517,6 +527,9 @@ export async function getInvoice(id: string, today = new Date().toISOString().sl
     lines: lines.map((line) => ({
       ...line,
       sku: products.find((product) => product.id === line.productId)?.sku ?? null,
+      finish: orderLines.find((item) => item.id === line.salesOrderLineId)?.finish ?? null,
+      color: orderLines.find((item) => item.id === line.salesOrderLineId)?.tapeColor ?? null,
+      size: orderLines.find((item) => item.id === line.salesOrderLineId)?.size ?? null,
       quantity: dec(line.quantity),
       unitPrice: dec(line.unitPrice),
       grossAmount: cash(line.grossAmount),

@@ -2746,6 +2746,13 @@
                   "kind": "scalar"
                 }
               },
+              "referenceNo": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "shipmentId": {
                 "nullable": true,
                 "type": {
@@ -2847,6 +2854,9 @@
                 "purpose": {
                   "column": "purpose"
                 },
+                "referenceNo": {
+                  "column": "referenceNo"
+                },
                 "shipmentId": {
                   "column": "shipmentId"
                 },
@@ -2863,6 +2873,13 @@
           },
           "GatePassLine": {
             "fields": {
+              "bags": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "description": {
                 "nullable": false,
                 "type": {
@@ -2877,6 +2894,13 @@
                   "kind": "scalar"
                 }
               },
+              "grossWeight": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -2888,6 +2912,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "netWeight": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/numeric@1",
                   "kind": "scalar"
                 }
               },
@@ -2940,17 +2971,26 @@
             },
             "storage": {
               "fields": {
+                "bags": {
+                  "column": "bags"
+                },
                 "description": {
                   "column": "description"
                 },
                 "gatePassId": {
                   "column": "gatePassId"
                 },
+                "grossWeight": {
+                  "column": "grossWeight"
+                },
                 "id": {
                   "column": "id"
                 },
                 "lineNo": {
                   "column": "lineNo"
+                },
+                "netWeight": {
+                  "column": "netWeight"
                 },
                 "productId": {
                   "column": "productId"
@@ -14770,12 +14810,22 @@
             "erp_gate_pass_lines": {
               "checks": [
                 {
+                  "expression": "(\"bags\" IS NULL OR \"bags\" >= 0) AND (\"netWeight\" IS NULL OR \"netWeight\" >= 0) AND (\"grossWeight\" IS NULL OR \"grossWeight\" >= 0)",
+                  "name": "erp_gate_pass_lines_packing_bf1ed072",
+                  "prefix": "erp_gate_pass_lines_packing"
+                },
+                {
                   "expression": "\"quantity\" > 0 AND \"returnedQuantity\" >= 0 AND \"returnedQuantity\" <= \"quantity\"",
                   "name": "erp_gate_pass_lines_quantities_4b674539",
                   "prefix": "erp_gate_pass_lines_quantities"
                 }
               ],
               "columns": {
+                "bags": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
                 "description": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -14786,6 +14836,11 @@
                   "dataType": "pg/uuid",
                   "nullable": false
                 },
+                "grossWeight": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "nullable": true
+                },
                 "id": {
                   "codecId": "pg/uuid@1",
                   "dataType": "pg/uuid",
@@ -14795,6 +14850,11 @@
                   "codecId": "pg/int4@1",
                   "dataType": "pg/int4",
                   "nullable": false
+                },
+                "netWeight": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "nullable": true
                 },
                 "productId": {
                   "codecId": "pg/uuid@1",
@@ -14986,6 +15046,11 @@
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": false
+                },
+                "referenceNo": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
                 },
                 "shipmentId": {
                   "codecId": "pg/uuid@1",
@@ -23060,7 +23125,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "d45f4f3a3c2e0ceb4506e824eb8deb6e4f56f32f59e87865f91cf894c3dc36d9"
+    "storageHash": "1f0fe750af6e14ac628139010801f61afe87e164e8bf3e7deebf8ffbf686d9ba"
   },
   "execution": {
     "executionHash": "e65a19f75aec7c5ebdf256588f2adc798dac8b5a6693004414e0b85db734570d",

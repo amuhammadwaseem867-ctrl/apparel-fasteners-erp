@@ -1,25 +1,23 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
+/*
+ * AF7 Packing List (GET /api/packing/lists/[id]): date, PO # and order no.,
+ * one row per carton / bag with size, pieces and weights, then totals and
+ * the three signatures.
+ */
 
-import { apiRequest } from "@/lib/api/client";
+import Link from "next/link";
+
+import { Af7Page, Af7Section, Af7Signatures } from "@/components/print/Af7Document";
+import useApiData from "@/lib/inventory/useApiData";
 import { addDecimalStrings } from "@/server/core/utils/decimal";
 import useCompany from "@/lib/useCompany";
 
-/* Printable packing list (GET /api/packing/lists/[id]); totals are exact. */
-export default function PackingListPrintClient({ id }) {
-  const COMPANY = useCompany();
-  const [list, setList] = useState(null);
-  const [error, setError] = useState("");
+const MIN_ROWS = 10;
 
-  useEffect(() => {
-    let active = true;
-    apiRequest(`/api/packing/lists/${encodeURIComponent(id)}`)
-      .then((value) => { if (active) setList(value); })
-      .catch((cause) => { if (active) setError(cause?.message || "Unable to load this packing list."); });
-    return () => { active = false; };
-  }, [id]);
+export default function PackingListPrintClient({ id }) {
+  const company = useCompany();
+  const { data: list, error } = useApiData(`/api/packing/lists/${encodeURIComponent(id)}`);
 
   if (error) return <main className="print-doc print-doc--message"><p role="alert">{error}</p><Link href="/packing/orders">Back to packing</Link></main>;
   if (!list) return <main className="print-doc print-doc--message"><p role="status">Loading packing list…</p></main>;
@@ -27,6 +25,8 @@ export default function PackingListPrintClient({ id }) {
   const weight = (field) => (list.packages.every((item) => item[field] !== null)
     ? list.packages.reduce((sum, item) => addDecimalStrings(sum, item[field]), "0")
     : "—");
+  const weights = (item) => (item.netWeight === null && item.grossWeight === null ? "" : `${item.netWeight ?? "—"} / ${item.grossWeight ?? "—"}`);
+  const blanks = Math.max(0, MIN_ROWS - list.packages.length);
 
   return (
     <main className="print-doc">
@@ -34,58 +34,61 @@ export default function PackingListPrintClient({ id }) {
         <Link href={`/packing/orders/${list.id}`}>Back to packing list</Link>
         <button type="button" onClick={() => window.print()}>Print</button>
       </nav>
-      <article className="print-doc__page">
-        <header className="print-doc__header">
-          <div>
-            <strong className="print-doc__company">{COMPANY.name}</strong>
-            {[COMPANY.address, COMPANY.phone].filter(Boolean).map((line) => <span key={line}>{line}</span>)}
-          </div>
-          <div className="print-doc__title">
-            <h1>Packing List</h1>
-            <dl>
-              <div><dt>Packing no.</dt><dd>{list.packingNumber}</dd></div>
-              <div><dt>Status</dt><dd>{list.status}</dd></div>
-              <div><dt>Production order</dt><dd>{list.orderNumber}</dd></div>
-              {list.salesOrderNumber && <div><dt>Sales order</dt><dd>{list.salesOrderNumber}</dd></div>}
-              {list.shipmentNumber && <div><dt>Shipment</dt><dd>{list.shipmentNumber}</dd></div>}
-            </dl>
-          </div>
-        </header>
-        <section className="print-doc__parties">
-          <h2>Item</h2>
-          <span><strong>{list.sku}</strong> · {list.productName}</span>
-          <span>{list.totalQuantity} {list.unit} in {list.packageCount} packages · stored at {list.locationLabel}</span>
-        </section>
-        <table className="print-doc__table">
-          <thead><tr><th className="print-doc__num">Pkg</th><th>Type</th><th className="print-doc__num">Quantity</th><th className="print-doc__num">Net kg</th><th className="print-doc__num">Gross kg</th><th>Dimensions</th><th>Marks</th></tr></thead>
-          <tbody>
-            {list.packages.map((item) => (
-              <tr key={item.id}>
-                <td className="print-doc__num">{item.packageNo}</td>
-                <td>{item.packageType}</td>
-                <td className="print-doc__num">{item.quantity}</td>
-                <td className="print-doc__num">{item.netWeight ?? "—"}</td>
-                <td className="print-doc__num">{item.grossWeight ?? "—"}</td>
-                <td>{item.dimensions || ""}</td>
-                <td>{item.marks || ""}</td>
+      <Af7Page company={company} title="PACKING LIST" subtitle={<p className="af7__small">No. {list.packingNumber}</p>}>
+        {list.status === "DRAFT" && <p className="af7__notice">DRAFT: not yet confirmed.</p>}
+        {list.status === "CANCELLED" && <p className="af7__notice">CANCELLED: this packing list is void.</p>}
+
+        <Af7Section number="1" title="Document information">
+          <table className="af7__table">
+            <thead><tr><th>Date</th><th>PO #</th><th>Order no.</th><th>Customer</th></tr></thead>
+            <tbody>
+              <tr>
+                <td className="center">{new Date(list.createdAt).toLocaleDateString("en-GB")}</td>
+                <td className="center">{list.customerPo ?? ""}</td>
+                <td className="center">{list.salesOrderNumber ?? list.orderNumber}</td>
+                <td className="center">{list.customerName ?? ""}</td>
               </tr>
-            ))}
-            <tr>
-              <td colSpan={2}><strong>Total</strong></td>
-              <td className="print-doc__num"><strong>{list.totalQuantity}</strong></td>
-              <td className="print-doc__num"><strong>{weight("netWeight")}</strong></td>
-              <td className="print-doc__num"><strong>{weight("grossWeight")}</strong></td>
-              <td colSpan={2} />
-            </tr>
-          </tbody>
-        </table>
-        {list.notes && <p className="print-doc__notes">Notes: {list.notes}</p>}
-        <section className="print-doc__signoff">
-          <div><span>Packed by</span></div>
-          <div><span>Checked by</span></div>
-          <div><span>Store in-charge</span></div>
-        </section>
-      </article>
+            </tbody>
+          </table>
+        </Af7Section>
+
+        <Af7Section number="2" title="Packing details">
+          <table className="af7__table">
+            <thead>
+              <tr><th>Sr. no.</th><th>Description</th><th>Size (cm / inches)</th><th>Pcs / meters / rolls</th><th>No. of bags / cartons</th><th>Net weight / gross weight (kg)</th></tr>
+            </thead>
+            <tbody>
+              {list.packages.map((item) => (
+                <tr key={item.id}>
+                  <td className="center">{item.packageNo}</td>
+                  <td>{list.productName}{item.marks ? ` · ${item.marks}` : ""}</td>
+                  <td className="center">{list.size ?? ""}</td>
+                  <td className="num">{item.quantity} {list.unit}</td>
+                  <td className="center">1 {item.packageType}</td>
+                  <td className="num">{weights(item)}</td>
+                </tr>
+              ))}
+              {Array.from({ length: blanks }, (_, index) => (
+                <tr key={`blank-${index}`} className="af7__blank"><td className="center">{list.packages.length + index + 1}</td><td /><td /><td /><td /><td /></tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colSpan={3}>TOTAL</td>
+                <td className="num">{list.totalQuantity} {list.unit}</td>
+                <td className="center">{list.packageCount}</td>
+                <td className="num">{weight("netWeight")} / {weight("grossWeight")}</td>
+              </tr>
+            </tfoot>
+          </table>
+          {list.notes && <p><strong>Notes:</strong> {list.notes}</p>}
+        </Af7Section>
+
+        <div className="af7__spacer" />
+        <Af7Section number="3" title="Authorization / signature">
+          <Af7Signatures roles={[["PREPARED BY"], ["CHECKED BY"], ["AUTHORIZED BY"]]} stamp={false} />
+        </Af7Section>
+      </Af7Page>
     </main>
   );
 }

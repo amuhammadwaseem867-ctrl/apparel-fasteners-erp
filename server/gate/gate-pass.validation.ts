@@ -14,6 +14,7 @@ export const gatePassInputSchema = z.object({
   shipmentId: uuid.optional(),
   vehicleNumber: optionalTextSchema(40),
   driverName: optionalTextSchema(120),
+  referenceNo: optionalTextSchema(80),
   expectedReturnDate: date.optional().or(z.literal("")),
   notes: optionalTextSchema(1000),
   lines: z.array(z.object({
@@ -21,6 +22,9 @@ export const gatePassInputSchema = z.object({
     description: z.string().trim().min(1).max(300),
     unit: z.string().trim().min(1).max(20),
     quantity: quantitySchema(),
+    bags: z.number().int().min(0).max(1000000).optional(),
+    netWeight: quantitySchema(true).optional(),
+    grossWeight: quantitySchema(true).optional(),
   })).max(200).default([]),
   idempotencyKey: idempotencyKeySchema,
 }).superRefine((input, context) => {

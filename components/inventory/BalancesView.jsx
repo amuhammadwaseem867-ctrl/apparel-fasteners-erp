@@ -19,10 +19,9 @@ import "@/components/inventory/InventoryWorkspace.css";
 
 const ACTIONS = [
   { label: "Receive", types: ["GOODS_RECEIPT", "STOCK_IN", "FG_RECEIPT", "MATERIAL_RETURN"], primary: true },
-  { label: "Issue / Out", types: ["MATERIAL_ISSUE", "FG_DISPATCH", "STOCK_OUT", "DAMAGE"] },
-  { label: "Transfer", types: ["TRANSFER"] },
+  { label: "Issue / Out", types: ["MATERIAL_ISSUE", "FG_DISPATCH", "STOCK_OUT"] },
   { label: "Adjust / Count", types: ["ADJUSTMENT", "COUNT"] },
-  { label: "Quality hold", types: ["QC_HOLD", "QC_RELEASE", "QC_REJECT"] },
+  { label: "Quality hold", types: ["QC_HOLD", "QC_RELEASE"] },
 ];
 
 export default function BalancesView({
@@ -46,6 +45,8 @@ export default function BalancesView({
     (warehouse) => !warehouseType || warehouse.warehouseType === warehouseType,
   );
   const rows = balances.data?.balances ?? [];
+  // Reserved quantities are not part of the simple process; the column shows only when something is reserved.
+  const showReserved = rows.some((row) => Number(row.reserved) !== 0);
 
   return (
     <main className="inv-page">
@@ -108,7 +109,7 @@ export default function BalancesView({
                   <th>Item</th>
                   <th>Location</th>
                   <th className="inv-num">On hand</th>
-                  <th className="inv-num">Reserved</th>
+                  {showReserved && <th className="inv-num">Reserved</th>}
                   <th className="inv-num">QC hold</th>
                   <th className="inv-num">Available</th>
                   <th>Unit</th>
@@ -126,7 +127,7 @@ export default function BalancesView({
                       <small>{row.warehouseName}</small>
                     </td>
                     <td data-label="On hand" className="inv-num">{row.onHand}</td>
-                    <td data-label="Reserved" className="inv-num">{row.reserved}</td>
+                    {showReserved && <td data-label="Reserved" className="inv-num">{row.reserved}</td>}
                     <td data-label="QC hold" className="inv-num">{row.qualityHold}</td>
                     <td data-label="Available" className="inv-num"><strong>{row.available}</strong></td>
                     <td data-label="Unit">{row.unit}</td>

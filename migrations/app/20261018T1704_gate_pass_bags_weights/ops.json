@@ -1,0 +1,212 @@
+[
+  {
+    "id": "column.public.erp_gate_pass_lines.bags",
+    "label": "Add column \"bags\" to \"erp_gate_pass_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "bags",
+        "table": "erp_gate_pass_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"bags\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_gate_pass_lines",
+          "bags"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"bags\"",
+        "sql": "ALTER TABLE \"public\".\"erp_gate_pass_lines\" ADD COLUMN \"bags\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"bags\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_gate_pass_lines",
+          "bags"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_gate_pass_lines.grossWeight",
+    "label": "Add column \"grossWeight\" to \"erp_gate_pass_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "grossWeight",
+        "table": "erp_gate_pass_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"grossWeight\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_gate_pass_lines",
+          "grossWeight"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"grossWeight\"",
+        "sql": "ALTER TABLE \"public\".\"erp_gate_pass_lines\" ADD COLUMN \"grossWeight\" numeric"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"grossWeight\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_gate_pass_lines",
+          "grossWeight"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_gate_pass_lines.netWeight",
+    "label": "Add column \"netWeight\" to \"erp_gate_pass_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "netWeight",
+        "table": "erp_gate_pass_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"netWeight\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_gate_pass_lines",
+          "netWeight"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"netWeight\"",
+        "sql": "ALTER TABLE \"public\".\"erp_gate_pass_lines\" ADD COLUMN \"netWeight\" numeric"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"netWeight\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_gate_pass_lines",
+          "netWeight"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_gate_passes.referenceNo",
+    "label": "Add column \"referenceNo\" to \"erp_gate_passes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "referenceNo",
+        "table": "erp_gate_passes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"referenceNo\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_gate_passes",
+          "referenceNo"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"referenceNo\"",
+        "sql": "ALTER TABLE \"public\".\"erp_gate_passes\" ADD COLUMN \"referenceNo\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"referenceNo\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_gate_passes",
+          "referenceNo"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.erp_gate_pass_lines.erp_gate_pass_lines_packing_bf1ed072",
+    "label": "Add check constraint \"erp_gate_pass_lines_packing_bf1ed072\" on \"erp_gate_pass_lines\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "erp_gate_pass_lines_packing_bf1ed072",
+        "table": "erp_gate_pass_lines"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_gate_pass_lines_packing_bf1ed072\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_gate_pass_lines_packing_bf1ed072",
+          "public",
+          "\"public\".\"erp_gate_pass_lines\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"erp_gate_pass_lines_packing_bf1ed072\"",
+        "sql": "ALTER TABLE \"public\".\"erp_gate_pass_lines\" ADD CONSTRAINT \"erp_gate_pass_lines_packing_bf1ed072\" CHECK ((\"bags\" IS NULL OR \"bags\" >= 0) AND (\"netWeight\" IS NULL OR \"netWeight\" >= 0) AND (\"grossWeight\" IS NULL OR \"grossWeight\" >= 0))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_gate_pass_lines_packing_bf1ed072\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_gate_pass_lines_packing_bf1ed072",
+          "public",
+          "\"public\".\"erp_gate_pass_lines\""
+        ]
+      }
+    ]
+  }
+]

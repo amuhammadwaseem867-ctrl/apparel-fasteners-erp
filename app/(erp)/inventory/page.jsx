@@ -8,11 +8,10 @@ import useApiData from "@/lib/inventory/useApiData";
 import "@/components/inventory/InventoryWorkspace.css";
 
 const LINKS = [
-  ["/inventory/stock", "Stock on hand", "Receive, issue, transfer, adjust"],
+  ["/inventory/stock", "Stock on hand", "Receive, issue, adjust"],
   ["/inventory/item-master", "Item master", "Items, specifications, catalogue coverage"],
-  ["/inventory/warehouses", "Warehouses", "Warehouses and storage locations"],
+  ["/inventory/warehouses", "Warehouses", "Warehouses, shelves, rows and columns"],
   ["/inventory/movements", "Movements", "The full stock ledger"],
-  ["/inventory/reservations", "Reservations", "Stock reserved against orders"],
   ["/inventory/stock-counts", "Stock counts", "Physical count reconciliation"],
 ];
 
@@ -30,6 +29,7 @@ export default function InventoryOverviewPage() {
   const summary = useApiData("/api/inventory/summary");
   const movements = useApiData("/api/inventory/movements?pageSize=8");
   const data = summary.data;
+  const showReserved = (data?.totalsByUnit ?? []).some((total) => Number(total.reserved) !== 0);
 
   return (
     <main className="inv-page">
@@ -37,7 +37,7 @@ export default function InventoryOverviewPage() {
         <div>
           <p className="inv-header__eyebrow">Inventory</p>
           <h1>Inventory Overview</h1>
-          <p>Live stock position from the stock ledger. Available = on hand − reserved − quality hold.</p>
+          <p>Live stock position from the stock ledger: raw material, work in process and finished goods. Available is what can be issued now (QC hold excluded).</p>
         </div>
         <div className="inv-header__actions">
           <Link className="inv-link-button" href="/inventory/stock">Post a transaction</Link>
@@ -64,14 +64,14 @@ export default function InventoryOverviewPage() {
             ) : (
               <div className="inv-table-wrap">
                 <table className="inv-table">
-                  <thead><tr><th>Unit</th><th className="inv-num">Items</th><th className="inv-num">On hand</th><th className="inv-num">Reserved</th><th className="inv-num">QC hold</th><th className="inv-num">Available</th></tr></thead>
+                  <thead><tr><th>Unit</th><th className="inv-num">Items</th><th className="inv-num">On hand</th>{showReserved && <th className="inv-num">Reserved</th>}<th className="inv-num">QC hold</th><th className="inv-num">Available</th></tr></thead>
                   <tbody>
                     {data.totalsByUnit.map((total) => (
                       <tr key={total.unit}>
                         <td data-label="Unit"><strong>{total.unit}</strong></td>
                         <td data-label="Items" className="inv-num">{total.items}</td>
                         <td data-label="On hand" className="inv-num">{total.onHand}</td>
-                        <td data-label="Reserved" className="inv-num">{total.reserved}</td>
+                        {showReserved && <td data-label="Reserved" className="inv-num">{total.reserved}</td>}
                         <td data-label="QC hold" className="inv-num">{total.qualityHold}</td>
                         <td data-label="Available" className="inv-num"><strong>{total.available}</strong></td>
                       </tr>

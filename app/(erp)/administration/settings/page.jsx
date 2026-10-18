@@ -10,9 +10,15 @@ import useCurrentUser from "@/lib/auth/useCurrentUser";
 import useApiData from "@/lib/inventory/useApiData";
 
 import "@/components/inventory/InventoryWorkspace.css";
+import "./Settings.css";
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const COMPANY_FIELDS = [["name", "Trading name *"], ["legalName", "Legal name"], ["address", "Address"], ["phone", "Phone"], ["email", "Email"], ["taxRegistration", "Tax registration (NTN / STRN)"]];
+const COMPANY_GROUPS = [
+  ["Company", [["name", "Trading name *"], ["legalName", "Legal name"], ["address", "Address"], ["phone", "Phone"], ["email", "Email"], ["website", "Website"], ["taxRegistration", "Tax registration (NTN / STRN)"]]],
+  ["Bank / payment details (sales tax invoice)", [["bankName", "Bank name"], ["accountName", "Account name"], ["accountNumber", "Account no."], ["iban", "IBAN"], ["swiftCode", "SWIFT code"], ["bankBranch", "Branch / address"]]],
+  ["Commercial terms and shipment (defaults on the invoice)", [["productionTime", "Production time"], ["paymentTerms", "Payment terms"], ["shipmentTerms", "Shipment terms"], ["shipmentMode", "Shipment mode"], ["portOfLoading", "Port of loading"], ["countryOfOrigin", "Country of origin"]]],
+];
+const COMPANY_FIELDS = COMPANY_GROUPS.flatMap(([, fields]) => fields);
 
 function CompanyForm({ value, editable, onSaved }) {
   const [form, setForm] = useState(() => Object.fromEntries(COMPANY_FIELDS.map(([key]) => [key, value[key] ?? ""])));
@@ -36,11 +42,16 @@ function CompanyForm({ value, editable, onSaved }) {
 
   return (
     <form className="inv-dialog" onSubmit={submit}>
-      <div className="inv-dialog__grid">
-        {COMPANY_FIELDS.map(([key, label]) => (
-          <div className="inv-field" key={key}><label htmlFor={`co-${key}`}>{label}</label><input id={`co-${key}`} type={key === "email" ? "email" : "text"} required={key === "name"} disabled={!editable} maxLength={key === "address" ? 300 : 160} value={form[key]} onChange={(event) => setForm({ ...form, [key]: event.target.value })} /></div>
-        ))}
-      </div>
+      {COMPANY_GROUPS.map(([title, fields]) => (
+        <fieldset key={title} className="settings-group">
+          <legend>{title}</legend>
+          <div className="inv-dialog__grid">
+            {fields.map(([key, label]) => (
+              <div className="inv-field" key={key}><label htmlFor={`co-${key}`}>{label}</label><input id={`co-${key}`} type={key === "email" ? "email" : "text"} required={key === "name"} disabled={!editable} maxLength={key === "address" ? 300 : key === "taxRegistration" || key === "accountNumber" || key === "iban" ? 60 : key === "swiftCode" ? 30 : 120} value={form[key]} onChange={(event) => setForm({ ...form, [key]: event.target.value })} /></div>
+            ))}
+          </div>
+        </fieldset>
+      ))}
       {message.error && <p className="inv-dialog__error" role="alert">{message.error}</p>}
       {message.notice && <p className="inv-field__hint" role="status">{message.notice}</p>}
       {editable && <div className="inv-dialog__actions"><Button type="submit" variant="primary" loading={saving}>Save company profile</Button></div>}

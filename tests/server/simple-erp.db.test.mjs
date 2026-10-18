@@ -4,6 +4,10 @@ import test from "node:test";
 
 import { changeProductionStatus, completeStage, createProductionOrder, finishStage, getProductionOrder, recordStageRun, startStage } from "../../server/production/production.service.ts";
 import { productionOrderInputSchema, stageRunInputSchema } from "../../server/production/production.validation.ts";
+import { db } from "../../server/core/database/client.ts";
+import { createGatePass, getGatePass } from "../../server/gate/gate-pass.service.ts";
+import { gatePassInputSchema } from "../../server/gate/gate-pass.validation.ts";
+import { getSetting, setSetting } from "../../server/settings/settings.service.ts";
 import { createProduct } from "../../server/products/product.service.ts";
 import { changeSalesOrderStatus, createCustomer, createSalesOrder, getSalesOrder, updateCustomer } from "../../server/sales/sales.service.ts";
 import { customerInputSchema, customerUpdateSchema, salesOrderInputSchema } from "../../server/sales/sales.validation.ts";
@@ -146,4 +150,33 @@ test("Order Profile: send to production once per line, and the status follows th
   assert.equal(overallStatus("APPROVED", [at("delivered", "COMPLETED")]), "Delivered");
   assert.equal(overallStatus("APPROVED", [at("plating", "ON_HOLD")]), "On Hold");
   assert.equal(overallStatus("CANCELLED", []), "Cancelled");
+});
+
+test("an AF7 gate pass records the reference no., bags and net / gross weight per line", async () => {
+  const pass = await createGatePass(gatePassInputSchema.parse({
+    passType: "INWARD", partyName: `Sundar Wire ${run}`, purpose: "Brass wire for teeth making", referenceNo: "PO-88", idempotencyKey: key(),
+    lines: [
+      { description: "Brass wire #5", unit: "Kgs", quantity: 250.5, bags: 10, netWeight: 250.5, grossWeight: 253.25 },
+      { description: "Polyester tape", unit: "Rolls", quantity: 40 },
+    ],
+  }), actor);
+  const saved = await getGatePass(pass.id);
+  assert.equal(saved.referenceNo, "PO-88");
+  assert.deepEqual(saved.lines.map((line) => [line.bags, line.netWeight, line.grossWeight]), [[10, "250.5", "253.25"], [null, null, null]]);
+  assert.throws(() => gatePassInputSchema.parse({ passType: "INWARD", partyName: "X Co", purpose: "Test", idempotencyKey: key(), lines: [{ description: "A", unit: "Pcs", quantity: 1, bags: -1 }] }));
+});
+
+test("the company profile keeps bank and commercial terms for the sales tax invoice", async () => {
+  const before = await getSetting("company.profile");
+  try {
+    const saved = await setSetting("company.profile", { ...before, bankName: `Test Bank ${run}`, iban: "PK00TEST0000000000000000", productionTime: "3 weeks" }, actor);
+    assert.equal(saved.bankName, `Test Bank ${run}`);
+    assert.equal(saved.iban, "PK00TEST0000000000000000");
+    assert.equal(saved.productionTime, "3 weeks");
+  } finally {
+    // Leave the test database's profile as it was.
+    const { configured, ...previous } = before;
+    if (configured) await setSetting("company.profile", previous, actor);
+    else await db.orm.public.AppSetting.where({ key: "company.profile" }).delete();
+  }
 });

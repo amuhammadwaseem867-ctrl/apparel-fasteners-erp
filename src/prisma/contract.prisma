@@ -997,6 +997,7 @@ model GatePass {
   vehicleNumber      String?
   driverName         String?
   expectedReturnDate String?
+  referenceNo        String?
   notes              String?
   idempotencyKey     String             @unique
   createdBy          Uuid
@@ -1030,10 +1031,15 @@ model GatePassLine {
   unit             String
   quantity         Decimal
   returnedQuantity Decimal @default(0)
+  // AF7 gate pass: no. of bags and weights in kg.
+  bags             Int?
+  netWeight        Decimal?
+  grossWeight      Decimal?
 
   gatePass GatePass @relation(fields: [gatePassId], references: [id], onDelete: Restrict)
 
   @@unique([gatePassId, lineNo])
+  @@check(expression: "(\"bags\" IS NULL OR \"bags\" >= 0) AND (\"netWeight\" IS NULL OR \"netWeight\" >= 0) AND (\"grossWeight\" IS NULL OR \"grossWeight\" >= 0)", name: "erp_gate_pass_lines_packing")
   @@check(expression: "\"quantity\" > 0 AND \"returnedQuantity\" >= 0 AND \"returnedQuantity\" <= \"quantity\"", name: "erp_gate_pass_lines_quantities")
   @@map("erp_gate_pass_lines")
 }

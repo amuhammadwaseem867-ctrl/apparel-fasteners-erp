@@ -80,3 +80,14 @@
 
   color: var(--af-navy);
 }
+.settings-group {
+  margin: 0 0 14px;
+  padding: 0;
+  border: 0;
+}
+
+.settings-group legend {
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: var(--af-text-secondary);
+}
