@@ -92,7 +92,7 @@ export default function WelcomePage() {
       <div className="welcome__spotlight" aria-hidden="true" />
 
       <header className="welcome__bar">
-        <Image src="/logo in white.png" alt="Apparel Fastener" width={320} height={92} priority className="welcome__logo" />
+        <Image src="/af7-logo-white.png" alt="AF7" width={156} height={92} priority className="welcome__logo" />
         <Link href="/login" className="welcome__signin">
           Sign in
           <ArrowRight size={15} strokeWidth={2.2} />
@@ -102,7 +102,7 @@ export default function WelcomePage() {
       <section className="welcome__hero">
         <span className="welcome__eyebrow w-rise" style={{ "--d": "100ms" }}>
           <span className="welcome__dot" />
-          APPAREL FASTENER ERP
+          AF7 ERP
         </span>
 
         <h1 className="welcome__title">

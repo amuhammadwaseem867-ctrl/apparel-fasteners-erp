@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -194,12 +195,12 @@ export default function Sidebar({
       <div className="erp-sidebar__header">
         <div className="erp-sidebar__brand">
           <div className="erp-sidebar__brand-mark">
-            AF
+            <Image src="/af7-mark-white.png" alt="AF7" width={30} height={14} priority />
           </div>
 
           <div className="erp-sidebar__brand-copy">
             <div className="erp-sidebar__brand-name">
-              Apparel Fastener
+              AF7
             </div>
 
             <div className="erp-sidebar__brand-subtitle">

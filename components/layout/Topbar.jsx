@@ -94,7 +94,7 @@ function getPageContext(pathname) {
   }
 
   return {
-    section: "Apparel Fastener ERP",
+    section: "AF7 ERP",
     title: "Workspace",
   };
 }

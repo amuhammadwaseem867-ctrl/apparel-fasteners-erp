@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import ModuleAvailabilityBanner from "./ModuleAvailabilityBanner";
 import AssistantPanel from "@/components/assistant/AssistantPanel";
+import ProcessNav from "@/components/process/ProcessNav";
 
 import "./AppShell.css";
 
@@ -40,6 +41,10 @@ export default function AppShell({ children }) {
         <main className="app-shell__main">
           <div className="app-shell__content">
             <ModuleAvailabilityBanner />
+
+            <Suspense fallback={null}>
+              <ProcessNav />
+            </Suspense>
 
             {children}
           </div>

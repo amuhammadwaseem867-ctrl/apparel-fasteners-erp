@@ -10,6 +10,8 @@ const actionSchema = z.object({
   action: z.enum(["start", "complete"]),
   // Tape Dyeing only: the total tape weight in kg.
   totalQuantity: z.number().finite().positive().max(1000000).optional(),
+  // A note left with the completed stage.
+  note: z.string().trim().max(1000).optional(),
 });
 
 /* The simple production board: start a stage, or complete it in one step. */
@@ -27,7 +29,7 @@ export function POST(request, { params }) {
     }
     const data = input.action === "start"
       ? await startStage(id, stageKey, user.id)
-      : await finishStage(id, stageKey, { totalQuantity: input.totalQuantity }, user.id);
+      : await finishStage(id, stageKey, { totalQuantity: input.totalQuantity, note: input.note }, user.id);
     return { data };
   });
 }

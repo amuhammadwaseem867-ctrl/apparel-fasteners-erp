@@ -158,7 +158,7 @@
 }
 
 .erp-login__logo img {
-  width: 235px;
+  width: 140px;
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 6px 24px rgba(0, 0, 0, 0.25));
@@ -813,7 +813,7 @@
   }
 
   .erp-login__mobile-logo img {
-    width: 180px;
+    width: 104px;
     height: auto;
   }
 }

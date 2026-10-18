@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import Button from "@/components/ui/Button";
+import StageChecklistDialog from "@/components/production/StageChecklistDialog";
 import StockDocumentDialog from "@/components/inventory/StockDocumentDialog";
 import {
   OrderStatusBadge,
@@ -151,11 +152,18 @@ function StageSection({ order, stage, onChanged }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [showRuns, setShowRuns] = useState(false);
+  const [checking, setChecking] = useState(false);
   const open = ["RELEASED", "IN_PROGRESS"].includes(order.status) && stage.status !== "COMPLETED";
   const canComplete = open && stage.previousCompleted && Number(stage.available) === 0;
+  const points = stage.checks?.points ?? [];
 
   async function complete() {
     if (busy) return;
+    // Stages 1–6 complete through their check points (D-040).
+    if (!stage.managedBy) {
+      setChecking(true);
+      return;
+    }
     const next = order.stages.find((item) => item.sequence === stage.sequence + 1);
     const message = next
       ? `Complete ${stage.label}? The order moves to ${next.label}; no more output can be recorded at this stage.`
@@ -182,6 +190,9 @@ function StageSection({ order, stage, onChanged }) {
               {showRuns ? "Hide" : "Show"} {stage.runs.length} {stage.runs.length === 1 ? "run" : "runs"}
             </button>
           )}
+          {points.length > 0 && !open && (
+            <button type="button" className="inv-text-button" onClick={() => setChecking(true)}>View checks</button>
+          )}
           {open && (
             <Button size="small" variant="secondary" loading={busy} disabled={!canComplete} onClick={complete}
               title={canComplete ? "" : !stage.previousCompleted ? "Complete the previous stage first." : "Process everything waiting at this stage first."}>
@@ -202,6 +213,18 @@ function StageSection({ order, stage, onChanged }) {
         {stage.startedAt && <div><dt>Started</dt><dd>{formatDateTime(stage.startedAt)}</dd></div>}
         {stage.completedAt && <div><dt>Completed</dt><dd>{formatDateTime(stage.completedAt)}</dd></div>}
       </dl>
+      {stage.completionNote && <p className="inv-field__hint"><strong>Completion note:</strong> {stage.completionNote}</p>}
+      {stage.checks?.problem && open && stage.status === "IN_PROGRESS" && <p className="inv-field__hint" role="status">Blocked: {stage.checks.problem}</p>}
+      {checking && (
+        <StageChecklistDialog
+          order={order}
+          stage={stage}
+          readOnly={!open}
+          onClose={() => setChecking(false)}
+          onSaved={async () => onChanged(await apiRequest(`/api/production/orders/${order.id}`))}
+          onComplete={async ({ note }) => onChanged(await apiRequest(`/api/production/orders/${order.id}/stages/${stage.stageKey}/complete`, { method: "POST", body: JSON.stringify({ note }) }))}
+        />
+      )}
       {error && <p className="inv-dialog__error" role="alert">{error}</p>}
       {open && Number(stage.available) > 0 && (MANAGED_LINKS[stage.managedBy] ? (
         <p className="inv-state" role="status">

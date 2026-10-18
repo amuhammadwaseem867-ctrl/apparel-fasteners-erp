@@ -20,21 +20,9 @@
 }
 
 .af7__logo {
-  display: grid;
-  justify-items: center;
-  color: var(--af7-navy);
-  line-height: 1;
-}
-
-.af7__logo strong {
-  font-size: 34pt;
-  font-weight: 900;
-  letter-spacing: -1px;
-}
-
-.af7__logo span {
-  font-size: 6pt;
-  letter-spacing: 2px;
+  display: block;
+  width: 30mm;
+  height: auto;
 }
 
 .af7__company {

@@ -35,6 +35,7 @@ import {
   stageQuantities,
   type StageTotals,
 } from "./production-rules";
+import { assertStageChecks, checkpointsFor, stageChecksFor } from "./stage-checks.service";
 import type { ProductionOrderInput, ProductionQuery, StageRunInput } from "./production.validation";
 
 const dec = (value: unknown) => normalizeDecimalString(String(value ?? "0"));
@@ -248,6 +249,8 @@ export async function getProductionOrder(id: string) {
     });
   }
 
+  const checksOf = await stageChecksFor(order.id);
+
   return {
     ...order,
     quantity,
@@ -272,6 +275,8 @@ export async function getProductionOrder(id: string) {
         unit: quantities.inKg ? "Kg" : order.unit,
         startedAt: stage.startedAt,
         completedAt: stage.completedAt,
+        completionNote: stage.completionNote ?? null,
+        checks: stageManagedBy(stage.stageKey, order.salesOrderId) ? null : checksOf(stage.stageKey),
         runs: runs.filter((run) => run.stageId === stage.id).map((run) => ({
           id: run.id,
           runNo: run.runNo,
@@ -521,7 +526,9 @@ export async function recordStageRun(id: string, stageKey: string, input: StageR
   return { order: await getProductionOrder(id), replayed: false };
 }
 
-export async function completeStage(id: string, stageKey: string, actorId: string) {
+export async function completeStage(id: string, stageKey: string, actorId: string, note?: string) {
+  // Check points of stages 1–6 (D-040); read before the transaction so the lock is short.
+  const points = await checkpointsFor(stageKey);
   await db.transaction(async (tx) => {
     await lockOrder(tx, id);
     const order = await tx.orm.public.ProductionOrder.where({ id }).first();
@@ -541,10 +548,12 @@ export async function completeStage(id: string, stageKey: string, actorId: strin
     if (problem) {
       throw new AppError(problem, { code: "STAGE_NOT_COMPLETABLE", status: 409 });
     }
+    if (!stageManagedBy(stageKey, order!.salesOrderId)) await assertStageChecks(tx, id, stageKey, points);
 
     const now = new Date().toISOString();
-    await tx.orm.public.ProductionStage.where({ id: stage.id }).update({ status: "COMPLETED", completedAt: now, updatedAt: now });
-    await logEvent(tx, id, actorId, "STAGE_COMPLETED", { stageKey, toValue: "COMPLETED" });
+    const completionNote = note?.trim() || null;
+    await tx.orm.public.ProductionStage.where({ id: stage.id }).update({ status: "COMPLETED", completedAt: now, updatedAt: now, ...(completionNote ? { completionNote } : {}) });
+    await logEvent(tx, id, actorId, "STAGE_COMPLETED", { stageKey, toValue: "COMPLETED", ...(completionNote ? { details: { note: completionNote } } : {}) });
 
     const next = STAGES.find((item) => item.sequence === stage.sequence + 1);
 
@@ -598,11 +607,14 @@ function completionKey(id: string, stageKey: string) {
   return `simple-complete:${id}:${stageKey}`;
 }
 
-export async function finishStage(id: string, stageKey: string, input: { totalQuantity?: number }, actorId: string) {
+export async function finishStage(id: string, stageKey: string, input: { totalQuantity?: number; note?: string }, actorId: string) {
   const order = await db.orm.public.ProductionOrder.where({ id }).first();
   if (!order) throw new AppError("Production order not found.", { code: "PRODUCTION_ORDER_NOT_FOUND", status: 404 });
   const managedBy = stageManagedBy(stageKey, order.salesOrderId);
   if (managedBy) throw new AppError(MANAGED_STAGE_MESSAGES[managedBy], { code: "STAGE_MANAGED_ELSEWHERE", status: 409 });
+  // Refuse before anything is recorded (tape weight, output) while the check points are not done.
+  const blocked = (await stageChecksFor(id))(stageKey).problem;
+  if (blocked) throw new AppError(blocked, { code: "STAGE_CHECKS_INCOMPLETE", status: 409 });
 
   if (stageKey === TAPE_STAGE_KEYS[0] && !order.tapeKg) {
     if (!input.totalQuantity || input.totalQuantity <= 0) {
@@ -629,7 +641,7 @@ export async function finishStage(id: string, stageKey: string, input: { totalQu
     const quantity = Number(stage.available);
     await recordStageRun(id, stageKey, { idempotencyKey: completionKey(id, stageKey), inputQuantity: quantity, acceptedQuantity: quantity, rejectedQuantity: 0, wastageQuantity: 0, reworkQuantity: 0 }, actorId);
   }
-  return completeStage(id, stageKey, actorId);
+  return completeStage(id, stageKey, actorId, input.note);
 }
 
 /* Counts for the production dashboard and stage board, straight from the tables. */

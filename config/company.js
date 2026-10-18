@@ -7,7 +7,7 @@
  */
 
 export const COMPANY = {
-  name: "AF7 / Apparel Fastener",
+  name: "AF7",
   legalName: "Apparel Fastener (Pvt) Ltd",
   address: "Plot# 33 B Punjab Small Sundar Industrial Estate II, Raiwind Road, Lahore, Pakistan 54000",
   phone: "",

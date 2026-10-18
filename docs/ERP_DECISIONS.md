@@ -1150,3 +1150,82 @@ switch.
 
 **Not tested here.** This environment's network blocks api.groq.com, so
 the real service was checked only on the owner's machine.
+
+## D-040 AF7 branding, production check points (2026-10-18)
+
+**Branding.**
+- The app and its documents carry the owner's AF7 logo:
+  - `public/af7-logo.png` on white paper.
+  - A white version on the dark sidebar and login screens.
+  - The browser tab icon.
+- The company's display name is "AF7". The legal name stays in Settings.
+- The font is Montserrat, served from the app itself
+  (`@fontsource/montserrat`, pinned at 5.2.8), so it does not depend on
+  Google at runtime.
+
+**Check points.**
+- Each of stages 1–6 has a checklist of check points, which the owner
+  edits in Settings → Production check points.
+- Each check point has a label, a type (pass/fail or a measured value), a
+  unit, a limit and whether it is required.
+- The defaults follow common zipper practice, for example:
+  - shade against the approved sample
+  - colour fastness
+  - shrinkage
+  - teeth size and gap
+  - plating adhesion
+  - stops
+  - length
+  - slider pull-off
+- No limit values are invented; they come from the buyers'
+  specifications.
+
+**Recording checks.**
+- While a stage is in progress, each check is recorded as Pass, Fail or
+  N/A (N/A only on optional check points).
+- A measurement needs its value, and a failure needs a note.
+- Results go to `erp_production_stage_checks`, one row per check point;
+  re-checking replaces the row, and every change is in the audit log.
+
+**Blocking.**
+- The server refuses to complete a stage while a required check is
+  missing or any check has failed. This applies through every path: the
+  Order Profile, the production order page and the API.
+- Quality Check, Packing and Delivered are checked by their own documents
+  (inspection, packing list, shipment), so they have no checklist.
+
+**Completion note.** A note can be left when a stage is completed
+(`erp_production_stages.completionNote`). It shows under the stage.
+
+## D-041 Process bar, blockers and step notes (2026-10-18)
+
+**Process bar.** Every order-process page shows the seven steps:
+1. Order
+2. Production
+3. Quality check
+4. Packing
+5. Dispatch
+6. Invoice
+7. Payment
+
+**On a detail page.**
+- The bar finds the page's order, going through its production order or
+  shipment where needed.
+- It shows each step as done, current or waiting, with the next action
+  and a link to it.
+- When something stops the order, it shows the blocker instead, for
+  example: a failed check, on hold, waiting for QC, or waiting for a
+  dispatched shipment.
+- The rules live in `lib/process/processSteps.js` and are unit tested.
+- The bar refreshes whenever the page saves something: `apiRequest`
+  signals `erp:data-changed`.
+
+**Step notes.**
+- Every step of the Order Profile has a notes log (`erp_sales_order_notes`).
+  A note records the step, the text, who wrote it and when.
+- Notes are never edited or deleted.
+
+**Migrations.** These two migrations are additive and must be applied
+live, with `npm run go-live`, before this code reaches main:
+- `20261018T1803_stage_checks`
+- `20261018T1812_order_process_notes`

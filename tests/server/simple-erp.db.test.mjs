@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import test from "node:test";
 
+import { passStageChecks } from "../support/stage-checks.mjs";
+
 import { changeProductionStatus, completeStage, createProductionOrder, finishStage, getProductionOrder, recordStageRun, startStage } from "../../server/production/production.service.ts";
 import { productionOrderInputSchema, stageRunInputSchema } from "../../server/production/production.validation.ts";
 import { db } from "../../server/core/database/client.ts";
@@ -57,8 +59,10 @@ test("tape is weighed in kg through Tape Dyeing and Tape Press; Teeth Making cou
   const runStage = (stageKey, input, accepted, wastage = 0) => recordStageRun(production.id, stageKey, stageRunInputSchema.parse({ idempotencyKey: key(), inputQuantity: input, acceptedQuantity: accepted, wastageQuantity: wastage }), actor);
   await assert.rejects(runStage("tape-dyeing", 13, 13), (error) => /Only 12.5 is available/.test(error.message));
   await runStage("tape-dyeing", 12.5, 12.2, 0.3);
+  await passStageChecks(production.id, "tape-dyeing", actor);
   await completeStage(production.id, "tape-dyeing", actor);
   await runStage("tape-press", 12.2, 12.1, 0.1);
+  await passStageChecks(production.id, "tape-press", actor);
   await completeStage(production.id, "tape-press", actor);
   state = await getProductionOrder(production.id);
   assert.equal(state.stages[1].received, "12.2");
@@ -80,6 +84,7 @@ test("the simple board: start and complete each stage; Tape Dyeing takes its tot
   assert.equal(state.stages[0].status, "IN_PROGRESS");
   assert.ok(state.stages[0].startedAt);
   await assert.rejects(startStage(production.id, "tape-dyeing", actor), code("STAGE_STATUS_CONFLICT"));
+  await passStageChecks(production.id, "tape-dyeing", actor);
   await assert.rejects(finishStage(production.id, "tape-dyeing", {}, actor), code("TAPE_QUANTITY_REQUIRED"));
 
   state = await finishStage(production.id, "tape-dyeing", { totalQuantity: 18.25 }, actor);
@@ -93,6 +98,7 @@ test("the simple board: start and complete each stage; Tape Dyeing takes its tot
 
   for (const stageKey of ["tape-press", "teeth-making", "plating", "lacquer-wax", "assembling"]) {
     await startStage(production.id, stageKey, actor);
+    await passStageChecks(production.id, stageKey, actor);
     state = await finishStage(production.id, stageKey, {}, actor);
   }
   assert.equal(state.stages[1].acceptedQuantity, "18.25", "Tape Press carries the kilograms");
@@ -179,4 +185,57 @@ test("the company profile keeps bank and commercial terms for the sales tax invo
     if (configured) await setSetting("company.profile", previous, actor);
     else await db.orm.public.AppSetting.where({ key: "company.profile" }).delete();
   }
+});
+
+test("check points block a stage until every required check passes, and the completion note is kept", async () => {
+  const { recordStageChecks } = await import("../../server/production/stage-checks.service.ts");
+  const code = (expected) => (error) => error.code === expected;
+  const production = await createProductionOrder(productionOrderInputSchema.parse({ productId: ctx.zip.id, quantity: 50, tapeKg: 4 }), actor);
+  await changeProductionStatus(production.id, "release", "", actor);
+  const record = (results) => recordStageChecks(production.id, "tape-dyeing", { results }, actor);
+
+  await assert.rejects(record([{ key: "shade-match", result: "PASS" }]), code("STAGE_STATUS_CONFLICT"), "not before the stage starts");
+  await startStage(production.id, "tape-dyeing", actor);
+  await assert.rejects(finishStage(production.id, "tape-dyeing", {}, actor), code("STAGE_CHECKS_INCOMPLETE"));
+
+  await assert.rejects(record([{ key: "no-such-check", result: "PASS" }]), code("CHECKPOINT_NOT_FOUND"));
+  await assert.rejects(record([{ key: "shade-match", result: "NA" }]), code("CHECKPOINT_REQUIRED"));
+  await assert.rejects(record([{ key: "shrinkage", result: "PASS" }]), code("CHECKPOINT_VALUE_REQUIRED"));
+  await assert.rejects(record([{ key: "shade-match", result: "FAIL" }]), code("CHECKPOINT_NOTE_REQUIRED"));
+
+  let checks = await record([
+    { key: "shade-match", result: "FAIL", note: "Two shades lighter than the sample" },
+    { key: "shade-even", result: "PASS" },
+    { key: "color-fastness", result: "PASS" },
+    { key: "shrinkage", result: "PASS", value: "1.5" },
+  ]);
+  assert.match(checks.problem, /Failed check: Shade matches the approved sample/);
+  await assert.rejects(finishStage(production.id, "tape-dyeing", {}, actor), code("STAGE_CHECKS_INCOMPLETE"));
+  let state = await getProductionOrder(production.id);
+  assert.equal(state.stages[0].status, "IN_PROGRESS", "nothing was recorded by the refused completion");
+  assert.equal(state.stages[0].acceptedQuantity, "0");
+
+  checks = await record([{ key: "shade-match", result: "PASS", note: "Re-dyed; matches now" }]);
+  assert.equal(checks.problem, null);
+  state = await finishStage(production.id, "tape-dyeing", { note: "Lot 7, dyed twice" }, actor);
+  const dyeing = state.stages[0];
+  assert.equal(dyeing.status, "COMPLETED");
+  assert.equal(dyeing.completionNote, "Lot 7, dyed twice");
+  assert.deepEqual(dyeing.checks.points.map((point) => [point.key, point.result, point.value]), [
+    ["shade-match", "PASS", null], ["shade-even", "PASS", null], ["color-fastness", "PASS", null], ["shrinkage", "PASS", "1.5"],
+  ]);
+  await assert.rejects(record([{ key: "shade-match", result: "PASS" }]), code("STAGE_STATUS_CONFLICT"), "a completed stage's checks are closed");
+  assert.equal(state.stages[6].checks, null, "Quality Check is checked by its inspection");
+});
+
+test("notes left at a process step show on the Order Profile with who wrote them", async () => {
+  const { addOrderNote, getOrderTrace } = await import("../../server/sales/order-trace.service.ts");
+  const user = await db.orm.public.User.where({ status: "ACTIVE" }).first();
+  assert.ok(user, "the test database has a user");
+  await addOrderNote(ctx.order.id, { step: "qc", note: "Passed QC; 2 pieces re-waxed" }, user.id);
+  const trace = await addOrderNote(ctx.order.id, { step: "dispatch", note: "Sent with Ali Goods, vehicle LEA-123" }, user.id);
+  const own = trace.notes.filter((note) => ["Passed QC; 2 pieces re-waxed", "Sent with Ali Goods, vehicle LEA-123"].includes(note.note));
+  assert.deepEqual(own.map((note) => [note.step, note.createdByName]), [["qc", user.name], ["dispatch", user.name]]);
+  assert.equal((await getOrderTrace(ctx.order.id)).notes.length, trace.notes.length);
+  await assert.rejects(addOrderNote(randomUUID(), { step: "qc", note: "x" }, user.id), (error) => error.code === "SALES_ORDER_NOT_FOUND");
 });

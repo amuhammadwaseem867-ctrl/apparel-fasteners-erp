@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import test from "node:test";
 
+import { passStageChecks } from "../support/stage-checks.mjs";
+
 import { db } from "../../server/core/database/client.ts";
 import { changeShipment, createShipment, getSalesOrderFulfilment } from "../../server/dispatch/dispatch.service.ts";
 import { shipmentInputSchema } from "../../server/dispatch/dispatch.validation.ts";
@@ -74,6 +76,7 @@ test.before(async () => {
   await changeProductionStatus(ctx.order.id, "release", "", actor);
   for (const stageKey of EARLY_STAGES) {
     await recordStageRun(ctx.order.id, stageKey, stageRunInputSchema.parse({ idempotencyKey: key(), inputQuantity: 100, acceptedQuantity: 100 }), actor);
+    await passStageChecks(ctx.order.id, stageKey, actor);
     await completeStage(ctx.order.id, stageKey, actor);
   }
 });

@@ -8,6 +8,7 @@
  * production", which opens one production order per order line.
  */
 
+import { recordAuditEvent } from "../auth/audit.service";
 import { db } from "../core/database/client";
 import { AppError } from "../core/errors/app-error";
 import { STAGES } from "../production/production-rules";
@@ -51,10 +52,13 @@ export async function getOrderTrace(id: string) {
   ]);
   const shipmentIds = shipments.map((row) => row.id);
   const invoiceIds = invoices.map((row) => row.id);
-  const [gatePasses, receipts] = await Promise.all([
+  const [gatePasses, receipts, notes] = await Promise.all([
     shipmentIds.length ? db.orm.public.GatePass.where((row) => row.shipmentId.in(shipmentIds)).all() : [],
     invoiceIds.length ? db.orm.public.CustomerReceipt.where((row) => row.invoiceId.in(invoiceIds)).all() : [],
+    db.orm.public.SalesOrderNote.where({ salesOrderId: id }).orderBy((row) => row.createdAt.asc()).all(),
   ]);
+  const authorIds = [...new Set(notes.map((row) => row.createdBy))];
+  const authors = authorIds.length ? await db.orm.public.User.where((user) => user.id.in(authorIds)).select("id", "name").all() : [];
 
   const status = overallStatus(order.status, production as never);
   const paid = receipts.filter((row) => row.status === "POSTED").reduce((sum, row) => sum + Number(row.amount), 0);
@@ -75,6 +79,7 @@ export async function getOrderTrace(id: string) {
     invoices: invoices.map((row) => ({ id: row.id, invoiceNumber: row.invoiceNumber, status: row.status, invoiceDate: row.invoiceDate, dueDate: row.dueDate, totalAmount: num(row.totalAmount) })),
     receipts: receipts.map((row) => ({ id: row.id, receiptNumber: row.receiptNumber, status: row.status, receiptDate: row.receiptDate, amount: num(row.amount), invoiceId: row.invoiceId })),
     money: { invoiced, paid, outstanding: Math.max(0, Math.round((invoiced - paid) * 100) / 100) },
+    notes: notes.map((row) => ({ id: row.id, step: row.step, note: row.note, createdAt: row.createdAt, createdByName: authors.find((user) => user.id === row.createdBy)?.name ?? null })),
   };
 }
 
@@ -104,5 +109,19 @@ export async function sendOrderToProduction(id: string, actorId: string) {
   if (created.length === 0) {
     throw new AppError("Every line of this order is already in production.", { code: "ALREADY_IN_PRODUCTION", status: 409 });
   }
+  return getOrderTrace(id);
+}
+
+export const NOTE_STEPS = ["order", "production", "qc", "packing", "dispatch", "invoice", "payment"] as const;
+
+/* A note left on the order at a process step (D-041). Notes are kept as written. */
+export async function addOrderNote(id: string, input: { step: (typeof NOTE_STEPS)[number]; note: string }, actorId: string) {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) throw new AppError("Sales order not found.", { code: "SALES_ORDER_NOT_FOUND", status: 404 });
+  const order = await db.orm.public.SalesOrder.where({ id }).first();
+  if (!order) throw new AppError("Sales order not found.", { code: "SALES_ORDER_NOT_FOUND", status: 404 });
+  await db.transaction(async (tx) => {
+    const row = await tx.orm.public.SalesOrderNote.create({ salesOrderId: id, step: input.step, note: input.note.trim(), createdBy: actorId });
+    await recordAuditEvent({ actorId, action: "ORDER_NOTE_ADDED", entityType: "SalesOrder", entityId: id, metadata: { noteId: row.id, step: input.step } }, tx);
+  });
   return getOrderTrace(id);
 }

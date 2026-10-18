@@ -15,6 +15,7 @@ import { CheckCircle2, Circle, Factory, Pencil, PlayCircle, Printer } from "luci
 import Button from "@/components/ui/Button";
 import PackingListDialog from "@/components/packing/PackingListDialog";
 import ShipmentDialog from "@/components/dispatch/ShipmentDialog";
+import StageChecklistDialog from "@/components/production/StageChecklistDialog";
 import { formatAmount } from "@/components/finance/financeUi";
 import { apiRequest } from "@/lib/api/client";
 import useCurrentUser from "@/lib/auth/useCurrentUser";
@@ -23,7 +24,6 @@ import useApiData from "@/lib/inventory/useApiData";
 import "@/components/inventory/InventoryWorkspace.css";
 import "./OrderProfile.css";
 
-const PHASES = ["New", "Confirmed", "In Production", "QC Pending", "QC Approved", "Packing", "Ready for Delivery", "Delivered"];
 const STATUS_TONE = { New: "draft", Confirmed: "info", "In Production": "info", "On Hold": "warn", "QC Pending": "warn", "QC Approved": "ok", Packing: "info", "Ready for Delivery": "ok", Delivered: "ok", Cancelled: "bad" };
 const STAGE_STATUS = { PENDING: "Not started", IN_PROGRESS: "In progress", COMPLETED: "Done", SKIPPED: "Skipped" };
 
@@ -31,9 +31,60 @@ const day = (value) => (value ? new Date(value).toLocaleDateString("en-GB", { da
 const when = (value) => (value ? new Date(value).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—");
 const qty = (value) => (value === null || value === undefined || value === "" ? "—" : Number(value).toLocaleString("en-US", { maximumFractionDigits: 3 }));
 
-function Section({ title, step, children, action }) {
+const STEP_NAMES = { order: "Order", production: "Production", qc: "Quality check", packing: "Packing", dispatch: "Dispatch", invoice: "Invoice", payment: "Payment" };
+
+/* Notes left at a process step (D-041): read by everyone who opens the order. */
+function StepNotes({ steps, notes, onAdd }) {
+  const [text, setText] = useState("");
+  const [step, setStep] = useState(steps[0]);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const own = notes.filter((note) => steps.includes(note.step));
+
+  async function submit(event) {
+    event.preventDefault();
+    if (saving || text.trim().length < 2) return;
+    setSaving(true);
+    setError("");
+    try {
+      await onAdd(step, text.trim());
+      setText("");
+    } catch (cause) {
+      setError(cause.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
-    <section className="inv-card op-section">
+    <div className="op-notes-log">
+      {own.length > 0 && (
+        <ul>
+          {own.map((note) => (
+            <li key={note.id}>
+              <span className="op-notes-log__meta">{steps.length > 1 ? `${STEP_NAMES[note.step]} · ` : ""}{note.createdByName ?? "Unknown user"} · {when(note.createdAt)}</span>
+              {note.note}
+            </li>
+          ))}
+        </ul>
+      )}
+      <form className="op-notes-log__form" onSubmit={submit}>
+        {steps.length > 1 && (
+          <select aria-label="Note for step" value={step} onChange={(event) => setStep(event.target.value)}>
+            {steps.map((item) => <option key={item} value={item}>{STEP_NAMES[item]}</option>)}
+          </select>
+        )}
+        <input aria-label={`Note for ${STEP_NAMES[step]}`} maxLength={1000} placeholder={`Add a note for ${STEP_NAMES[step]} (what was done, issues, instructions)…`} value={text} onChange={(event) => setText(event.target.value)} />
+        <Button type="submit" size="sm" variant="secondary" loading={saving} disabled={text.trim().length < 2}>Add note</Button>
+      </form>
+      {error && <p className="inv-dialog__error" role="alert">{error}</p>}
+    </div>
+  );
+}
+
+function Section({ title, step, children, action, id }) {
+  return (
+    <section className="inv-card op-section" id={id}>
       <div className="op-section__head">
         <h2>{step && <span className="op-step">{step}</span>}{title}</h2>
         {action}
@@ -47,15 +98,26 @@ function Empty({ children }) {
   return <p className="op-empty">{children}</p>;
 }
 
-function StageRow({ order, stage, index, canRun, busy, onStart, onComplete, onPacking, onShip }) {
-  const [kg, setKg] = useState("");
-  const previousDone = index === 0 || order.stages[index - 1].status === "COMPLETED";
+/* Check point summary for a stage: "3/4 checks", or the failure. */
+function checkSummary(checks) {
+  const points = checks?.points ?? [];
+  if (!points.length) return null;
+  const failed = points.filter((point) => point.result === "FAIL").length;
+  if (failed) return <span className="op-checks op-checks--fail">{failed} check failed</span>;
+  const done = points.filter((point) => point.result).length;
+  return <span className={`op-checks ${done === points.length ? "op-checks--ok" : ""}`}>{done}/{points.length} checks</span>;
+}
+
+function StageRow({ order, stage, index, canRun, busy, onStart, onChecks, onPacking, onShip }) {
+  const previous = index > 0 ? order.stages[index - 1] : null;
+  const previousDone = !previous || previous.status === "COMPLETED";
   const running = ["RELEASED", "IN_PROGRESS"].includes(order.status);
-  const needsKg = stage.stageKey === "tape-dyeing" && !order.tapeKg;
   const done = stage.status === "COMPLETED";
 
   let action = null;
-  if (!done && running && previousDone) {
+  if (!done && running && !previousDone && stage.status === "PENDING" && previous?.status === "IN_PROGRESS") {
+    action = <span className="op-blocked">Waits for {previous.label}</span>;
+  } else if (!done && running && previousDone) {
     if (stage.managedBy === "quality") {
       action = <Link className="inv-link-button" href={`/quality/final?productionOrderId=${order.id}`}>Record QC</Link>;
     } else if (stage.managedBy === "packing") {
@@ -65,26 +127,28 @@ function StageRow({ order, stage, index, canRun, busy, onStart, onComplete, onPa
     } else if (canRun && stage.status === "PENDING") {
       action = <Button size="sm" variant="secondary" loading={busy} onClick={() => onStart(stage.stageKey)}>Start</Button>;
     } else if (canRun && stage.status === "IN_PROGRESS") {
-      action = (
-        <form className="op-complete" onSubmit={(event) => { event.preventDefault(); onComplete(stage.stageKey, needsKg ? kg : undefined); }}>
-          {needsKg && <input required type="number" min="0.001" step="0.001" inputMode="decimal" placeholder="Total kg" aria-label="Total quantity in kg" value={kg} onChange={(event) => setKg(event.target.value)} />}
-          <Button type="submit" size="sm" variant="primary" loading={busy}>Complete</Button>
-        </form>
-      );
+      action = <Button size="sm" variant="primary" onClick={() => onChecks(stage)}>{stage.checks?.points?.length ? "Checks & complete" : "Complete"}</Button>;
     }
+  } else if (done && stage.checks?.points?.length) {
+    action = <button type="button" className="inv-text-button" onClick={() => onChecks(stage)}>View checks</button>;
   }
 
   return (
-    <tr className={done ? "op-stage--done" : stage.status === "IN_PROGRESS" ? "op-stage--active" : ""}>
-      <td data-label="Stage">
-        <span className="op-stage-name">{done ? <CheckCircle2 size={16} /> : stage.status === "IN_PROGRESS" ? <PlayCircle size={16} /> : <Circle size={16} />}{index + 1}. {stage.label}</span>
-      </td>
-      <td data-label="Status">{STAGE_STATUS[stage.status] ?? stage.status}</td>
-      <td data-label="Start">{when(stage.startedAt)}</td>
-      <td data-label="End">{when(stage.completedAt)}</td>
-      <td data-label="Quantity" className="inv-num">{Number(stage.acceptedQuantity) > 0 ? `${qty(stage.acceptedQuantity)} ${stage.unit}` : "—"}</td>
-      <td data-label="">{action}</td>
-    </tr>
+    <>
+      <tr className={done ? "op-stage--done" : stage.status === "IN_PROGRESS" ? "op-stage--active" : ""}>
+        <td data-label="Stage">
+          <span className="op-stage-name">{done ? <CheckCircle2 size={16} /> : stage.status === "IN_PROGRESS" ? <PlayCircle size={16} /> : <Circle size={16} />}{index + 1}. {stage.label}</span>
+        </td>
+        <td data-label="Status">{STAGE_STATUS[stage.status] ?? stage.status} {checkSummary(stage.checks)}</td>
+        <td data-label="Start">{when(stage.startedAt)}</td>
+        <td data-label="End">{when(stage.completedAt)}</td>
+        <td data-label="Quantity" className="inv-num">{Number(stage.acceptedQuantity) > 0 ? `${qty(stage.acceptedQuantity)} ${stage.unit}` : "—"}</td>
+        <td data-label="">{action}</td>
+      </tr>
+      {stage.completionNote && (
+        <tr className="op-note-row"><td colSpan={6}><strong>Note:</strong> {stage.completionNote}</td></tr>
+      )}
+    </>
   );
 }
 
@@ -124,7 +188,8 @@ export default function OrderProfileClient({ id }) {
   }
 
   const { order, status, production, inspections, packingLists, shipments, gatePasses, invoices, receipts, money } = trace;
-  const phaseIndex = PHASES.indexOf(status);
+  const notes = trace.notes ?? [];
+  const addNote = (step, note) => apiRequest(`/api/sales/orders/${encodeURIComponent(id)}/notes`, { method: "POST", body: JSON.stringify({ step, note }) }).then(load);
   const productionByLine = new Map(production.map((item) => [item.salesOrderLineId, item]));
   const linesWithout = order.lines.filter((line) => !production.some((item) => item.salesOrderLineId === line.id && item.status !== "CANCELLED"));
   const totalQuantity = order.lines.reduce((sum, line) => sum + Number(line.quantity), 0);
@@ -150,13 +215,6 @@ export default function OrderProfileClient({ id }) {
 
       {error && <p className="inv-dialog__error" role="alert">{error}</p>}
 
-      {status !== "Cancelled" && status !== "On Hold" && (
-        <ol className="op-phases" aria-label="Order progress">
-          {PHASES.map((phase, index) => (
-            <li key={phase} className={index < phaseIndex ? "is-done" : index === phaseIndex ? "is-current" : ""}>{phase}</li>
-          ))}
-        </ol>
-      )}
 
       <div className="op-grid">
         <Section title="Customer">
@@ -178,7 +236,7 @@ export default function OrderProfileClient({ id }) {
         </Section>
       </div>
 
-      <Section step="1" title="Order sheet">
+      <Section step="1" title="Order sheet" id="step-order">
         <div className="inv-table-wrap">
           <table className="inv-table">
             <thead>
@@ -206,9 +264,10 @@ export default function OrderProfileClient({ id }) {
             <tfoot><tr><td colSpan={8}>Total</td><td className="inv-num">{qty(totalQuantity)}</td><td /></tr></tfoot>
           </table>
         </div>
+        <StepNotes steps={["order"]} notes={notes} onAdd={addNote} />
       </Section>
 
-      <Section step="2" title="Production">
+      <Section step="2" title="Production" id="step-production">
         {order.status === "DRAFT" && <Empty>Confirm the order first, then send it to production.</Empty>}
         {order.status === "APPROVED" && production.length === 0 && <Empty>Confirmed. Press “Send to production” to open a production order for each line.</Empty>}
         {production.map((item) => (
@@ -233,7 +292,7 @@ export default function OrderProfileClient({ id }) {
                       canRun={canRun}
                       busy={busy === `${item.id}:${stage.stageKey}`}
                       onStart={(key) => stageAction(item.id, key, "start")}
-                      onComplete={(key, kg) => stageAction(item.id, key, "complete", kg)}
+                      onChecks={(stage) => setDialog({ type: "checks", productionOrderId: item.id, stageKey: stage.stageKey })}
                       onPacking={() => setDialog({ type: "packing", productionOrderId: item.id })}
                       onShip={() => setDialog({ type: "ship" })}
                     />
@@ -251,9 +310,10 @@ export default function OrderProfileClient({ id }) {
             </p>
           </div>
         ))}
+        <StepNotes steps={["production"]} notes={notes} onAdd={addNote} />
       </Section>
 
-      <Section step="3" title="Quality check">
+      <Section step="3" title="Quality check" id="step-qc">
         {inspections.length === 0 ? <Empty>No inspection yet. QC is recorded at the Quality Check stage above.</Empty> : (
           <ul className="op-list">
             {inspections.map((row) => (
@@ -261,9 +321,10 @@ export default function OrderProfileClient({ id }) {
             ))}
           </ul>
         )}
+        <StepNotes steps={["qc"]} notes={notes} onAdd={addNote} />
       </Section>
 
-      <Section step="4" title="Packing">
+      <Section step="4" title="Packing" id="step-packing">
         {packingLists.length === 0 ? <Empty>No packing list yet.</Empty> : (
           <ul className="op-list">
             {packingLists.map((row) => (
@@ -271,9 +332,10 @@ export default function OrderProfileClient({ id }) {
             ))}
           </ul>
         )}
+        <StepNotes steps={["packing"]} notes={notes} onAdd={addNote} />
       </Section>
 
-      <Section step="5" title="Dispatch & gate pass" action={order.status === "APPROVED" && packingLists.some((row) => row.status === "CONFIRMED") && can("dispatch:create") ? <Button size="sm" variant="secondary" onClick={() => setDialog({ type: "ship" })}>New shipment</Button> : null}>
+      <Section step="5" title="Dispatch & gate pass" id="step-dispatch" action={order.status === "APPROVED" && packingLists.some((row) => row.status === "CONFIRMED") && can("dispatch:create") ? <Button size="sm" variant="secondary" onClick={() => setDialog({ type: "ship" })}>New shipment</Button> : null}>
         {shipments.length === 0 ? <Empty>Nothing dispatched yet.</Empty> : (
           <ul className="op-list">
             {shipments.map((row) => (
@@ -286,9 +348,11 @@ export default function OrderProfileClient({ id }) {
             ))}
           </ul>
         )}
+        <StepNotes steps={["dispatch"]} notes={notes} onAdd={addNote} />
       </Section>
 
-      <Section step="6" title="Invoice & payment" action={shipments.some((row) => row.dispatchedAt) && can("finance:create") ? <Link className="inv-link-button" href="/finance/invoices">Make invoice</Link> : null}>
+      <span id="step-payment" />
+      <Section step="6" title="Invoice & payment" id="step-invoice" action={shipments.some((row) => row.dispatchedAt) && can("finance:create") ? <Link className="inv-link-button" href="/finance/invoices">Make invoice</Link> : null}>
         {invoices.length === 0 ? <Empty>No invoice yet. An invoice is made from a dispatched shipment.</Empty> : (
           <ul className="op-list">
             {invoices.map((row) => (
@@ -301,8 +365,30 @@ export default function OrderProfileClient({ id }) {
             ))}
           </ul>
         )}
+        <StepNotes steps={["invoice", "payment"]} notes={notes} onAdd={addNote} />
       </Section>
 
+      {dialog?.type === "checks" && (() => {
+        const item = production.find((row) => row.id === dialog.productionOrderId);
+        const stage = item?.stages.find((row) => row.stageKey === dialog.stageKey);
+        if (!item || !stage) return null;
+        const readOnly = stage.status !== "IN_PROGRESS" || !canRun;
+        return (
+          <StageChecklistDialog
+            key={`${item.id}:${stage.stageKey}:${stage.status}`}
+            order={item}
+            stage={stage}
+            readOnly={readOnly}
+            needsKg={stage.stageKey === "tape-dyeing" && !item.tapeKg}
+            onClose={() => setDialog(null)}
+            onSaved={load}
+            onComplete={({ note, totalQuantity }) => apiRequest(`/api/production/orders/${item.id}/stages/${stage.stageKey}/simple`, {
+              method: "POST",
+              body: JSON.stringify({ action: "complete", note, ...(totalQuantity ? { totalQuantity } : {}) }),
+            }).then(load)}
+          />
+        );
+      })()}
       {dialog?.type === "packing" && (
         <PackingListDialog initialOrderId={dialog.productionOrderId} onClose={() => setDialog(null)} onCreated={() => { setDialog(null); load(); }} />
       )}

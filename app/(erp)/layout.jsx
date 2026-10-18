@@ -42,10 +42,10 @@ function ERPAuthFallback() {
       <div
         style={{
           textAlign: "center",
-          fontFamily: "system-ui, sans-serif",
+          fontFamily: "Montserrat, system-ui, sans-serif",
         }}
       >
-        <strong>Loading Apparel Fastener ERP...</strong>
+        <strong>Loading AF7 ERP...</strong>
       </div>
     </div>
   );

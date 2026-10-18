@@ -16,6 +16,60 @@ import { AppError } from "../core/errors/app-error";
 
 const text = (max: number) => z.string().trim().max(max).default("");
 
+/*
+ * Production check points (D-040): stages 1–6. Quality Check, Packing and
+ * Delivered are checked by their own documents (inspection, packing list,
+ * shipment). The defaults follow common zipper practice; the limits are
+ * left for the owner to fill from the buyers' specifications.
+ */
+export const CHECKED_STAGES = ["tape-dyeing", "tape-press", "teeth-making", "plating", "lacquer-wax", "assembling"];
+
+const checkpointSchema = z.object({
+  key: z.string().trim().regex(/^[a-z0-9-]{2,40}$/, "Use lower-case letters, numbers and dashes."),
+  label: z.string().trim().min(3).max(160),
+  kind: z.enum(["check", "measure"]).default("check"),
+  unit: text(20),
+  limit: text(120),
+  required: z.boolean().default(true),
+});
+export type Checkpoint = z.infer<typeof checkpointSchema>;
+
+const point = (key: string, label: string, extra: Partial<Checkpoint> = {}): Checkpoint => ({ key, label, kind: "check", unit: "", limit: "", required: true, ...extra });
+
+export const DEFAULT_CHECKPOINTS: Record<string, Checkpoint[]> = {
+  "tape-dyeing": [
+    point("shade-match", "Shade matches the approved sample (light box)"),
+    point("shade-even", "Shade even across the whole lot"),
+    point("color-fastness", "Colour fastness checked (washing / rubbing)"),
+    point("shrinkage", "Tape shrinkage", { kind: "measure", unit: "%" }),
+  ],
+  "tape-press": [
+    point("tape-width", "Tape width", { kind: "measure", unit: "mm" }),
+    point("tape-surface", "No creases, stains or burn marks"),
+  ],
+  "teeth-making": [
+    point("first-piece", "First piece approved"),
+    point("teeth-size", "Teeth size and gap (caliper)", { kind: "measure", unit: "mm" }),
+    point("teeth-complete", "No missing or bent teeth"),
+    point("teeth-grip", "Teeth firmly fixed on the tape"),
+  ],
+  plating: [
+    point("finish-match", "Finish matches the standard sample"),
+    point("plating-adhesion", "No peeling, flaking or spots"),
+    point("salt-spray", "Salt spray / nickel test (when the buyer requires it)", { required: false }),
+  ],
+  "lacquer-wax": [
+    point("coating-even", "Coating even and not sticky"),
+    point("runs-smooth", "Zipper runs smoothly"),
+  ],
+  assembling: [
+    point("slider-correct", "Correct slider, finish and size"),
+    point("stops-fixed", "Top and bottom stops fixed in place"),
+    point("length", "Length as ordered", { kind: "measure", unit: "inch" }),
+    point("strength-sample", "Slider pull-off and stop holding sample test"),
+  ],
+};
+
 export const SETTINGS = {
   "company.profile": {
     label: "Company profile",
@@ -42,6 +96,18 @@ export const SETTINGS = {
       countryOfOrigin: text(60),
     }),
     fallback: () => ({ ...COMPANY }),
+  },
+  "production.checkpoints": {
+    label: "Production check points",
+    schema: z.object({ stages: z.record(z.string(), z.array(checkpointSchema).max(30)) })
+      .superRefine((value, context) => {
+        for (const [stageKey, points] of Object.entries(value.stages)) {
+          if (!CHECKED_STAGES.includes(stageKey)) context.addIssue({ code: "custom", path: ["stages", stageKey], message: "Check points apply to stages 1–6 only." });
+          const keys = points.map((point) => point.key);
+          if (new Set(keys).size !== keys.length) context.addIssue({ code: "custom", path: ["stages", stageKey], message: "Each check point needs its own key." });
+        }
+      }),
+    fallback: () => ({ stages: DEFAULT_CHECKPOINTS }),
   },
   "planning.weeklyOff": {
     label: "Weekly off days",

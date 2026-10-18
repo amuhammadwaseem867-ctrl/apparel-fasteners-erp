@@ -1,4 +1,5 @@
 :root {
+  --af-font: Montserrat, ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
   --af-navy: #243146;
   --af-navy-dark: #182231;
   --af-navy-soft: #314057;
@@ -52,7 +53,7 @@ body {
   color: var(--af-text);
 
   font-family:
-    Inter,
+    Montserrat,
     ui-sans-serif,
     -apple-system,
     BlinkMacSystemFont,

@@ -11,10 +11,8 @@ export function Af7Page({ company, title, subtitle, children }) {
   return (
     <article className="print-doc__page af7">
       <header className="af7__head">
-        <div className="af7__logo" aria-hidden="true">
-          <strong>AF7</strong>
-          <span>APPAREL FASTENER</span>
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element -- printed documents need the plain image */}
+        <img className="af7__logo" src="/af7-logo.png" alt="AF7" />
         <div className="af7__company">
           <strong>{company.name}</strong>
           <span className="af7__city">LAHORE · PAKISTAN</span>

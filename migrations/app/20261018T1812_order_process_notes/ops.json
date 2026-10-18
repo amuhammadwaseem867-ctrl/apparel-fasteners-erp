@@ -1,0 +1,161 @@
+[
+  {
+    "id": "table.erp_sales_order_notes",
+    "label": "Create table \"erp_sales_order_notes\"",
+    "summary": "Creates table \"erp_sales_order_notes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_sales_order_notes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_sales_order_notes\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_order_notes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_sales_order_notes\"",
+        "sql": "CREATE TABLE \"public\".\"erp_sales_order_notes\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"note\" text NOT NULL,\n  \"salesOrderId\" uuid NOT NULL,\n  \"step\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_sales_order_notes_step_46695d45\" CHECK (\"step\" IN ('order', 'production', 'qc', 'packing', 'dispatch', 'invoice', 'payment'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_sales_order_notes\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_order_notes\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_sales_order_notes.erp_sales_order_notes_salesOrderId_createdAt_idx_332b57b3",
+    "label": "Create index \"erp_sales_order_notes_salesOrderId_createdAt_idx_332b57b3\" on \"erp_sales_order_notes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_sales_order_notes_salesOrderId_createdAt_idx_332b57b3",
+        "table": "erp_sales_order_notes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_sales_order_notes_salesOrderId_createdAt_idx_332b57b3\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_order_notes_salesOrderId_createdAt_idx_332b57b3\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_sales_order_notes_salesOrderId_createdAt_idx_332b57b3\"",
+        "sql": "CREATE INDEX \"erp_sales_order_notes_salesOrderId_createdAt_idx_332b57b3\" ON \"public\".\"erp_sales_order_notes\" (\"salesOrderId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_sales_order_notes_salesOrderId_createdAt_idx_332b57b3\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_order_notes_salesOrderId_createdAt_idx_332b57b3\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_sales_order_notes.erp_sales_order_notes_salesOrderId_idx_0f1a116c",
+    "label": "Create index \"erp_sales_order_notes_salesOrderId_idx_0f1a116c\" on \"erp_sales_order_notes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_sales_order_notes_salesOrderId_idx_0f1a116c",
+        "table": "erp_sales_order_notes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_sales_order_notes_salesOrderId_idx_0f1a116c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_order_notes_salesOrderId_idx_0f1a116c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_sales_order_notes_salesOrderId_idx_0f1a116c\"",
+        "sql": "CREATE INDEX \"erp_sales_order_notes_salesOrderId_idx_0f1a116c\" ON \"public\".\"erp_sales_order_notes\" (\"salesOrderId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_sales_order_notes_salesOrderId_idx_0f1a116c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_sales_order_notes_salesOrderId_idx_0f1a116c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_sales_order_notes.erp_sales_order_notes_salesOrderId_fkey",
+    "label": "Add foreign key \"erp_sales_order_notes_salesOrderId_fkey\" on \"erp_sales_order_notes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_sales_order_notes_salesOrderId_fkey",
+        "table": "erp_sales_order_notes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_sales_order_notes_salesOrderId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_sales_order_notes_salesOrderId_fkey",
+          "public",
+          "\"public\".\"erp_sales_order_notes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_sales_order_notes_salesOrderId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_sales_order_notes\"\nADD CONSTRAINT \"erp_sales_order_notes_salesOrderId_fkey\"\nFOREIGN KEY (\"salesOrderId\")\nREFERENCES \"public\".\"erp_sales_orders\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_sales_order_notes_salesOrderId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_sales_order_notes_salesOrderId_fkey",
+          "public",
+          "\"public\".\"erp_sales_order_notes\""
+        ]
+      }
+    ]
+  }
+]

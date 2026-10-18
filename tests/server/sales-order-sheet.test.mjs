@@ -62,7 +62,7 @@ test("missing optional fields print as explicit placeholders, never invented val
 });
 
 test("company identity holds only what the AF7 company documents show; other details are not invented", () => {
-  assert.equal(COMPANY.name, "AF7 / Apparel Fastener");
+  assert.equal(COMPANY.name, "AF7");
   assert.match(COMPANY.address, /^Plot# 33 B Punjab Small Sundar Industrial Estate II/);
   assert.equal(COMPANY.website, "www.af7.com.pk");
 

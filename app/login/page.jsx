@@ -189,9 +189,9 @@ export default function LoginPage() {
         <div className="erp-login__brand-inner">
           <div className="erp-login__logo erp-rise" style={{ "--d": "0ms" }}>
             <Image
-              src="/logo in white.png"
-              alt="Apparel Fastener"
-              width={360}
+              src="/af7-logo-white.png"
+              alt="AF7"
+              width={186}
               height={110}
               priority
             />
@@ -199,7 +199,7 @@ export default function LoginPage() {
 
           <div className="erp-login__brand-content">
             <span className="erp-login__eyebrow erp-rise" style={{ "--d": "120ms" }}>
-              APPAREL FASTENER ERP
+              AF7 ERP
             </span>
 
             <h1>
@@ -230,9 +230,9 @@ export default function LoginPage() {
         >
           <div className="erp-login__mobile-logo">
             <Image
-              src="/logo in white.png"
-              alt="Apparel Fastener"
-              width={300}
+              src="/af7-logo-white.png"
+              alt="AF7"
+              width={152}
               height={90}
               priority
             />
@@ -250,7 +250,7 @@ export default function LoginPage() {
             <h2 className="erp-rise" style={{ "--d": "290ms" }}>Welcome back</h2>
 
             <p className="erp-rise" style={{ "--d": "360ms" }}>
-              Sign in to continue to the Apparel Fastener ERP.
+              Sign in to continue to AF7 ERP.
             </p>
           </div>
 
@@ -420,7 +420,7 @@ export default function LoginPage() {
           </div>
 
           <footer className="erp-login__footer erp-rise" style={{ "--d": "780ms" }}>
-            <span>APPAREL FASTENER ERP</span>
+            <span>AF7 ERP</span>
             <span>v1.0</span>
           </footer>
         </div>

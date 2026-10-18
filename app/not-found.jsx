@@ -33,7 +33,7 @@ export default function NotFound() {
             letterSpacing: "0.12em",
           }}
         >
-          APPAREL FASTENER ERP
+          AF7 ERP
         </div>
 
         <h1

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "test": "node --experimental-strip-types --import ./tests/support/register.mjs --test tests/server/core-foundation.test.mjs tests/server/dashboard-inventory.test.mjs tests/server/login-rate-limit.test.mjs tests/server/module-availability.test.mjs tests/server/sales-order-sheet.test.mjs tests/server/decimal-money.test.mjs tests/server/csv-export.test.mjs tests/server/stock-rules.test.mjs tests/server/mrp-engine.test.mjs tests/server/production-rules.test.mjs tests/server/dispatch-rules.test.mjs tests/server/finance-rules.test.mjs tests/server/payroll-rules.test.mjs tests/server/ledger-rules.test.mjs",
+    "test": "node --experimental-strip-types --import ./tests/support/register.mjs --test tests/server/core-foundation.test.mjs tests/server/dashboard-inventory.test.mjs tests/server/login-rate-limit.test.mjs tests/server/module-availability.test.mjs tests/server/sales-order-sheet.test.mjs tests/server/decimal-money.test.mjs tests/server/csv-export.test.mjs tests/server/stock-rules.test.mjs tests/server/mrp-engine.test.mjs tests/server/production-rules.test.mjs tests/server/dispatch-rules.test.mjs tests/server/finance-rules.test.mjs tests/server/payroll-rules.test.mjs tests/server/ledger-rules.test.mjs tests/server/process-steps.test.mjs",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma skills sync || exit 0",
@@ -18,6 +18,7 @@
     "test:db": "node --experimental-strip-types --import ./tests/support/test-database.mjs --test --test-concurrency=1 tests/server/auth-rbac.test.mjs tests/server/inventory.db.test.mjs tests/server/planning.db.test.mjs tests/server/production.db.test.mjs tests/server/fulfilment.db.test.mjs tests/server/finance.db.test.mjs tests/server/admin.db.test.mjs tests/server/login-rate-limit.db.test.mjs tests/server/gate-pass.db.test.mjs tests/server/payroll.db.test.mjs tests/server/reports.db.test.mjs tests/server/procurement.db.test.mjs tests/server/ledger.db.test.mjs tests/server/phase12.db.test.mjs tests/server/assistant.db.test.mjs tests/server/simple-erp.db.test.mjs"
   },
   "dependencies": {
+    "@fontsource/montserrat": "5.2.8",
     "@prisma/orm-postgres": "^8.0.0-rc.16",
     "lucide-react": "^1.52.0",
     "next": "16.4.0",

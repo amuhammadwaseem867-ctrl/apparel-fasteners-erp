@@ -180,6 +180,10 @@
       "model": "ProductionPlan",
       "namespace": "public"
     },
+    "erp_production_stage_checks": {
+      "model": "ProductionStageCheck",
+      "namespace": "public"
+    },
     "erp_production_stage_runs": {
       "model": "ProductionStageRun",
       "namespace": "public"
@@ -250,6 +254,10 @@
     },
     "erp_sales_order_lines": {
       "model": "SalesOrderLine",
+      "namespace": "public"
+    },
+    "erp_sales_order_notes": {
+      "model": "SalesOrderNote",
       "namespace": "public"
     },
     "erp_sales_orders": {
@@ -7112,6 +7120,21 @@
                   "namespace": "public"
                 }
               },
+              "stageChecks": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "productionOrderId"
+                  ]
+                },
+                "to": {
+                  "model": "ProductionStageCheck",
+                  "namespace": "public"
+                }
+              },
               "stages": {
                 "cardinality": "1:N",
                 "on": {
@@ -7489,6 +7512,13 @@
                   "kind": "scalar"
                 }
               },
+              "completionNote": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "department": {
                 "nullable": true,
                 "type": {
@@ -7622,6 +7652,9 @@
                 "completedAt": {
                   "column": "completedAt"
                 },
+                "completionNote": {
+                  "column": "completionNote"
+                },
                 "department": {
                   "column": "department"
                 },
@@ -7664,6 +7697,134 @@
               },
               "namespaceId": "public",
               "table": "erp_production_stages"
+            }
+          },
+          "ProductionStageCheck": {
+            "fields": {
+              "checkKey": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "checkedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "checkedBy": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "label": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "note": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "productionOrderId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "result": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "stageKey": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "value": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "productionOrder": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "productionOrderId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "ProductionOrder",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "checkKey": {
+                  "column": "checkKey"
+                },
+                "checkedAt": {
+                  "column": "checkedAt"
+                },
+                "checkedBy": {
+                  "column": "checkedBy"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "label": {
+                  "column": "label"
+                },
+                "note": {
+                  "column": "note"
+                },
+                "productionOrderId": {
+                  "column": "productionOrderId"
+                },
+                "result": {
+                  "column": "result"
+                },
+                "stageKey": {
+                  "column": "stageKey"
+                },
+                "value": {
+                  "column": "value"
+                }
+              },
+              "namespaceId": "public",
+              "table": "erp_production_stage_checks"
             }
           },
           "ProductionStageRun": {
@@ -9955,6 +10116,21 @@
                   "namespace": "public"
                 }
               },
+              "processNotes": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "salesOrderId"
+                  ]
+                },
+                "to": {
+                  "model": "SalesOrderNote",
+                  "namespace": "public"
+                }
+              },
               "shipments": {
                 "cardinality": "1:N",
                 "on": {
@@ -10285,6 +10461,94 @@
               },
               "namespaceId": "public",
               "table": "erp_sales_order_lines"
+            }
+          },
+          "SalesOrderNote": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdBy": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "note": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "salesOrderId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "step": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "salesOrder": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "salesOrderId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "SalesOrder",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "createdBy": {
+                  "column": "createdBy"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "note": {
+                  "column": "note"
+                },
+                "salesOrderId": {
+                  "column": "salesOrderId"
+                },
+                "step": {
+                  "column": "step"
+                }
+              },
+              "namespaceId": "public",
+              "table": "erp_sales_order_notes"
             }
           },
           "Shift": {
@@ -18395,6 +18659,114 @@
                 }
               ]
             },
+            "erp_production_stage_checks": {
+              "checks": [
+                {
+                  "expression": "\"result\" IN ('PASS', 'FAIL', 'NA')",
+                  "name": "erp_production_stage_checks_result_9ec6f2d4",
+                  "prefix": "erp_production_stage_checks_result"
+                }
+              ],
+              "columns": {
+                "checkKey": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "checkedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "checkedBy": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "label": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "note": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "productionOrderId": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "result": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "stageKey": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "value": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "productionOrderId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "erp_production_stage_checks"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "erp_production_orders"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "productionOrderId"
+                  ],
+                  "name": "erp_production_stage_checks_productionOrderId_idx_6ada58cc",
+                  "prefix": "erp_production_stage_checks_productionOrderId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "productionOrderId",
+                    "stageKey",
+                    "checkKey"
+                  ]
+                }
+              ]
+            },
             "erp_production_stage_runs": {
               "checks": [
                 {
@@ -18580,6 +18952,11 @@
                 "completedAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "completionNote": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
                   "nullable": true
                 },
                 "department": {
@@ -20740,6 +21117,95 @@
                   ],
                   "name": "erp_sales_order_lines_salesOrderId_idx_0f1a116c",
                   "prefix": "erp_sales_order_lines_salesOrderId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "erp_sales_order_notes": {
+              "checks": [
+                {
+                  "expression": "\"step\" IN ('order', 'production', 'qc', 'packing', 'dispatch', 'invoice', 'payment')",
+                  "name": "erp_sales_order_notes_step_46695d45",
+                  "prefix": "erp_sales_order_notes_step"
+                }
+              ],
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "createdBy": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "note": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "salesOrderId": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "step": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "salesOrderId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "erp_sales_order_notes"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "erp_sales_orders"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "salesOrderId",
+                    "createdAt"
+                  ],
+                  "name": "erp_sales_order_notes_salesOrderId_createdAt_idx_332b57b3",
+                  "prefix": "erp_sales_order_notes_salesOrderId_createdAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "salesOrderId"
+                  ],
+                  "name": "erp_sales_order_notes_salesOrderId_idx_0f1a116c",
+                  "prefix": "erp_sales_order_notes_salesOrderId_idx",
                   "unique": false
                 }
               ],
@@ -23125,10 +23591,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "1f0fe750af6e14ac628139010801f61afe87e164e8bf3e7deebf8ffbf686d9ba"
+    "storageHash": "939c3cc63fb943ed04b1ef8cccf531d06faa371d440c9d678f7a94330a2ee516"
   },
   "execution": {
-    "executionHash": "e65a19f75aec7c5ebdf256588f2adc798dac8b5a6693004414e0b85db734570d",
+    "executionHash": "718808727641ecdeb17a8712bde5290285475a99a9b9ae49f6e824ccc560bdd2",
     "mutations": {
       "defaults": [
         {
@@ -23588,6 +24054,17 @@
             "kind": "generator"
           },
           "ref": {
+            "entry": "erp_production_stage_checks",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
             "entry": "erp_production_stage_runs",
             "field": "id",
             "namespace": "public"
@@ -23776,6 +24253,17 @@
           },
           "ref": {
             "entry": "erp_sales_order_lines",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "erp_sales_order_notes",
             "field": "id",
             "namespace": "public"
           }

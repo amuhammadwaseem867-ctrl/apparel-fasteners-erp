@@ -91,3 +91,17 @@
   font-weight: 700;
   color: var(--af-text-secondary);
 }
+
+.settings-checks input:not([type="checkbox"]),
+.settings-checks select {
+  width: 100%;
+  min-width: 90px;
+  padding: 6px 8px;
+  border: 1px solid var(--af-border-dark);
+  border-radius: var(--radius-sm);
+  font: inherit;
+}
+
+.settings-checks td:first-child input {
+  min-width: 240px;
+}

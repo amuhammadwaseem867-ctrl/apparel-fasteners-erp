@@ -1,0 +1,109 @@
+.sc-list {
+  display: grid;
+  gap: 10px;
+}
+
+.sc-point {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--af-border);
+  border-left: 4px solid var(--af-border-dark);
+  border-radius: var(--radius-md);
+}
+
+.sc-point--pass { border-left-color: var(--af-success); }
+.sc-point--fail { border-left-color: var(--af-danger); background: #fdf3f3; }
+.sc-point--na { border-left-color: var(--af-text-muted); }
+
+.sc-point legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px;
+  font-weight: 600;
+}
+
+.sc-required,
+.sc-optional {
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.sc-required { background: #e8f0fa; color: var(--af-info); }
+.sc-optional { background: #eef0f3; color: var(--af-text-muted); }
+
+.sc-limit {
+  margin: 0 0 6px;
+  color: var(--af-text-secondary);
+  font-size: 0.85rem;
+}
+
+.sc-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.sc-results {
+  display: inline-flex;
+  border: 1px solid var(--af-border-dark);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.sc-result {
+  position: relative;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--af-text-secondary);
+}
+
+.sc-result + .sc-result { border-left: 1px solid var(--af-border-dark); }
+
+.sc-result input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sc-result:focus-within { outline: 2px solid var(--af-info); outline-offset: -2px; }
+.sc-result--pass.is-on { background: var(--af-success); color: #fff; }
+.sc-result--fail.is-on { background: var(--af-danger); color: #fff; }
+.sc-result--na.is-on { background: var(--af-text-muted); color: #fff; }
+
+.sc-value,
+.sc-note {
+  padding: 6px 8px;
+  border: 1px solid var(--af-border-dark);
+  border-radius: var(--radius-sm);
+  font: inherit;
+}
+
+.sc-value { width: 140px; }
+.sc-note { flex: 1 1 200px; min-width: 0; }
+
+.sc-by {
+  display: block;
+  margin-top: 6px;
+  color: var(--af-text-muted);
+}
+
+.sc-status {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 4px 0 0;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+.sc-status svg { flex: none; margin-top: 2px; }
+.sc-status--blocked { background: #fbf0dc; color: #8a5307; }
+.sc-status--ok { background: #e3f4ec; color: var(--af-success); }

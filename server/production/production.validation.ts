@@ -53,6 +53,20 @@ export const productionQuerySchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(100).default(25),
 });
 
+/* Check points recorded at a stage (D-040). */
+export const stageChecksInputSchema = z.object({
+  results: z.array(z.object({
+    key: z.string().trim().min(2).max(40),
+    result: z.enum(["PASS", "FAIL", "NA"]),
+    value: z.string().trim().max(60).optional(),
+    note: z.string().trim().max(500).optional(),
+  })).min(1).max(30),
+});
+
+/* A note left when a stage is completed. */
+export const completionNoteSchema = z.string().trim().max(1000).optional();
+
+export type StageChecksInput = z.infer<typeof stageChecksInputSchema>;
 export type ProductionOrderInput = z.infer<typeof productionOrderInputSchema>;
 export type StageRunInput = z.infer<typeof stageRunInputSchema>;
 export type ProductionQuery = z.infer<typeof productionQuerySchema>;

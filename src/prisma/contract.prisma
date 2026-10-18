@@ -220,6 +220,7 @@ model SalesOrder {
 
   customer Customer          @relation(fields: [customerId], references: [id], onDelete: Restrict)
   lines    SalesOrderLine[]
+  processNotes SalesOrderNote[]
   shipments Shipment[]
   invoices  Invoice[]
 
@@ -227,6 +228,23 @@ model SalesOrder {
   @@index([status])
   @@index([orderDate])
   @@map("erp_sales_orders")
+}
+
+// Notes left on an order at each process step (D-041), e.g. after QC or
+// dispatch. Notes are kept as written; they are never edited or deleted.
+model SalesOrderNote {
+  id           Uuid              @id @default(uuid())
+  salesOrderId Uuid
+  step         String
+  note         String
+  createdBy    Uuid
+  createdAt    TimestamptzString @default(now())
+
+  salesOrder SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Restrict)
+
+  @@index([salesOrderId, createdAt])
+  @@check(expression: "\"step\" IN ('order', 'production', 'qc', 'packing', 'dispatch', 'invoice', 'payment')", name: "erp_sales_order_notes_step")
+  @@map("erp_sales_order_notes")
 }
 
 model SalesOrderLine {
@@ -592,6 +610,7 @@ model ProductionOrder {
 
   product Product           @relation(fields: [productId], references: [id], onDelete: Restrict)
   stages             ProductionStage[]
+  stageChecks        ProductionStageCheck[]
   events             ProductionEvent[]
   qualityInspections QualityInspection[]
   packingLists       PackingList[]
@@ -620,6 +639,8 @@ model ProductionStage {
   responsibleName   String?
   startedAt         TimestamptzString?
   completedAt       TimestamptzString?
+  // Note left by whoever completed the stage.
+  completionNote    String?
   updatedAt         TimestamptzString  @default(now())
 
   productionOrder ProductionOrder      @relation(fields: [productionOrderId], references: [id], onDelete: Restrict)
@@ -632,6 +653,28 @@ model ProductionStage {
   @@check(expression: "\"acceptedQuantity\" >= 0 AND \"rejectedQuantity\" >= 0 AND \"wastageQuantity\" >= 0 AND \"reworkQuantity\" >= 0", name: "erp_production_stages_nonnegative")
   @@check(expression: "\"processedQuantity\" = \"acceptedQuantity\" + \"rejectedQuantity\" + \"wastageQuantity\" + \"reworkQuantity\"", name: "erp_production_stages_balance")
   @@map("erp_production_stages")
+}
+
+// Check points recorded at a production stage (D-040). One row per check
+// point per stage of an order: re-checking replaces the result, and every
+// change is in the audit log. The label is kept as it was when checked.
+model ProductionStageCheck {
+  id                Uuid              @id @default(uuid())
+  productionOrderId Uuid
+  stageKey          String
+  checkKey          String
+  label             String
+  result            String
+  value             String?
+  note              String?
+  checkedBy         Uuid
+  checkedAt         TimestamptzString @default(now())
+
+  productionOrder ProductionOrder @relation(fields: [productionOrderId], references: [id], onDelete: Restrict)
+
+  @@unique([productionOrderId, stageKey, checkKey])
+  @@check(expression: "\"result\" IN ('PASS', 'FAIL', 'NA')", name: "erp_production_stage_checks_result")
+  @@map("erp_production_stage_checks")
 }
 
 model ProductionStageRun {

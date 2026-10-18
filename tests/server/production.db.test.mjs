@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import test from "node:test";
 
+import { passStageChecks } from "../support/stage-checks.mjs";
+
 import { db } from "../../server/core/database/client.ts";
 import { createLocation, createWarehouse, postStockDocument } from "../../server/inventory/inventory.service.ts";
 import { stockDocumentInputSchema } from "../../server/inventory/inventory.validation.ts";
@@ -121,6 +123,7 @@ test("runs are refused until release; partial runs, rework and balance rules are
   assert.equal(dyeing.runs.length, 2);
   assert.deepEqual(dyeing.runs.map((runRow) => runRow.runNo), [1, 2]);
 
+  await passStageChecks(id, "tape-dyeing", actor);
   state = await completeStage(id, "tape-dyeing", actor);
   assert.equal(state.currentStage, "tape-press");
   await expectCode(stageRun(id, "tape-dyeing", { inputQuantity: 1, acceptedQuantity: 1 }), "STAGE_RUN_INVALID");
@@ -198,6 +201,7 @@ test("the order completes only when all nine stages complete in sequence", async
     } else {
       const quantity = STAGE_KEYS.indexOf(stageKey) > STAGE_KEYS.indexOf("quality-check") ? 3 : 4;
       await stageRun(id, stageKey, { inputQuantity: quantity, acceptedQuantity: quantity });
+      await passStageChecks(id, stageKey, actor);
     }
     state = await completeStage(id, stageKey, actor);
   }
