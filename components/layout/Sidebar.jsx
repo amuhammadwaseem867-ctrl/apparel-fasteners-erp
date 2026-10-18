@@ -4,143 +4,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BarChart3,
-  Boxes,
-  BriefcaseBusiness,
   ChevronDown,
   ChevronRight,
-  ClipboardCheck,
-  ClipboardList,
-  Factory,
-  GitBranch,
-  LayoutDashboard,
   Lock,
-  Package,
   PanelLeftClose,
   PanelLeftOpen,
-  Receipt,
-  Settings,
-  ShoppingCart,
-  Truck,
-  Users,
   X,
 } from "lucide-react";
 
-import "./Sidebar.css";
+import { NAV_GROUPS } from "@/config/navigation";
 
-/*
- * Simple navigation (D-038): the factory's own flow, in order, from the
- * order sheet to the payment, then stock, purchasing and people. Pages left
- * out of this menu still work by link (and from the Order Profile); they
- * are only hidden to keep the menu short.
- */
-const NAV_GROUPS = [
-  {
-    title: "Home",
-    items: [
-      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    ],
-  },
-  {
-    title: "Order to delivery",
-    items: [
-      {
-        label: "1. Orders",
-        href: "/sales/orders",
-        icon: ShoppingCart,
-        children: [
-          { label: "All orders", href: "/sales/orders" },
-          { label: "New order", href: "/sales/orders/new" },
-          { label: "Customers", href: "/sales/customers" },
-        ],
-      },
-      {
-        label: "2. Production",
-        href: "/production",
-        icon: Factory,
-        children: [
-          { label: "Production orders", href: "/production/orders" },
-          { label: "Stage board", href: "/production/stage-board" },
-          { label: "Issue raw material", href: "/production/material-issue" },
-        ],
-      },
-      { label: "3. Quality check", href: "/quality/inspections", icon: ClipboardCheck },
-      { label: "4. Packing", href: "/packing/orders", icon: Package },
-      {
-        label: "5. Dispatch",
-        href: "/dispatch",
-        icon: Truck,
-        children: [
-          { label: "Shipments", href: "/dispatch/shipments" },
-          { label: "Gate passes", href: "/dispatch/gate-passes" },
-        ],
-      },
-      {
-        label: "6. Invoice & payment",
-        href: "/finance",
-        icon: Receipt,
-        children: [
-          { label: "Invoices", href: "/finance/invoices" },
-          { label: "Payments received", href: "/finance/payments" },
-          { label: "Customer balances", href: "/finance/receivables" },
-        ],
-      },
-    ],
-  },
-  {
-    title: "Stock & buying",
-    items: [
-      {
-        label: "Inventory",
-        href: "/inventory",
-        icon: Boxes,
-        children: [
-          { label: "Items", href: "/inventory/item-master" },
-          { label: "Stock", href: "/inventory/stock" },
-          { label: "Warehouses & shelves", href: "/inventory/warehouses" },
-          { label: "Movement history", href: "/inventory/movements" },
-        ],
-      },
-      {
-        label: "Purchasing",
-        href: "/procurement",
-        icon: ClipboardList,
-        children: [
-          { label: "Suppliers", href: "/procurement/suppliers" },
-          { label: "Purchase orders", href: "/procurement/purchase-orders" },
-          { label: "Goods received", href: "/procurement/goods-receipts" },
-          { label: "Supplier bills", href: "/finance/payables" },
-        ],
-      },
-    ],
-  },
-  {
-    title: "People & reports",
-    items: [
-      {
-        label: "HR & Payroll",
-        href: "/people-payroll",
-        icon: Users,
-        children: [
-          { label: "Employees", href: "/people-payroll/employees" },
-          { label: "Attendance", href: "/people-payroll/attendance" },
-          { label: "Leave", href: "/people-payroll/leave" },
-          { label: "Payroll", href: "/people-payroll/payroll" },
-        ],
-      },
-      { label: "Reports", href: "/reports", icon: BarChart3 },
-      {
-        label: "Settings",
-        href: "/administration",
-        icon: Settings,
-        children: [
-          { label: "Users", href: "/administration/users" },
-          { label: "Company & documents", href: "/administration/settings" },
-        ],
-      },
-    ],
-  },
-];
+import "./Sidebar.css";
 
 function isRouteActive(pathname, href) {
   if (href === "/dashboard") {

@@ -239,3 +239,19 @@ test("notes left at a process step show on the Order Profile with who wrote them
   assert.equal((await getOrderTrace(ctx.order.id)).notes.length, trace.notes.length);
   await assert.rejects(addOrderNote(randomUUID(), { step: "qc", note: "x" }, user.id), (error) => error.code === "SALES_ORDER_NOT_FOUND");
 });
+
+test("the bell counts only real waiting work, and only in the areas the user may see", async () => {
+  const { attentionFor } = await import("../../server/dashboard/attention.service.ts");
+  const none = await attentionFor([]);
+  assert.deepEqual(none, { items: [], total: 0 });
+
+  const draftCount = Number((await db.orm.public.SalesOrder.where({ status: "DRAFT" }).all()).length);
+  const salesOnly = await attentionFor(["sales:view"]);
+  assert.ok(salesOnly.items.every((item) => item.key === "orders-draft"), "sales users see only order work");
+  assert.equal(salesOnly.items[0]?.count ?? 0, draftCount);
+  assert.equal(salesOnly.total, draftCount);
+
+  const everything = await attentionFor(["sales:view", "production:view", "quality:view", "dispatch:view", "inventory:view", "finance:view"]);
+  assert.ok(everything.items.every((item) => item.count > 0 && item.href.startsWith("/")), "only non-zero items are listed");
+  assert.equal(everything.total, everything.items.reduce((sum, item) => sum + item.count, 0));
+});

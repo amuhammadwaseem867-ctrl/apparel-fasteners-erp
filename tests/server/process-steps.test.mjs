@@ -67,3 +67,12 @@ test("check points: a failure blocks, a missing required check blocks, optional 
   assert.equal(checksProblem(points, [{ checkKey: "a", result: "PASS" }]), null);
   assert.equal(checksProblem([], []), null);
 });
+
+test("the top bar names the page from the menu", async () => {
+  const { navEntryFor } = await import("../../config/navigation.js");
+  assert.equal(navEntryFor("/sales/orders/new").label, "New order");
+  assert.equal(navEntryFor("/sales/orders/3f1c2a9e-1d2b-4c3d-8e9f-0a1b2c3d4e5f").label, "Orders");
+  assert.equal(navEntryFor("/dispatch/gate-passes/abc").parent, "Dispatch");
+  assert.equal(navEntryFor("/dashboard").label, "Dashboard");
+  assert.equal(navEntryFor("/nowhere"), null);
+});

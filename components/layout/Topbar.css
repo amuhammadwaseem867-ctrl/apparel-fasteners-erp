@@ -1135,3 +1135,133 @@
   line-height: 17px;
 }
 
+
+/* ---------- D-042: search results, waiting work, sign out ---------- */
+
+.erp-command__item--active {
+  background: var(--af-surface-soft);
+  box-shadow: inset 3px 0 0 var(--af-navy);
+}
+
+.erp-command__empty {
+  margin: 0;
+  padding: 26px 12px;
+  color: var(--af-text-muted);
+  text-align: center;
+}
+
+.erp-command__body {
+  max-height: min(60vh, 520px);
+  overflow-y: auto;
+}
+
+.erp-topbar__attention {
+  min-height: 0;
+  align-items: center;
+  color: var(--af-text);
+  text-decoration: none;
+  transition: background-color 140ms ease;
+}
+
+.erp-topbar__attention:hover {
+  background: var(--af-surface-soft);
+}
+
+.erp-topbar__attention-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 30px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #fbf0dc;
+  color: #8a5307;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.erp-topbar__attention-label {
+  flex: 1;
+  font-weight: 600;
+}
+
+.erp-topbar__profile-links a,
+.erp-topbar__profile-footer button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.erp-topbar__profile-footer button:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.erp-topbar__error {
+  margin: 6px 0 0;
+  color: var(--af-danger);
+  font-size: 0.8rem;
+}
+
+.erp-topbar__spin {
+  animation: erp-topbar-spin 0.9s linear infinite;
+}
+
+@keyframes erp-topbar-spin {
+  to { transform: rotate(360deg); }
+}
+
+.erp-topbar__action-wrap {
+  position: relative;
+}
+
+.erp-topbar__profile-links a {
+  width: 100%;
+  height: 38px;
+  padding: 0 9px;
+  border-radius: 6px;
+  color: var(--af-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.erp-topbar__profile-links a:hover {
+  background: var(--af-surface-soft);
+  color: var(--af-text);
+}
+
+.erp-topbar__profile-footer button {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.erp-topbar__profile-footer button:hover:not(:disabled) {
+  background: #fdf1f1;
+}
+
+/* The "New" menu opens under its button. */
+.erp-topbar__action-wrap .erp-topbar__create-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+}
+
+a.erp-topbar__icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+/* Count badge sits on the bell's corner and grows for larger numbers. */
+.erp-topbar__notification-dot {
+  top: -3px;
+  right: -5px;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  font-size: 10px;
+  font-weight: 700;
+  pointer-events: none;
+}

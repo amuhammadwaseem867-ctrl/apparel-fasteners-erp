@@ -1238,3 +1238,53 @@ live, with `npm run go-live`, before this code reaches main:
 as soon as `GROQ_API_KEY` (or `XAI_API_KEY`) is set; no separate flag is
 needed. `AI_ASSISTANT_ENABLED=false` still switches it off, and without
 a key it stays off.
+
+## D-042 Top bar (2026-10-18)
+
+The top bar was mostly decoration: Sign out had no action, and the
+profile, settings, search and bell buttons did nothing. It now works end
+to end.
+
+**Page title.** The title comes from the menu. The menu now lives in
+`config/navigation.js`, which the sidebar uses too, so the two always
+agree.
+
+**Search** (Ctrl+K).
+- Menu pages match by name.
+- Records match through the list APIs the user may read:
+  - orders
+  - customers
+  - production orders
+  - invoices
+  - shipments
+  - items
+- The search fires 250 ms after typing stops. Use ↑ / ↓ to move and Enter
+  to open.
+
+**New.** The New menu lists only the actions the user's permissions
+allow.
+
+**Bell: "needs attention".**
+- `GET /api/attention` returns real counts of waiting work, only for the
+  areas the user may see:
+  - orders to confirm
+  - production orders on hold
+  - stages blocked by a failed check
+  - orders waiting for QC
+  - packing lists, shipments, gate passes and invoices still in draft
+- Only counts above zero are listed.
+- The counts refresh every two minutes and after anything is saved.
+- Nothing is stored and no figure is invented.
+
+**Settings and profile.** The settings button and the profile menu link
+to Company settings and to My profile & password.
+
+**Sign out.**
+- Sign out calls `/api/auth/logout`, which revokes the session and clears
+  the cookie, then does a full page load to `/login`, dropping all
+  signed-in state.
+- If the request fails, the error shows and the user stays signed in
+  rather than being shown a false sign-out.
+
+**Closing menus.** Menus close on Escape, on a click outside and on
+navigation.
