@@ -1142,7 +1142,11 @@ also supports Groq, which offers the same OpenAI-style API.
 
 **Settings.** `GROQ_API_KEY` selects Groq, with the endpoint
 `https://api.groq.com/openai/v1`. `GROQ_MODEL` is optional; the default
-is `llama-3.3-70b-versatile`, which supports tool calls. If both keys
+is `openai/gpt-oss-120b` (the owner's account did not have
+`llama-3.3-70b-versatile`). When `GROQ_MODEL` is not set and the default
+is not on the account, the first available tool-calling model from a
+short list is used and remembered; an explicit `GROQ_MODEL` is never
+swapped. If both keys
 are set, Groq is used. `AI_ASSISTANT_ENABLED=true` is still the on
 switch.
 

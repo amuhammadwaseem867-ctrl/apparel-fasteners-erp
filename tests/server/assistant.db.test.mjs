@@ -313,3 +313,48 @@ test("the assistant switches on when an AI key is set, and AI_ASSISTANT_ENABLED=
     }
   }
 });
+
+test("on Groq, a default model missing from the account is replaced by one it has", async () => {
+  const { chat } = await import("../../server/assistant/grok.ts");
+  const seen = [];
+  const server = createServer((request, response) => {
+    let body = "";
+    request.on("data", (chunk) => { body += chunk; });
+    request.on("end", () => {
+      if (request.url.endsWith("/models")) {
+        response.writeHead(200, { "content-type": "application/json" });
+        response.end(JSON.stringify({ data: [{ id: "whisper-large-v3" }, { id: "openai/gpt-oss-20b" }] }));
+        return;
+      }
+      const { model } = JSON.parse(body);
+      seen.push(model);
+      if (model !== "openai/gpt-oss-20b") {
+        response.writeHead(404, { "content-type": "application/json" });
+        response.end(JSON.stringify({ error: { message: `The model \`${model}\` does not exist or you do not have access to it.` } }));
+        return;
+      }
+      response.writeHead(200, { "content-type": "application/json" });
+      response.end(JSON.stringify({ choices: [{ message: { role: "assistant", content: "ok" }, finish_reason: "stop" }] }));
+    });
+  });
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const saved = { key: process.env.GROQ_API_KEY, url: process.env.GROQ_BASE_URL, model: process.env.GROQ_MODEL };
+  process.env.GROQ_API_KEY = "gsk_test";
+  process.env.GROQ_BASE_URL = `http://127.0.0.1:${server.address().port}/openai/v1`;
+  delete process.env.GROQ_MODEL;
+  try {
+    const result = await chat([{ role: "user", content: "hi" }], []);
+    assert.equal(result.message.content, "ok");
+    assert.deepEqual(seen, ["openai/gpt-oss-120b", "openai/gpt-oss-20b"]);
+    // An explicit GROQ_MODEL is never swapped: its error is reported as is.
+    process.env.GROQ_MODEL = "missing-model";
+    await assert.rejects(chat([{ role: "user", content: "hi" }], []), (error) => error.code === "ASSISTANT_MODEL_UNAVAILABLE" && /missing-model/.test(error.message));
+    assert.equal(seen.at(-1), "missing-model");
+  } finally {
+    server.close();
+    for (const [name, value] of [["GROQ_API_KEY", saved.key], ["GROQ_BASE_URL", saved.url], ["GROQ_MODEL", saved.model]]) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
+  }
+});

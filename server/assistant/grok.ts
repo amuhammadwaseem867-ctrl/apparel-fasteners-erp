@@ -13,7 +13,10 @@ import { AppError } from "../core/errors/app-error";
 import type { ToolDefinition } from "./tools";
 
 export const DEFAULT_MODEL = "grok-4.3";
-export const GROQ_DEFAULT_MODEL = "llama-3.3-70b-versatile";
+export const GROQ_DEFAULT_MODEL = "openai/gpt-oss-120b";
+/* Tool-calling models tried in order when the chosen one is not on the account. */
+const GROQ_FALLBACK_MODELS = ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "llama-3.3-70b-versatile", "qwen/qwen3-32b", "moonshotai/kimi-k2-instruct"];
+let groqFallbackModel: string | null = null;
 const CALL_TIMEOUT_MS = 55_000;
 
 export type ChatToolCall = { id: string; type: "function"; function: { name: string; arguments: string } };
@@ -37,8 +40,9 @@ export function grokSettings() {
       keyName: "GROQ_API_KEY",
       modelName: "GROQ_MODEL",
       apiKey: groqKey,
-      model: process.env.GROQ_MODEL?.trim() || GROQ_DEFAULT_MODEL,
-      baseUrl: "https://api.groq.com/openai/v1",
+      model: process.env.GROQ_MODEL?.trim() || groqFallbackModel || GROQ_DEFAULT_MODEL,
+      modelFixed: Boolean(process.env.GROQ_MODEL?.trim()),
+      baseUrl: (process.env.GROQ_BASE_URL?.trim() || "https://api.groq.com/openai/v1").replace(/\/+$/, ""),
     };
   }
   const apiKey = process.env.XAI_API_KEY?.trim();
@@ -50,25 +54,45 @@ export function grokSettings() {
     modelName: "XAI_MODEL",
     apiKey,
     model: process.env.XAI_MODEL?.trim() || DEFAULT_MODEL,
+    modelFixed: true,
     baseUrl: (process.env.XAI_BASE_URL?.trim() || "https://api.x.ai/v1").replace(/\/+$/, ""),
   };
 }
 
-async function availableModels(baseUrl: string, apiKey: string) {
+async function availableModels(baseUrl: string, apiKey: string): Promise<string[]> {
   try {
     const response = await fetch(`${baseUrl}/models`, { headers: { authorization: `Bearer ${apiKey}` }, signal: AbortSignal.timeout(10_000) });
     const payload = await response.json();
-    return (payload?.data ?? []).map((model: { id?: string }) => model.id).filter(Boolean).join(", ");
+    return (payload?.data ?? []).map((model: { id?: string }) => model.id).filter(Boolean);
   } catch {
-    return "";
+    return [];
   }
 }
 
+/*
+ * Groq retires models often. When the default model is not on the account
+ * (and no GROQ_MODEL was set), the first tool-calling model it does have
+ * is used instead, and remembered for later calls.
+ */
 export async function chat(messages: ChatMessage[], tools: ToolDefinition[]): Promise<ChatResult> {
-  const { apiKey, model, baseUrl, provider, keyName, modelName } = grokSettings();
-  if (!apiKey) {
+  const settings = grokSettings();
+  if (!settings.apiKey) {
     throw new AppError("The AI assistant is not set up yet. An administrator must add GROQ_API_KEY (or XAI_API_KEY) to the server environment.", { code: "ASSISTANT_NOT_CONFIGURED", status: 503 });
   }
+  try {
+    return await chatWith(settings.model, messages, tools);
+  } catch (error) {
+    if (settings.modelFixed || settings.provider !== "Groq" || (error as AppError).code !== "ASSISTANT_MODEL_UNAVAILABLE") throw error;
+    const available = ((error as AppError).details as { available?: string[] } | undefined)?.available ?? [];
+    const next = GROQ_FALLBACK_MODELS.find((candidate) => candidate !== settings.model && available.includes(candidate));
+    if (!next) throw error;
+    groqFallbackModel = next;
+    return chatWith(next, messages, tools);
+  }
+}
+
+async function chatWith(model: string, messages: ChatMessage[], tools: ToolDefinition[]): Promise<ChatResult> {
+  const { apiKey, baseUrl, provider, keyName, modelName } = grokSettings() as { apiKey: string; baseUrl: string; provider: string; keyName: string; modelName: string };
 
   let response: Response;
   try {
@@ -106,7 +130,7 @@ export async function chat(messages: ChatMessage[], tools: ToolDefinition[]): Pr
     }
     if ((response.status === 404 || response.status === 400) && /model/i.test(detail)) {
       const models = await availableModels(baseUrl, apiKey);
-      throw new AppError(`The AI model "${model}" is not available for this ${provider} account (${detail}).${models ? ` Available: ${models}.` : ""} An administrator can set ${modelName} to one of them.`, { code: "ASSISTANT_MODEL_UNAVAILABLE", status: 502 });
+      throw new AppError(`The AI model "${model}" is not available for this ${provider} account (${detail}).${models.length ? ` Available: ${models.join(", ")}.` : ""} An administrator can set ${modelName} to one of them.`, { code: "ASSISTANT_MODEL_UNAVAILABLE", status: 502, details: { available: models } });
     }
     throw new AppError(`The AI service returned an error (${response.status}): ${detail}`, { code: "ASSISTANT_SERVICE_ERROR", status: 502 });
   }
