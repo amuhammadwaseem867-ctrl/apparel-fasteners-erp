@@ -1134,3 +1134,19 @@ this code reaches main:
 
 All four are additive. Apply them with `npm run go-live`, which takes a
 backup and asks for confirmation.
+
+## D-039 Assistant on Groq (2026-10-18)
+
+The owner's key is for Groq (groq.com), not Grok, so the assistant now
+also supports Groq, which offers the same OpenAI-style API.
+
+**Settings.** `GROQ_API_KEY` selects Groq, with the endpoint
+`https://api.groq.com/openai/v1`. `GROQ_MODEL` is optional; the default
+is `llama-3.3-70b-versatile`, which supports tool calls. If both keys
+are set, Groq is used. `AI_ASSISTANT_ENABLED=true` is still the on
+switch.
+
+**Errors.** Error messages name the provider and the setting to fix.
+
+**Not tested here.** This environment's network blocks api.groq.com, so
+the real service was checked only on the owner's machine.

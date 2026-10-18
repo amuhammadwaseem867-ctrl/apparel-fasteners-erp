@@ -5,6 +5,7 @@ import test from "node:test";
 import { createServer } from "node:http";
 
 import { executeTool, runAssistant, toolsFor } from "../../server/assistant/assistant.service.ts";
+import { GROQ_DEFAULT_MODEL, grokSettings } from "../../server/assistant/grok.ts";
 import { listCashTransactions, recordCashTransaction } from "../../server/ledger/ledger.service.ts";
 import { createProduct } from "../../server/products/product.service.ts";
 import { createCustomer, createSalesOrder, getSalesOrder } from "../../server/sales/sales.service.ts";
@@ -101,13 +102,38 @@ test("a cash entry proposal checks the accounts and is idempotent when confirmed
   assert.equal(listed.transactions.filter((row) => row.description === `Electricity ${run}`).length, 1);
 });
 
-test("without XAI_API_KEY the assistant says it is not set up", async () => {
-  const saved = process.env.XAI_API_KEY;
+test("without an AI key the assistant says it is not set up", async () => {
+  const saved = { xai: process.env.XAI_API_KEY, groq: process.env.GROQ_API_KEY };
   delete process.env.XAI_API_KEY;
+  delete process.env.GROQ_API_KEY;
   try {
     await assert.rejects(runAssistant(everything, [], "Aaj 500 ka chai ka kharcha", "2026-10-16"), (error) => error.code === "ASSISTANT_NOT_CONFIGURED");
   } finally {
-    if (saved !== undefined) process.env.XAI_API_KEY = saved;
+    if (saved.xai !== undefined) process.env.XAI_API_KEY = saved.xai;
+    if (saved.groq !== undefined) process.env.GROQ_API_KEY = saved.groq;
+  }
+});
+
+test("a Groq key selects Groq's endpoint and model; without it xAI settings apply", () => {
+  const saved = { groq: process.env.GROQ_API_KEY, model: process.env.GROQ_MODEL, xai: process.env.XAI_API_KEY };
+  try {
+    process.env.GROQ_API_KEY = "gsk_test";
+    delete process.env.GROQ_MODEL;
+    process.env.XAI_API_KEY = "xai-test";
+    let settings = grokSettings();
+    assert.equal(settings.provider, "Groq");
+    assert.equal(settings.apiKey, "gsk_test");
+    assert.equal(settings.baseUrl, "https://api.groq.com/openai/v1");
+    assert.equal(settings.model, GROQ_DEFAULT_MODEL);
+    delete process.env.GROQ_API_KEY;
+    settings = grokSettings();
+    assert.equal(settings.provider, "xAI");
+    assert.equal(settings.apiKey, "xai-test");
+  } finally {
+    for (const [name, value] of [["GROQ_API_KEY", saved.groq], ["GROQ_MODEL", saved.model], ["XAI_API_KEY", saved.xai]]) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
   }
 });
 

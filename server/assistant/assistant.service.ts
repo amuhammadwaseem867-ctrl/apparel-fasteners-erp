@@ -1,7 +1,7 @@
 /*
  * ERP assistant (D-036, D-037). The user types what happened or what they
  * want to see ("New order for Ali Traders: 5000 #5 sliders at Rs 12",
- * "show this month's deliveries"). Grok answers with read-only lookups,
+ * "show this month's deliveries"). The AI model answers with read-only lookups,
  * report tables from the database, and proposals. It never writes: every
  * proposal waits for the user's Confirm, which posts it to the normal API
  * route with the user's session (see tools.ts).

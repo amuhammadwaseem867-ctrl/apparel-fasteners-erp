@@ -229,7 +229,7 @@ export default function AssistantPanel() {
 
           <div className="ai-panel__list" ref={listRef}>
             {!setup.configured && (
-              <p className="ai-notice">The assistant is not set up yet. An administrator must add <code>XAI_API_KEY</code> to the server environment.</p>
+              <p className="ai-notice">The assistant is not set up yet. An administrator must add <code>GROQ_API_KEY</code> (or <code>XAI_API_KEY</code>) to the server environment.</p>
             )}
             {chat.length === 0 && setup.configured && (
               <div className="ai-examples">
