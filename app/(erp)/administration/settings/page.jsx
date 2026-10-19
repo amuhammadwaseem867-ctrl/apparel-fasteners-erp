@@ -16,7 +16,7 @@ const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Frida
 const COMPANY_GROUPS = [
   ["Company", [["name", "Trading name *"], ["legalName", "Legal name"], ["address", "Address"], ["phone", "Phone"], ["email", "Email"], ["website", "Website"], ["taxRegistration", "Tax registration (NTN / STRN)"]]],
   ["Bank / payment details (sales tax invoice)", [["bankName", "Bank name"], ["accountName", "Account name"], ["accountNumber", "Account no."], ["iban", "IBAN"], ["swiftCode", "SWIFT code"], ["bankBranch", "Branch / address"]]],
-  ["Commercial terms and shipment (defaults on the invoice)", [["productionTime", "Production time"], ["paymentTerms", "Payment terms"], ["shipmentTerms", "Shipment terms"], ["shipmentMode", "Shipment mode"], ["portOfLoading", "Port of loading"], ["countryOfOrigin", "Country of origin"]]],
+  ["Commercial terms and shipment (defaults on the invoice)", [["productionTime", "Production time"], ["paymentTerms", "Payment terms"], ["shipmentTerms", "Shipment terms"], ["shipmentMode", "Shipment mode"], ["portOfLoading", "Port of loading"], ["countryOfOrigin", "Country of origin"], ["hsCode", "HS code"]]],
 ];
 const COMPANY_FIELDS = COMPANY_GROUPS.flatMap(([, fields]) => fields);
 

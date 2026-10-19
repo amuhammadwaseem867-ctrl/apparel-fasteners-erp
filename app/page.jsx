@@ -252,7 +252,7 @@ export default function WelcomePage() {
       <footer className="welcome__footer">
         <Image src="/af7-logo-white.png" alt="AF7" width={54} height={32} />
         <span>Plot# 33 B Punjab Small Sundar Industrial Estate II, Raiwind Road, Lahore</span>
-        <a href="https://www.af7.com.pk" target="_blank" rel="noreferrer">www.af7.com.pk</a>
+        <a href="https://www.afgroup.com.hk/AF7" target="_blank" rel="noreferrer">www.afgroup.com.hk/AF7</a>
       </footer>
     </main>
   );

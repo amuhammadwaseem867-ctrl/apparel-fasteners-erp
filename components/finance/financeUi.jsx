@@ -4,6 +4,11 @@ import { formatAmount } from "@/lib/formatters/formatters";
 
 export { formatAmount };
 
+export const INVOICE_TYPE_LABELS = {
+  SALES_TAX: "Sales tax invoice (GST)",
+  NON_TAX: "Non sales tax invoice",
+};
+
 export const RECEIPT_METHOD_LABELS = {
   CASH: "Cash",
   BANK_TRANSFER: "Bank transfer",

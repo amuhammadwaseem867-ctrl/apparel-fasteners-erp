@@ -111,6 +111,8 @@ export async function createInvoice(input: InvoiceInput, actorId: string) {
     const orderLine = candidates[0];
     const quantity = dec(line.quantity);
     const unitPrice = dec(orderLine.unitPrice);
+    // A non sales tax invoice bills no GST, whatever rate the order carried.
+    const taxPercent = input.invoiceType === "NON_TAX" ? 0 : orderLine.taxPercent;
     return {
       lineNo: index + 1,
       productId: line.productId,
@@ -120,8 +122,8 @@ export async function createInvoice(input: InvoiceInput, actorId: string) {
       quantity,
       unitPrice,
       discountPercent: orderLine.discountPercent,
-      taxPercent: orderLine.taxPercent,
-      ...lineAmounts(quantity, unitPrice, orderLine.discountPercent, orderLine.taxPercent),
+      taxPercent,
+      ...lineAmounts(quantity, unitPrice, orderLine.discountPercent, taxPercent),
     };
   });
   const totals = sumAmounts(lines);
@@ -135,6 +137,7 @@ export async function createInvoice(input: InvoiceInput, actorId: string) {
         salesOrderId: shipment.salesOrderId,
         shipmentId: shipment.id,
         invoiceDate: input.invoiceDate,
+        invoiceType: input.invoiceType,
         dueDate: addDays(input.invoiceDate, input.paymentTermsDays),
         subtotal: totals.grossAmount,
         discountTotal: totals.discountAmount,
@@ -152,7 +155,7 @@ export async function createInvoice(input: InvoiceInput, actorId: string) {
         action: "INVOICE_CREATED",
         entityType: "Invoice",
         entityId: invoice.id,
-        metadata: { invoiceNumber, shipmentId: shipment.id, total: totals.lineTotal },
+        metadata: { invoiceNumber, invoiceType: input.invoiceType, shipmentId: shipment.id, total: totals.lineTotal },
       }, tx);
       return invoice.id;
     });
@@ -553,7 +556,7 @@ export async function getInvoice(id: string, today = new Date().toISOString().sl
 }
 
 const INVOICE_COLUMNS = {
-  id: "pg/text@1", invoiceNumber: "pg/text@1", invoiceDate: "pg/text@1", dueDate: "pg/text@1", status: "pg/text@1",
+  id: "pg/text@1", invoiceNumber: "pg/text@1", invoiceType: "pg/text@1", invoiceDate: "pg/text@1", dueDate: "pg/text@1", status: "pg/text@1",
   totalAmount: "pg/text@1", credited: "pg/text@1", received: "pg/text@1", customerId: "pg/text@1", customerName: "pg/text@1",
   salesOrderNumber: "pg/text@1", shipmentNumber: "pg/text@1",
 } as const;
@@ -562,7 +565,7 @@ export async function listInvoices(filters: InvoiceQuery, today = new Date().toI
   const pattern = `%${filters.search}%`;
   const result = await rows<Record<keyof typeof INVOICE_COLUMNS, string>>(db.runtime(), db.raw.sql`
     select * from (
-      select i.id::text as id, i."invoiceNumber", i."invoiceDate", i."dueDate", i.status, i."totalAmount"::text as "totalAmount",
+      select i.id::text as id, i."invoiceNumber", i."invoiceType", i."invoiceDate", i."dueDate", i.status, i."totalAmount"::text as "totalAmount",
         coalesce(cn.total, 0)::text as credited, coalesce(r.total, 0)::text as received,
         i."customerId"::text as "customerId", c.name as "customerName", so."orderNumber" as "salesOrderNumber",
         s."shipmentNumber", i."createdAt",

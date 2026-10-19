@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
-import { InvoiceStatusBadge, RECEIPT_METHOD_LABELS, formatAmount, newKey, today } from "@/components/finance/financeUi";
+import { INVOICE_TYPE_LABELS, InvoiceStatusBadge, RECEIPT_METHOD_LABELS, formatAmount, newKey, today } from "@/components/finance/financeUi";
 import { apiRequest } from "@/lib/api/client";
 import useApiData from "@/lib/inventory/useApiData";
 import { subtractDecimalStrings } from "@/server/core/utils/decimal";
@@ -178,7 +178,7 @@ export default function InvoiceClient({ id }) {
         <div>
           <p className="inv-header__eyebrow"><Link href="/finance/invoices">Invoices</Link></p>
           <h1>{data.invoiceNumber} <InvoiceStatusBadge status={data.status} paymentStatus={data.paymentStatus} /></h1>
-          <p>{data.customerName} · {data.salesOrderNumber} · <Link href={`/dispatch/shipments/${data.shipmentId}`}>{data.shipmentNumber}</Link> · dated {data.invoiceDate} · due {data.dueDate}{data.daysOverdue > 0 ? ` · ${data.daysOverdue} days overdue` : ""}</p>
+          <p>{INVOICE_TYPE_LABELS[data.invoiceType] ?? data.invoiceType} · {data.customerName} · {data.salesOrderNumber} · <Link href={`/dispatch/shipments/${data.shipmentId}`}>{data.shipmentNumber}</Link> · dated {data.invoiceDate} · due {data.dueDate}{data.daysOverdue > 0 ? ` · ${data.daysOverdue} days overdue` : ""}</p>
         </div>
         <div className="inv-header__actions">
           {data.status === "DRAFT" && <Button variant="secondary" loading={busy === "cancel"} onClick={() => act("cancel")}>Cancel draft</Button>}
@@ -193,7 +193,7 @@ export default function InvoiceClient({ id }) {
       {data.status === "CANCELLED" && <p className="inv-state inv-state--error">Cancelled{data.cancelReason ? `: ${data.cancelReason}` : ""}.</p>}
 
       <section className="inv-kpis" aria-label="Balance">
-        <div className="inv-kpi"><span>Invoice total</span><strong>{formatAmount(data.totalAmount)}</strong><small>incl. tax {formatAmount(data.taxTotal)}</small></div>
+        <div className="inv-kpi"><span>Invoice total</span><strong>{formatAmount(data.totalAmount)}</strong><small>{data.invoiceType === "NON_TAX" ? "no sales tax" : `incl. tax ${formatAmount(data.taxTotal)}`}</small></div>
         <div className="inv-kpi"><span>Credited</span><strong>{formatAmount(data.credited)}</strong></div>
         <div className="inv-kpi"><span>Received</span><strong>{formatAmount(data.received)}</strong></div>
         <div className={`inv-kpi ${data.daysOverdue > 0 ? "inv-kpi--danger" : ""}`}><span>Outstanding</span><strong>{data.status === "ISSUED" ? formatAmount(data.outstanding) : "—"}</strong></div>

@@ -18,8 +18,12 @@ const money = z
 
 export const RECEIPT_METHODS = ["CASH", "BANK_TRANSFER", "CHEQUE", "CARD", "OTHER"] as const;
 
+export const INVOICE_TYPES = ["SALES_TAX", "NON_TAX"] as const;
+
 export const invoiceInputSchema = z.object({
   shipmentId: uuid,
+  /* SALES_TAX bills GST at the order's rates; NON_TAX bills no sales tax. */
+  invoiceType: z.enum(INVOICE_TYPES).default("SALES_TAX"),
   invoiceDate: date,
   paymentTermsDays: z.number().int().min(0).max(365).default(30),
   notes: optionalTextSchema(1000),

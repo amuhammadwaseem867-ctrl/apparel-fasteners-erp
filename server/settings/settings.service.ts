@@ -94,6 +94,7 @@ export const SETTINGS = {
       shipmentMode: text(60),
       portOfLoading: text(120),
       countryOfOrigin: text(60),
+      hsCode: text(40),
     }),
     fallback: () => ({ ...COMPANY }),
   },

@@ -1288,3 +1288,22 @@ to Company settings and to My profile & password.
 
 **Closing menus.** Menus close on Escape, on a click outside and on
 navigation.
+
+## D-043 Non sales tax invoice (2026-10-19)
+
+- Every invoice has a type: `SALES_TAX` (the default, unchanged) or
+  `NON_TAX`. The user picks it in the new-invoice dialog. Migration
+  `20261019T1054_invoice_type` adds the column with default `SALES_TAX`
+  and a check constraint, so existing invoices stay sales tax invoices.
+- A `NON_TAX` invoice bills every line at 0% tax whatever rate the sales
+  order carried, so its tax total is zero and its total is goods less
+  discount. The type is saved, audited and shown in the list and detail.
+- Its print follows AF7's own invoice sheet (INV_ZIP-26-472): title
+  "PROFORMA INVOICE", INV # and date, consignee, item table (description,
+  tape colour, finish, size, unit, quantity, unit price, total) with a
+  quantity / amount total row, bank detail with the company NTN, terms
+  with HS code, and "Thank you for your business". No GST lines.
+- Bank details, NTN and HS code come from Settings (HS code is a new
+  company profile field); none are hardcoded.
+- The documents' website default is now www.afgroup.com.hk/AF7. A website
+  already saved in Settings still takes precedence.

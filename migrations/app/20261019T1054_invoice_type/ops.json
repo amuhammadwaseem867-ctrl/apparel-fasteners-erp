@@ -1,0 +1,86 @@
+[
+  {
+    "id": "column.public.erp_invoices.invoiceType",
+    "label": "Add column \"invoiceType\" to \"erp_invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "invoiceType",
+        "table": "erp_invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"invoiceType\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_invoices",
+          "invoiceType"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"invoiceType\"",
+        "sql": "ALTER TABLE \"public\".\"erp_invoices\" ADD COLUMN \"invoiceType\" text DEFAULT 'SALES_TAX' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"invoiceType\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_invoices",
+          "invoiceType"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.erp_invoices.erp_invoices_type_d58cf5dc",
+    "label": "Add check constraint \"erp_invoices_type_d58cf5dc\" on \"erp_invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "erp_invoices_type_d58cf5dc",
+        "table": "erp_invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_invoices_type_d58cf5dc\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_invoices_type_d58cf5dc",
+          "public",
+          "\"public\".\"erp_invoices\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"erp_invoices_type_d58cf5dc\"",
+        "sql": "ALTER TABLE \"public\".\"erp_invoices\" ADD CONSTRAINT \"erp_invoices_type_d58cf5dc\" CHECK (\"invoiceType\" IN ('SALES_TAX', 'NON_TAX'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_invoices_type_d58cf5dc\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_invoices_type_d58cf5dc",
+          "public",
+          "\"public\".\"erp_invoices\""
+        ]
+      }
+    ]
+  }
+]

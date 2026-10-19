@@ -5,6 +5,9 @@
  * company's template: consignee with NTN / STRN, invoice details with the
  * customer PO, item lines with finish, colour and size, GST totals,
  * commercial terms, shipment details and bank details from Settings.
+ * A non sales tax invoice prints in AF7's own invoice layout instead:
+ * consignee, item table with a quantity / amount total, bank detail and
+ * terms, and no GST.
  */
 
 import Link from "next/link";
@@ -16,6 +19,105 @@ import { addDecimalStrings, subtractDecimalStrings } from "@/server/core/utils/d
 import useCompany from "@/lib/useCompany";
 
 const day = (value) => (value ? new Date(`${value}T00:00:00`).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "");
+
+function StatusNotice({ invoice }) {
+  if (invoice.status === "DRAFT") return <p className="af7__notice">DRAFT: not issued. This is not a valid invoice.</p>;
+  if (invoice.status === "CANCELLED") return <p className="af7__notice">CANCELLED: this invoice is void.</p>;
+  return null;
+}
+
+function NonTaxInvoice({ invoice, company, paymentTerms }) {
+  const totalQuantity = invoice.lines.reduce((sum, line) => addDecimalStrings(sum, line.quantity), "0");
+  const total = subtractDecimalStrings(invoice.subtotal, invoice.discountTotal);
+  return (
+    <Af7Page
+      company={company}
+      title="PROFORMA INVOICE"
+      subtitle={<Af7Fields rows={[["INV #", invoice.invoiceNumber], ["Dated", day(invoice.invoiceDate)]]} />}
+    >
+      <StatusNotice invoice={invoice} />
+
+      <Af7Section title="Consignee">
+        <Af7Fields rows={[
+          ["Consignee", invoice.customerName],
+          ["Address", invoice.customerAddress],
+          ["Contact #", invoice.customerPhone],
+          ["Contact person", invoice.customerContactPerson],
+        ]} />
+      </Af7Section>
+
+      <Af7Section title="Items">
+        <table className="af7__table">
+          <colgroup>
+            <col style={{ width: "30%" }} /><col style={{ width: "11%" }} /><col style={{ width: "11%" }} /><col style={{ width: "8%" }} /><col style={{ width: "7%" }} /><col style={{ width: "10%" }} /><col style={{ width: "10%" }} /><col style={{ width: "13%" }} />
+          </colgroup>
+          <thead>
+            <tr><th>Description</th><th>Tape color</th><th>Finish</th><th>Size</th><th>Unit</th><th>Quantity</th><th>Unit price</th><th>Total amount</th></tr>
+          </thead>
+          <tbody>
+            {invoice.lines.map((line) => (
+              <tr key={line.id}>
+                <td>{line.description}{Number(line.discountPercent) > 0 ? ` (less ${line.discountPercent}%)` : ""}</td>
+                <td>{line.color ?? ""}</td>
+                <td>{line.finish ?? ""}</td>
+                <td>{line.size ?? ""}</td>
+                <td className="center">{line.unit}</td>
+                <td className="num">{line.quantity}</td>
+                <td className="num">{line.unitPrice}</td>
+                <td className="num">{formatAmount(subtractDecimalStrings(line.grossAmount, line.discountAmount))}</td>
+              </tr>
+            ))}
+            <tr className="af7__strong">
+              <th colSpan={5}>Total</th>
+              <td className="num">{totalQuantity}</td>
+              <td />
+              <td className="num">{formatAmount(total)}</td>
+            </tr>
+          </tbody>
+        </table>
+        {invoice.status === "ISSUED" && (Number(invoice.credited) > 0 || Number(invoice.received) > 0) && (
+          <p>Credited {formatAmount(invoice.credited)} · received {formatAmount(invoice.received)} · balance due {formatAmount(invoice.outstanding)}</p>
+        )}
+      </Af7Section>
+
+      <div className="af7__two">
+        <Af7Section title="Bank detail">
+          <Af7Fields rows={[
+            ["Bank name", company.bankName],
+            ["Account title", company.accountName],
+            ["Account no.", company.accountNumber],
+            ["IBAN", company.iban],
+            ["Branch / address", company.bankBranch],
+            ["NTN #", company.taxRegistration],
+          ]} />
+        </Af7Section>
+        <Af7Section title="Terms">
+          <Af7Fields rows={[
+            ["Production time", company.productionTime],
+            ["Payment term", paymentTerms],
+            ["Shipment term", company.shipmentTerms],
+            ["Shipment mode", company.shipmentMode],
+            ["Port of loading", company.portOfLoading],
+            ["Port of discharge", ""],
+            ["Country of origin", company.countryOfOrigin],
+            ["HS code", company.hsCode],
+          ]} />
+        </Af7Section>
+      </div>
+
+      <div className="af7__spacer" />
+      <div className="af7__bank">
+        <p><strong>THANK YOU FOR YOUR BUSINESS</strong></p>
+        <div className="af7__signature">
+          <strong>AUTHORIZED SIGNATORY</strong>
+          <span className="af7__sign-line">Signature</span>
+        </div>
+        <Af7Stamp />
+      </div>
+      {invoice.notes && <p><strong>Notes:</strong> {invoice.notes}</p>}
+    </Af7Page>
+  );
+}
 
 export default function InvoicePrintClient({ id }) {
   const company = useCompany();
@@ -30,19 +132,26 @@ export default function InvoicePrintClient({ id }) {
   const gstLabel = rates.length === 1 ? `GST ${rates[0]}%` : "GST";
   const paymentTerms = company.paymentTerms || (invoice.paymentTermsDays ? `${invoice.paymentTermsDays} days from invoice date` : "");
 
+  const toolbar = (
+    <nav className="print-doc__toolbar" aria-label="Document actions">
+      <Link href={`/finance/invoices/${invoice.id}`}>Back to invoice</Link>
+      <button type="button" onClick={() => window.print()}>Print</button>
+    </nav>
+  );
+
+  if (invoice.invoiceType === "NON_TAX") {
+    return <main className="print-doc">{toolbar}<NonTaxInvoice invoice={invoice} company={company} paymentTerms={paymentTerms} /></main>;
+  }
+
   return (
     <main className="print-doc">
-      <nav className="print-doc__toolbar" aria-label="Document actions">
-        <Link href={`/finance/invoices/${invoice.id}`}>Back to invoice</Link>
-        <button type="button" onClick={() => window.print()}>Print</button>
-      </nav>
+      {toolbar}
       <Af7Page
         company={company}
         title="SALES TAX INVOICE"
         subtitle={<Af7Fields rows={[["Invoice no.", invoice.invoiceNumber], ["Date", day(invoice.invoiceDate)]]} />}
       >
-        {invoice.status === "DRAFT" && <p className="af7__notice">DRAFT: not issued. This is not a valid invoice.</p>}
-        {invoice.status === "CANCELLED" && <p className="af7__notice">CANCELLED: this invoice is void.</p>}
+        <StatusNotice invoice={invoice} />
 
         <div className="af7__two">
           <Af7Section title="Consignee">

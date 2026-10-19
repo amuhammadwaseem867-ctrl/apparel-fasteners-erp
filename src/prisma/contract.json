@@ -3103,6 +3103,13 @@
                   "kind": "scalar"
                 }
               },
+              "invoiceType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "issuedAt": {
                 "nullable": true,
                 "type": {
@@ -3283,6 +3290,9 @@
                 },
                 "invoiceNumber": {
                   "column": "invoiceNumber"
+                },
+                "invoiceType": {
+                  "column": "invoiceType"
                 },
                 "issuedAt": {
                   "column": "issuedAt"
@@ -15527,6 +15537,11 @@
                   "expression": "\"totalAmount\" = \"subtotal\" - \"discountTotal\" + \"taxTotal\"",
                   "name": "erp_invoices_total_afde76ef",
                   "prefix": "erp_invoices_total"
+                },
+                {
+                  "expression": "\"invoiceType\" IN ('SALES_TAX', 'NON_TAX')",
+                  "name": "erp_invoices_type_d58cf5dc",
+                  "prefix": "erp_invoices_type"
                 }
               ],
               "columns": {
@@ -15592,6 +15607,15 @@
                 "invoiceNumber": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
+                  "nullable": false
+                },
+                "invoiceType": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "SALES_TAX"
+                  },
                   "nullable": false
                 },
                 "issuedAt": {
@@ -23591,7 +23615,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "939c3cc63fb943ed04b1ef8cccf531d06faa371d440c9d678f7a94330a2ee516"
+    "storageHash": "3ab6ea3e77f8b90d2533e3ee42cb4c88ee3aa06fedb1740aed6431289f03eed6"
   },
   "execution": {
     "executionHash": "718808727641ecdeb17a8712bde5290285475a99a9b9ae49f6e824ccc560bdd2",

@@ -188,3 +188,27 @@ test("an item sold at two prices on one order cannot be invoiced ambiguously", a
   await changeShipment(shipment.id, "dispatch", {}, actor);
   await expectCode(invoice(shipment.id), "INVOICE_PRICE_UNRESOLVED");
 });
+
+test("a non sales tax invoice bills no GST; the sales tax invoice is unchanged", async () => {
+  const order = await createSalesOrder({
+    customerId: ctx.customer.id, orderDate: "2026-10-15", deliveryDate: "2026-11-15",
+    lines: [{ kind: "catalog", productId: ctx.zip.id, quantity: 200, unitPrice: 0.0375, discountPercent: 10, taxPercent: 18 }],
+  }, actor);
+  await changeSalesOrderStatus(order.id, "approve", actor);
+  const shipment = await shipLoose(order.id, [{ productId: ctx.zip.id, quantity: 200 }]);
+  await changeShipment(shipment.id, "dispatch", {}, actor);
+
+  const created = await invoice(shipment.id, { invoiceType: "NON_TAX" });
+  assert.equal(created.invoiceType, "NON_TAX");
+  assert.deepEqual([created.subtotal, created.discountTotal, created.taxTotal, created.totalAmount], ["7.50", "0.75", "0.00", "6.75"]);
+  assert.equal(Number(created.lines[0].taxPercent), 0);
+  assert.equal(Number(created.lines[0].taxAmount), 0);
+  const issued = await changeInvoice(created.id, "issue", "", actor);
+  assert.equal(issued.outstanding, "6.75");
+
+  const listed = await listInvoices(invoiceQuerySchema.parse({ search: issued.invoiceNumber }));
+  assert.deepEqual(listed.invoices.map((row) => row.invoiceType), ["NON_TAX"]);
+
+  assert.equal(ctx.invoice.invoiceType, "SALES_TAX", "the default stays the sales tax invoice");
+  assert.throws(() => invoiceInputSchema.parse({ idempotencyKey: key(), shipmentId: shipment.id, invoiceDate: "2026-10-15", paymentTermsDays: 30, invoiceType: "ZERO" }));
+});

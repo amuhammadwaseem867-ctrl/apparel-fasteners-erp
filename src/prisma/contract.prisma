@@ -879,6 +879,9 @@ model Invoice {
   invoiceDate    String
   dueDate        String
   status         String             @default("DRAFT")
+  // SALES_TAX: GST at the order's rates, printed as the sales tax invoice.
+  // NON_TAX: no sales tax, printed in AF7's invoice layout without GST.
+  invoiceType    String             @default("SALES_TAX")
   subtotal       Decimal
   discountTotal  Decimal
   taxTotal       Decimal
@@ -899,6 +902,7 @@ model Invoice {
   creditNotes CreditNote[]
   receipts    CustomerReceipt[]
 
+  @@check(expression: "\"invoiceType\" IN ('SALES_TAX', 'NON_TAX')", name: "erp_invoices_type")
   @@index([customerId, status])
   @@index([salesOrderId])
   @@index([dueDate])

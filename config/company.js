@@ -13,7 +13,7 @@ export const COMPANY = {
   phone: "",
   email: "",
   taxRegistration: "",
-  website: "www.af7.com.pk",
+  website: "www.afgroup.com.hk/AF7",
   bankName: "",
   accountName: "",
   accountNumber: "",
@@ -26,4 +26,5 @@ export const COMPANY = {
   shipmentMode: "",
   portOfLoading: "",
   countryOfOrigin: "Pakistan",
+  hsCode: "",
 };

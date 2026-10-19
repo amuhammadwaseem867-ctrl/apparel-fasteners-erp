@@ -7,7 +7,7 @@ import { useState } from "react";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import InventoryPager from "@/components/inventory/InventoryPager";
-import { InvoiceStatusBadge, formatAmount, newKey, today } from "@/components/finance/financeUi";
+import { INVOICE_TYPE_LABELS, InvoiceStatusBadge, formatAmount, newKey, today } from "@/components/finance/financeUi";
 import { apiRequest } from "@/lib/api/client";
 import useApiData, { toQuery } from "@/lib/inventory/useApiData";
 
@@ -19,6 +19,7 @@ function NewInvoiceDialog({ onClose, onCreated }) {
   const [shipmentId, setShipmentId] = useState("");
   const [invoiceDate, setInvoiceDate] = useState(today);
   const [terms, setTerms] = useState("30");
+  const [invoiceType, setInvoiceType] = useState("SALES_TAX");
   const [notes, setNotes] = useState("");
   const [key] = useState(newKey);
   const [saving, setSaving] = useState(false);
@@ -33,7 +34,7 @@ function NewInvoiceDialog({ onClose, onCreated }) {
     try {
       onCreated(await apiRequest("/api/finance/invoices", {
         method: "POST",
-        body: JSON.stringify({ idempotencyKey: key, shipmentId, invoiceDate, paymentTermsDays: Number(terms), notes }),
+        body: JSON.stringify({ idempotencyKey: key, shipmentId, invoiceType, invoiceDate, paymentTermsDays: Number(terms), notes }),
       }));
     } catch (cause) {
       setError(cause.message);
@@ -43,7 +44,7 @@ function NewInvoiceDialog({ onClose, onCreated }) {
 
   return (
     <Modal open onClose={saving ? undefined : onClose} title="Invoice a shipment"
-      description="The invoice bills exactly what was dispatched, at the sales order's prices, discounts and tax. It is created as a draft for review before issuing."
+      description="The invoice bills exactly what was dispatched, at the sales order's prices and discounts, with or without sales tax. It is created as a draft for review before issuing."
       size="large">
       <form className="inv-dialog" onSubmit={submit}>
         {shipments.error ? (
@@ -63,6 +64,13 @@ function NewInvoiceDialog({ onClose, onCreated }) {
             </select>
           </div>
         )}
+        <div className="inv-field">
+          <label htmlFor="in-type">Invoice type *</label>
+          <select id="in-type" required value={invoiceType} onChange={(event) => setInvoiceType(event.target.value)}>
+            {Object.entries(INVOICE_TYPE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+          </select>
+          <small>{invoiceType === "NON_TAX" ? "No sales tax is charged. Prints in AF7's invoice layout without GST." : "GST at the sales order's tax rates. Prints as the sales tax invoice."}</small>
+        </div>
         <div className="inv-dialog__grid">
           <div className="inv-field">
             <label htmlFor="in-date">Invoice date *</label>
@@ -148,7 +156,7 @@ export default function InvoicesPage() {
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.id}>
-                    <td data-label="Invoice"><Link href={`/finance/invoices/${row.id}`}><strong>{row.invoiceNumber}</strong></Link><small>{row.invoiceDate}</small></td>
+                    <td data-label="Invoice"><Link href={`/finance/invoices/${row.id}`}><strong>{row.invoiceNumber}</strong></Link><small>{row.invoiceDate} · {INVOICE_TYPE_LABELS[row.invoiceType] ?? row.invoiceType}</small></td>
                     <td data-label="Customer">{row.customerName}</td>
                     <td data-label="Order / shipment">{row.salesOrderNumber}<small>{row.shipmentNumber}</small></td>
                     <td data-label="Due">{row.dueDate}{row.daysOverdue > 0 && <small className="inv-neg">{row.daysOverdue} days overdue</small>}</td>

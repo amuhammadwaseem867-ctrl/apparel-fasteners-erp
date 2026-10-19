@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'939c3cc63fb943ed04b1ef8cccf531d06faa371d440c9d678f7a94330a2ee516'>;
+  StorageHashBase<'3ab6ea3e77f8b90d2533e3ee42cb4c88ee3aa06fedb1740aed6431289f03eed6'>;
 export type ExecutionHash =
   ExecutionHashBase<'718808727641ecdeb17a8712bde5290285475a99a9b9ae49f6e824ccc560bdd2'>;
 export type ProfileHash =
@@ -493,6 +493,7 @@ export type FieldOutputTypes = {
       readonly idempotencyKey: CodecTypes['pg/text@1']['output'];
       readonly invoiceDate: CodecTypes['pg/text@1']['output'];
       readonly invoiceNumber: CodecTypes['pg/text@1']['output'];
+      readonly invoiceType: CodecTypes['pg/text@1']['output'];
       readonly issuedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
       readonly issuedBy: CodecTypes['pg/uuid@1']['output'] | null;
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
@@ -1631,6 +1632,7 @@ export type FieldInputTypes = {
       readonly idempotencyKey: CodecTypes['pg/text@1']['input'];
       readonly invoiceDate: CodecTypes['pg/text@1']['input'];
       readonly invoiceNumber: CodecTypes['pg/text@1']['input'];
+      readonly invoiceType: CodecTypes['pg/text@1']['input'];
       readonly issuedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly issuedBy: CodecTypes['pg/uuid@1']['input'] | null;
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
@@ -2786,6 +2788,7 @@ export type StorageColumnTypes = {
       readonly idempotencyKey: CodecTypes['pg/text@1']['output'];
       readonly invoiceDate: CodecTypes['pg/text@1']['output'];
       readonly invoiceNumber: CodecTypes['pg/text@1']['output'];
+      readonly invoiceType: CodecTypes['pg/text@1']['output'];
       readonly issuedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
       readonly issuedBy: CodecTypes['pg/uuid@1']['output'] | null;
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
@@ -3924,6 +3927,7 @@ export type StorageColumnInputTypes = {
       readonly idempotencyKey: CodecTypes['pg/text@1']['input'];
       readonly invoiceDate: CodecTypes['pg/text@1']['input'];
       readonly invoiceNumber: CodecTypes['pg/text@1']['input'];
+      readonly invoiceType: CodecTypes['pg/text@1']['input'];
       readonly issuedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly issuedBy: CodecTypes['pg/uuid@1']['input'] | null;
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
@@ -5086,6 +5090,7 @@ export namespace Models {
     idempotencyKey: CodecTypes['pg/text@1']['output'];
     invoiceDate: CodecTypes['pg/text@1']['output'];
     invoiceNumber: CodecTypes['pg/text@1']['output'];
+    invoiceType: CodecTypes['pg/text@1']['output'];
     issuedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
     issuedBy: CodecTypes['pg/uuid@1']['output'] | null;
     notes: CodecTypes['pg/text@1']['output'] | null;
@@ -8311,6 +8316,16 @@ type ContractBase = Omit<
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly invoiceType: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'SALES_TAX'>;
+                  };
                   readonly many: false;
                 };
                 readonly issuedAt: {
@@ -17072,6 +17087,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly invoiceType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly issuedAt: {
                 readonly nullable: true;
                 readonly type: {
@@ -17187,6 +17206,7 @@ type ContractBase = Omit<
                 readonly idempotencyKey: { readonly column: 'idempotencyKey' };
                 readonly invoiceDate: { readonly column: 'invoiceDate' };
                 readonly invoiceNumber: { readonly column: 'invoiceNumber' };
+                readonly invoiceType: { readonly column: 'invoiceType' };
                 readonly issuedAt: { readonly column: 'issuedAt' };
                 readonly issuedBy: { readonly column: 'issuedBy' };
                 readonly notes: { readonly column: 'notes' };
