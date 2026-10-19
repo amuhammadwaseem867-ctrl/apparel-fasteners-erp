@@ -3,7 +3,8 @@
 /*
  * AF7 Order Sheet: the copy that goes to production, laid out like the
  * company's order sheet (Description, Tape Color, Finish, Size, Unit,
- * Quantity). It never shows prices.
+ * Quantity), headed only by the invoice no. and the date. It never shows
+ * prices, the customer or the customer's PO.
  */
 
 import Link from "next/link";
@@ -39,19 +40,13 @@ export default function SalesOrderSheetClient({ id }) {
       <Af7Page
         company={company}
         title="ORDER SHEET"
-        subtitle={<Af7Fields rows={[["Order no.", order.orderNumber], ["Dated", day(order.orderDate)]]} />}
+        // Like AF7's own order sheet: only the invoice no. (the order number) and the date; no customer, PO or prices.
+        subtitle={<Af7Fields rows={[["Invoice no.", order.orderNumber], ["Dated", day(order.orderDate)]]} />}
       >
         {order.status === "DRAFT" && <p className="af7__notice">NOT CONFIRMED: this order is still a draft.</p>}
         {order.status === "CANCELLED" && <p className="af7__notice">CANCELLED: do not produce.</p>}
 
-        <Af7Section number="1" title="Order information">
-          <div className="af7__two">
-            <Af7Fields rows={[["Customer", order.customer.name], ["Address", order.customer.address], ["Contact person", order.customer.contactPerson], ["Contact #", order.customer.phone]]} />
-            <Af7Fields rows={[["Customer PO #", order.customerPo], ["Order no.", order.orderNumber], ["Order date", day(order.orderDate)], ["Delivery date", day(order.deliveryDate)]]} />
-          </div>
-        </Af7Section>
-
-        <Af7Section number="2" title="Order details">
+        <Af7Section number="1" title="Order details">
           <table className="af7__table">
             <colgroup>
               <col style={{ width: "5%" }} /><col style={{ width: "35%" }} /><col style={{ width: "19%" }} /><col style={{ width: "12%" }} /><col style={{ width: "9%" }} /><col style={{ width: "7%" }} /><col style={{ width: "13%" }} />
@@ -78,7 +73,7 @@ export default function SalesOrderSheetClient({ id }) {
         </Af7Section>
 
         <div className="af7__spacer" />
-        <Af7Section number="3" title="Authorization / signature">
+        <Af7Section number="2" title="Authorization / signature">
           <Af7Signatures roles={[["PREPARED BY"], ["CHECKED BY"], ["AUTHORIZED BY"]]} />
         </Af7Section>
       </Af7Page>
