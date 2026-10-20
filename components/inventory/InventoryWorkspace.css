@@ -25,6 +25,8 @@
   width: 100%;
   min-width: 0;
   display: grid;
+  /* One column that may shrink: a wide table scrolls inside its card instead of widening the page. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   padding-bottom: 28px;
 }

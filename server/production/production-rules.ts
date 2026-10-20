@@ -1,20 +1,19 @@
 /*
  * Production rules that need no database (see D-021).
  *
- * Per stage, in the production order's unit:
- *   received  = order quantity for stage 1, otherwise the accepted output
- *               of the previous stage
+ * Per stage, in the production order's unit (no blockers, D-048):
+ *   received  = the order quantity, whatever the stage before it has done
  *   processed = accepted + rejected + wastage + rework
  *   available = received + rework - processed
  * A run must satisfy input = accepted + rejected + wastage + rework and
- * input <= available. Rework units go back into the same stage's queue.
- * A stage completes when the previous stage is complete and nothing is
- * left in its queue; the order then moves to the next stage.
+ * input <= available, so a stage never processes more than the order.
+ * Rework units go back into the same stage's queue. A stage can be
+ * completed at any time; the order then moves to the next stage.
  *
  * Tape is weighed, not counted: when a production order carries tapeKg,
- * Tape Dyeing receives that many kilograms and Tape Press the kilograms
- * Tape Dyeing accepted. Teeth Making starts again from the order quantity
- * (pieces). Orders without tapeKg keep every stage in the order's unit.
+ * Tape Dyeing and Tape Press each receive that many kilograms. Teeth
+ * Making onwards count the order quantity (pieces). Orders without tapeKg
+ * keep every stage in the order's unit.
  */
 
 import { PRODUCTION_STAGES } from "../../config/production.js";

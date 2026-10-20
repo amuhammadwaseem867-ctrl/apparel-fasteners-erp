@@ -4,8 +4,8 @@
  * Check points and completion of one production stage (D-040). The
  * operator marks each check point Pass, Fail or N/A (N/A only where it is
  * optional), enters measured values, leaves a note, and completes the
- * stage. Completion stays blocked while a required check is missing or a
- * check has failed; the server enforces the same rule.
+ * stage. No blockers (D-048): the stage can be completed at any time; a
+ * missing or failed check is shown as a note, not a stop.
  */
 
 import { useState } from "react";
@@ -19,10 +19,10 @@ import "./StageChecklistDialog.css";
 
 const RESULTS = [["PASS", "Pass"], ["FAIL", "Fail"], ["NA", "N/A"]];
 
-/* Same rule as the server's checksProblem, for the live state of the form. */
-function blocker(points, values) {
+/* Same summary as the server's checksProblem, for the live state of the form. */
+function checksNote(points, values) {
   const failed = points.filter((point) => values[point.key]?.result === "FAIL");
-  if (failed.length) return `Failed: ${failed.map((point) => point.label).join("; ")}. Fix it and check again before completing.`;
+  if (failed.length) return `Failed: ${failed.map((point) => point.label).join("; ")}.`;
   const missing = points.filter((point) => point.required && !["PASS", "NA"].includes(values[point.key]?.result ?? ""));
   if (missing.length) return `${missing.length} required check${missing.length === 1 ? "" : "s"} still to record.`;
   return null;
@@ -36,7 +36,7 @@ export default function StageChecklistDialog({ order, stage, needsKg = false, re
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const set = (key, field, value) => setValues((current) => ({ ...current, [key]: { ...current[key], [field]: value } }));
-  const problem = blocker(points, values);
+  const problem = checksNote(points, values);
   const changed = points.filter((point) => {
     const now = values[point.key];
     return now.result && (now.result !== (point.result ?? "") || now.value !== (point.value ?? "") || now.note !== (point.note ?? ""));
@@ -56,7 +56,7 @@ export default function StageChecklistDialog({ order, stage, needsKg = false, re
     setError("");
     try {
       await saveChecks();
-      if (kind === "complete") await onComplete({ note: note.trim() || undefined, totalQuantity: needsKg ? Number(kg) : undefined });
+      if (kind === "complete") await onComplete({ note: note.trim() || undefined, totalQuantity: needsKg && Number(kg) > 0 ? Number(kg) : undefined });
       else onSaved?.();
       onClose();
     } catch (cause) {
@@ -107,8 +107,8 @@ export default function StageChecklistDialog({ order, stage, needsKg = false, re
 
         {!readOnly && needsKg && (
           <div className="inv-field">
-            <label htmlFor="sc-kg">Total tape quantity (kg) *</label>
-            <input id="sc-kg" required type="number" min="0.001" step="0.001" inputMode="decimal" value={kg} onChange={(event) => setKg(event.target.value)} />
+            <label htmlFor="sc-kg">Total tape quantity (kg)</label>
+            <input id="sc-kg" type="number" min="0.001" step="0.001" inputMode="decimal" value={kg} onChange={(event) => setKg(event.target.value)} />
           </div>
         )}
         {readOnly ? (stage.completionNote && <p className="sc-limit"><strong>Completion note:</strong> {stage.completionNote}</p>) : (
@@ -120,13 +120,13 @@ export default function StageChecklistDialog({ order, stage, needsKg = false, re
 
         {!readOnly && <p className={`sc-status ${problem ? "sc-status--blocked" : "sc-status--ok"}`} role="status">
           {problem ? <AlertTriangle size={16} /> : <CheckCircle2 size={16} />}
-          {problem ? `Blocked: ${problem}` : "All checks done. The stage can be completed."}
+          {problem ? `${problem} You can still complete the stage.` : "All checks done."}
         </p>}
         {error && <p className="inv-dialog__error" role="alert">{error}</p>}
         <div className="inv-dialog__actions">
           <Button variant="secondary" onClick={onClose} disabled={Boolean(busy)}>Close</Button>
           {!readOnly && points.length > 0 && <Button variant="secondary" loading={busy === "save"} disabled={!changed.length || Boolean(busy)} onClick={() => run("save")}>Save checks</Button>}
-          {!readOnly && <Button type="submit" variant="primary" loading={busy === "complete"} disabled={Boolean(problem) || Boolean(busy)}>Complete stage</Button>}
+          {!readOnly && <Button type="submit" variant="primary" loading={busy === "complete"} disabled={Boolean(busy)}>Complete stage</Button>}
         </div>
       </form>
     </Modal>

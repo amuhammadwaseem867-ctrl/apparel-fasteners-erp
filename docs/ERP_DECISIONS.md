@@ -1388,3 +1388,38 @@ navigation.
   with who and when) on the Packing lists page, where it is printed.
 - The documents keep the owner's website (www.afgroup.com.hk/AF7), not
   the one printed on the paper forms.
+
+## D-048 Invoice first, one order number, no blockers (2026-10-20)
+
+- The invoice is made first, by hand, and is the main entry (Invoices sits
+  right under Dashboard). It is the order sheet with a rate on every line,
+  sales tax 18% or a non sales tax invoice, and payment terms. Saving it
+  makes the draft order and its draft invoice under one number. Approving
+  the invoice confirms the order, which then shows in Orders, ready for
+  production; cancelling the draft cancels the order. A draft is edited
+  with its order sheet. The production copy of the order sheet prints
+  without rates. Invoices are no longer made from shipments.
+- Order numbers are AF7-<two-digit year>-<serial>: AF7-26-0001, 0002 ...
+  One running serial that never restarts; only the year part follows the
+  order date (AF7-26-0154 is followed in 2027 by AF7-27-0155). The invoice
+  has the same number. Production for an order line is numbered after it
+  (AF7-26-0001-1, -2). A number already taken is skipped, never reused.
+- No blockers: any production stage can be started or completed at any
+  time and in any order; each stage can take the whole order (never more).
+  Check points are recorded with the stage and shown, but do not stop it.
+  The tape weight is optional. Packing does not wait for QC. The process
+  bar shows the next action, not a blocker; only a cancelled order is
+  stopped. Kept safety rules: stock never goes below zero, a stage never
+  processes more than the order, an order never ships more than ordered.
+- Warehouses and shelves are gone from the screens (the page redirects to
+  Raw material stock). Every location is typed by hand: receiving,
+  issuing, packing, shipping, goods received and incoming QC.
+- One packing list per order: all its products in one document under the
+  order number (the order sheet, invoice and gate pass already are).
+- `npm run clear-transactions` empties all transactions (orders, invoices,
+  payments, production, QC, packing, dispatch, gate passes, stock,
+  planning, purchasing, cash book and their accounting entries) after a
+  verified backup and a typed CLEAR, in one transaction. Logins, roles,
+  customers, items, suppliers, locations, settings, HR and payroll (with
+  its accounting entries), the chart of accounts and the audit log stay.
+  Number counters restart, so the first order is AF7-YY-0001.

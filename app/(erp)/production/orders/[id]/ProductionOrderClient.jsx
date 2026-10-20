@@ -154,7 +154,8 @@ function StageSection({ order, stage, onChanged }) {
   const [showRuns, setShowRuns] = useState(false);
   const [checking, setChecking] = useState(false);
   const open = ["RELEASED", "IN_PROGRESS"].includes(order.status) && stage.status !== "COMPLETED";
-  const canComplete = open && stage.previousCompleted && Number(stage.available) === 0;
+  // No blockers (D-048): an open stage can be completed at any time.
+  const canComplete = open;
   const points = stage.checks?.points ?? [];
 
   async function complete() {
@@ -194,8 +195,7 @@ function StageSection({ order, stage, onChanged }) {
             <button type="button" className="inv-text-button" onClick={() => setChecking(true)}>View checks</button>
           )}
           {open && (
-            <Button size="small" variant="secondary" loading={busy} disabled={!canComplete} onClick={complete}
-              title={canComplete ? "" : !stage.previousCompleted ? "Complete the previous stage first." : "Process everything waiting at this stage first."}>
+            <Button size="small" variant="secondary" loading={busy} disabled={!canComplete} onClick={complete}>
               Complete stage
             </Button>
           )}
@@ -214,7 +214,7 @@ function StageSection({ order, stage, onChanged }) {
         {stage.completedAt && <div><dt>Completed</dt><dd>{formatDateTime(stage.completedAt)}</dd></div>}
       </dl>
       {stage.completionNote && <p className="inv-field__hint"><strong>Completion note:</strong> {stage.completionNote}</p>}
-      {stage.checks?.problem && open && stage.status === "IN_PROGRESS" && <p className="inv-field__hint" role="status">Blocked: {stage.checks.problem}</p>}
+      {stage.checks?.problem && open && stage.status === "IN_PROGRESS" && <p className="inv-field__hint" role="status">Checks: {stage.checks.problem} (the stage can still be completed)</p>}
       {checking && (
         <StageChecklistDialog
           order={order}
