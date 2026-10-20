@@ -22,8 +22,9 @@ export default function PackingListPrintClient({ id }) {
   if (error) return <main className="print-doc print-doc--message"><p role="alert">{error}</p><Link href="/packing/orders">Back to packing</Link></main>;
   if (!list) return <main className="print-doc print-doc--message"><p role="status">Loading packing list…</p></main>;
 
-  const weight = (field) => (list.packages.every((item) => item[field] !== null)
-    ? list.packages.reduce((sum, item) => addDecimalStrings(sum, item[field]), "0")
+  // Total of the weights entered; rows left without a weight add nothing.
+  const weight = (field) => (list.packages.some((item) => item[field] !== null)
+    ? list.packages.filter((item) => item[field] !== null).reduce((sum, item) => addDecimalStrings(sum, item[field]), "0")
     : "—");
   const weights = (item) => (item.netWeight === null && item.grossWeight === null ? "" : `${item.netWeight ?? "—"} / ${item.grossWeight ?? "—"}`);
   const blanks = Math.max(0, MIN_ROWS - list.packages.length);
@@ -35,7 +36,7 @@ export default function PackingListPrintClient({ id }) {
         <button type="button" onClick={() => window.print()}>Print</button>
       </nav>
       <Af7Page company={company} title="PACKING LIST" subtitle={<p className="af7__small">No. {list.packingNumber}</p>}>
-        {list.status === "DRAFT" && <p className="af7__notice">DRAFT: not yet confirmed.</p>}
+        {list.status === "DRAFT" && <p className="af7__notice">DRAFT: packing not passed yet.</p>}
         {list.status === "CANCELLED" && <p className="af7__notice">CANCELLED: this packing list is void.</p>}
 
         <Af7Section number="1" title="Document information">
@@ -64,10 +65,10 @@ export default function PackingListPrintClient({ id }) {
               {list.packages.map((item) => (
                 <tr key={item.id}>
                   <td className="center">{item.packageNo}</td>
-                  <td>{list.productName}{item.marks ? ` · ${item.marks}` : ""}</td>
-                  <td className="center">{list.size ?? ""}</td>
+                  <td>{item.description || list.productName}{item.marks ? ` · ${item.marks}` : ""}</td>
+                  <td className="center">{item.size ?? list.size ?? ""}</td>
                   <td className="num">{item.quantity} {list.unit}</td>
-                  <td className="center">1 {item.packageType}</td>
+                  <td className="center">{item.bags ?? 1} {item.packageType}{(item.bags ?? 1) > 1 ? "s" : ""}</td>
                   <td className="num">{weights(item)}</td>
                 </tr>
               ))}

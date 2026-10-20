@@ -1,0 +1,170 @@
+[
+  {
+    "id": "column.public.erp_packing_packages.bags",
+    "label": "Add column \"bags\" to \"erp_packing_packages\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "bags",
+        "table": "erp_packing_packages"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"bags\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_packing_packages",
+          "bags"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"bags\"",
+        "sql": "ALTER TABLE \"public\".\"erp_packing_packages\" ADD COLUMN \"bags\" int4 DEFAULT 1 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"bags\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_packing_packages",
+          "bags"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_packing_packages.description",
+    "label": "Add column \"description\" to \"erp_packing_packages\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "description",
+        "table": "erp_packing_packages"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"description\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_packing_packages",
+          "description"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"description\"",
+        "sql": "ALTER TABLE \"public\".\"erp_packing_packages\" ADD COLUMN \"description\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"description\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_packing_packages",
+          "description"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_packing_packages.size",
+    "label": "Add column \"size\" to \"erp_packing_packages\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "size",
+        "table": "erp_packing_packages"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"size\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_packing_packages",
+          "size"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"size\"",
+        "sql": "ALTER TABLE \"public\".\"erp_packing_packages\" ADD COLUMN \"size\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"size\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_packing_packages",
+          "size"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.erp_packing_packages.erp_packing_packages_bags_positive_b5f20c6a",
+    "label": "Add check constraint \"erp_packing_packages_bags_positive_b5f20c6a\" on \"erp_packing_packages\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "erp_packing_packages_bags_positive_b5f20c6a",
+        "table": "erp_packing_packages"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_packing_packages_bags_positive_b5f20c6a\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_packing_packages_bags_positive_b5f20c6a",
+          "public",
+          "\"public\".\"erp_packing_packages\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"erp_packing_packages_bags_positive_b5f20c6a\"",
+        "sql": "ALTER TABLE \"public\".\"erp_packing_packages\" ADD CONSTRAINT \"erp_packing_packages_bags_positive_b5f20c6a\" CHECK (\"bags\" > 0)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_packing_packages_bags_positive_b5f20c6a\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_packing_packages_bags_positive_b5f20c6a",
+          "public",
+          "\"public\".\"erp_packing_packages\""
+        ]
+      }
+    ]
+  }
+]

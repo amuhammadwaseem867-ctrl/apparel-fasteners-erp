@@ -13,11 +13,17 @@ const packageSchema = z.object({
   grossWeight: quantitySchema(true).optional(),
   dimensions: optionalTextSchema(60),
   marks: optionalTextSchema(200),
+  /* AF7 packing list row: description, size and number of bags / cartons. */
+  description: optionalTextSchema(200),
+  size: optionalTextSchema(60),
+  bags: z.number().int().min(1).max(100000).default(1),
 });
 
 export const packingListInputSchema = z.object({
   productionOrderId: uuid,
   locationId: uuid,
+  /* Pass the packing step now: create and confirm in one transaction. */
+  confirm: z.boolean().default(false),
   packages: z.array(packageSchema).min(1).max(500),
   notes: optionalTextSchema(1000),
   idempotencyKey: idempotencyKeySchema,
@@ -44,3 +50,9 @@ export const packingQuerySchema = z.object({
 
 export type PackingListInput = z.infer<typeof packingListInputSchema>;
 export type PackingQuery = z.infer<typeof packingQuerySchema>;
+
+/* What the order page sends: the finished-goods location by id or typed name. */
+export const packingListRequestSchema = z.object({
+  locationId: uuid.optional(),
+  locationName: z.string().trim().max(60).optional(),
+}).passthrough().refine((input) => input.locationId || input.locationName, { message: "Enter where the packed goods are kept.", path: ["locationName"] });

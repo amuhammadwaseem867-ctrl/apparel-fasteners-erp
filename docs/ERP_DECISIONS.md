@@ -1359,3 +1359,32 @@ navigation.
   rejected transaction leaves nothing behind. Transfers still pick from
   existing locations.
 - The stock list and stock card show the location's name as typed.
+
+## D-047 Passing every step on the order page; AF7 packing details (2026-10-20)
+
+- The order page no longer sends the user to other pages to carry on.
+  At each step the action is right there:
+  - QC: "Record QC" opens the inspection; it is approved in the Quality
+    check list; "Complete Quality Check" closes the stage.
+  - Packing: the packing list form (below); a draft can be passed or
+    cancelled in the Packing list; "Complete Packing" closes the stage.
+  - Dispatch: the shipment is made, then "Dispatch & make gate pass"
+    dispatches it and makes its outward gate pass from it; "Mark
+    delivered" records who received it; "Complete Delivered" closes it.
+  - Invoice and payment: "Make invoice" (this order's shipments only),
+    "Issue invoice" and "Record payment".
+  The process bar's next-step links go to these sections of the order
+  page. Stage rows offer "Complete <stage>" once nothing is left waiting.
+- The packing form follows the AF7 packing list: date, PO #, order no.,
+  then rows of description, size, pcs / meters / rolls, no. of bags /
+  cartons, packed in, net and gross weight, with totals. Description and
+  size come from the order line and can be changed. Migration
+  `20261020T1047_packing_rows` adds description, size and bags to each
+  packing row; a list's package count is its total bags / cartons.
+- "Pass packing" saves and confirms in one transaction: the packing stage
+  is recorded and the packed goods go into finished-goods stock at the
+  typed location. "Save as draft" keeps it to pass later.
+- Each packing list shows its history (made, passed, shipped, delivered,
+  with who and when) on the Packing lists page, where it is printed.
+- The documents keep the owner's website (www.afgroup.com.hk/AF7), not
+  the one printed on the paper forms.

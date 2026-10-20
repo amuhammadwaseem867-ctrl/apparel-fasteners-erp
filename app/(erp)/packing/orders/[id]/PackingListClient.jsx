@@ -20,7 +20,7 @@ export default function PackingListClient({ id }) {
   async function act(action) {
     if (busy) return;
     const text = action === "confirm"
-      ? `Confirm ${list.packingNumber}? This records ${list.totalQuantity} ${list.unit} as packed for ${list.orderNumber} and receives it into ${list.locationLabel}. It cannot be undone.`
+      ? `Pass packing ${list.packingNumber}? This records ${list.totalQuantity} ${list.unit} as packed for ${list.orderNumber} and receives it into ${list.locationLabel}. It cannot be undone.`
       : `Cancel ${list.packingNumber}?`;
     if (!window.confirm(text)) return;
     setBusy(action);
@@ -52,7 +52,7 @@ export default function PackingListClient({ id }) {
         </div>
         <div className="inv-header__actions">
           {list.status === "DRAFT" && <Button variant="secondary" loading={busy === "cancel"} onClick={() => act("cancel")}>Cancel</Button>}
-          {list.status === "DRAFT" && <Button variant="primary" loading={busy === "confirm"} onClick={() => act("confirm")}>Confirm packing</Button>}
+          {list.status === "DRAFT" && <Button variant="primary" loading={busy === "confirm"} onClick={() => act("confirm")}>Pass packing</Button>}
           <Link className="inv-link-button" href={`/print/packing-lists/${list.id}`}>Print packing list</Link>
         </div>
       </header>
@@ -63,13 +63,15 @@ export default function PackingListClient({ id }) {
         <div className="inv-card__header"><h2>Packages</h2></div>
         <div className="inv-table-wrap">
           <table className="inv-table">
-            <thead><tr><th className="inv-num">#</th><th>Type</th><th className="inv-num">Quantity</th><th className="inv-num">Net kg</th><th className="inv-num">Gross kg</th><th>Dimensions</th><th>Marks</th></tr></thead>
+            <thead><tr><th className="inv-num">Sr. no.</th><th>Description</th><th>Size</th><th className="inv-num">Pcs / meters / rolls</th><th className="inv-num">Bags / cartons</th><th className="inv-num">Net kg</th><th className="inv-num">Gross kg</th><th>Dimensions</th><th>Marks</th></tr></thead>
             <tbody>
               {list.packages.map((item) => (
                 <tr key={item.id}>
-                  <td data-label="#" className="inv-num">{item.packageNo}</td>
-                  <td data-label="Type">{item.packageType}</td>
+                  <td data-label="Sr. no." className="inv-num">{item.packageNo}</td>
+                  <td data-label="Description">{item.description || list.productName}</td>
+                  <td data-label="Size">{item.size || list.size || "—"}</td>
                   <td data-label="Quantity" className="inv-num">{item.quantity} {list.unit}</td>
+                  <td data-label="Bags / cartons" className="inv-num">{item.bags} {item.packageType}</td>
                   <td data-label="Net kg" className="inv-num">{item.netWeight ?? "—"}</td>
                   <td data-label="Gross kg" className="inv-num">{item.grossWeight ?? "—"}</td>
                   <td data-label="Dimensions">{item.dimensions || "—"}</td>
@@ -84,6 +86,27 @@ export default function PackingListClient({ id }) {
           <p className="inv-state">
             Stock: {list.stockDocuments.map((document) => <Link key={document.id} href={`/print/stock-documents/${document.id}`}>{document.documentNumber}</Link>)}
           </p>
+        )}
+      </section>
+
+      <section className="inv-card">
+        <div className="inv-card__header"><h2>History</h2></div>
+        {(list.history ?? []).length === 0 ? <p className="inv-state">No history yet.</p> : (
+          <div className="inv-table-wrap">
+            <table className="inv-table">
+              <thead><tr><th>When</th><th>What happened</th><th>By</th><th>Reference</th></tr></thead>
+              <tbody>
+                {list.history.map((entry, index) => (
+                  <tr key={index}>
+                    <td data-label="When">{new Date(entry.at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</td>
+                    <td data-label="What happened">{entry.event}</td>
+                    <td data-label="By">{entry.by ?? "—"}</td>
+                    <td data-label="Reference">{entry.reference ?? "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
     </main>

@@ -1,0 +1,70 @@
+/* The AF7 packing list as a form (D-047). */
+
+.pk-form__section {
+  display: grid;
+  gap: 12px;
+}
+
+.pk-form__section h3 {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #eef2f7;
+  color: var(--inv-navy, #1f2a44);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pk-form__info {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pk-form__info div {
+  display: grid;
+  gap: 2px;
+  padding: 8px 12px;
+  border: 1px solid var(--inv-border, #d9dee8);
+  border-radius: 8px;
+}
+
+.pk-form__info span {
+  color: var(--inv-muted, #667085);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+/* The whole row fits the dialog: narrow cells, headers wrap. */
+.pk-form .pk-form__table th,
+.pk-form .pk-form__table td {
+  padding: 8px 5px;
+}
+
+.pk-form .pk-form__table th {
+  white-space: normal;
+  line-height: 1.25;
+  vertical-align: bottom;
+}
+
+.pk-form .pk-form__table input,
+.pk-form .pk-form__table select {
+  width: 100%;
+  min-width: 0;
+  padding: 6px 7px;
+}
+
+.pk-form .pk-form__table td[data-label="Sr. no."] { width: 34px; }
+.pk-form .pk-form__table td[data-label="Description"] { min-width: 170px; }
+.pk-form .pk-form__table td[data-label="Size"] { width: 92px; }
+.pk-form .pk-form__table td[data-label="Pcs / meters / rolls"],
+.pk-form .pk-form__table td[data-label="Bags / cartons"],
+.pk-form .pk-form__table td[data-label="Net weight"],
+.pk-form .pk-form__table td[data-label="Gross weight"] { width: 78px; }
+.pk-form .pk-form__table td[data-label="Packed in"] { width: 92px; }
+.pk-form .pk-form__table tfoot td { background: #eef2f7; }
+
+@media (max-width: 640px) {
+  .pk-form__info { grid-template-columns: 1fr; }
+}

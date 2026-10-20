@@ -76,7 +76,7 @@ export async function getOrderTrace(id: string) {
     packingLists: packingLists.map((row) => ({ id: row.id, packingNumber: row.packingNumber, status: row.status, totalQuantity: num(row.totalQuantity), packageCount: row.packageCount, productionOrderId: row.productionOrderId, createdAt: row.createdAt })),
     shipments: shipments.map((row) => ({ id: row.id, shipmentNumber: row.shipmentNumber, status: row.status, vehicleNumber: row.vehicleNumber, dispatchedAt: row.dispatchedAt, deliveredAt: row.deliveredAt, createdAt: row.createdAt })),
     gatePasses: gatePasses.map((row) => ({ id: row.id, passNumber: row.passNumber, status: row.status, passType: row.passType, shipmentId: row.shipmentId })),
-    invoices: invoices.map((row) => ({ id: row.id, invoiceNumber: row.invoiceNumber, status: row.status, invoiceDate: row.invoiceDate, dueDate: row.dueDate, totalAmount: num(row.totalAmount) })),
+    invoices: invoices.map((row) => ({ id: row.id, invoiceNumber: row.invoiceNumber, shipmentId: row.shipmentId, status: row.status, invoiceDate: row.invoiceDate, dueDate: row.dueDate, totalAmount: num(row.totalAmount) })),
     receipts: receipts.map((row) => ({ id: row.id, receiptNumber: row.receiptNumber, status: row.status, receiptDate: row.receiptDate, amount: num(row.amount), invoiceId: row.invoiceId })),
     money: { invoiced, paid, outstanding: Math.max(0, Math.round((invoiced - paid) * 100) / 100) },
     notes: notes.map((row) => ({ id: row.id, step: row.step, note: row.note, createdAt: row.createdAt, createdByName: authors.find((user) => user.id === row.createdBy)?.name ?? null })),

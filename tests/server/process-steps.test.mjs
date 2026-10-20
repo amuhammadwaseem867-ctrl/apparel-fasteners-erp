@@ -29,7 +29,7 @@ test("a confirmed order is sent to production next; a failed check blocks produc
 });
 
 test("after Assembling the next step is QC, then packing, dispatch, invoice and payment", () => {
-  assert.match(processSteps(trace({}, { production: [production(6)] })).next.action, /Record the QC inspection for PRD-1/);
+  assert.match(processSteps(trace({}, { production: [production(6)] })).next.action, /Record QC for PRD-1/);
   assert.match(processSteps(trace({}, { production: [production(7)] })).next.action, /Make the packing list/);
   assert.match(processSteps(trace({}, { production: [production(8)], packingLists: [{ id: "l1", packingNumber: "PKL-1", status: "CONFIRMED" }] })).next.action, /Create the shipment/);
   const delivered = { production: [production(9, { status: "COMPLETED" })], shipments: [{ id: "s1", shipmentNumber: "SHP-1", status: "DISPATCHED", dispatchedAt: "2026-10-18" }] };
@@ -41,6 +41,25 @@ test("after Assembling the next step is QC, then packing, dispatch, invoice and 
   const paid = processSteps(trace({}, { ...invoiced, money: { invoiced: 100, paid: 100, outstanding: 0 } }));
   assert.equal(paid.complete, true);
   assert.equal(paid.next, null);
+});
+
+test("every next step is passed on the order page; no step sends the user elsewhere", () => {
+  const cases = [
+    { production: [production(6)] },
+    { production: [production(6)], inspections: [{ id: "q1", inspectionNumber: "QI-1", status: "OPEN" }] },
+    { production: [production(7)] },
+    { production: [production(7)], packingLists: [{ id: "l1", packingNumber: "PKL-1", status: "DRAFT" }] },
+    { production: [production(8)], packingLists: [{ id: "l1", packingNumber: "PKL-1", status: "CONFIRMED" }], shipments: [{ id: "s1", shipmentNumber: "SHP-1", status: "DRAFT" }] },
+    { production: [production(9, { status: "COMPLETED" })], shipments: [{ id: "s1", shipmentNumber: "SHP-1", status: "DISPATCHED", dispatchedAt: "2026-10-18" }] },
+    { production: [production(9, { status: "COMPLETED" })], shipments: [{ id: "s1", shipmentNumber: "SHP-1", status: "DISPATCHED", dispatchedAt: "2026-10-18" }], invoices: [{ id: "i1", invoiceNumber: "INV-1", status: "DRAFT" }] },
+    { production: [production(9, { status: "COMPLETED" })], shipments: [{ id: "s1", shipmentNumber: "SHP-1", status: "DISPATCHED", dispatchedAt: "2026-10-18" }], invoices: [{ id: "i1", invoiceNumber: "INV-1", status: "ISSUED" }], money: { invoiced: 100, paid: 0, outstanding: 100 } },
+  ];
+  for (const extra of cases) {
+    const { next } = processSteps(trace({}, extra));
+    assert.match(next.href, /^\/sales\/orders\/[^/#]+#step-/, `${next.step.key}: ${next.href}`);
+  }
+  assert.match(processSteps(trace({}, cases[1])).next.action, /Approve QC inspection QI-1/);
+  assert.match(processSteps(trace({}, cases[3])).next.action, /Pass packing list PKL-1/);
 });
 
 test("a cancelled order shows as blocked at Order", () => {

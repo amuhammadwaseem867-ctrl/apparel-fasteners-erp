@@ -229,3 +229,15 @@
 }
 
 .op-notes-log__form input { flex: 1 1 260px; min-width: 0; }
+
+/* Buttons that pass a step right in its list (D-047). */
+.op-inline-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+.op-inline-actions:empty { display: none; }

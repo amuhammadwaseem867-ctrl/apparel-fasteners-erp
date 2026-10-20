@@ -612,9 +612,9 @@ export async function listInvoices(filters: InvoiceQuery, today = new Date().toI
 
 /* Dispatched or delivered shipments that have no active invoice yet. */
 export async function listUninvoicedShipments() {
-  const result = await rows<{ id: string; shipmentNumber: string; status: string; dispatchedAt: string; salesOrderNumber: string; customerName: string; lineCount: string }>(db.runtime(), db.raw.sql`
+  const result = await rows<{ id: string; shipmentNumber: string; status: string; dispatchedAt: string; salesOrderId: string; salesOrderNumber: string; customerName: string; lineCount: string }>(db.runtime(), db.raw.sql`
     select s.id::text as id, s."shipmentNumber", s.status, coalesce(s."dispatchedAt"::text, '') as "dispatchedAt",
-      so."orderNumber" as "salesOrderNumber", c.name as "customerName",
+      so.id::text as "salesOrderId", so."orderNumber" as "salesOrderNumber", c.name as "customerName",
       (select count(*) from erp_shipment_lines l where l."shipmentId" = s.id)::text as "lineCount"
     from erp_shipments s
     join erp_sales_orders so on so.id = s."salesOrderId"
@@ -623,7 +623,7 @@ export async function listUninvoicedShipments() {
       and not exists (select 1 from erp_invoices i where i."shipmentId" = s.id and i.status <> 'CANCELLED')
     order by s."dispatchedAt" desc nulls last
     limit 200
-  `.returnsRow({ id: "pg/text@1", shipmentNumber: "pg/text@1", status: "pg/text@1", dispatchedAt: "pg/text@1", salesOrderNumber: "pg/text@1", customerName: "pg/text@1", lineCount: "pg/text@1" }).build());
+  `.returnsRow({ id: "pg/text@1", shipmentNumber: "pg/text@1", status: "pg/text@1", dispatchedAt: "pg/text@1", salesOrderId: "pg/text@1", salesOrderNumber: "pg/text@1", customerName: "pg/text@1", lineCount: "pg/text@1" }).build());
   return result.map((row) => ({ ...row, lineCount: Number(row.lineCount) }));
 }
 

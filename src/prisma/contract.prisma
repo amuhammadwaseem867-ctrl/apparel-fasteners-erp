@@ -804,11 +804,17 @@ model PackingPackage {
   grossWeight   Decimal?
   dimensions    String?
   marks         String?
+  // AF7 packing list row (D-047): what is in it, its size, and how many
+  // bags / cartons the row is (quantity is the row's total).
+  description   String?
+  size          String?
+  bags          Int      @default(1)
 
   packingList PackingList @relation(fields: [packingListId], references: [id], onDelete: Restrict)
 
   @@unique([packingListId, packageNo])
   @@check(expression: "\"quantity\" > 0", name: "erp_packing_packages_quantity_positive")
+  @@check(expression: "\"bags\" > 0", name: "erp_packing_packages_bags_positive")
   @@check(expression: "(\"netWeight\" IS NULL OR \"netWeight\" >= 0) AND (\"grossWeight\" IS NULL OR \"grossWeight\" >= 0)", name: "erp_packing_packages_weights")
   @@map("erp_packing_packages")
 }

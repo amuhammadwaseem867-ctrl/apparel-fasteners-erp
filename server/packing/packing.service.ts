@@ -90,7 +90,8 @@ export async function createPackingList(input: PackingListInput, actorId: string
         salesOrderId: order.salesOrderId,
         locationId: location.id,
         totalQuantity: total,
-        packageCount: input.packages.length,
+        // Bags / cartons in all rows; one row can be several of the same.
+        packageCount: input.packages.reduce((sum, item) => sum + item.bags, 0),
         notes: input.notes || null,
         idempotencyKey: input.idempotencyKey,
         createdBy: actorId,
@@ -105,6 +106,9 @@ export async function createPackingList(input: PackingListInput, actorId: string
           grossWeight: item.grossWeight === undefined ? null : toPlainDecimalString(item.grossWeight),
           dimensions: item.dimensions || null,
           marks: item.marks || null,
+          description: item.description || null,
+          size: item.size || null,
+          bags: item.bags,
         });
       }
       await recordAuditEvent({
@@ -114,6 +118,7 @@ export async function createPackingList(input: PackingListInput, actorId: string
         entityId: list.id,
         metadata: { packingNumber, productionOrderId: order.id, total },
       }, tx);
+      if (input.confirm) await applyPackingAction(tx, list.id, "confirm", actorId);
       return list.id;
     });
     return getPackingList(id);
@@ -129,8 +134,14 @@ export async function createPackingList(input: PackingListInput, actorId: string
 
 export async function changePackingList(id: string, action: "confirm" | "cancel", actorId: string) {
   if (!UUID.test(id)) notFound();
+  await db.transaction((tx) => applyPackingAction(tx, id, action, actorId));
+  return getPackingList(id);
+}
 
-  await db.transaction(async (tx) => {
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+async function applyPackingAction(tx: Tx, id: string, action: "confirm" | "cancel", actorId: string) {
+  {
     const status = action === "confirm" ? "CONFIRMED" : "CANCELLED";
     const claimed = (await tx.query(db.raw.sql`
       update erp_packing_lists
@@ -182,9 +193,7 @@ export async function changePackingList(id: string, action: "confirm" | "cancel"
       entityId: id,
       metadata: { packingNumber: list.packingNumber, total },
     }, tx);
-  });
-
-  return getPackingList(id);
+  }
 }
 
 async function lookups(rows: Array<{ productId: string; productionOrderId: string; salesOrderId: string | null; locationId: string; shipmentId: string | null }>) {
@@ -245,7 +254,31 @@ export async function getPackingList(id: string) {
       grossWeight: item.grossWeight === null ? null : dec(item.grossWeight),
     })),
     stockDocuments: documents.map((document) => ({ id: document.id, documentNumber: document.documentNumber, documentType: document.documentType })),
+    history: await packingHistory(row),
   };
+}
+
+/*
+ * What happened to a packing list, oldest first: made, passed (confirmed)
+ * or cancelled, from the audit log; shipped and delivered, from its shipment.
+ */
+async function packingHistory(row: { id: string; shipmentId: string | null }) {
+  const events = await db.orm.public.AuditLog.where({ entityType: "PackingList", entityId: row.id }).orderBy((item) => item.createdAt.asc()).all();
+  const shipment = row.shipmentId ? await db.orm.public.Shipment.where({ id: row.shipmentId }).first() : null;
+  const userIds = [...new Set([...events.map((item) => item.actorId), shipment?.dispatchedBy, shipment?.deliveredBy].filter(Boolean) as string[])];
+  const users = userIds.length ? await db.orm.public.User.where((item) => item.id.in(userIds)).select("id", "name").all() : [];
+  const name = (id: string | null | undefined) => users.find((user) => user.id === id)?.name ?? null;
+  const LABELS: Record<string, string> = {
+    PACKING_LIST_CREATED: "Packing list made",
+    PACKING_LIST_CONFIRMED: "Packing passed: stock received",
+    PACKING_LIST_CANCELLED: "Cancelled",
+  };
+  const history = events
+    .filter((item) => LABELS[item.action])
+    .map((item) => ({ event: LABELS[item.action], at: item.createdAt, by: name(item.actorId), reference: null as string | null }));
+  if (shipment?.dispatchedAt) history.push({ event: "Shipped", at: shipment.dispatchedAt, by: name(shipment.dispatchedBy), reference: shipment.shipmentNumber });
+  if (shipment?.deliveredAt) history.push({ event: "Delivered", at: shipment.deliveredAt, by: name(shipment.deliveredBy), reference: shipment.receivedBy ? `received by ${shipment.receivedBy}` : shipment.shipmentNumber });
+  return history.sort((a, b) => String(a.at).localeCompare(String(b.at)));
 }
 
 export async function listPackingLists(filters: PackingQuery) {

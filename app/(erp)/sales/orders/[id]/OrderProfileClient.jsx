@@ -6,6 +6,9 @@
  * (no prices), each production order with its nine stages and simple
  * Start / Complete buttons, raw material issued, QC, packing, dispatch,
  * gate passes, invoices and payments, each with the next step to take.
+ * Every step is passed here (D-047): QC, packing, dispatch with its gate
+ * pass, delivery, invoice and payment open in place; nothing sends the
+ * user to another page to carry on.
  */
 
 import Link from "next/link";
@@ -13,7 +16,11 @@ import { useState } from "react";
 import { CheckCircle2, Circle, Factory, Pencil, PlayCircle, Printer } from "lucide-react";
 
 import Button from "@/components/ui/Button";
+import Modal from "@/components/ui/Modal";
+import NewInvoiceDialog from "@/components/finance/NewInvoiceDialog";
+import ReceiptDialog from "@/components/finance/ReceiptDialog";
 import PackingListDialog from "@/components/packing/PackingListDialog";
+import InspectionDialog from "@/components/quality/InspectionDialog";
 import ShipmentDialog from "@/components/dispatch/ShipmentDialog";
 import StageChecklistDialog from "@/components/production/StageChecklistDialog";
 import { formatAmount } from "@/components/finance/financeUi";
@@ -108,7 +115,9 @@ function checkSummary(checks) {
   return <span className={`op-checks ${done === points.length ? "op-checks--ok" : ""}`}>{done}/{points.length} checks</span>;
 }
 
-function StageRow({ order, stage, index, canRun, busy, onStart, onChecks, onPacking, onShip }) {
+const MANAGED_ACTIONS = { quality: "Record QC", packing: "Make packing list", dispatch: "Dispatch" };
+
+function StageRow({ order, stage, index, canRun, busy, onStart, onChecks, onManaged, onComplete }) {
   const previous = index > 0 ? order.stages[index - 1] : null;
   const previousDone = !previous || previous.status === "COMPLETED";
   const running = ["RELEASED", "IN_PROGRESS"].includes(order.status);
@@ -118,12 +127,14 @@ function StageRow({ order, stage, index, canRun, busy, onStart, onChecks, onPack
   if (!done && running && !previousDone && stage.status === "PENDING" && previous?.status === "IN_PROGRESS") {
     action = <span className="op-blocked">Waits for {previous.label}</span>;
   } else if (!done && running && previousDone) {
-    if (stage.managedBy === "quality") {
-      action = <Link className="inv-link-button" href={`/quality/final?productionOrderId=${order.id}`}>Record QC</Link>;
-    } else if (stage.managedBy === "packing") {
-      action = <Button size="sm" variant="secondary" onClick={onPacking}>Make packing list</Button>;
-    } else if (stage.managedBy === "dispatch") {
-      action = <Button size="sm" variant="secondary" onClick={onShip}>Dispatch</Button>;
+    if (stage.managedBy) {
+      // QC, packing and dispatch are recorded here; once nothing is left waiting, the stage is completed here too.
+      const waiting = Number(stage.available) > 0;
+      action = waiting
+        ? <Button size="sm" variant="secondary" onClick={() => onManaged(stage.managedBy)}>{MANAGED_ACTIONS[stage.managedBy]}</Button>
+        : Number(stage.acceptedQuantity) > 0 && canRun
+          ? <Button size="sm" variant="primary" loading={busy} onClick={() => onComplete(stage.stageKey)}>Complete {stage.label}</Button>
+          : null;
     } else if (canRun && stage.status === "PENDING") {
       action = <Button size="sm" variant="secondary" loading={busy} onClick={() => onStart(stage.stageKey)}>Start</Button>;
     } else if (canRun && stage.status === "IN_PROGRESS") {
@@ -150,6 +161,20 @@ function StageRow({ order, stage, index, canRun, busy, onStart, onChecks, onPack
       )}
     </>
   );
+}
+
+/* The payment dialog needs the invoice's own outstanding balance (credit notes included). */
+function ReceiptLoader({ invoiceId, onClose, onDone }) {
+  const invoice = useApiData(`/api/finance/invoices/${invoiceId}`);
+  if (invoice.error) {
+    return (
+      <Modal open onClose={onClose} title="Record payment" size="medium">
+        <p className="inv-dialog__error" role="alert">{invoice.error}</p>
+      </Modal>
+    );
+  }
+  if (!invoice.data) return null;
+  return <ReceiptDialog invoice={invoice.data} onClose={onClose} onDone={onDone} />;
 }
 
 export default function OrderProfileClient({ id }) {
@@ -182,6 +207,51 @@ export default function OrderProfileClient({ id }) {
     `/api/production/orders/${productionId}/stages/${stageKey}/simple`,
     { method: "POST", body: JSON.stringify(totalQuantity === undefined ? { action } : { action, totalQuantity: Number(totalQuantity) }) },
   ));
+
+  const stageComplete = (productionId, stageKey) => run(`${productionId}:${stageKey}`, () => apiRequest(
+    `/api/production/orders/${productionId}/stages/${stageKey}/complete`, { method: "POST", body: "{}" },
+  ));
+  const decide = (inspection, action) => {
+    if (action === "cancel" && !window.confirm(`Cancel inspection ${inspection.inspectionNumber}?`)) return;
+    return run(`qc:${inspection.id}`, () => apiRequest(`/api/quality/inspections/${inspection.id}`, { method: "PATCH", body: JSON.stringify({ action, note: "" }) }));
+  };
+  const packingAction = (list, action) => {
+    const text = action === "confirm"
+      ? `Pass packing ${list.packingNumber}? ${qty(list.totalQuantity)} goes into finished-goods stock.`
+      : `Cancel packing list ${list.packingNumber}?`;
+    if (!window.confirm(text)) return;
+    return run(`pk:${list.id}`, () => apiRequest(`/api/packing/lists/${list.id}`, { method: "PATCH", body: JSON.stringify({ action }) }));
+  };
+  // Dispatching hands the goods over: the outward gate pass is made from the shipment at the same time.
+  const gatePass = (shipment) => apiRequest("/api/gate-passes", {
+    method: "POST",
+    body: JSON.stringify({
+      idempotencyKey: `gp-${shipment.id}`,
+      passType: "OUTWARD_NON_RETURNABLE",
+      partyName: trace.order.customer.name,
+      purpose: `Delivery of order ${trace.order.orderNumber} (${shipment.shipmentNumber})`,
+      shipmentId: shipment.id,
+      vehicleNumber: shipment.vehicleNumber ?? "",
+      lines: [],
+    }),
+  });
+  const dispatchShipment = (shipment) => {
+    if (!window.confirm(`Dispatch ${shipment.shipmentNumber}? The goods leave finished-goods stock and the gate pass is made.`)) return;
+    return run(`sh:${shipment.id}`, async () => {
+      await apiRequest(`/api/dispatch/shipments/${shipment.id}`, { method: "PATCH", body: JSON.stringify({ action: "dispatch" }) });
+      await gatePass(shipment);
+    });
+  };
+  const makeGatePass = (shipment) => run(`gp:${shipment.id}`, () => gatePass(shipment));
+  const deliver = (shipment) => {
+    const receivedBy = window.prompt(`Who received ${shipment.shipmentNumber}?`) ?? "";
+    if (!receivedBy.trim()) return;
+    return run(`sh:${shipment.id}`, () => apiRequest(`/api/dispatch/shipments/${shipment.id}`, { method: "PATCH", body: JSON.stringify({ action: "deliver", receivedBy }) }));
+  };
+  const issueInvoice = (invoice) => {
+    if (!window.confirm(`Issue invoice ${invoice.invoiceNumber}? Issued invoices cannot be edited; corrections need a credit note.`)) return;
+    return run(`in:${invoice.id}`, () => apiRequest(`/api/finance/invoices/${invoice.id}`, { method: "PATCH", body: JSON.stringify({ action: "issue", reason: "" }) }));
+  };
 
   if (!trace) {
     return <main className="inv-page">{error ? <p className="inv-dialog__error" role="alert">{error}</p> : <p className="inv-state" role="status">Loading order…</p>}</main>;
@@ -293,8 +363,9 @@ export default function OrderProfileClient({ id }) {
                       busy={busy === `${item.id}:${stage.stageKey}`}
                       onStart={(key) => stageAction(item.id, key, "start")}
                       onChecks={(stage) => setDialog({ type: "checks", productionOrderId: item.id, stageKey: stage.stageKey })}
-                      onPacking={() => setDialog({ type: "packing", productionOrderId: item.id })}
-                      onShip={() => setDialog({ type: "ship" })}
+                      onManaged={(managedBy) => setDialog(managedBy === "quality" ? { type: "qc", productionOrderId: item.id }
+                        : managedBy === "packing" ? { type: "packing", productionOrderId: item.id } : { type: "ship" })}
+                      onComplete={(key) => stageComplete(item.id, key)}
                     />
                   ))}
                 </tbody>
@@ -314,10 +385,18 @@ export default function OrderProfileClient({ id }) {
       </Section>
 
       <Section step="3" title="Quality check" id="step-qc">
-        {inspections.length === 0 ? <Empty>No inspection yet. QC is recorded at the Quality Check stage above.</Empty> : (
+        {inspections.length === 0 ? <Empty>No inspection yet. Press Record QC at the Quality Check stage above.</Empty> : (
           <ul className="op-list">
             {inspections.map((row) => (
-              <li key={row.id}><Link href={`/quality/inspections/${row.id}`}>{row.inspectionNumber}</Link> · {row.status.toLowerCase()} · passed {qty(row.passedQuantity)}, rejected {qty(row.rejectedQuantity)} · {day(row.createdAt)}</li>
+              <li key={row.id}>
+                <Link href={`/quality/inspections/${row.id}`}>{row.inspectionNumber}</Link> · {row.status.toLowerCase()} · passed {qty(row.passedQuantity)}, rejected {qty(row.rejectedQuantity)} · {day(row.createdAt)}
+                {row.status === "OPEN" && can("quality:approve") && (
+                  <span className="op-inline-actions">
+                    <Button size="sm" variant="primary" loading={busy === `qc:${row.id}`} onClick={() => decide(row, "approve")}>Approve</Button>
+                    <button type="button" className="inv-text-button" onClick={() => decide(row, "cancel")}>Cancel</button>
+                  </span>
+                )}
+              </li>
             ))}
           </ul>
         )}
@@ -328,7 +407,15 @@ export default function OrderProfileClient({ id }) {
         {packingLists.length === 0 ? <Empty>No packing list yet.</Empty> : (
           <ul className="op-list">
             {packingLists.map((row) => (
-              <li key={row.id}><Link href={`/packing/orders/${row.id}`}>{row.packingNumber}</Link> · {row.status.toLowerCase()} · {qty(row.totalQuantity)} in {row.packageCount} package(s) · <Link href={`/print/packing-lists/${row.id}`}>Print</Link></li>
+              <li key={row.id}>
+                <Link href={`/packing/orders/${row.id}`}>{row.packingNumber}</Link> · {row.status === "CONFIRMED" ? "passed" : row.status.toLowerCase()} · {qty(row.totalQuantity)} in {row.packageCount} bag(s) / carton(s) · <Link href={`/print/packing-lists/${row.id}`}>Print</Link>
+                {row.status === "DRAFT" && canRun && (
+                  <span className="op-inline-actions">
+                    <Button size="sm" variant="primary" loading={busy === `pk:${row.id}`} onClick={() => packingAction(row, "confirm")}>Pass packing</Button>
+                    <button type="button" className="inv-text-button" onClick={() => packingAction(row, "cancel")}>Cancel</button>
+                  </span>
+                )}
+              </li>
             ))}
           </ul>
         )}
@@ -344,6 +431,11 @@ export default function OrderProfileClient({ id }) {
                 {gatePasses.filter((pass) => pass.shipmentId === row.id).map((pass) => (
                   <span key={pass.id}> · gate pass <Link href={`/print/gate-passes/${pass.id}`}>{pass.passNumber}</Link></span>
                 ))}
+                <span className="op-inline-actions">
+                  {row.status === "DRAFT" && can("dispatch:ship") && <Button size="sm" variant="primary" loading={busy === `sh:${row.id}`} onClick={() => dispatchShipment(row)}>Dispatch &amp; make gate pass</Button>}
+                  {row.dispatchedAt && !gatePasses.some((pass) => pass.shipmentId === row.id) && <Button size="sm" variant="secondary" loading={busy === `gp:${row.id}`} onClick={() => makeGatePass(row)}>Make gate pass</Button>}
+                  {row.status === "DISPATCHED" && can("dispatch:update") && <Button size="sm" variant="secondary" loading={busy === `sh:${row.id}`} onClick={() => deliver(row)}>Mark delivered</Button>}
+                </span>
               </li>
             ))}
           </ul>
@@ -352,12 +444,16 @@ export default function OrderProfileClient({ id }) {
       </Section>
 
       <span id="step-payment" />
-      <Section step="6" title="Invoice & payment" id="step-invoice" action={shipments.some((row) => row.dispatchedAt) && can("finance:create") ? <Link className="inv-link-button" href="/finance/invoices">Make invoice</Link> : null}>
+      <Section step="6" title="Invoice & payment" id="step-invoice" action={shipments.some((row) => row.dispatchedAt && !invoices.some((invoice) => invoice.shipmentId === row.id && invoice.status !== "CANCELLED")) && can("finance:create") ? <Button size="sm" variant="secondary" onClick={() => setDialog({ type: "invoice" })}>Make invoice</Button> : null}>
         {invoices.length === 0 ? <Empty>No invoice yet. An invoice is made from a dispatched shipment.</Empty> : (
           <ul className="op-list">
             {invoices.map((row) => (
               <li key={row.id}>
                 <Link href={`/finance/invoices/${row.id}`}>{row.invoiceNumber}</Link> · {row.status.toLowerCase()} · {formatAmount(row.totalAmount)} · due {day(row.dueDate)} · <Link href={`/print/invoices/${row.id}`}>Print</Link>
+                <span className="op-inline-actions">
+                  {row.status === "DRAFT" && can("finance:create") && <Button size="sm" variant="primary" loading={busy === `in:${row.id}`} onClick={() => issueInvoice(row)}>Issue invoice</Button>}
+                  {row.status === "ISSUED" && Number(money.outstanding) > 0 && can("finance:create") && <Button size="sm" variant="secondary" onClick={() => setDialog({ type: "receipt", invoiceId: row.id })}>Record payment</Button>}
+                </span>
                 {receipts.filter((receipt) => receipt.invoiceId === row.id).map((receipt) => (
                   <span key={receipt.id}> · paid {formatAmount(receipt.amount)} on {day(receipt.receiptDate)} ({receipt.receiptNumber})</span>
                 ))}
@@ -389,9 +485,30 @@ export default function OrderProfileClient({ id }) {
           />
         );
       })()}
-      {dialog?.type === "packing" && (
-        <PackingListDialog initialOrderId={dialog.productionOrderId} onClose={() => setDialog(null)} onCreated={() => { setDialog(null); load(); }} />
+      {dialog?.type === "qc" && (
+        <InspectionDialog fixedType="FINAL" initialOrderId={dialog.productionOrderId} onClose={() => setDialog(null)} onCreated={() => { setDialog(null); load(); }} />
       )}
+      {dialog?.type === "packing" && (() => {
+        const item = production.find((row) => row.id === dialog.productionOrderId);
+        const line = order.lines.find((row) => row.id === item?.salesOrderLineId);
+        return (
+          <PackingListDialog
+            initialOrderId={dialog.productionOrderId}
+            defaults={{
+              description: line ? [line.productName, line.variant].filter(Boolean).join(" ") : item?.productName,
+              size: line?.size ?? "",
+              customerPo: order.customerPo ?? "",
+              orderNumber: order.orderNumber,
+            }}
+            onClose={() => setDialog(null)}
+            onCreated={() => { setDialog(null); load(); }}
+          />
+        );
+      })()}
+      {dialog?.type === "invoice" && (
+        <NewInvoiceDialog salesOrderId={order.id} onClose={() => setDialog(null)} onCreated={() => { setDialog(null); load(); }} />
+      )}
+      {dialog?.type === "receipt" && <ReceiptLoader invoiceId={dialog.invoiceId} onClose={() => setDialog(null)} onDone={() => { setDialog(null); load(); }} />}
       {dialog?.type === "ship" && (
         <ShipmentDialog initialSalesOrderId={order.id} onClose={() => setDialog(null)} onCreated={() => { setDialog(null); load(); }} />
       )}

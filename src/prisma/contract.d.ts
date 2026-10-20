@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'85b340e3f25dacd1bb2300e2beee55752023fb65c0e2f226252fb6b01bf989bb'>;
+  StorageHashBase<'2cf92c9acbd13c522550ad6f34e3d43ef7625863dcf10fc56c82c03111576914'>;
 export type ExecutionHash =
   ExecutionHashBase<'718808727641ecdeb17a8712bde5290285475a99a9b9ae49f6e824ccc560bdd2'>;
 export type ProfileHash =
@@ -692,6 +692,8 @@ export type FieldOutputTypes = {
       readonly totalQuantity: CodecTypes['pg/numeric@1']['output'];
     };
     readonly PackingPackage: {
+      readonly bags: CodecTypes['pg/int4@1']['output'];
+      readonly description: CodecTypes['pg/text@1']['output'] | null;
       readonly dimensions: CodecTypes['pg/text@1']['output'] | null;
       readonly grossWeight: CodecTypes['pg/numeric@1']['output'] | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
@@ -701,6 +703,7 @@ export type FieldOutputTypes = {
       readonly packageType: CodecTypes['pg/text@1']['output'];
       readonly packingListId: CodecTypes['pg/uuid@1']['output'];
       readonly quantity: CodecTypes['pg/numeric@1']['output'];
+      readonly size: CodecTypes['pg/text@1']['output'] | null;
     };
     readonly PayrollLine: {
       readonly adjustmentNote: CodecTypes['pg/text@1']['output'] | null;
@@ -1832,6 +1835,8 @@ export type FieldInputTypes = {
       readonly totalQuantity: CodecTypes['pg/numeric@1']['input'];
     };
     readonly PackingPackage: {
+      readonly bags: CodecTypes['pg/int4@1']['input'];
+      readonly description: CodecTypes['pg/text@1']['input'] | null;
       readonly dimensions: CodecTypes['pg/text@1']['input'] | null;
       readonly grossWeight: CodecTypes['pg/numeric@1']['input'] | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
@@ -1841,6 +1846,7 @@ export type FieldInputTypes = {
       readonly packageType: CodecTypes['pg/text@1']['input'];
       readonly packingListId: CodecTypes['pg/uuid@1']['input'];
       readonly quantity: CodecTypes['pg/numeric@1']['input'];
+      readonly size: CodecTypes['pg/text@1']['input'] | null;
     };
     readonly PayrollLine: {
       readonly adjustmentNote: CodecTypes['pg/text@1']['input'] | null;
@@ -2972,6 +2978,8 @@ export type StorageColumnTypes = {
       readonly totalQuantity: CodecTypes['pg/numeric@1']['output'];
     };
     readonly erp_packing_packages: {
+      readonly bags: CodecTypes['pg/int4@1']['output'];
+      readonly description: CodecTypes['pg/text@1']['output'] | null;
       readonly dimensions: CodecTypes['pg/text@1']['output'] | null;
       readonly grossWeight: CodecTypes['pg/numeric@1']['output'] | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
@@ -2981,6 +2989,7 @@ export type StorageColumnTypes = {
       readonly packageType: CodecTypes['pg/text@1']['output'];
       readonly packingListId: CodecTypes['pg/uuid@1']['output'];
       readonly quantity: CodecTypes['pg/numeric@1']['output'];
+      readonly size: CodecTypes['pg/text@1']['output'] | null;
     };
     readonly erp_payroll_lines: {
       readonly adjustmentNote: CodecTypes['pg/text@1']['output'] | null;
@@ -4112,6 +4121,8 @@ export type StorageColumnInputTypes = {
       readonly totalQuantity: CodecTypes['pg/numeric@1']['input'];
     };
     readonly erp_packing_packages: {
+      readonly bags: CodecTypes['pg/int4@1']['input'];
+      readonly description: CodecTypes['pg/text@1']['input'] | null;
       readonly dimensions: CodecTypes['pg/text@1']['input'] | null;
       readonly grossWeight: CodecTypes['pg/numeric@1']['input'] | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
@@ -4121,6 +4132,7 @@ export type StorageColumnInputTypes = {
       readonly packageType: CodecTypes['pg/text@1']['input'];
       readonly packingListId: CodecTypes['pg/uuid@1']['input'];
       readonly quantity: CodecTypes['pg/numeric@1']['input'];
+      readonly size: CodecTypes['pg/text@1']['input'] | null;
     };
     readonly erp_payroll_lines: {
       readonly adjustmentNote: CodecTypes['pg/text@1']['input'] | null;
@@ -5334,6 +5346,8 @@ export namespace Models {
     readonly [RelationKeys]?: 'packages' | 'product' | 'productionOrder';
   };
   export type public_PackingPackage = {
+    bags: CodecTypes['pg/int4@1']['output'];
+    description: CodecTypes['pg/text@1']['output'] | null;
     dimensions: CodecTypes['pg/text@1']['output'] | null;
     grossWeight: CodecTypes['pg/numeric@1']['output'] | null;
     id: CodecTypes['pg/uuid@1']['output'];
@@ -5343,6 +5357,7 @@ export namespace Models {
     packageType: CodecTypes['pg/text@1']['output'];
     packingListId: CodecTypes['pg/uuid@1']['output'];
     quantity: CodecTypes['pg/numeric@1']['output'];
+    size: CodecTypes['pg/text@1']['output'] | null;
     packingList: public_PackingList;
     readonly [RelationKeys]?: 'packingList';
   };
@@ -9815,6 +9830,22 @@ type ContractBase = Omit<
             };
             readonly erp_packing_packages: {
               columns: {
+                readonly bags: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
+                  };
+                  readonly many: false;
+                };
+                readonly description: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly dimensions: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -9867,6 +9898,12 @@ type ContractBase = Omit<
                   readonly dataType: 'pg/numeric';
                   readonly codecId: 'pg/numeric@1';
                   readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly size: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
               };
@@ -18478,6 +18515,14 @@ type ContractBase = Omit<
           };
           readonly PackingPackage: {
             readonly fields: {
+              readonly bags: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly description: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly dimensions: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -18514,6 +18559,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
               };
+              readonly size: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
             };
             readonly relations: {
               readonly packingList: {
@@ -18533,6 +18582,8 @@ type ContractBase = Omit<
               readonly table: 'erp_packing_packages';
               readonly namespaceId: 'public';
               readonly fields: {
+                readonly bags: { readonly column: 'bags' };
+                readonly description: { readonly column: 'description' };
                 readonly dimensions: { readonly column: 'dimensions' };
                 readonly grossWeight: { readonly column: 'grossWeight' };
                 readonly id: { readonly column: 'id' };
@@ -18542,6 +18593,7 @@ type ContractBase = Omit<
                 readonly packageType: { readonly column: 'packageType' };
                 readonly packingListId: { readonly column: 'packingListId' };
                 readonly quantity: { readonly column: 'quantity' };
+                readonly size: { readonly column: 'size' };
               };
             };
           };
