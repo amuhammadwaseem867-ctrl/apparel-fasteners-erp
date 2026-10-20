@@ -12,7 +12,6 @@ import { recordAuditEvent } from "../auth/audit.service";
 import { db } from "../core/database/client";
 import { AppError } from "../core/errors/app-error";
 import { getSetting, type Checkpoint } from "../settings/settings.service";
-import type { Tx } from "../inventory/inventory.service";
 import type { StageChecksInput } from "./production.validation";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -36,14 +35,6 @@ export function checksProblem(points: Checkpoint[], rows: Array<Pick<CheckRow, "
   const missing = points.filter((point) => point.required && !["PASS", "NA"].includes(result(point.key) ?? ""));
   if (missing.length) return `Record the check points first: ${missing.map((point) => point.label).join("; ")}.`;
   return null;
-}
-
-/* Inside completeStage's transaction: refuses completion while checks are missing or failed. */
-export async function assertStageChecks(tx: Tx, productionOrderId: string, stageKey: string, points: Checkpoint[]) {
-  if (!points.length) return;
-  const rows = await tx.orm.public.ProductionStageCheck.where({ productionOrderId, stageKey }).all();
-  const problem = checksProblem(points, rows);
-  if (problem) throw new AppError(problem, { code: "STAGE_CHECKS_INCOMPLETE", status: 409 });
 }
 
 /* Every stage's check points with their recorded results, for one order. */

@@ -35,7 +35,7 @@ import {
   stageQuantities,
   type StageTotals,
 } from "./production-rules";
-import { assertStageChecks, checkpointsFor, stageChecksFor } from "./stage-checks.service";
+import { stageChecksFor } from "./stage-checks.service";
 import type { ProductionOrderInput, ProductionQuery, StageRunInput } from "./production.validation";
 
 const dec = (value: unknown) => normalizeDecimalString(String(value ?? "0"));
@@ -543,8 +543,6 @@ export async function recordStageRun(id: string, stageKey: string, input: StageR
 }
 
 export async function completeStage(id: string, stageKey: string, actorId: string, note?: string) {
-  // Check points of stages 1–6 (D-040); read before the transaction so the lock is short.
-  const points = await checkpointsFor(stageKey);
   await db.transaction(async (tx) => {
     await lockOrder(tx, id);
     const order = await tx.orm.public.ProductionOrder.where({ id }).first();
@@ -564,7 +562,6 @@ export async function completeStage(id: string, stageKey: string, actorId: strin
     if (problem) {
       throw new AppError(problem, { code: "STAGE_NOT_COMPLETABLE", status: 409 });
     }
-    if (!stageManagedBy(stageKey, order!.salesOrderId)) await assertStageChecks(tx, id, stageKey, points);
 
     const now = new Date().toISOString();
     const completionNote = note?.trim() || null;
@@ -605,8 +602,6 @@ export async function startStage(id: string, stageKey: string, actorId: string) 
     const stage = stages.find((item) => item.stageKey === stageKey);
     if (!stage) throw new AppError("Unknown stage.", { code: "STAGE_NOT_FOUND", status: 404 });
     if (stage.status !== "PENDING") throw new AppError("This stage has already started.", { code: "STAGE_STATUS_CONFLICT", status: 409 });
-    const previous = stages.find((item) => item.sequence === stage.sequence - 1);
-    if (previous && previous.status !== "COMPLETED") throw new AppError("The previous stage must be completed first.", { code: "STAGE_NOT_STARTABLE", status: 409 });
     const now = new Date().toISOString();
     await tx.orm.public.ProductionStage.where({ id: stage.id }).update({ status: "IN_PROGRESS", startedAt: now, updatedAt: now });
     await logEvent(tx, id, actorId, "STAGE_STARTED", { stageKey, toValue: "IN_PROGRESS" });
@@ -628,14 +623,9 @@ export async function finishStage(id: string, stageKey: string, input: { totalQu
   if (!order) throw new AppError("Production order not found.", { code: "PRODUCTION_ORDER_NOT_FOUND", status: 404 });
   const managedBy = stageManagedBy(stageKey, order.salesOrderId);
   if (managedBy) throw new AppError(MANAGED_STAGE_MESSAGES[managedBy], { code: "STAGE_MANAGED_ELSEWHERE", status: 409 });
-  // Refuse before anything is recorded (tape weight, output) while the check points are not done.
-  const blocked = (await stageChecksFor(id))(stageKey).problem;
-  if (blocked) throw new AppError(blocked, { code: "STAGE_CHECKS_INCOMPLETE", status: 409 });
 
-  if (stageKey === TAPE_STAGE_KEYS[0] && !order.tapeKg) {
-    if (!input.totalQuantity || input.totalQuantity <= 0) {
-      throw new AppError("Enter the total tape quantity in kg for Tape Dyeing.", { code: "TAPE_QUANTITY_REQUIRED", status: 400 });
-    }
+  // The tape weight is optional (D-048): without it the tape stages count pieces.
+  if (stageKey === TAPE_STAGE_KEYS[0] && !order.tapeKg && input.totalQuantity && input.totalQuantity > 0) {
     const precision = quantityPrecisionError(input.totalQuantity, "Kgs");
     if (precision) throw new AppError(precision, { code: "QUANTITY_PRECISION", status: 400 });
     await db.transaction(async (tx) => {

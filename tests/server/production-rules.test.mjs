@@ -37,10 +37,11 @@ test("the nine required stages are in the required order", () => {
   assert.equal(FINAL_STAGE.key, "delivered");
 });
 
-test("stage 1 receives the order quantity; later stages receive the previous stage's accepted output", () => {
+test("no blockers (D-048): every stage can take the whole order, whatever the stage before it has done", () => {
   const s = stages({ 1: { processedQuantity: "600", acceptedQuantity: "580", rejectedQuantity: "15", wastageQuantity: "5" } });
   assert.deepEqual(stageQuantities(s, "1000", 1), { received: "1000", available: "400", previousCompleted: true, inKg: false });
-  assert.deepEqual(stageQuantities(s, "1000", 2), { received: "580", available: "580", previousCompleted: false, inKg: false });
+  assert.deepEqual(stageQuantities(s, "1000", 2), { received: "1000", available: "1000", previousCompleted: false, inKg: false });
+  assert.equal(stageQuantities(s, "1000", 9).available, "1000", "even the last stage, before anything else is done");
 });
 
 test("with a tape weight, Tape Dyeing and Tape Press run in kilograms and Teeth Making restarts from the order pieces", () => {
@@ -49,7 +50,7 @@ test("with a tape weight, Tape Dyeing and Tape Press run in kilograms and Teeth 
     2: { status: "COMPLETED", processedQuantity: "25", acceptedQuantity: "24.8", wastageQuantity: "0.2" },
   });
   assert.deepEqual(stageQuantities(s, "800", 1, "25.5"), { received: "25.5", available: "0", previousCompleted: true, inKg: true });
-  assert.deepEqual(stageQuantities(s, "800", 2, "25.5"), { received: "25", available: "0", previousCompleted: true, inKg: true });
+  assert.deepEqual(stageQuantities(s, "800", 2, "25.5"), { received: "25.5", available: "0.5", previousCompleted: true, inKg: true });
   assert.deepEqual(stageQuantities(s, "800", 3, "25.5"), { received: "800", available: "800", previousCompleted: true, inKg: false });
   // Without a tape weight nothing changes: every stage stays in the order's unit.
   assert.equal(stageQuantities(stages({}), "800", 1, null).received, "800");
@@ -79,10 +80,9 @@ test("runs are refused on held, planned, cancelled or completed work", () => {
   assert.match(runError(run("1", "1"), ctx("10", "COMPLETED", "IN_PROGRESS")), /already completed/);
 });
 
-test("a stage completes only after the previous stage and when nothing is left", () => {
-  assert.match(completionError({ available: "0", previousCompleted: false }, "IN_PROGRESS"), /previous stage/);
-  assert.match(completionError({ available: "3", previousCompleted: true }, "IN_PROGRESS"), /3 is still waiting/);
-  assert.equal(completionError({ available: "0", previousCompleted: true }, "IN_PROGRESS"), null);
+test("no blockers (D-048): a stage can be completed at any time, but only once", () => {
+  assert.equal(completionError({ available: "0", previousCompleted: false }, "PENDING"), null, "before the previous stage");
+  assert.equal(completionError({ available: "3", previousCompleted: true }, "IN_PROGRESS"), null, "with units not recorded");
   assert.match(completionError({ available: "0", previousCompleted: true }, "COMPLETED"), /already completed/);
 });
 

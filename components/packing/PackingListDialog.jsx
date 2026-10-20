@@ -117,7 +117,7 @@ export default function PackingListDialog({ initialOrderId = "", defaults = {}, 
               text={location.locationText} onChange={setLocation} />
           </div>
           {available !== undefined && (
-            <p className="inv-field__hint" role="status">{available} {unit} has passed Quality Check and is ready to pack for {data.orderNumber}.</p>
+            <p className="inv-field__hint" role="status">{available} {unit} is left to pack for {data.orderNumber}.</p>
           )}
         </section>
 

@@ -5,7 +5,7 @@ import { useState } from "react";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import ItemPicker from "@/components/inventory/ItemPicker";
-import LocationSelect from "@/components/inventory/LocationSelect";
+import LocationInput from "@/components/inventory/LocationInput";
 import { PRODUCTION_STAGES } from "@/config/production";
 import { apiRequest } from "@/lib/api/client";
 import useApiData from "@/lib/inventory/useApiData";
@@ -32,7 +32,7 @@ export default function InspectionDialog({ fixedType, initialOrderId = "", onClo
   const [orderId, setOrderId] = useState(initialOrderId);
   const [stageKey, setStageKey] = useState(PRE_QC_STAGES[0].key);
   const [item, setItem] = useState(null);
-  const [locationId, setLocationId] = useState("");
+  const [place, setPlace] = useState({ locationId: "", locationText: undefined });
   const [values, setValues] = useState({ inspected: "", passed: "", rework: "", rejected: "", sampleSize: "", inspectorName: "", remarks: "" });
   const [defects, setDefects] = useState([]);
   const [key] = useState(newKey);
@@ -49,7 +49,7 @@ export default function InspectionDialog({ fixedType, initialOrderId = "", onClo
   const number = (value) => (value === "" ? 0 : Number(value));
   const parts = number(values.passed) + number(values.rework) + number(values.rejected);
   const balanced = Number(values.inspected) > 0 && Math.abs(parts - Number(values.inspected)) < 1e-9;
-  const ready = balanced && (productionType ? Boolean(orderId) : Boolean(item && locationId));
+  const ready = balanced && (productionType ? Boolean(orderId) : Boolean(item && (place.locationId || place.locationText?.trim())));
 
   async function submit(event) {
     event.preventDefault();
@@ -62,7 +62,7 @@ export default function InspectionDialog({ fixedType, initialOrderId = "", onClo
         body: JSON.stringify({
           idempotencyKey: key,
           inspectionType: type,
-          ...(productionType ? { productionOrderId: orderId } : { productId: item.id, locationId }),
+          ...(productionType ? { productionOrderId: orderId } : { productId: item.id, ...(place.locationId ? { locationId: place.locationId } : { locationName: place.locationText.trim() }) }),
           ...(type === "IN_PROCESS" ? { stageKey } : {}),
           inspectedQuantity: Number(values.inspected),
           passedQuantity: number(values.passed),
@@ -120,7 +120,7 @@ export default function InspectionDialog({ fixedType, initialOrderId = "", onClo
         ) : (
           <>
             <ItemPicker label="Item on quality hold" required value={item} onChange={setItem} />
-            <LocationSelect label="Location holding the stock" required locations={locations.data ?? []} value={locationId} onChange={setLocationId} />
+            <LocationInput label="Location holding the stock" required locations={locations.data ?? []} locationId={place.locationId} text={place.locationText} onChange={setPlace} />
           </>
         )}
         {type === "FINAL" && qcStage && (

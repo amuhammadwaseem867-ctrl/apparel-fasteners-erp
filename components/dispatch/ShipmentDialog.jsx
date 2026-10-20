@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
-import LocationSelect from "@/components/inventory/LocationSelect";
+import LocationInput from "@/components/inventory/LocationInput";
 import { apiRequest } from "@/lib/api/client";
 import useApiData from "@/lib/inventory/useApiData";
 
@@ -22,7 +22,7 @@ export default function ShipmentDialog({ initialSalesOrderId = "", onClose, onCr
   const [salesOrderId, setSalesOrderId] = useState(initialSalesOrderId);
   const [selected, setSelected] = useState([]);
   const [loose, setLoose] = useState({});
-  const [chosenLocation, setChosenLocation] = useState("");
+  const [chosen, setChosen] = useState({ locationId: "", locationText: undefined });
   const [transport, setTransport] = useState({ vehicleNumber: "", driverName: "", driverPhone: "", transporter: "", trackingReference: "", deliveryAddress: "", notes: "" });
   const [key] = useState(newKey);
   const [saving, setSaving] = useState(false);
@@ -34,10 +34,12 @@ export default function ShipmentDialog({ initialSalesOrderId = "", onClose, onCr
   const data = fulfilment.data;
   const firstList = data?.readyPackingLists.find((list) => selected.includes(list.id));
   // Packed goods sit at their packing location; default the ship-from there.
-  const locationId = chosenLocation || firstList?.locationId || "";
+  const typed = chosen.locationText !== undefined;
+  const locationId = typed ? chosen.locationId : firstList?.locationId || "";
+  const locationName = typed && !chosen.locationId ? chosen.locationText.trim() : "";
 
   const looseLines = Object.entries(loose).filter(([, quantity]) => Number(quantity) > 0);
-  const ready = salesOrderId && locationId && (selected.length > 0 || looseLines.length > 0);
+  const ready = salesOrderId && (locationId || locationName) && (selected.length > 0 || looseLines.length > 0);
   const setField = (field) => (event) => setTransport((current) => ({ ...current, [field]: event.target.value }));
 
   async function submit(event) {
@@ -51,7 +53,7 @@ export default function ShipmentDialog({ initialSalesOrderId = "", onClose, onCr
         body: JSON.stringify({
           idempotencyKey: key,
           salesOrderId,
-          locationId,
+          ...(locationId ? { locationId } : { locationName }),
           ...transport,
           lines: [
             ...selected.map((packingListId) => ({ packingListId })),
@@ -122,7 +124,7 @@ export default function ShipmentDialog({ initialSalesOrderId = "", onClose, onCr
           </>
         )}
 
-        <LocationSelect label="Ship from *" locations={locations.data ?? []} value={locationId} onChange={setChosenLocation} />
+        <LocationInput label="Ship from" required locations={locations.data ?? []} locationId={locationId} text={chosen.locationText} onChange={setChosen} />
         <div className="inv-dialog__grid">
           <div className="inv-field"><label htmlFor="sh-vehicle">Vehicle number</label><input id="sh-vehicle" maxLength={40} value={transport.vehicleNumber} onChange={setField("vehicleNumber")} /></div>
           <div className="inv-field"><label htmlFor="sh-driver">Driver</label><input id="sh-driver" maxLength={120} value={transport.driverName} onChange={setField("driverName")} /></div>

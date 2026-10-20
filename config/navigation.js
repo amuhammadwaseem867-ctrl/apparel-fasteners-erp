@@ -89,7 +89,6 @@ export const NAV_GROUPS = [
           { label: "Raw material stock", href: "/inventory/raw-material" },
           { label: "Items", href: "/inventory/item-master" },
           { label: "Stock by location", href: "/inventory/stock" },
-          { label: "Warehouses & shelves", href: "/inventory/warehouses" },
           { label: "Movement history", href: "/inventory/movements" },
         ],
       },

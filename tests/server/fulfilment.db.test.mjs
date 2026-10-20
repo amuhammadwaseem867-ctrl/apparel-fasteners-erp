@@ -116,8 +116,9 @@ test("final inspections drive the quality-check stage, once per approval", async
   assert.equal(qc.status, "COMPLETED");
 });
 
-test("packing cannot exceed QC-passed output; confirming receives finished goods once", async () => {
-  await expectCode(pack([50, 47]), "PACKING_EXCEEDS_AVAILABLE");
+test("packing cannot exceed the order; confirming receives finished goods once", async () => {
+  // No blockers (D-048): packing no longer waits for QC, but never packs more than the order (100).
+  await expectCode(pack([50, 51]), "PACKING_EXCEEDS_AVAILABLE");
 
   ctx.listA = await pack([30, 30]);
   assert.equal(ctx.listA.totalQuantity, "60");
@@ -128,7 +129,7 @@ test("packing cannot exceed QC-passed output; confirming receives finished goods
   assert.equal(String((await balance(ctx.zip.id, ctx.fg.id)).onHand), "60");
   await expectCode(changePackingList(ctx.listA.id, "confirm", actor), "PACKING_STATUS_CONFLICT");
 
-  // Two drafts for the remaining 36: only one can be confirmed.
+  // Two drafts of 36 for the remaining 40: only one can be confirmed.
   const b = await pack([36]);
   const c = await pack([36]);
   const outcomes = await Promise.allSettled([changePackingList(b.id, "confirm", actor), changePackingList(c.id, "confirm", actor)]);

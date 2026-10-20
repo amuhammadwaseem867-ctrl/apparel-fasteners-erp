@@ -1,5 +1,6 @@
-import { authorizeAnyRequest, authorizeRequest, parseRequestBody } from "@/server/core/api/request";
+import { authorizeAnyRequest, authorizeRequest } from "@/server/core/api/request";
 import { parseQuery, runRoute } from "@/server/core/api/route";
+import { parseBodyWithTypedLocation } from "@/server/inventory/typed-location";
 import { listPurchaseReceipts, receivePurchaseOrder } from "@/server/procurement/procurement.service";
 import { listQuerySchema, receiptInputSchema } from "@/server/procurement/procurement.validation";
 
@@ -14,6 +15,7 @@ export function GET(request) {
 export function POST(request) {
   return runRoute(request, async () => {
     const user = await authorizeAnyRequest(request, ["purchasing:create", "inventory:create"]);
-    return { data: await receivePurchaseOrder(await parseRequestBody(request, receiptInputSchema), user.id), status: 201 };
+    // "Receive into" can be typed by hand (D-048).
+    return { data: await receivePurchaseOrder(await parseBodyWithTypedLocation(request, receiptInputSchema, user.id), user.id), status: 201 };
   });
 }

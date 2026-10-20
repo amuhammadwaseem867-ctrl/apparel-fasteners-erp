@@ -33,17 +33,12 @@ export default function BalancesView({
   emptyText = "No stock has been posted yet. Use Receive to record the first goods receipt.",
 }) {
   const [search, setSearch] = useState("");
-  const [warehouseId, setWarehouseId] = useState("");
   const [page, setPage] = useState(1);
   const [dialog, setDialog] = useState(null);
 
-  const warehouses = useApiData("/api/inventory/warehouses?status=ACTIVE");
   const locations = useApiData("/api/inventory/locations?status=ACTIVE");
-  const balances = useApiData(`/api/inventory/balances${toQuery({ search, warehouseId, warehouseType, page, pageSize: 25 })}`);
+  const balances = useApiData(`/api/inventory/balances${toQuery({ search, warehouseType, page, pageSize: 25 })}`);
 
-  const visibleWarehouses = (warehouses.data ?? []).filter(
-    (warehouse) => !warehouseType || warehouse.warehouseType === warehouseType,
-  );
   const rows = balances.data?.balances ?? [];
   // Reserved quantities are not part of the simple process; the column shows only when something is reserved.
   const showReserved = rows.some((row) => Number(row.reserved) !== 0);
@@ -81,15 +76,6 @@ export default function BalancesView({
               onChange={(event) => { setSearch(event.target.value); setPage(1); }}
             />
           </div>
-          <div className="inv-field">
-            <label htmlFor="bal-wh">Warehouse</label>
-            <select id="bal-wh" value={warehouseId} onChange={(event) => { setWarehouseId(event.target.value); setPage(1); }}>
-              <option value="">All warehouses</option>
-              {visibleWarehouses.map((warehouse) => (
-                <option key={warehouse.id} value={warehouse.id}>{warehouse.code} — {warehouse.name}</option>
-              ))}
-            </select>
-          </div>
           <Button variant="secondary" onClick={balances.reload} disabled={balances.loading}>
             Refresh
           </Button>
@@ -123,8 +109,7 @@ export default function BalancesView({
                       <small>{row.productName}</small>
                     </td>
                     <td data-label="Location">
-                      {row.warehouseCode}/{row.locationCode}
-                      <small>{row.warehouseName}</small>
+                      {row.locationName ?? row.locationCode}
                     </td>
                     <td data-label="On hand" className="inv-num">{row.onHand}</td>
                     {showReserved && <td data-label="Reserved" className="inv-num">{row.reserved}</td>}

@@ -51,8 +51,3 @@ export const packingQuerySchema = z.object({
 export type PackingListInput = z.infer<typeof packingListInputSchema>;
 export type PackingQuery = z.infer<typeof packingQuerySchema>;
 
-/* What the order page sends: the finished-goods location by id or typed name. */
-export const packingListRequestSchema = z.object({
-  locationId: uuid.optional(),
-  locationName: z.string().trim().max(60).optional(),
-}).passthrough().refine((input) => input.locationId || input.locationName, { message: "Enter where the packed goods are kept.", path: ["locationName"] });

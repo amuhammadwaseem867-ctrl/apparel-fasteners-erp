@@ -21,13 +21,14 @@ test("a draft order waits at its invoice; everything after it is blocked behind 
   assert.match(processSteps(trace({ status: "DRAFT" })).next.action, /Confirm order/, "an order without an invoice is confirmed on its own");
 });
 
-test("a confirmed order is sent to production next; a failed check blocks production", () => {
+test("a confirmed order is sent to production next; nothing blocks it (D-048)", () => {
   assert.match(processSteps(trace({})).next.action, /Send the order to production/);
   const failing = production(2);
   failing.stages[2].checks = { points: [{ result: "FAIL" }] };
   const flow = processSteps(trace({}, { production: [failing] }));
   assert.equal(states(flow), "dcwwww");
-  assert.match(flow.next.blocker, /Failed check at PRD-1/);
+  assert.equal(flow.next.blocker, undefined, "a failed check is recorded, not a blocker");
+  assert.match(flow.next.action, /PRD-1: complete teeth-making/);
 });
 
 test("after Assembling the next step is QC, then packing, dispatch and payment", () => {
@@ -35,7 +36,7 @@ test("after Assembling the next step is QC, then packing, dispatch and payment",
   assert.match(processSteps(trace({}, { production: [production(7)] })).next.action, /Make the packing list/);
   assert.match(processSteps(trace({}, { production: [production(8)], packingLists: [{ id: "l1", packingNumber: "PKL-1", status: "CONFIRMED" }] })).next.action, /Create the shipment/);
   const delivered = { production: [production(9, { status: "COMPLETED" })], shipments: [{ id: "s1", shipmentNumber: "SHP-1", status: "DISPATCHED", dispatchedAt: "2026-10-18" }] };
-  assert.match(processSteps(trace({}, delivered)).next.blocker, /Waits for an issued invoice/);
+  assert.match(processSteps(trace({}, delivered)).next.action, /Approve the invoice/);
   const invoiced = { ...delivered, invoices: [{ id: "i1", invoiceNumber: "AF7-26-0001", status: "ISSUED" }], money: { invoiced: 100, paid: 40, outstanding: 60 } };
   const flow = processSteps(trace({}, invoiced));
   assert.equal(states(flow), "dddddc");

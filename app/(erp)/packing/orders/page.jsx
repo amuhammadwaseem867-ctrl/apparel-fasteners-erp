@@ -10,7 +10,7 @@ function PackingOrders() {
   return (
     <PackingListTable
       title="Packing Lists"
-      description="Packages for production output that passed Quality Check. Confirm a list to record the packing stage and receive the goods into finished-goods stock."
+      description="Every packing list with its print and history. Passing a list records the packing stage and puts the goods into finished-goods stock."
       initialStatus="OPEN"
       emptyText="No open packing lists. Create one for a production order with output waiting at Packing."
       openForOrderId={orderId}

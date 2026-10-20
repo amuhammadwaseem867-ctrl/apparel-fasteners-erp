@@ -4,7 +4,8 @@
  * A DRAFT packing list records the packages for part of a production
  * order's output. Confirming it, in one transaction:
  *   - records the order's packing stage run (accepted = packed quantity),
- *     which is refused if more is packed than passed Quality Check;
+ *     which is refused if more is packed than the order (D-048: QC does
+ *     not have to come first);
  *   - posts a finished-goods receipt of the packed quantity into the
  *     chosen location, linked to the packing list.
  * DRAFT -> CONFIRMED and DRAFT -> CANCELLED are compare-and-set.
@@ -74,7 +75,7 @@ export async function createPackingList(input: PackingListInput, actorId: string
   const total = input.packages.map((item) => toPlainDecimalString(item.quantity)).reduce((sum, value) => addDecimalStrings(sum, value), "0");
   const available = await packingAvailable(order.id);
   if (compareDecimalStrings(total, available) > 0) {
-    throw new AppError(`Only ${available} has passed Quality Check and is waiting to be packed for ${order.orderNumber}.`, {
+    throw new AppError(`Only ${available} is left to pack for ${order.orderNumber}.`, {
       code: "PACKING_EXCEEDS_AVAILABLE",
       status: 409,
     });
@@ -307,5 +308,37 @@ export async function listPackingLists(filters: PackingQuery) {
     page: filters.page,
     pageSize: filters.pageSize,
     hasMore: result.length > filters.pageSize,
+  };
+}
+
+/*
+ * One packing list for a whole order (D-048): every product's packed rows
+ * (drafts and passed lists; cancelled ones left out), under the order's own
+ * number, PO and customer, with the totals of the order.
+ */
+export async function getOrderPackingList(salesOrderId: string) {
+  if (!UUID.test(salesOrderId)) notFound();
+  const sale = await db.orm.public.SalesOrder.where({ id: salesOrderId }).first();
+  if (!sale) notFound();
+  const lists = (await db.orm.public.PackingList.where({ salesOrderId }).orderBy((row) => row.createdAt.asc()).all())
+    .filter((list) => list.status !== "CANCELLED");
+  const detailed = await Promise.all(lists.map((list) => getPackingList(list.id)));
+  const customer = await db.orm.public.Customer.where({ id: sale.customerId }).first();
+  const rows = detailed.flatMap((list, index) => list.packages.map((item) => ({
+    ...item,
+    description: item.description || list.productName,
+    size: item.size || list.size,
+    unit: list.unit,
+    packingNumber: lists[index].packingNumber,
+    status: lists[index].status,
+  })));
+  return {
+    salesOrderId: sale.id,
+    orderNumber: sale.orderNumber,
+    customerPo: sale.customerPo ?? null,
+    customerName: customer?.name ?? null,
+    date: lists.at(-1)?.createdAt ?? null,
+    drafts: lists.filter((list) => list.status === "DRAFT").map((list) => list.packingNumber),
+    rows: rows.map((row, index) => ({ ...row, rowNo: index + 1 })),
   };
 }

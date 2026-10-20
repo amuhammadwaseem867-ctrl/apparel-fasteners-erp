@@ -69,11 +69,11 @@ export function stageQuantities(stages: StageTotals[], orderQuantity: string, se
     throw new RangeError(`Unknown stage sequence ${sequence}`);
   }
 
+  // No blockers (D-048): every stage can take the whole order (the tape
+  // weight for the kg stages) whenever it is worked, whatever the stage
+  // before it has done. A stage still never processes more than that.
   const inKg = stageInKg(sequence, tapeKg);
-  let received: string;
-  if (sequence === 1) received = inKg ? String(tapeKg) : orderQuantity;
-  else if (inKg !== stageInKg(sequence - 1, tapeKg)) received = orderQuantity; // kilograms of tape → pieces
-  else received = previous?.acceptedQuantity ?? "0";
+  const received = inKg ? String(tapeKg) : orderQuantity;
   const available = subtractDecimalStrings(addDecimalStrings(received, stage.reworkQuantity), stage.processedQuantity);
 
   return {
@@ -121,15 +121,12 @@ export function runError(
   return null;
 }
 
+/* A stage can be completed at any time (D-048); only a completed one cannot be completed again. */
 export function completionError(
-  quantities: { available: string; previousCompleted: boolean },
+  _quantities: { available: string; previousCompleted: boolean },
   stageStatus: string,
 ): string | null {
   if (stageStatus === "COMPLETED") return "This stage is already completed.";
-  if (!quantities.previousCompleted) return "The previous stage must be completed first.";
-  if (decimalSign(quantities.available) !== 0) {
-    return `${quantities.available} is still waiting to be processed at this stage.`;
-  }
   return null;
 }
 

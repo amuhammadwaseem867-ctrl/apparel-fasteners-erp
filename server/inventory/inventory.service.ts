@@ -1158,6 +1158,7 @@ async function enrichment(rows: Array<{ productId: string; locationId: string }>
       unit: product?.unit ?? null,
       category: product?.category ?? null,
       locationCode: location?.code ?? null,
+      locationName: location?.name ?? null,
       warehouseId: warehouse?.id ?? null,
       warehouseCode: warehouse?.code ?? null,
       warehouseName: warehouse?.name ?? null,

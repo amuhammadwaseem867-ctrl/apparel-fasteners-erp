@@ -117,15 +117,12 @@ function checkSummary(checks) {
 const MANAGED_ACTIONS = { quality: "Record QC", packing: "Make packing list", dispatch: "Dispatch" };
 
 function StageRow({ order, stage, index, canRun, busy, onStart, onChecks, onManaged, onComplete }) {
-  const previous = index > 0 ? order.stages[index - 1] : null;
-  const previousDone = !previous || previous.status === "COMPLETED";
+  // No blockers (D-048): any stage can be started or completed, in any order.
   const running = ["RELEASED", "IN_PROGRESS"].includes(order.status);
   const done = stage.status === "COMPLETED";
 
   let action = null;
-  if (!done && running && !previousDone && stage.status === "PENDING" && previous?.status === "IN_PROGRESS") {
-    action = <span className="op-blocked">Waits for {previous.label}</span>;
-  } else if (!done && running && previousDone) {
+  if (!done && running) {
     if (stage.managedBy) {
       // QC, packing and dispatch are recorded here; once nothing is left waiting, the stage is completed here too.
       const waiting = Number(stage.available) > 0;
@@ -427,7 +424,7 @@ export default function OrderProfileClient({ id }) {
         <StepNotes steps={["qc"]} notes={notes} onAdd={addNote} />
       </Section>
 
-      <Section step="5" title="Packing" id="step-packing">
+      <Section step="5" title="Packing" id="step-packing" action={packingLists.some((row) => row.status !== "CANCELLED") ? <Link className="inv-link-button" href={`/print/sales-orders/${order.id}/packing`}><Printer size={15} /> Print packing list (whole order)</Link> : null}>
         {packingLists.length === 0 ? <Empty>No packing list yet.</Empty> : (
           <ul className="op-list">
             {packingLists.map((row) => (

@@ -82,7 +82,7 @@ test("a new order has the nine stages in order, the active BOM and its material 
   assert.deepEqual(created.stages.map((stage) => stage.stageKey), STAGE_KEYS);
   assert.deepEqual(created.stages.map((stage) => stage.sequence), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
   assert.equal(created.stages[0].available, "1000");
-  assert.equal(created.stages[1].available, "0");
+  assert.equal(created.stages[1].available, "1000", "no blockers (D-048): every stage can take the whole order");
   assert.equal(created.bomRevision, 1);
   assert.deepEqual(created.materials.map((line) => line.required), ["1000", "660"]);
   assert.equal(created.events[0].eventType, "CREATED");
@@ -108,13 +108,11 @@ test("runs are refused until release; partial runs, rework and balance rules are
   let dyeing = state.stages[0];
   assert.equal(dyeing.processedQuantity, "60.1");
   assert.equal(dyeing.available, "42.4", "100.5 + 2 rework - 60.1 processed");
-  assert.equal(state.stages[1].available, "55.1", "next stage can already work on accepted output");
+  assert.equal(state.stages[1].available, "100.5", "no blockers (D-048): the next stage can take the whole order");
 
-  // Stage 2 can't complete while stage 1 is open.
+  // No blockers (D-048): stage 2 can be worked and completed while stage 1 is open.
   await stageRun(id, "tape-press", { inputQuantity: 55.1, acceptedQuantity: 55.1 });
-  await expectCode(completeStage(id, "tape-press", actor), "STAGE_NOT_COMPLETABLE");
-  // Stage 1 can't complete while units are waiting.
-  await expectCode(completeStage(id, "tape-dyeing", actor), "STAGE_NOT_COMPLETABLE");
+  assert.equal((await completeStage(id, "tape-press", actor)).stages[1].status, "COMPLETED");
 
   state = (await stageRun(id, "tape-dyeing", { inputQuantity: 42.4, acceptedQuantity: 42.4 })).order;
   dyeing = state.stages[0];

@@ -54,7 +54,8 @@ test("tape is weighed in kg through Tape Dyeing and Tape Press; Teeth Making cou
   await changeProductionStatus(production.id, "release", "", actor);
   let state = await getProductionOrder(production.id);
   assert.equal(String(state.tapeKg), "12.5");
-  assert.deepEqual(state.stages.slice(0, 3).map((stage) => [stage.unit, stage.received]), [["Kg", "12.5"], ["Kg", "0"], ["Pcs", "400"]]);
+  // No blockers (D-048): each stage receives the whole order, in kg for the tape stages.
+  assert.deepEqual(state.stages.slice(0, 3).map((stage) => [stage.unit, stage.received]), [["Kg", "12.5"], ["Kg", "12.5"], ["Pcs", "400"]]);
 
   const runStage = (stageKey, input, accepted, wastage = 0) => recordStageRun(production.id, stageKey, stageRunInputSchema.parse({ idempotencyKey: key(), inputQuantity: input, acceptedQuantity: accepted, wastageQuantity: wastage }), actor);
   await assert.rejects(runStage("tape-dyeing", 13, 13), (error) => /Only 12.5 is available/.test(error.message));
@@ -65,11 +66,11 @@ test("tape is weighed in kg through Tape Dyeing and Tape Press; Teeth Making cou
   await passStageChecks(production.id, "tape-press", actor);
   await completeStage(production.id, "tape-press", actor);
   state = await getProductionOrder(production.id);
-  assert.equal(state.stages[1].received, "12.2");
+  assert.deepEqual([state.stages[1].acceptedQuantity, state.stages[1].unit], ["12.1", "Kg"]);
   assert.equal(state.stages[2].available, "400");
   await runStage("teeth-making", 400, 398, 2);
   state = await getProductionOrder(production.id);
-  assert.equal(state.stages[3].received, "398");
+  assert.deepEqual([state.stages[3].received, state.stages[3].unit], ["400", "Pcs"]);
 });
 
 test("the simple board: start and complete each stage; Tape Dyeing takes its total kg; QC stays with Quality", async () => {
@@ -77,7 +78,8 @@ test("the simple board: start and complete each stage; Tape Dyeing takes its tot
   const code = (expected) => (error) => error.code === expected;
   await assert.rejects(startStage(production.id, "tape-dyeing", actor), code("PRODUCTION_STATUS_CONFLICT"));
   await changeProductionStatus(production.id, "release", "", actor);
-  await assert.rejects(startStage(production.id, "tape-press", actor), code("STAGE_NOT_STARTABLE"));
+  // No blockers (D-048): a later stage can start before the one before it.
+  assert.equal((await startStage(production.id, "tape-press", actor)).stages[1].status, "IN_PROGRESS");
 
   let state = await startStage(production.id, "tape-dyeing", actor);
   assert.equal(state.status, "IN_PROGRESS");
@@ -85,7 +87,6 @@ test("the simple board: start and complete each stage; Tape Dyeing takes its tot
   assert.ok(state.stages[0].startedAt);
   await assert.rejects(startStage(production.id, "tape-dyeing", actor), code("STAGE_STATUS_CONFLICT"));
   await passStageChecks(production.id, "tape-dyeing", actor);
-  await assert.rejects(finishStage(production.id, "tape-dyeing", {}, actor), code("TAPE_QUANTITY_REQUIRED"));
 
   state = await finishStage(production.id, "tape-dyeing", { totalQuantity: 18.25 }, actor);
   assert.equal(String(state.tapeKg), "18.25");
@@ -97,7 +98,7 @@ test("the simple board: start and complete each stage; Tape Dyeing takes its tot
   assert.equal(String(state.tapeKg), "18.25");
 
   for (const stageKey of ["tape-press", "teeth-making", "plating", "lacquer-wax", "assembling"]) {
-    await startStage(production.id, stageKey, actor);
+    if (stageKey !== "tape-press") await startStage(production.id, stageKey, actor);
     await passStageChecks(production.id, stageKey, actor);
     state = await finishStage(production.id, stageKey, {}, actor);
   }
@@ -105,6 +106,13 @@ test("the simple board: start and complete each stage; Tape Dyeing takes its tot
   assert.equal(state.stages[5].acceptedQuantity, "300", "Assembling carries the order pieces");
   assert.equal(state.currentStage, "quality-check");
   await assert.rejects(finishStage(production.id, "quality-check", {}, actor), code("STAGE_MANAGED_ELSEWHERE"));
+
+  // The tape weight is optional (D-048): without it Tape Dyeing completes in pieces.
+  const pieces = await createProductionOrder(productionOrderInputSchema.parse({ productId: ctx.zip.id, quantity: 120, salesOrderId: ctx.order.id }), actor);
+  await changeProductionStatus(pieces.id, "release", "", actor);
+  await startStage(pieces.id, "tape-dyeing", actor);
+  const plain = await finishStage(pieces.id, "tape-dyeing", {}, actor);
+  assert.deepEqual([plain.stages[0].status, plain.stages[0].unit, plain.stages[0].acceptedQuantity, plain.tapeKg], ["COMPLETED", "Pcs", "120", null]);
 });
 
 test("the order sheet ties each line to the item for its exact specification, reusing items it already has", async () => {
@@ -187,7 +195,7 @@ test("the company profile keeps bank and commercial terms for the sales tax invo
   }
 });
 
-test("check points block a stage until every required check passes, and the completion note is kept", async () => {
+test("check points are recorded with the stage (they do not block it, D-048), and the completion note is kept", async () => {
   const { recordStageChecks } = await import("../../server/production/stage-checks.service.ts");
   const code = (expected) => (error) => error.code === expected;
   const production = await createProductionOrder(productionOrderInputSchema.parse({ productId: ctx.zip.id, quantity: 50, tapeKg: 4 }), actor);
@@ -196,7 +204,6 @@ test("check points block a stage until every required check passes, and the comp
 
   await assert.rejects(record([{ key: "shade-match", result: "PASS" }]), code("STAGE_STATUS_CONFLICT"), "not before the stage starts");
   await startStage(production.id, "tape-dyeing", actor);
-  await assert.rejects(finishStage(production.id, "tape-dyeing", {}, actor), code("STAGE_CHECKS_INCOMPLETE"));
 
   await assert.rejects(record([{ key: "no-such-check", result: "PASS" }]), code("CHECKPOINT_NOT_FOUND"));
   await assert.rejects(record([{ key: "shade-match", result: "NA" }]), code("CHECKPOINT_REQUIRED"));
@@ -209,15 +216,11 @@ test("check points block a stage until every required check passes, and the comp
     { key: "color-fastness", result: "PASS" },
     { key: "shrinkage", result: "PASS", value: "1.5" },
   ]);
-  assert.match(checks.problem, /Failed check: Shade matches the approved sample/);
-  await assert.rejects(finishStage(production.id, "tape-dyeing", {}, actor), code("STAGE_CHECKS_INCOMPLETE"));
-  let state = await getProductionOrder(production.id);
-  assert.equal(state.stages[0].status, "IN_PROGRESS", "nothing was recorded by the refused completion");
-  assert.equal(state.stages[0].acceptedQuantity, "0");
+  assert.match(checks.problem, /Failed check: Shade matches the approved sample/, "a failed check is shown on the stage");
 
   checks = await record([{ key: "shade-match", result: "PASS", note: "Re-dyed; matches now" }]);
   assert.equal(checks.problem, null);
-  state = await finishStage(production.id, "tape-dyeing", { note: "Lot 7, dyed twice" }, actor);
+  const state = await finishStage(production.id, "tape-dyeing", { note: "Lot 7, dyed twice" }, actor);
   const dyeing = state.stages[0];
   assert.equal(dyeing.status, "COMPLETED");
   assert.equal(dyeing.completionNote, "Lot 7, dyed twice");
