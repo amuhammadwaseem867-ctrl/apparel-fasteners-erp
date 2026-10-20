@@ -45,6 +45,15 @@ const productFields = {
       "Minimum stock can have at most 3 decimal places.",
     )
     .default(0),
+  /* Grams per piece; lets stock show in pieces and kg. Empty = unknown. */
+  unitWeightGrams: z
+    .number()
+    .finite()
+    .positive("Unit weight must be more than zero.")
+    .max(1000000)
+    .refine((value) => toScaledDecimal(value).scale <= 4, "Unit weight can have at most 4 decimal places.")
+    .nullable()
+    .optional(),
 };
 
 export const productInputSchema = z.object(productFields);

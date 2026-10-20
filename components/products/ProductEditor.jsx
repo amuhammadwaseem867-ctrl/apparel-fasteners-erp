@@ -27,6 +27,7 @@ const EMPTY_PRODUCT = {
   logoType: "",
   barcode: "",
   minimumStock: "0",
+  unitWeightGrams: "",
 };
 
 // [key, label, type, required]
@@ -83,6 +84,7 @@ export default function ProductEditor({ productId, initial }) {
           logoType: product.logoType || "",
           barcode: product.barcode || "",
           minimumStock: String(product.minimumStock ?? 0),
+          unitWeightGrams: product.unitWeightGrams == null ? "" : String(product.unitWeightGrams),
         });
       })
       .catch((cause) => {
@@ -114,6 +116,11 @@ export default function ProductEditor({ productId, initial }) {
       setError("Minimum stock must be zero or more.");
       return;
     }
+    const unitWeightGrams = form.unitWeightGrams === "" ? null : Number(form.unitWeightGrams);
+    if (unitWeightGrams !== null && (!Number.isFinite(unitWeightGrams) || unitWeightGrams <= 0)) {
+      setError("Unit weight must be more than zero, or left empty.");
+      return;
+    }
     setSaving(true);
     setError("");
     try {
@@ -121,7 +128,7 @@ export default function ProductEditor({ productId, initial }) {
         editing ? `/api/products/${encodeURIComponent(productId)}` : "/api/products",
         {
           method: editing ? "PUT" : "POST",
-          body: JSON.stringify({ ...form, unitPrice, minimumStock }),
+          body: JSON.stringify({ ...form, unitPrice, minimumStock, unitWeightGrams }),
         },
       );
       router.push(`/products/${product.id}`);
@@ -223,6 +230,17 @@ export default function ProductEditor({ productId, initial }) {
                 step="any"
                 value={form.minimumStock}
                 onChange={(event) => setField("minimumStock", event.target.value)}
+              />
+            </label>
+            <label>
+              <span>Unit weight (grams per piece)</span>
+              <input
+                type="number"
+                min="0"
+                step="any"
+                placeholder="e.g. 0.35"
+                value={form.unitWeightGrams}
+                onChange={(event) => setField("unitWeightGrams", event.target.value)}
               />
             </label>
           </div>

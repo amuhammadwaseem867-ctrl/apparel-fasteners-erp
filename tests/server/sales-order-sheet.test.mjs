@@ -64,9 +64,9 @@ test("missing optional fields print as explicit placeholders, never invented val
 test("company identity holds only what the AF7 company documents show; other details are not invented", () => {
   assert.equal(COMPANY.name, "AF7");
   assert.match(COMPANY.address, /^Plot# 33 B Punjab Small Sundar Industrial Estate II/);
-  assert.equal(COMPANY.website, "www.af7.com.pk");
+  assert.equal(COMPANY.website, "www.afgroup.com.hk/AF7", "the website the owner gave (D-043)");
 
-  for (const field of ["phone", "email", "taxRegistration", "bankName", "accountName", "accountNumber", "iban", "swiftCode", "bankBranch", "productionTime", "paymentTerms", "shipmentTerms", "shipmentMode", "portOfLoading"]) {
+  for (const field of ["phone", "email", "taxRegistration", "bankName", "accountName", "accountNumber", "iban", "swiftCode", "bankBranch", "productionTime", "paymentTerms", "shipmentTerms", "shipmentMode", "portOfLoading", "hsCode"]) {
     assert.equal(COMPANY[field], "", `${field} must stay empty until the owner supplies it`);
   }
 });
@@ -79,4 +79,23 @@ test("print routes require a session and load data through the permission-checke
   assert.match(layout, /getCurrentUser\(sessionToken\)/);
   assert.match(layout, /redirect\("\/login"\)/);
   assert.match(client, /useApiData\(`\/api\/sales\/orders\//);
+});
+
+test("a #4.5 zipper on the order sheet is always Y-Cut", async () => {
+  const { isSize45 } = await import("../../lib/orders/teeth-rules.js");
+  const { orderSheetSchema } = await import("../../server/sales/sales.validation.ts");
+  assert.equal(isSize45("#4.5 Metal Zipper Close End"), true);
+  assert.equal(isSize45("4.5 Brass"), true);
+  assert.equal(isSize45("#5 Metal Zipper"), false);
+  assert.equal(isSize45("#14.5 Zipper"), false);
+  assert.equal(isSize45("#4.55 Zipper"), false);
+
+  const sheet = (teethType) => ({
+    customerId: "00000000-0000-4000-8000-000000000001", orderDate: "2026-10-20",
+    lines: [{ product: "#4.5 Metal Zipper Close End", teethType, unit: "Pcs", quantity: 100 }],
+  });
+  const plain = orderSheetSchema.safeParse(sheet("Plain Teeth"));
+  assert.equal(plain.success, false);
+  assert.match(plain.error.issues[0].message, /#4\.5 zipper is always Y-Cut/);
+  assert.equal(orderSheetSchema.safeParse(sheet("Y-Cut")).success, true);
 });

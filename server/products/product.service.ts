@@ -25,6 +25,8 @@ function toProductInput(input: ProductInput) {
     logoType: input.logoType || null,
     barcode: input.barcode || null,
     minimumStock: toPlainDecimalString(input.minimumStock ?? 0),
+    // Left out when not sent, so an update without it keeps the saved weight.
+    ...(input.unitWeightGrams === undefined ? {} : { unitWeightGrams: input.unitWeightGrams === null ? null : toPlainDecimalString(input.unitWeightGrams) }),
   };
 }
 
@@ -35,6 +37,7 @@ function serializeProduct(product: ProductRow) {
     ...product,
     unitPrice: Number(product.unitPrice),
     minimumStock: Number(product.minimumStock),
+    unitWeightGrams: product.unitWeightGrams == null ? null : Number(product.unitWeightGrams),
   };
 }
 

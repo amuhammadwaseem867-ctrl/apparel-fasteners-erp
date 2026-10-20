@@ -61,12 +61,13 @@ function spec(skuBase, size, material, type, extra = {}) {
   };
 }
 
+// #4.5 teeth are always Y-Cut at AF7.
 export const TEETH_SPECS = [
   spec("TH-3-PL-BR", "#3", "Brass", "Plain"),
-  spec("TH-45-BR", "#4.5", "Brass", "Plain"),
+  spec("TH-45-YC-BR", "#4.5", "Brass", "Y-Cut"),
   spec("TH-5-PL-BR", "#5", "Brass", "Plain"),
   spec("TH-5-YC-BR", "#5", "Brass", "Y-Cut"),
-  spec("TH-45-AL", "#4.5", "Aluminium", "Plain"),
+  spec("TH-45-YC-AL", "#4.5", "Aluminium", "Y-Cut"),
   spec("TH-5-PL-AL", "#5", "Aluminium", "Plain"),
   spec("TH-5-YC-AL", "#5", "Aluminium", "Y-Cut"),
 ];
@@ -107,6 +108,7 @@ export const BOTTOM_FINISHES = {
     "Antique Silver",
     "Antique Brass",
     "Golden Brass",
+    "Shiny Silver",
     "Antique Copper",
     "Dull Silver",
     "Aluminium",

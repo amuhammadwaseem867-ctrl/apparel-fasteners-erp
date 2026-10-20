@@ -8,7 +8,8 @@ import useApiData from "@/lib/inventory/useApiData";
 import "@/components/inventory/InventoryWorkspace.css";
 
 const LINKS = [
-  ["/inventory/stock", "Stock on hand", "Receive, issue, adjust"],
+  ["/inventory/raw-material", "Raw material stock", "Live count: received, issued to production, in stock now"],
+  ["/inventory/stock", "Stock by location", "Receive, issue, adjust"],
   ["/inventory/item-master", "Item master", "Items, specifications, catalogue coverage"],
   ["/inventory/warehouses", "Warehouses", "Warehouses, shelves, rows and columns"],
   ["/inventory/movements", "Movements", "The full stock ledger"],

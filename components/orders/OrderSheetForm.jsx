@@ -17,13 +17,14 @@ import Button from "@/components/ui/Button";
 import { SLIDER_SPECS, TOP_STOP_FINISHES, UNITS } from "@/config/items";
 import { apiRequest } from "@/lib/api/client";
 import useApiData, { toQuery } from "@/lib/inventory/useApiData";
+import { Y_CUT, isSize45 } from "@/lib/orders/teeth-rules";
 
 import "@/components/inventory/InventoryWorkspace.css";
 import "./OrderSheetForm.css";
 
 const FINISHES = [...new Set(Object.values(TOP_STOP_FINISHES).flat())];
 const SLIDERS = [...new Set(SLIDER_SPECS.map(([sizeType]) => sizeType))];
-const TEETH_TYPES = ["Plain Teeth", "Y-Cut"];
+const TEETH_TYPES = ["Plain Teeth", Y_CUT];
 
 
 const blankLine = () => ({ key: crypto.randomUUID(), product: "", variant: "", finish: "", teethType: "Plain Teeth", tapeColor: "", slider: "", size: "", unit: "Pcs", quantity: "", unitPrice: "" });
@@ -65,7 +66,12 @@ function SheetEditor({ orderId, initial, orderCustomer = null }) {
   }, [customers.data, orderCustomer]);
   const totalQuantity = lines.reduce((sum, line) => sum + (Number(line.quantity) || 0), 0);
   const setField = (field) => (event) => setHeader((current) => ({ ...current, [field]: event.target.value }));
-  const setLine = (key, field, value) => setLines((current) => current.map((line) => (line.key === key ? { ...line, [field]: value } : line)));
+  // A #4.5 zipper is always Y-Cut: naming one sets the type.
+  const setLine = (key, field, value) => setLines((current) => current.map((line) => {
+    if (line.key !== key) return line;
+    const next = { ...line, [field]: value };
+    return isSize45(next.product) ? { ...next, teethType: Y_CUT } : next;
+  }));
 
   async function save(event) {
     event.preventDefault();
@@ -135,7 +141,7 @@ function SheetEditor({ orderId, initial, orderCustomer = null }) {
                     <td data-label="Variant"><input maxLength={120} placeholder="Right Insert" value={line.variant} onChange={(event) => setLine(line.key, "variant", event.target.value)} /></td>
                     <td data-label="Finish"><input list="os-finishes" maxLength={120} value={line.finish} onChange={(event) => setLine(line.key, "finish", event.target.value)} /></td>
                     <td data-label="Type">
-                      <select value={line.teethType} onChange={(event) => setLine(line.key, "teethType", event.target.value)}>
+                      <select value={line.teethType} disabled={isSize45(line.product)} title={isSize45(line.product) ? "#4.5 zippers are always Y-Cut" : undefined} onChange={(event) => setLine(line.key, "teethType", event.target.value)}>
                         <option value="">—</option>
                         {TEETH_TYPES.map((type) => <option key={type}>{type}</option>)}
                       </select>

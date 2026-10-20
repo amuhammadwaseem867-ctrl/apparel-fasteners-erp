@@ -191,3 +191,16 @@ export type BalanceQuery = z.infer<typeof balanceQuerySchema>;
 export type MovementQuery = z.infer<typeof movementQuerySchema>;
 export type DocumentQuery = z.infer<typeof documentQuerySchema>;
 export type ReservationQuery = z.infer<typeof reservationQuerySchema>;
+
+export const rawMaterialQuerySchema = z.object({
+  search: z.string().trim().max(120).default(""),
+  category: z.string().trim().max(120).default(""),
+  /* Finished products are left out of the stock list unless asked for. */
+  includeProducts: z.enum(["true", "false", ""]).default("").transform((value) => value === "true"),
+  stock: z.enum(["", "OK", "LOW", "OUT", "ALERT"]).default(""),
+});
+
+export const stockCardQuerySchema = z.object({
+  dateFrom: dateString.optional().or(z.literal("")),
+  dateTo: dateString.optional().or(z.literal("")),
+});

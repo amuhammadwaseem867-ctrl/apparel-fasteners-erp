@@ -130,6 +130,27 @@
   text-align: center;
 }
 
+/* Long lists (stock list, stock card): smaller type so a row stays on one line. */
+.af7__table--compact th,
+.af7__table--compact td {
+  padding: 3px 4px;
+  font-size: 7.5pt;
+}
+
+.af7__table--compact th {
+  padding: 4px 3px;
+  font-size: 6.5pt;
+  white-space: nowrap;
+}
+
+.af7__table--compact .code {
+  white-space: nowrap;
+}
+
+.af7__table--compact .sku {
+  overflow-wrap: anywhere;
+}
+
 .af7__table tfoot td {
   font-weight: 700;
   background: var(--af7-tint);

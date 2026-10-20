@@ -6233,6 +6233,13 @@
                   "kind": "scalar"
                 }
               },
+              "unitWeightGrams": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
               "updatedAt": {
                 "nullable": false,
                 "type": {
@@ -6485,6 +6492,9 @@
                 },
                 "unitPrice": {
                   "column": "unitPrice"
+                },
+                "unitWeightGrams": {
+                  "column": "unitWeightGrams"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -19128,6 +19138,11 @@
                   "expression": "\"minimumStock\" >= 0",
                   "name": "erp_products_minimum_stock_nonnegative_99e3bb6c",
                   "prefix": "erp_products_minimum_stock_nonnegative"
+                },
+                {
+                  "expression": "\"unitWeightGrams\" IS NULL OR \"unitWeightGrams\" > 0",
+                  "name": "erp_products_unit_weight_positive_8a21c44a",
+                  "prefix": "erp_products_unit_weight_positive"
                 }
               ],
               "columns": {
@@ -19236,6 +19251,11 @@
                     "value": "0"
                   },
                   "nullable": false
+                },
+                "unitWeightGrams": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "nullable": true
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-string@1",
@@ -23615,7 +23635,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "3ab6ea3e77f8b90d2533e3ee42cb4c88ee3aa06fedb1740aed6431289f03eed6"
+    "storageHash": "85b340e3f25dacd1bb2300e2beee55752023fb65c0e2f226252fb6b01bf989bb"
   },
   "execution": {
     "executionHash": "718808727641ecdeb17a8712bde5290285475a99a9b9ae49f6e824ccc560bdd2",

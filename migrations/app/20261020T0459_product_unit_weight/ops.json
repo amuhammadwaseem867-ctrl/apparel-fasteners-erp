@@ -1,0 +1,86 @@
+[
+  {
+    "id": "column.public.erp_products.unitWeightGrams",
+    "label": "Add column \"unitWeightGrams\" to \"erp_products\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "unitWeightGrams",
+        "table": "erp_products"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"unitWeightGrams\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_products",
+          "unitWeightGrams"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"unitWeightGrams\"",
+        "sql": "ALTER TABLE \"public\".\"erp_products\" ADD COLUMN \"unitWeightGrams\" numeric"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"unitWeightGrams\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_products",
+          "unitWeightGrams"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.erp_products.erp_products_unit_weight_positive_8a21c44a",
+    "label": "Add check constraint \"erp_products_unit_weight_positive_8a21c44a\" on \"erp_products\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "erp_products_unit_weight_positive_8a21c44a",
+        "table": "erp_products"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_products_unit_weight_positive_8a21c44a\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_products_unit_weight_positive_8a21c44a",
+          "public",
+          "\"public\".\"erp_products\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"erp_products_unit_weight_positive_8a21c44a\"",
+        "sql": "ALTER TABLE \"public\".\"erp_products\" ADD CONSTRAINT \"erp_products_unit_weight_positive_8a21c44a\" CHECK (\"unitWeightGrams\" IS NULL OR \"unitWeightGrams\" > 0)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_products_unit_weight_positive_8a21c44a\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_products_unit_weight_positive_8a21c44a",
+          "public",
+          "\"public\".\"erp_products\""
+        ]
+      }
+    ]
+  }
+]

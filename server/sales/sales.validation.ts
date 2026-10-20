@@ -1,5 +1,7 @@
 ﻿import { z } from "zod";
 
+import { Y_CUT, isSize45 } from "../../lib/orders/teeth-rules.js";
+
 import {
   MAX_SAFE_CENTS,
   divideRoundHalfUp,
@@ -204,7 +206,14 @@ export const orderSheetSchema = z
       taxPercent: percentage.default(18),
     })).min(1, "Add at least one line.").max(200),
   })
-  .refine((input) => !input.deliveryDate || input.deliveryDate >= input.orderDate, { message: "Delivery date cannot be earlier than the order date.", path: ["deliveryDate"] });
+  .refine((input) => !input.deliveryDate || input.deliveryDate >= input.orderDate, { message: "Delivery date cannot be earlier than the order date.", path: ["deliveryDate"] })
+  .superRefine((input, context) => {
+    input.lines.forEach((line, index) => {
+      if (isSize45(line.product) && line.teethType !== Y_CUT) {
+        context.addIssue({ code: "custom", message: `Line ${index + 1}: a #4.5 zipper is always Y-Cut.`, path: ["lines", index, "teethType"] });
+      }
+    });
+  });
 
 export type OrderSheetInput = z.infer<typeof orderSheetSchema>;
 

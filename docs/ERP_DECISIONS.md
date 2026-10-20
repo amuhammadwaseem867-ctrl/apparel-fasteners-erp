@@ -1307,3 +1307,32 @@ navigation.
   company profile field); none are hardcoded.
 - The documents' website default is now www.afgroup.com.hk/AF7. A website
   already saved in Settings still takes precedence.
+
+## D-044 Raw material stock (2026-10-20)
+
+- AF7 runs one warehouse. "Add AF7 raw materials" on Inventory → Raw
+  material stock adds the owner's list (7 teeth, 15 top stops, 14 bottoms,
+  7 pin boxes, 3 two pins, 27 sliders) to the item master as active raw
+  materials with zero stock. It matches existing items by specification,
+  so running it again never duplicates. Inactive list items become active;
+  archived ones are left alone. If no warehouse exists it creates one
+  (MAIN) with one location; it never touches existing warehouses. No stock
+  is created: stock only comes from posted receipts.
+- #4.5 teeth are always Y-Cut. The list carries #4.5 Brass and #4.5
+  Aluminium as Y-Cut, the setup corrects a #4.5 teeth item saved as Plain
+  (SKU kept), and the order sheet sets Y-Cut for any #4.5 zipper line and
+  the server rejects a #4.5 line saved with another type.
+- The list also had #5 Bottom Shiny Silver missing; it is added.
+- Teeth are kept in kg, every component in pieces. Items get an optional
+  unit weight (grams per piece, migration `20261020T0459_product_unit_weight`);
+  with it the stock shows in both pieces and kg.
+- The Raw material stock page is the inventory table: item no, size,
+  type, finish, variant, unit, unit weight, received, issued, current
+  stock, pieces, kg, location and status, by category. Received = goods
+  receipts + stock in; issued = material issued to production; returns
+  are shown separately; current stock is the ledger's on-hand balance
+  (10 000 received − 5 000 issued = 5 000). Finished products are left
+  out unless "Show finished products" is ticked.
+- Each item has a stock card: opening balance, every in / out with
+  document, reference, location and user, running balance and closing
+  balance for any dates, on screen and printed. The stock list prints too.

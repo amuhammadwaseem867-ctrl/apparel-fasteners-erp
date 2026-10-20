@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'3ab6ea3e77f8b90d2533e3ee42cb4c88ee3aa06fedb1740aed6431289f03eed6'>;
+  StorageHashBase<'85b340e3f25dacd1bb2300e2beee55752023fb65c0e2f226252fb6b01bf989bb'>;
 export type ExecutionHash =
   ExecutionHashBase<'718808727641ecdeb17a8712bde5290285475a99a9b9ae49f6e824ccc560bdd2'>;
 export type ProfileHash =
@@ -775,6 +775,7 @@ export type FieldOutputTypes = {
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly unit: CodecTypes['pg/text@1']['output'];
       readonly unitPrice: CodecTypes['pg/numeric@1']['output'];
+      readonly unitWeightGrams: CodecTypes['pg/numeric@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly variant: CodecTypes['pg/text@1']['output'] | null;
     };
@@ -1914,6 +1915,7 @@ export type FieldInputTypes = {
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly unit: CodecTypes['pg/text@1']['input'];
       readonly unitPrice: CodecTypes['pg/numeric@1']['input'];
+      readonly unitWeightGrams: CodecTypes['pg/numeric@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly variant: CodecTypes['pg/text@1']['input'] | null;
     };
@@ -3192,6 +3194,7 @@ export type StorageColumnTypes = {
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly unit: CodecTypes['pg/text@1']['output'];
       readonly unitPrice: CodecTypes['pg/numeric@1']['output'];
+      readonly unitWeightGrams: CodecTypes['pg/numeric@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly variant: CodecTypes['pg/text@1']['output'] | null;
     };
@@ -4331,6 +4334,7 @@ export type StorageColumnInputTypes = {
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly unit: CodecTypes['pg/text@1']['input'];
       readonly unitPrice: CodecTypes['pg/numeric@1']['input'];
+      readonly unitWeightGrams: CodecTypes['pg/numeric@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly variant: CodecTypes['pg/text@1']['input'] | null;
     };
@@ -5422,6 +5426,7 @@ export namespace Models {
     status: CodecTypes['pg/text@1']['output'];
     unit: CodecTypes['pg/text@1']['output'];
     unitPrice: CodecTypes['pg/numeric@1']['output'];
+    unitWeightGrams: CodecTypes['pg/numeric@1']['output'] | null;
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     variant: CodecTypes['pg/text@1']['output'] | null;
     bomComponentLines: public_BomLine[];
@@ -11427,6 +11432,12 @@ type ContractBase = Omit<
                     readonly kind: 'literal';
                     readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
                   };
+                  readonly many: false;
+                };
+                readonly unitWeightGrams: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly updatedAt: {
@@ -18951,6 +18962,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
               };
+              readonly unitWeightGrams: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
               readonly updatedAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -19116,6 +19131,7 @@ type ContractBase = Omit<
                 readonly status: { readonly column: 'status' };
                 readonly unit: { readonly column: 'unit' };
                 readonly unitPrice: { readonly column: 'unitPrice' };
+                readonly unitWeightGrams: { readonly column: 'unitWeightGrams' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
                 readonly variant: { readonly column: 'variant' };
               };

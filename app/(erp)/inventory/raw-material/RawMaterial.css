@@ -1,0 +1,72 @@
+/* Raw Material Stock page (D-044). */
+
+.rm-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  padding: 14px 18px;
+  border: 1px solid #f0d9a8;
+  border-radius: 12px;
+  background: #fdf8ec;
+  color: var(--inv-text);
+}
+
+.rm-banner div { display: grid; gap: 2px; }
+.rm-banner span { color: var(--inv-muted); font-size: 13px; }
+.rm-banner--done { margin: 0; border-color: #bfe3cf; background: #eef8f2; }
+
+.rm-kpi {
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rm-kpi.is-active { outline: 2px solid var(--inv-navy); outline-offset: -2px; }
+
+.rm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px 16px 0;
+}
+
+.rm-chip {
+  padding: 7px 14px;
+  border: 1px solid var(--inv-border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--inv-text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.rm-chip:hover { border-color: var(--inv-navy); }
+.rm-chip.is-active { border-color: var(--inv-navy); background: var(--inv-navy); color: #fff; }
+
+.rm-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: end;
+  min-height: 40px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.rm-table td small { display: block; color: var(--inv-muted); font-size: 12px; }
+.rm-row-actions { white-space: nowrap; }
+.rm-row-actions .inv-text-button + .inv-text-button { margin-left: 10px; }
+
+.rm-footnote {
+  margin: 0;
+  padding: 12px 16px 16px;
+  color: var(--inv-muted);
+  font-size: 12px;
+}
+
+.rm-print,
+.inv-card__header .inv-link-button { display: inline-flex; align-items: center; gap: 6px; }
+.rm-table td[data-label="Item no"] strong { white-space: nowrap; }

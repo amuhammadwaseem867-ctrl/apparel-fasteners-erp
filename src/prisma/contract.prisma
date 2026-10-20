@@ -179,6 +179,8 @@ model Product {
   logoType     String?
   barcode      String?           @unique
   minimumStock Decimal           @default(0)
+  // Weight of one piece in grams, so stock shows in both pieces and kg.
+  unitWeightGrams Decimal?
 
   salesOrderLines   SalesOrderLine[]
   stockBalances     StockBalance[]
@@ -197,6 +199,7 @@ model Product {
   @@index([category])
   @@index([status])
   @@check(expression: "\"minimumStock\" >= 0", name: "erp_products_minimum_stock_nonnegative")
+  @@check(expression: "\"unitWeightGrams\" IS NULL OR \"unitWeightGrams\" > 0", name: "erp_products_unit_weight_positive")
   @@map("erp_products")
 }
 
