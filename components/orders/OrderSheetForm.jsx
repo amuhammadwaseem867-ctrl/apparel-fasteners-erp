@@ -6,6 +6,11 @@
  * Finish, Type, Tape Color, Slider, plus Size, Unit and Quantity from the
  * AF7 order sheet. A rate is optional and only used for the invoice;
  * production documents never show it.
+ *
+ * mode="invoice" (D-048) is the invoice made first: the same sheet with a
+ * rate on every line, sales tax 18% or non sales tax, and payment terms.
+ * Saving makes the draft invoice and its order under the next AF7-YY-NNNN
+ * number; approving the invoice later sends the order to Orders.
  */
 
 import Link from "next/link";
@@ -18,6 +23,7 @@ import { SLIDER_SPECS, TOP_STOP_FINISHES, UNITS } from "@/config/items";
 import { apiRequest } from "@/lib/api/client";
 import useApiData, { toQuery } from "@/lib/inventory/useApiData";
 import { Y_CUT, isSize45 } from "@/lib/orders/teeth-rules";
+import { formatAmount } from "@/lib/formatters/formatters";
 
 import "@/components/inventory/InventoryWorkspace.css";
 import "./OrderSheetForm.css";
@@ -40,18 +46,32 @@ function fromOrder(order) {
   };
 }
 
-export default function OrderSheetForm({ orderId }) {
-  const order = useApiData(orderId ? `/api/sales/orders/${encodeURIComponent(orderId)}` : null);
-  if (!orderId) return <SheetEditor />;
+const SALES_TAX = 18;
+const daysBetween = (from, to) => Math.max(0, Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000));
+
+export default function OrderSheetForm({ orderId, invoiceId, mode = "order" }) {
+  const invoice = useApiData(invoiceId ? `/api/finance/invoices/${encodeURIComponent(invoiceId)}` : null);
+  const loadOrderId = orderId ?? invoice.data?.salesOrderId;
+  const order = useApiData(loadOrderId ? `/api/sales/orders/${encodeURIComponent(loadOrderId)}` : null);
+  if (!orderId && !invoiceId) return <SheetEditor mode={mode} />;
   if (!order.data) {
-    return <main className="inv-page">{order.error ? <p className="inv-dialog__error" role="alert">{order.error}</p> : <p className="inv-state" role="status">Loading order…</p>}</main>;
+    const failed = invoice.error || order.error;
+    return <main className="inv-page">{failed ? <p className="inv-dialog__error" role="alert">{failed}</p> : <p className="inv-state" role="status">Loading…</p>}</main>;
   }
-  return <SheetEditor orderId={orderId} initial={fromOrder(order.data)} orderCustomer={order.data.customer} />;
+  const invoiceTerms = invoice.data ? {
+    id: invoice.data.id,
+    invoiceType: invoice.data.invoiceType,
+    paymentTermsDays: String(daysBetween(invoice.data.invoiceDate, invoice.data.dueDate)),
+  } : null;
+  return <SheetEditor mode={mode} orderId={invoiceId ? undefined : orderId} invoiceTerms={invoiceTerms} initial={fromOrder(order.data)} orderCustomer={order.data.customer} />;
 }
 
-function SheetEditor({ orderId, initial, orderCustomer = null }) {
+function SheetEditor({ mode, orderId, invoiceTerms = null, initial, orderCustomer = null }) {
   const router = useRouter();
-  const editing = Boolean(orderId);
+  const asInvoice = mode === "invoice";
+  const editing = Boolean(orderId || invoiceTerms?.id);
+  const [terms, setTerms] = useState(() => invoiceTerms ?? { invoiceType: "SALES_TAX", paymentTermsDays: "30" });
+  const [key] = useState(() => crypto.randomUUID());
   const [header, setHeader] = useState(() => initial?.header ?? { customerId: "", customerPo: "", orderNumber: "", orderDate: today(), deliveryDate: "", notes: "" });
   const [lines, setLines] = useState(() => initial?.lines ?? [blankLine()]);
   const [customerSearch, setCustomerSearch] = useState("");
@@ -65,6 +85,8 @@ function SheetEditor({ orderId, initial, orderCustomer = null }) {
     return orderCustomer && !listed.some((customer) => customer.id === orderCustomer.id) ? [orderCustomer, ...listed] : listed;
   }, [customers.data, orderCustomer]);
   const totalQuantity = lines.reduce((sum, line) => sum + (Number(line.quantity) || 0), 0);
+  const subtotal = lines.reduce((sum, line) => sum + (Number(line.quantity) || 0) * (Number(line.unitPrice) || 0), 0);
+  const tax = terms.invoiceType === "SALES_TAX" ? Math.round(subtotal * SALES_TAX) / 100 : 0;
   const setField = (field) => (event) => setHeader((current) => ({ ...current, [field]: event.target.value }));
   // A #4.5 zipper is always Y-Cut: naming one sets the type.
   const setLine = (key, field, value) => setLines((current) => current.map((line) => {
@@ -83,6 +105,16 @@ function SheetEditor({ orderId, initial, orderCustomer = null }) {
       lines: lines.map(({ key, quantity, unitPrice, ...line }) => ({ ...line, quantity: Number(quantity), unitPrice: unitPrice === "" ? 0 : Number(unitPrice) })),
     };
     try {
+      if (asInvoice) {
+        // The number is the system's: the server ignores what the sheet says.
+        const sheet = body;
+        const saved = await apiRequest(invoiceTerms?.id ? `/api/finance/invoices/${invoiceTerms.id}/manual` : "/api/finance/invoices/manual", {
+          method: invoiceTerms?.id ? "PUT" : "POST",
+          body: JSON.stringify({ idempotencyKey: key, invoiceType: terms.invoiceType, paymentTermsDays: Number(terms.paymentTermsDays || 0), sheet }),
+        });
+        router.push(`/finance/invoices/${saved.id}`);
+        return;
+      }
       const order = await apiRequest(editing ? `/api/sales/order-sheet/${orderId}` : "/api/sales/order-sheet", { method: editing ? "PATCH" : "POST", body: JSON.stringify(body) });
       router.push(`/sales/orders/${order.id}`);
     } catch (cause) {
@@ -95,12 +127,14 @@ function SheetEditor({ orderId, initial, orderCustomer = null }) {
     <main className="inv-page">
       <header className="inv-header">
         <div>
-          <p className="inv-header__eyebrow">1. Orders</p>
-          <h1>{editing ? `Edit order ${header.orderNumber}` : "New order"}</h1>
-          <p>Fill the order sheet. Prices are optional here and never appear on the production copy.</p>
+          <p className="inv-header__eyebrow">{asInvoice ? "Invoices" : "1. Orders"}</p>
+          <h1>{asInvoice ? (editing ? `Edit invoice ${header.orderNumber}` : "New invoice") : editing ? `Edit order ${header.orderNumber}` : "New order"}</h1>
+          <p>{asInvoice
+            ? "Fill the order sheet with the rate for every line. Approving the invoice makes the order; the production copy is printed without rates."
+            : "Fill the order sheet. Prices are optional here and never appear on the production copy."}</p>
         </div>
         <div className="inv-header__actions">
-          <Link className="inv-link-button" href={editing ? `/sales/orders/${orderId}` : "/sales/orders"}>Cancel</Link>
+          <Link className="inv-link-button" href={asInvoice ? (invoiceTerms?.id ? `/finance/invoices/${invoiceTerms.id}` : "/finance/invoices") : editing ? `/sales/orders/${orderId}` : "/sales/orders"}>Cancel</Link>
         </div>
       </header>
 
@@ -116,9 +150,25 @@ function SheetEditor({ orderId, initial, orderCustomer = null }) {
             <small><Link href="/sales/customers">Add a new customer</Link></small>
           </div>
           <div className="inv-field"><label htmlFor="os-po">2. Customer PO number</label><input id="os-po" maxLength={80} value={header.customerPo} onChange={setField("customerPo")} /></div>
-          <div className="inv-field"><label htmlFor="os-no">3. Order no</label><input id="os-no" maxLength={40} placeholder="Automatic if empty, e.g. AF-26-1154" value={header.orderNumber} onChange={setField("orderNumber")} disabled={editing} /></div>
-          <div className="inv-field"><label htmlFor="os-date">Order date *</label><input id="os-date" type="date" required value={header.orderDate} onChange={setField("orderDate")} /></div>
+          {asInvoice ? (
+            <div className="inv-field"><label htmlFor="os-no">3. Invoice / order no</label><input id="os-no" readOnly value={header.orderNumber || "Given by the system: AF7-YY-0001…"} /></div>
+          ) : (
+            <div className="inv-field"><label htmlFor="os-no">3. Order no</label><input id="os-no" maxLength={40} placeholder="Automatic if empty, e.g. AF7-26-0001" value={header.orderNumber} onChange={setField("orderNumber")} disabled={editing} /></div>
+          )}
+          <div className="inv-field"><label htmlFor="os-date">{asInvoice ? "Invoice date *" : "Order date *"}</label><input id="os-date" type="date" required value={header.orderDate} onChange={setField("orderDate")} /></div>
           <div className="inv-field"><label htmlFor="os-delivery">Required delivery date</label><input id="os-delivery" type="date" min={header.orderDate} value={header.deliveryDate} onChange={setField("deliveryDate")} /></div>
+          {asInvoice && (
+            <>
+              <div className="inv-field">
+                <label htmlFor="os-type">Invoice type *</label>
+                <select id="os-type" value={terms.invoiceType} onChange={(event) => setTerms((current) => ({ ...current, invoiceType: event.target.value }))}>
+                  <option value="SALES_TAX">Sales tax invoice (GST 18%)</option>
+                  <option value="NON_TAX">Non sales tax invoice</option>
+                </select>
+              </div>
+              <div className="inv-field"><label htmlFor="os-terms">Payment terms (days)</label><input id="os-terms" type="number" min="0" max="365" step="1" value={terms.paymentTermsDays} onChange={(event) => setTerms((current) => ({ ...current, paymentTermsDays: event.target.value }))} /></div>
+            </>
+          )}
         </section>
 
         <section className="inv-card">
@@ -130,7 +180,7 @@ function SheetEditor({ orderId, initial, orderCustomer = null }) {
             <table className="inv-table os-lines">
               <thead>
                 <tr>
-                  <th>#</th><th>4. Product *</th><th>5. Variant</th><th>6. Finish</th><th>7. Type</th><th>8. Tape color</th><th>9. Slider</th><th>Size</th><th>Unit</th><th className="inv-num">Qty *</th><th className="inv-num">Rate (optional)</th><th />
+                  <th>#</th><th>4. Product *</th><th>5. Variant</th><th>6. Finish</th><th>7. Type</th><th>8. Tape color</th><th>9. Slider</th><th>Size</th><th>Unit</th><th className="inv-num">Qty *</th><th className="inv-num">{asInvoice ? "Rate *" : "Rate (optional)"}</th>{asInvoice && <th className="inv-num">Amount</th>}<th />
                 </tr>
               </thead>
               <tbody>
@@ -155,7 +205,8 @@ function SheetEditor({ orderId, initial, orderCustomer = null }) {
                       </select>
                     </td>
                     <td data-label="Qty" className="inv-num"><input required type="number" min="0.001" step="any" inputMode="decimal" value={line.quantity} onChange={(event) => setLine(line.key, "quantity", event.target.value)} /></td>
-                    <td data-label="Rate" className="inv-num"><input type="number" min="0" step="any" inputMode="decimal" placeholder="0" value={line.unitPrice} onChange={(event) => setLine(line.key, "unitPrice", event.target.value)} /></td>
+                    <td data-label="Rate" className="inv-num"><input type="number" min={asInvoice ? "0.000001" : "0"} required={asInvoice} step="any" inputMode="decimal" placeholder="0" value={line.unitPrice} onChange={(event) => setLine(line.key, "unitPrice", event.target.value)} /></td>
+                    {asInvoice && <td data-label="Amount" className="inv-num">{formatAmount((Number(line.quantity) || 0) * (Number(line.unitPrice) || 0))}</td>}
                     <td data-label="" className="os-row-actions">
                       <button type="button" className="os-icon-button" title="Copy this line (e.g. for another tape colour)" aria-label="Copy line" onClick={() => setLines((current) => [...current.slice(0, index + 1), { ...line, key: crypto.randomUUID(), tapeColor: "", quantity: "" }, ...current.slice(index + 1)])}><Copy size={15} /></button>
                       {lines.length > 1 && <button type="button" className="os-icon-button" title="Remove line" aria-label="Remove line" onClick={() => setLines((current) => current.filter((item) => item.key !== line.key))}><Trash2 size={15} /></button>}
@@ -168,12 +219,21 @@ function SheetEditor({ orderId, initial, orderCustomer = null }) {
           <datalist id="os-finishes">{FINISHES.map((finish) => <option key={finish} value={finish} />)}</datalist>
           <datalist id="os-sliders">{SLIDERS.map((slider) => <option key={slider} value={slider} />)}</datalist>
           <Button variant="secondary" onClick={() => setLines((current) => [...current, blankLine()])}><Plus size={15} /> Add line</Button>
+          {asInvoice && (
+            <table className="af7-totals os-totals">
+              <tbody>
+                <tr><th>Amount before tax</th><td>{formatAmount(subtotal)}</td></tr>
+                <tr><th>{terms.invoiceType === "SALES_TAX" ? "Sales tax 18%" : "Sales tax"}</th><td>{terms.invoiceType === "SALES_TAX" ? formatAmount(tax) : "None"}</td></tr>
+                <tr><th>Total</th><td>{formatAmount(subtotal + tax)}</td></tr>
+              </tbody>
+            </table>
+          )}
           <div className="inv-field os-notes"><label htmlFor="os-notes">Remarks / special instructions</label><textarea id="os-notes" rows={2} maxLength={4000} value={header.notes} onChange={setField("notes")} /></div>
         </section>
 
         {error && <p className="inv-dialog__error" role="alert">{error}</p>}
         <div className="os-actions">
-          <Button type="submit" variant="primary" loading={saving}>Save order</Button>
+          <Button type="submit" variant="primary" loading={saving}>{asInvoice ? "Save invoice" : "Save order"}</Button>
         </div>
       </form>
     </main>

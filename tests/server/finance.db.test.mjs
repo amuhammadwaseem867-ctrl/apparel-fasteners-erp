@@ -13,7 +13,6 @@ import {
   getInvoice,
   getReceivables,
   listInvoices,
-  listUninvoicedShipments,
   recordReceipt,
   voidReceipt,
 } from "../../server/finance/finance.service.ts";
@@ -75,7 +74,6 @@ test.before(async () => {
 test("only dispatched shipments are invoiced; amounts come from the sales order exactly", async () => {
   await expectCode(invoice(ctx.shipment.id), "SHIPMENT_NOT_DISPATCHED");
   await changeShipment(ctx.shipment.id, "dispatch", {}, actor);
-  assert.ok((await listUninvoicedShipments()).some((row) => row.id === ctx.shipment.id));
 
   const created = await invoice(ctx.shipment.id, { paymentTermsDays: 30 });
   assert.equal(created.status, "DRAFT");

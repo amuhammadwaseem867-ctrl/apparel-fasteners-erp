@@ -884,7 +884,8 @@ model Invoice {
   invoiceNumber  String             @unique
   customerId     Uuid
   salesOrderId   Uuid
-  shipmentId     Uuid
+  // Empty for an invoice made first, by hand (D-048); its number is the order's.
+  shipmentId     Uuid?
   invoiceDate    String
   dueDate        String
   status         String             @default("DRAFT")

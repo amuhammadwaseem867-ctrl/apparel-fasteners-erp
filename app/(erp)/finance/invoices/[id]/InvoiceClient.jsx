@@ -90,7 +90,7 @@ export default function InvoiceClient({ id }) {
   async function act(action) {
     if (busy) return;
     let reason = "";
-    if (action === "issue" && !window.confirm("Issue this invoice? Issued invoices cannot be edited or cancelled; corrections need a credit note.")) return;
+    if (action === "issue" && !window.confirm("Approve this invoice? The order goes to Orders, ready for production. An approved invoice cannot be edited; corrections need a credit note.")) return;
     if (action === "cancel") {
       reason = window.prompt("Reason for cancelling this draft") ?? "";
       if (!reason.trim()) return;
@@ -129,14 +129,16 @@ export default function InvoiceClient({ id }) {
         <div>
           <p className="inv-header__eyebrow"><Link href="/finance/invoices">Invoices</Link></p>
           <h1>{data.invoiceNumber} <InvoiceStatusBadge status={data.status} paymentStatus={data.paymentStatus} /></h1>
-          <p>{INVOICE_TYPE_LABELS[data.invoiceType] ?? data.invoiceType} · {data.customerName} · {data.salesOrderNumber} · <Link href={`/dispatch/shipments/${data.shipmentId}`}>{data.shipmentNumber}</Link> · dated {data.invoiceDate} · due {data.dueDate}{data.daysOverdue > 0 ? ` · ${data.daysOverdue} days overdue` : ""}</p>
+          <p>{INVOICE_TYPE_LABELS[data.invoiceType] ?? data.invoiceType} · {data.customerName} · <Link href={`/sales/orders/${data.salesOrderId}`}>order {data.salesOrderNumber}</Link>{data.shipmentId ? <> · <Link href={`/dispatch/shipments/${data.shipmentId}`}>{data.shipmentNumber}</Link></> : null} · dated {data.invoiceDate} · due {data.dueDate}{data.daysOverdue > 0 ? ` · ${data.daysOverdue} days overdue` : ""}</p>
         </div>
         <div className="inv-header__actions">
           {data.status === "DRAFT" && <Button variant="secondary" loading={busy === "cancel"} onClick={() => act("cancel")}>Cancel draft</Button>}
-          {data.status === "DRAFT" && <Button variant="primary" loading={busy === "issue"} onClick={() => act("issue")}>Issue invoice</Button>}
+          {data.status === "DRAFT" && !data.shipmentId && <Link className="inv-link-button" href={`/finance/invoices/${data.id}/edit`}>Edit</Link>}
+          {data.status === "DRAFT" && <Button variant="primary" loading={busy === "issue"} onClick={() => act("issue")}>Approve invoice</Button>}
           {open && <Button variant="secondary" onClick={() => setDialog("credit")}>Credit note</Button>}
           {open && <Button variant="primary" onClick={() => setDialog("receipt")}>Record receipt</Button>}
           <Link className="inv-link-button" href={`/print/invoices/${data.id}`}>Print invoice</Link>
+          <Link className="inv-link-button" href={`/print/sales-orders/${data.salesOrderId}`}>Print order sheet (no rates)</Link>
         </div>
       </header>
 

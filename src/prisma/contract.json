@@ -3139,7 +3139,7 @@
                 }
               },
               "shipmentId": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/uuid@1",
                   "kind": "scalar"
@@ -15681,7 +15681,7 @@
                 "shipmentId": {
                   "codecId": "pg/uuid@1",
                   "dataType": "pg/uuid",
-                  "nullable": false
+                  "nullable": true
                 },
                 "status": {
                   "codecId": "pg/text@1",
@@ -23689,7 +23689,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "2cf92c9acbd13c522550ad6f34e3d43ef7625863dcf10fc56c82c03111576914"
+    "storageHash": "2dc5f2f81570adbedc3799970d313ff7a22720387a95ce83b02eb9f1ac192918"
   },
   "execution": {
     "executionHash": "718808727641ecdeb17a8712bde5290285475a99a9b9ae49f6e824ccc560bdd2",

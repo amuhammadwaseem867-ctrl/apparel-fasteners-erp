@@ -1044,3 +1044,10 @@
 .inv-chip:hover { border-color: var(--inv-navy); }
 .inv-chip.is-active { border-color: var(--inv-navy); background: var(--inv-navy); color: #fff; }
 .inv-chip.is-active small { color: rgba(255, 255, 255, 0.75); }
+
+/* A link that is the page's main action. */
+.inv-link-button.inv-link-button--primary {
+  border-color: var(--inv-navy);
+  background: var(--inv-navy);
+  color: #fff;
+}

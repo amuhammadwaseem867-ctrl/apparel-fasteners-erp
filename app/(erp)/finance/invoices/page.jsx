@@ -1,25 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import Button from "@/components/ui/Button";
 import InventoryPager from "@/components/inventory/InventoryPager";
-import NewInvoiceDialog from "@/components/finance/NewInvoiceDialog";
 import { INVOICE_TYPE_LABELS, InvoiceStatusBadge, formatAmount } from "@/components/finance/financeUi";
 import useApiData, { toQuery } from "@/lib/inventory/useApiData";
 
 import "@/components/inventory/InventoryWorkspace.css";
 
-/* Creates a DRAFT invoice for one dispatched, uninvoiced shipment. */
 export default function InvoicesPage() {
-  const router = useRouter();
   const [status, setStatus] = useState("");
   const [balance, setBalance] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [creating, setCreating] = useState(false);
   const invoices = useApiData(`/api/finance/invoices${toQuery({ status, balance, search, page, pageSize: 25 })}`);
   const rows = invoices.data?.invoices ?? [];
 
@@ -32,7 +26,7 @@ export default function InvoicesPage() {
           <p>Customer invoices for dispatched shipments. Issued invoices are never edited or deleted; they are corrected with credit notes.</p>
         </div>
         <div className="inv-header__actions">
-          <Button variant="primary" onClick={() => setCreating(true)}>Invoice a shipment</Button>
+          <Link className="inv-link-button inv-link-button--primary" href="/finance/invoices/new">New invoice</Link>
         </div>
       </header>
 
@@ -90,7 +84,6 @@ export default function InvoicesPage() {
         <InventoryPager page={page} hasMore={invoices.data?.hasMore} onChange={setPage} disabled={invoices.loading} />
       </section>
 
-      {creating && <NewInvoiceDialog onClose={() => setCreating(false)} onCreated={(created) => router.push(`/finance/invoices/${created.id}`)} />}
     </main>
   );
 }

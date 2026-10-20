@@ -31,8 +31,7 @@ export default function FinanceOverviewPage() {
           <div className={`inv-kpi ${Number(data.overdue) > 0 ? "inv-kpi--danger" : ""}`}><span>Overdue</span><strong>{formatAmount(data.overdue)}</strong></div>
           <div className="inv-kpi"><span>Invoiced, last 30 days</span><strong>{formatAmount(data.invoicedLast30Days)}</strong><small>issued invoices</small></div>
           <div className="inv-kpi"><span>Received, last 30 days</span><strong>{formatAmount(data.receivedLast30Days)}</strong><small>posted receipts</small></div>
-          <div className={`inv-kpi ${data.uninvoicedShipments ? "inv-kpi--warning" : ""}`}><span>Shipments to invoice</span><strong>{data.uninvoicedShipments}</strong></div>
-          <div className="inv-kpi"><span>Draft invoices</span><strong>{data.draftInvoices}</strong></div>
+          <div className={`inv-kpi ${data.draftInvoices ? "inv-kpi--warning" : ""}`}><span>Invoices to approve</span><strong>{data.draftInvoices}</strong><small>approving makes the order</small></div>
         </section>
       )}
       <section className="inv-card">

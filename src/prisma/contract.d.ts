@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'2cf92c9acbd13c522550ad6f34e3d43ef7625863dcf10fc56c82c03111576914'>;
+  StorageHashBase<'2dc5f2f81570adbedc3799970d313ff7a22720387a95ce83b02eb9f1ac192918'>;
 export type ExecutionHash =
   ExecutionHashBase<'718808727641ecdeb17a8712bde5290285475a99a9b9ae49f6e824ccc560bdd2'>;
 export type ProfileHash =
@@ -498,7 +498,7 @@ export type FieldOutputTypes = {
       readonly issuedBy: CodecTypes['pg/uuid@1']['output'] | null;
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly salesOrderId: CodecTypes['pg/uuid@1']['output'];
-      readonly shipmentId: CodecTypes['pg/uuid@1']['output'];
+      readonly shipmentId: CodecTypes['pg/uuid@1']['output'] | null;
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly subtotal: CodecTypes['pg/numeric@1']['output'];
       readonly taxTotal: CodecTypes['pg/numeric@1']['output'];
@@ -1641,7 +1641,7 @@ export type FieldInputTypes = {
       readonly issuedBy: CodecTypes['pg/uuid@1']['input'] | null;
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly salesOrderId: CodecTypes['pg/uuid@1']['input'];
-      readonly shipmentId: CodecTypes['pg/uuid@1']['input'];
+      readonly shipmentId: CodecTypes['pg/uuid@1']['input'] | null;
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly subtotal: CodecTypes['pg/numeric@1']['input'];
       readonly taxTotal: CodecTypes['pg/numeric@1']['input'];
@@ -2801,7 +2801,7 @@ export type StorageColumnTypes = {
       readonly issuedBy: CodecTypes['pg/uuid@1']['output'] | null;
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly salesOrderId: CodecTypes['pg/uuid@1']['output'];
-      readonly shipmentId: CodecTypes['pg/uuid@1']['output'];
+      readonly shipmentId: CodecTypes['pg/uuid@1']['output'] | null;
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly subtotal: CodecTypes['pg/numeric@1']['output'];
       readonly taxTotal: CodecTypes['pg/numeric@1']['output'];
@@ -3944,7 +3944,7 @@ export type StorageColumnInputTypes = {
       readonly issuedBy: CodecTypes['pg/uuid@1']['input'] | null;
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly salesOrderId: CodecTypes['pg/uuid@1']['input'];
-      readonly shipmentId: CodecTypes['pg/uuid@1']['input'];
+      readonly shipmentId: CodecTypes['pg/uuid@1']['input'] | null;
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly subtotal: CodecTypes['pg/numeric@1']['input'];
       readonly taxTotal: CodecTypes['pg/numeric@1']['input'];
@@ -5111,7 +5111,7 @@ export namespace Models {
     issuedBy: CodecTypes['pg/uuid@1']['output'] | null;
     notes: CodecTypes['pg/text@1']['output'] | null;
     salesOrderId: CodecTypes['pg/uuid@1']['output'];
-    shipmentId: CodecTypes['pg/uuid@1']['output'];
+    shipmentId: CodecTypes['pg/uuid@1']['output'] | null;
     status: CodecTypes['pg/text@1']['output'];
     subtotal: CodecTypes['pg/numeric@1']['output'];
     taxTotal: CodecTypes['pg/numeric@1']['output'];
@@ -8375,7 +8375,7 @@ type ContractBase = Omit<
                 readonly shipmentId: {
                   readonly dataType: 'pg/uuid';
                   readonly codecId: 'pg/uuid@1';
-                  readonly nullable: false;
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly status: {
@@ -17159,7 +17159,7 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
               };
               readonly shipmentId: {
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
               };
               readonly status: {

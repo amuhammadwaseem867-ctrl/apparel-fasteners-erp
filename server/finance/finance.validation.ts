@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { toScaledDecimal } from "../core/utils/decimal";
 import { idempotencyKeySchema, optionalTextSchema, quantitySchema } from "../core/validation/quantity";
+import { orderSheetSchema } from "../sales/sales.validation";
 
 const uuid = z.string().uuid();
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use a YYYY-MM-DD date.").refine((value) => !Number.isNaN(Date.parse(`${value}T00:00:00Z`)), "Invalid date.");
@@ -28,6 +29,26 @@ export const invoiceInputSchema = z.object({
   paymentTermsDays: z.number().int().min(0).max(365).default(30),
   notes: optionalTextSchema(1000),
   idempotencyKey: idempotencyKeySchema,
+});
+
+/*
+ * The invoice made first, by hand (D-048): the order sheet with a rate on
+ * every line, sales tax (18%) or not, and payment terms. It becomes the
+ * draft order and its draft invoice under one AF7-YY-NNNN number.
+ */
+export const SALES_TAX_PERCENT = 18;
+
+export const manualInvoiceSchema = z.object({
+  idempotencyKey: idempotencyKeySchema,
+  invoiceType: z.enum(INVOICE_TYPES).default("SALES_TAX"),
+  paymentTermsDays: z.number().int().min(0).max(365).default(30),
+  sheet: orderSheetSchema,
+}).superRefine((input, context) => {
+  input.sheet.lines.forEach((line, index) => {
+    if (!(Number(line.unitPrice) > 0)) {
+      context.addIssue({ code: "custom", path: ["sheet", "lines", index, "unitPrice"], message: `Line ${index + 1}: enter the rate.` });
+    }
+  });
 });
 
 export const invoiceActionSchema = z.object({
@@ -84,6 +105,7 @@ export const receiptQuerySchema = z.object({
 });
 
 export type InvoiceInput = z.infer<typeof invoiceInputSchema>;
+export type ManualInvoiceInput = z.infer<typeof manualInvoiceSchema>;
 export type CreditNoteInput = z.infer<typeof creditNoteInputSchema>;
 export type ReceiptInput = z.infer<typeof receiptInputSchema>;
 export type InvoiceQuery = z.infer<typeof invoiceQuerySchema>;

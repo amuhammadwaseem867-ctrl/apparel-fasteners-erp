@@ -17,7 +17,6 @@ import { CheckCircle2, Circle, Factory, Pencil, PlayCircle, Printer } from "luci
 
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
-import NewInvoiceDialog from "@/components/finance/NewInvoiceDialog";
 import ReceiptDialog from "@/components/finance/ReceiptDialog";
 import PackingListDialog from "@/components/packing/PackingListDialog";
 import InspectionDialog from "@/components/quality/InspectionDialog";
@@ -249,7 +248,7 @@ export default function OrderProfileClient({ id }) {
     return run(`sh:${shipment.id}`, () => apiRequest(`/api/dispatch/shipments/${shipment.id}`, { method: "PATCH", body: JSON.stringify({ action: "deliver", receivedBy }) }));
   };
   const issueInvoice = (invoice) => {
-    if (!window.confirm(`Issue invoice ${invoice.invoiceNumber}? Issued invoices cannot be edited; corrections need a credit note.`)) return;
+    if (!window.confirm(`Approve invoice ${invoice.invoiceNumber}? The order goes to Orders, ready for production. An approved invoice cannot be edited; corrections need a credit note.`)) return;
     return run(`in:${invoice.id}`, () => apiRequest(`/api/finance/invoices/${invoice.id}`, { method: "PATCH", body: JSON.stringify({ action: "issue", reason: "" }) }));
   };
 
@@ -259,6 +258,7 @@ export default function OrderProfileClient({ id }) {
 
   const { order, status, production, inspections, packingLists, shipments, gatePasses, invoices, receipts, money } = trace;
   const notes = trace.notes ?? [];
+  const draftInvoice = invoices.find((row) => row.status === "DRAFT" && !row.shipmentId);
   const addNote = (step, note) => apiRequest(`/api/sales/orders/${encodeURIComponent(id)}/notes`, { method: "POST", body: JSON.stringify({ step, note }) }).then(load);
   const productionByLine = new Map(production.map((item) => [item.salesOrderLineId, item]));
   const linesWithout = order.lines.filter((line) => !production.some((item) => item.salesOrderLineId === line.id && item.status !== "CANCELLED"));
@@ -275,8 +275,10 @@ export default function OrderProfileClient({ id }) {
         </div>
         <div className="inv-header__actions">
           <Link className="inv-link-button" href={`/print/sales-orders/${order.id}`}><Printer size={15} /> Print order sheet</Link>
-          {order.status === "DRAFT" && can("sales:update") && <Link className="inv-link-button" href={`/sales/orders/${order.id}/edit`}><Pencil size={15} /> Edit</Link>}
-          {order.status === "DRAFT" && can("sales:approve") && <Button variant="primary" loading={busy === "approve"} onClick={() => changeStatus("approve")}>Confirm order</Button>}
+          {order.status === "DRAFT" && draftInvoice && can("finance:create") && <Link className="inv-link-button" href={`/finance/invoices/${draftInvoice.id}/edit`}><Pencil size={15} /> Edit</Link>}
+          {order.status === "DRAFT" && draftInvoice && can("finance:create") && <Button variant="primary" loading={busy === `in:${draftInvoice.id}`} onClick={() => issueInvoice(draftInvoice)}>Approve invoice</Button>}
+          {order.status === "DRAFT" && !draftInvoice && can("sales:update") && <Link className="inv-link-button" href={`/sales/orders/${order.id}/edit`}><Pencil size={15} /> Edit</Link>}
+          {order.status === "DRAFT" && !draftInvoice && can("sales:approve") && <Button variant="primary" loading={busy === "approve"} onClick={() => changeStatus("approve")}>Confirm order</Button>}
           {order.status === "APPROVED" && linesWithout.length > 0 && can("production:create") && (
             <Button variant="primary" icon={Factory} loading={busy === "production"} onClick={toProduction}>Send to production</Button>
           )}
@@ -306,7 +308,29 @@ export default function OrderProfileClient({ id }) {
         </Section>
       </div>
 
-      <Section step="1" title="Order sheet" id="step-order">
+      <span id="step-payment" />
+      <Section step="1" title="Invoice & payment" id="step-invoice">
+        {invoices.length === 0 ? <Empty>No invoice for this order.</Empty> : (
+          <ul className="op-list">
+            {invoices.map((row) => (
+              <li key={row.id}>
+                <Link href={`/finance/invoices/${row.id}`}>{row.invoiceNumber}</Link> · {row.status.toLowerCase()} · {formatAmount(row.totalAmount)} · due {day(row.dueDate)} · <Link href={`/print/invoices/${row.id}`}>Print</Link>
+                <span className="op-inline-actions">
+                  {row.status === "DRAFT" && can("finance:create") && <Link className="inv-link-button" href={`/finance/invoices/${row.id}/edit`}>Edit</Link>}
+                  {row.status === "DRAFT" && can("finance:create") && <Button size="sm" variant="primary" loading={busy === `in:${row.id}`} onClick={() => issueInvoice(row)}>Approve invoice</Button>}
+                  {row.status === "ISSUED" && Number(money.outstanding) > 0 && can("finance:create") && <Button size="sm" variant="secondary" onClick={() => setDialog({ type: "receipt", invoiceId: row.id })}>Record payment</Button>}
+                </span>
+                {receipts.filter((receipt) => receipt.invoiceId === row.id).map((receipt) => (
+                  <span key={receipt.id}> · paid {formatAmount(receipt.amount)} on {day(receipt.receiptDate)} ({receipt.receiptNumber})</span>
+                ))}
+              </li>
+            ))}
+          </ul>
+        )}
+        <StepNotes steps={["invoice", "payment"]} notes={notes} onAdd={addNote} />
+      </Section>
+
+      <Section step="2" title="Order sheet" id="step-order">
         <div className="inv-table-wrap">
           <table className="inv-table">
             <thead>
@@ -337,7 +361,7 @@ export default function OrderProfileClient({ id }) {
         <StepNotes steps={["order"]} notes={notes} onAdd={addNote} />
       </Section>
 
-      <Section step="2" title="Production" id="step-production">
+      <Section step="3" title="Production" id="step-production">
         {order.status === "DRAFT" && <Empty>Confirm the order first, then send it to production.</Empty>}
         {order.status === "APPROVED" && production.length === 0 && <Empty>Confirmed. Press “Send to production” to open a production order for each line.</Empty>}
         {production.map((item) => (
@@ -384,7 +408,7 @@ export default function OrderProfileClient({ id }) {
         <StepNotes steps={["production"]} notes={notes} onAdd={addNote} />
       </Section>
 
-      <Section step="3" title="Quality check" id="step-qc">
+      <Section step="4" title="Quality check" id="step-qc">
         {inspections.length === 0 ? <Empty>No inspection yet. Press Record QC at the Quality Check stage above.</Empty> : (
           <ul className="op-list">
             {inspections.map((row) => (
@@ -403,7 +427,7 @@ export default function OrderProfileClient({ id }) {
         <StepNotes steps={["qc"]} notes={notes} onAdd={addNote} />
       </Section>
 
-      <Section step="4" title="Packing" id="step-packing">
+      <Section step="5" title="Packing" id="step-packing">
         {packingLists.length === 0 ? <Empty>No packing list yet.</Empty> : (
           <ul className="op-list">
             {packingLists.map((row) => (
@@ -422,7 +446,7 @@ export default function OrderProfileClient({ id }) {
         <StepNotes steps={["packing"]} notes={notes} onAdd={addNote} />
       </Section>
 
-      <Section step="5" title="Dispatch & gate pass" id="step-dispatch" action={order.status === "APPROVED" && packingLists.some((row) => row.status === "CONFIRMED") && can("dispatch:create") ? <Button size="sm" variant="secondary" onClick={() => setDialog({ type: "ship" })}>New shipment</Button> : null}>
+      <Section step="6" title="Dispatch & gate pass" id="step-dispatch" action={order.status === "APPROVED" && packingLists.some((row) => row.status === "CONFIRMED") && can("dispatch:create") ? <Button size="sm" variant="secondary" onClick={() => setDialog({ type: "ship" })}>New shipment</Button> : null}>
         {shipments.length === 0 ? <Empty>Nothing dispatched yet.</Empty> : (
           <ul className="op-list">
             {shipments.map((row) => (
@@ -441,27 +465,6 @@ export default function OrderProfileClient({ id }) {
           </ul>
         )}
         <StepNotes steps={["dispatch"]} notes={notes} onAdd={addNote} />
-      </Section>
-
-      <span id="step-payment" />
-      <Section step="6" title="Invoice & payment" id="step-invoice" action={shipments.some((row) => row.dispatchedAt && !invoices.some((invoice) => invoice.shipmentId === row.id && invoice.status !== "CANCELLED")) && can("finance:create") ? <Button size="sm" variant="secondary" onClick={() => setDialog({ type: "invoice" })}>Make invoice</Button> : null}>
-        {invoices.length === 0 ? <Empty>No invoice yet. An invoice is made from a dispatched shipment.</Empty> : (
-          <ul className="op-list">
-            {invoices.map((row) => (
-              <li key={row.id}>
-                <Link href={`/finance/invoices/${row.id}`}>{row.invoiceNumber}</Link> · {row.status.toLowerCase()} · {formatAmount(row.totalAmount)} · due {day(row.dueDate)} · <Link href={`/print/invoices/${row.id}`}>Print</Link>
-                <span className="op-inline-actions">
-                  {row.status === "DRAFT" && can("finance:create") && <Button size="sm" variant="primary" loading={busy === `in:${row.id}`} onClick={() => issueInvoice(row)}>Issue invoice</Button>}
-                  {row.status === "ISSUED" && Number(money.outstanding) > 0 && can("finance:create") && <Button size="sm" variant="secondary" onClick={() => setDialog({ type: "receipt", invoiceId: row.id })}>Record payment</Button>}
-                </span>
-                {receipts.filter((receipt) => receipt.invoiceId === row.id).map((receipt) => (
-                  <span key={receipt.id}> · paid {formatAmount(receipt.amount)} on {day(receipt.receiptDate)} ({receipt.receiptNumber})</span>
-                ))}
-              </li>
-            ))}
-          </ul>
-        )}
-        <StepNotes steps={["invoice", "payment"]} notes={notes} onAdd={addNote} />
       </Section>
 
       {dialog?.type === "checks" && (() => {
@@ -505,9 +508,6 @@ export default function OrderProfileClient({ id }) {
           />
         );
       })()}
-      {dialog?.type === "invoice" && (
-        <NewInvoiceDialog salesOrderId={order.id} onClose={() => setDialog(null)} onCreated={() => { setDialog(null); load(); }} />
-      )}
       {dialog?.type === "receipt" && <ReceiptLoader invoiceId={dialog.invoiceId} onClose={() => setDialog(null)} onDone={() => { setDialog(null); load(); }} />}
       {dialog?.type === "ship" && (
         <ShipmentDialog initialSalesOrderId={order.id} onClose={() => setDialog(null)} onCreated={() => { setDialog(null); load(); }} />

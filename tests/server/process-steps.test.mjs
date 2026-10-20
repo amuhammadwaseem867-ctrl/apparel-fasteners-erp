@@ -13,10 +13,12 @@ const production = (doneUpTo, extra = {}) => ({
 const trace = (order, rest = {}) => ({ order: { id: "o1", status: "APPROVED", ...order }, status: "", production: [], packingLists: [], shipments: [], invoices: [], money: { invoiced: 0, paid: 0, outstanding: 0 }, ...rest });
 const states = (flow) => flow.steps.map((step) => step.state[0]).join("");
 
-test("a draft order waits at Order; everything after it is blocked behind it", () => {
-  const flow = processSteps(trace({ status: "DRAFT" }));
-  assert.equal(states(flow), "cwwwwww");
-  assert.match(flow.next.action, /Confirm order/);
+test("a draft order waits at its invoice; everything after it is blocked behind it", () => {
+  const flow = processSteps(trace({ status: "DRAFT" }, { invoices: [{ id: "i1", invoiceNumber: "AF7-26-0001", status: "DRAFT" }] }));
+  assert.equal(states(flow), "cwwwww");
+  assert.equal(flow.steps[0].label, "Invoice", "the invoice comes first (D-048)");
+  assert.match(flow.next.action, /Approve invoice/);
+  assert.match(processSteps(trace({ status: "DRAFT" })).next.action, /Confirm order/, "an order without an invoice is confirmed on its own");
 });
 
 test("a confirmed order is sent to production next; a failed check blocks production", () => {
@@ -24,19 +26,19 @@ test("a confirmed order is sent to production next; a failed check blocks produc
   const failing = production(2);
   failing.stages[2].checks = { points: [{ result: "FAIL" }] };
   const flow = processSteps(trace({}, { production: [failing] }));
-  assert.equal(states(flow), "dcwwwww");
+  assert.equal(states(flow), "dcwwww");
   assert.match(flow.next.blocker, /Failed check at PRD-1/);
 });
 
-test("after Assembling the next step is QC, then packing, dispatch, invoice and payment", () => {
+test("after Assembling the next step is QC, then packing, dispatch and payment", () => {
   assert.match(processSteps(trace({}, { production: [production(6)] })).next.action, /Record QC for PRD-1/);
   assert.match(processSteps(trace({}, { production: [production(7)] })).next.action, /Make the packing list/);
   assert.match(processSteps(trace({}, { production: [production(8)], packingLists: [{ id: "l1", packingNumber: "PKL-1", status: "CONFIRMED" }] })).next.action, /Create the shipment/);
   const delivered = { production: [production(9, { status: "COMPLETED" })], shipments: [{ id: "s1", shipmentNumber: "SHP-1", status: "DISPATCHED", dispatchedAt: "2026-10-18" }] };
-  assert.match(processSteps(trace({}, delivered)).next.action, /Make the invoice/);
-  const invoiced = { ...delivered, invoices: [{ id: "i1", invoiceNumber: "INV-1", status: "ISSUED" }], money: { invoiced: 100, paid: 40, outstanding: 60 } };
+  assert.match(processSteps(trace({}, delivered)).next.blocker, /Waits for an issued invoice/);
+  const invoiced = { ...delivered, invoices: [{ id: "i1", invoiceNumber: "AF7-26-0001", status: "ISSUED" }], money: { invoiced: 100, paid: 40, outstanding: 60 } };
   const flow = processSteps(trace({}, invoiced));
-  assert.equal(states(flow), "ddddddc");
+  assert.equal(states(flow), "dddddc");
   assert.match(flow.next.action, /outstanding 60/);
   const paid = processSteps(trace({}, { ...invoiced, money: { invoiced: 100, paid: 100, outstanding: 0 } }));
   assert.equal(paid.complete, true);
@@ -89,7 +91,7 @@ test("check points: a failure blocks, a missing required check blocks, optional 
 
 test("the top bar names the page from the menu", async () => {
   const { navEntryFor } = await import("../../config/navigation.js");
-  assert.equal(navEntryFor("/sales/orders/new").label, "New order");
+  assert.equal(navEntryFor("/finance/invoices/new").label, "New invoice", "orders are made from invoices (D-048)");
   assert.equal(navEntryFor("/sales/orders/3f1c2a9e-1d2b-4c3d-8e9f-0a1b2c3d4e5f").label, "Orders");
   assert.equal(navEntryFor("/dispatch/gate-passes/abc").parent, "Dispatch");
   assert.equal(navEntryFor("/dashboard").label, "Dashboard");

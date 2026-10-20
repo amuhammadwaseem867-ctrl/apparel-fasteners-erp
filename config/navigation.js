@@ -29,6 +29,18 @@ export const NAV_GROUPS = [
     title: "Home",
     items: [
       { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      // The main entry (D-048): an approved invoice makes the order.
+      {
+        label: "Invoices",
+        href: "/finance/invoices",
+        icon: Receipt,
+        children: [
+          { label: "All invoices", href: "/finance/invoices" },
+          { label: "New invoice", href: "/finance/invoices/new" },
+          { label: "Payments received", href: "/finance/payments" },
+          { label: "Customer balances", href: "/finance/receivables" },
+        ],
+      },
     ],
   },
   {
@@ -40,7 +52,6 @@ export const NAV_GROUPS = [
         icon: ShoppingCart,
         children: [
           { label: "All orders", href: "/sales/orders" },
-          { label: "New order", href: "/sales/orders/new" },
           { label: "Customers", href: "/sales/customers" },
         ],
       },
@@ -63,16 +74,6 @@ export const NAV_GROUPS = [
         children: [
           { label: "Shipments", href: "/dispatch/shipments" },
           { label: "Gate passes", href: "/dispatch/gate-passes" },
-        ],
-      },
-      {
-        label: "6. Invoice & payment",
-        href: "/finance",
-        icon: Receipt,
-        children: [
-          { label: "Invoices", href: "/finance/invoices" },
-          { label: "Payments received", href: "/finance/payments" },
-          { label: "Customer balances", href: "/finance/receivables" },
         ],
       },
     ],

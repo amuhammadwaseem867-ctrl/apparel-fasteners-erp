@@ -2,6 +2,8 @@ import { randomBytes } from "node:crypto";
 
 import { or } from "@prisma/orm-postgres/orm-client";
 
+import { ORDER_SEQUENCE_KEY, formatOrderNumber } from "../../lib/orders/orderNumber.js";
+
 import { db } from "../core/database/client";
 import { AppError } from "../core/errors/app-error";
 import { recordAuditEvent } from "../auth/audit.service";
@@ -239,8 +241,21 @@ async function saveOrderLines(
   }
 }
 
-function newOrderNumber() {
-  return `SO-${new Date().getFullYear()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+/* The next AF7-YY-NNNN number (D-048): one running serial; YY is the order date's year. */
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+export async function allocateOrderNumber(tx: Tx, orderDate: string) {
+  // A number already taken (an order numbered by hand) is skipped, never reused.
+  for (;;) {
+    const [row] = (await tx.query(db.raw.sql`
+      insert into erp_document_sequences (key, "nextValue", "updatedAt") values (${ORDER_SEQUENCE_KEY}, 2, now())
+      on conflict (key) do update
+        set "nextValue" = erp_document_sequences."nextValue" + 1, "updatedAt" = now()
+      returning ("nextValue" - 1)::text as value
+    `.returnsRow({ value: "pg/text@1" }).build())) as unknown as Array<{ value: string }>;
+    const number = formatOrderNumber(orderDate, Number(row.value));
+    if (!(await tx.orm.public.SalesOrder.where({ orderNumber: number }).first())) return number;
+  }
 }
 
 export async function getSalesOrder(id: string) {
@@ -385,7 +400,7 @@ export async function createSalesOrder(input: SalesOrderInput, actorId: string) 
   const products = await validateOrderReferences(input);
   const totals = orderTotals(input);
   const order = await db.transaction(async (tx) => {
-    const orderNumber = input.orderNumber?.trim() || newOrderNumber();
+    const orderNumber = input.orderNumber?.trim() || await allocateOrderNumber(tx, input.orderDate);
     if (await tx.orm.public.SalesOrder.where({ orderNumber }).first()) {
       throw new AppError(`Order number ${orderNumber} is already used.`, { code: "ORDER_NUMBER_EXISTS", status: 409 });
     }

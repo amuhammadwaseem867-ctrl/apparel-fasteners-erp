@@ -34,7 +34,10 @@ import {
   sumAmounts,
   type LineAmounts,
 } from "./finance-rules";
-import type { CreditNoteInput, InvoiceInput, InvoiceQuery, ReceiptInput, ReceiptQuery } from "./finance.validation";
+import { createOrderFromSheet, updateOrderFromSheet } from "../sales/order-sheet.service";
+import { changeSalesOrderStatus, getSalesOrder } from "../sales/sales.service";
+import { SALES_TAX_PERCENT } from "./finance.validation";
+import type { CreditNoteInput, InvoiceInput, InvoiceQuery, ManualInvoiceInput, ReceiptInput, ReceiptQuery } from "./finance.validation";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const dec = (value: unknown) => normalizeDecimalString(String(value ?? "0"));
@@ -175,6 +178,138 @@ export async function createInvoice(input: InvoiceInput, actorId: string) {
   }
 }
 
+/*
+ * The invoice made first, by hand (D-048). The order sheet becomes a draft
+ * sales order with the next AF7-YY-NNNN number, and its draft invoice takes
+ * the same number, with every line at the typed rate and 18% sales tax
+ * (none for a non sales tax invoice). Approving the invoice confirms the
+ * order (changeInvoice); cancelling the draft cancels the order.
+ */
+export async function createManualInvoice(input: ManualInvoiceInput, actorId: string) {
+  const replay = await db.orm.public.Invoice.where({ idempotencyKey: input.idempotencyKey }).first();
+  if (replay) return getInvoice(replay.id);
+
+  const taxPercent = input.invoiceType === "NON_TAX" ? 0 : SALES_TAX_PERCENT;
+  const order = await createOrderFromSheet({
+    ...input.sheet,
+    orderNumber: "",
+    lines: input.sheet.lines.map((line) => ({ ...line, taxPercent })),
+  }, actorId);
+
+  const lines = invoiceLinesFor(order.lines, taxPercent);
+  const totals = sumAmounts(lines);
+
+  try {
+    const id = await db.transaction(async (tx) => {
+      const invoice = await tx.orm.public.Invoice.create({
+        invoiceNumber: order.orderNumber,
+        customerId: order.customerId,
+        salesOrderId: order.id,
+        shipmentId: null,
+        invoiceDate: input.sheet.orderDate,
+        invoiceType: input.invoiceType,
+        dueDate: addDays(input.sheet.orderDate, input.paymentTermsDays),
+        subtotal: totals.grossAmount,
+        discountTotal: totals.discountAmount,
+        taxTotal: totals.taxAmount,
+        totalAmount: totals.lineTotal,
+        notes: input.sheet.notes || null,
+        idempotencyKey: input.idempotencyKey,
+        createdBy: actorId,
+      });
+      for (const line of lines) {
+        await tx.orm.public.InvoiceLine.create({ invoiceId: invoice.id, ...line });
+      }
+      await recordAuditEvent({
+        actorId,
+        action: "INVOICE_CREATED",
+        entityType: "Invoice",
+        entityId: invoice.id,
+        metadata: { invoiceNumber: order.orderNumber, invoiceType: input.invoiceType, salesOrderId: order.id, total: totals.lineTotal, manual: true },
+      }, tx);
+      return invoice.id;
+    });
+    return getInvoice(id);
+  } catch (error) {
+    // The order was made for this invoice only: do not leave it behind.
+    await changeSalesOrderStatus(order.id, "cancel", actorId).catch(() => undefined);
+    if (isUnique(error, "idempotencyKey")) {
+      const original = await db.orm.public.Invoice.where({ idempotencyKey: input.idempotencyKey }).first();
+      if (original) return getInvoice(original.id);
+    }
+    throw error;
+  }
+}
+
+type OrderLineForInvoice = { id: string; productId: string | null; productName: string; unit: string; quantity: unknown; unitPrice: unknown };
+
+function invoiceLinesFor(orderLines: OrderLineForInvoice[], taxPercent: number) {
+  return orderLines.map((line, index) => {
+    const quantity = dec(line.quantity);
+    const unitPrice = dec(line.unitPrice);
+    return {
+      lineNo: index + 1,
+      productId: line.productId,
+      salesOrderLineId: line.id,
+      description: line.productName,
+      unit: line.unit,
+      quantity,
+      unitPrice,
+      discountPercent: 0,
+      taxPercent,
+      ...lineAmounts(quantity, unitPrice, 0, taxPercent),
+    };
+  });
+}
+
+/* Edits a draft invoice made first: its order sheet and its lines change together. */
+export async function updateManualInvoice(id: string, input: ManualInvoiceInput, actorId: string) {
+  if (!UUID.test(id)) invoiceNotFound();
+  const invoice = await db.orm.public.Invoice.where({ id }).first();
+  if (!invoice) invoiceNotFound();
+  if (invoice.shipmentId || invoice.status !== "DRAFT") {
+    throw new AppError("Only a draft invoice can be edited.", { code: "INVOICE_STATUS_CONFLICT", status: 409 });
+  }
+  const taxPercent = input.invoiceType === "NON_TAX" ? 0 : SALES_TAX_PERCENT;
+  const current = await getSalesOrder(invoice.salesOrderId);
+  const order = await updateOrderFromSheet(invoice.salesOrderId, {
+    ...input.sheet,
+    orderNumber: current.orderNumber,
+    lines: input.sheet.lines.map((line) => ({ ...line, taxPercent })),
+  }, actorId);
+  const lines = invoiceLinesFor(order.lines, taxPercent);
+  const totals = sumAmounts(lines);
+
+  await db.transaction(async (tx) => {
+    const locked = await rows<{ status: string }>(tx, db.raw.sql`select status from erp_invoices where id = ${id}::uuid for update`.returnsRow({ status: "pg/text@1" }).build());
+    if (locked[0]?.status !== "DRAFT") throw new AppError("Only a draft invoice can be edited.", { code: "INVOICE_STATUS_CONFLICT", status: 409 });
+    await tx.orm.public.InvoiceLine.where({ invoiceId: id }).deleteAll();
+    for (const line of lines) await tx.orm.public.InvoiceLine.create({ invoiceId: id, ...line });
+    await tx.orm.public.Invoice.where({ id }).update({
+      customerId: order.customerId,
+      invoiceDate: input.sheet.orderDate,
+      invoiceType: input.invoiceType,
+      dueDate: addDays(input.sheet.orderDate, input.paymentTermsDays),
+      subtotal: totals.grossAmount,
+      discountTotal: totals.discountAmount,
+      taxTotal: totals.taxAmount,
+      totalAmount: totals.lineTotal,
+      notes: input.sheet.notes || null,
+    });
+    await recordAuditEvent({ actorId, action: "INVOICE_UPDATED", entityType: "Invoice", entityId: id, metadata: { invoiceNumber: invoice.invoiceNumber, total: totals.lineTotal } }, tx);
+  });
+  return getInvoice(id);
+}
+
+/* An invoice made first carries its order: approving confirms it, cancelling the draft cancels it. */
+async function followOrder(id: string, action: "issue" | "cancel", actorId: string) {
+  const invoice = await db.orm.public.Invoice.where({ id }).first();
+  if (!invoice || invoice.shipmentId) return;
+  const order = await getSalesOrder(invoice.salesOrderId);
+  if (order.status !== "DRAFT") return;
+  await changeSalesOrderStatus(order.id, action === "issue" ? "approve" : "cancel", actorId);
+}
+
 export async function changeInvoice(id: string, action: "issue" | "cancel", reason: string, actorId: string) {
   if (!UUID.test(id)) invoiceNotFound();
   const status = action === "issue" ? "ISSUED" : "CANCELLED";
@@ -212,6 +347,7 @@ export async function changeInvoice(id: string, action: "issue" | "cancel", reas
     }, tx);
   });
 
+  await followOrder(id, action, actorId);
   return getInvoice(id);
 }
 
@@ -491,7 +627,7 @@ export async function getInvoice(id: string, today = new Date().toISOString().sl
     db.orm.public.CustomerReceipt.where({ invoiceId: id }).orderBy((receipt) => receipt.createdAt.asc()).all(),
     db.orm.public.Customer.where({ id: invoice.customerId }).first(),
     db.orm.public.SalesOrder.where({ id: invoice.salesOrderId }).first(),
-    db.orm.public.Shipment.where({ id: invoice.shipmentId }).first(),
+    invoice.shipmentId ? db.orm.public.Shipment.where({ id: invoice.shipmentId }).first() : null,
     balances(db.runtime(), id),
     creditedByLine(db.runtime(), id),
   ]);
@@ -573,7 +709,7 @@ export async function listInvoices(filters: InvoiceQuery, today = new Date().toI
       from erp_invoices i
       join erp_customers c on c.id = i."customerId"
       join erp_sales_orders so on so.id = i."salesOrderId"
-      join erp_shipments s on s.id = i."shipmentId"
+      left join erp_shipments s on s.id = i."shipmentId"
       left join (select "invoiceId", sum("totalAmount") as total from erp_credit_notes group by "invoiceId") cn on cn."invoiceId" = i.id
       left join (select "invoiceId", sum(amount) as total from erp_customer_receipts where status = 'POSTED' group by "invoiceId") r on r."invoiceId" = i.id
     ) x
@@ -608,23 +744,6 @@ export async function listInvoices(filters: InvoiceQuery, today = new Date().toI
     pageSize: filters.pageSize,
     hasMore: result.length > filters.pageSize,
   };
-}
-
-/* Dispatched or delivered shipments that have no active invoice yet. */
-export async function listUninvoicedShipments() {
-  const result = await rows<{ id: string; shipmentNumber: string; status: string; dispatchedAt: string; salesOrderId: string; salesOrderNumber: string; customerName: string; lineCount: string }>(db.runtime(), db.raw.sql`
-    select s.id::text as id, s."shipmentNumber", s.status, coalesce(s."dispatchedAt"::text, '') as "dispatchedAt",
-      so.id::text as "salesOrderId", so."orderNumber" as "salesOrderNumber", c.name as "customerName",
-      (select count(*) from erp_shipment_lines l where l."shipmentId" = s.id)::text as "lineCount"
-    from erp_shipments s
-    join erp_sales_orders so on so.id = s."salesOrderId"
-    join erp_customers c on c.id = s."customerId"
-    where s.status in ('DISPATCHED', 'DELIVERED')
-      and not exists (select 1 from erp_invoices i where i."shipmentId" = s.id and i.status <> 'CANCELLED')
-    order by s."dispatchedAt" desc nulls last
-    limit 200
-  `.returnsRow({ id: "pg/text@1", shipmentNumber: "pg/text@1", status: "pg/text@1", dispatchedAt: "pg/text@1", salesOrderId: "pg/text@1", salesOrderNumber: "pg/text@1", customerName: "pg/text@1", lineCount: "pg/text@1" }).build());
-  return result.map((row) => ({ ...row, lineCount: Number(row.lineCount) }));
 }
 
 /* ------------------------------------------------------------------ */
@@ -671,14 +790,12 @@ export async function getReceivables(today = new Date().toISOString().slice(0, 1
 /* Counts and amounts for the finance overview. */
 export async function getFinanceSummary(today = new Date().toISOString().slice(0, 10)) {
   const receivables = await getReceivables(today);
-  const [counts] = await rows<{ drafts: string; uninvoiced: string; received30: string; issued30: string }>(db.runtime(), db.raw.sql`
+  const [counts] = await rows<{ drafts: string; received30: string; issued30: string }>(db.runtime(), db.raw.sql`
     select
       (select count(*) from erp_invoices where status = 'DRAFT')::text as drafts,
-      (select count(*) from erp_shipments s where s.status in ('DISPATCHED', 'DELIVERED')
-        and not exists (select 1 from erp_invoices i where i."shipmentId" = s.id and i.status <> 'CANCELLED'))::text as uninvoiced,
       (select coalesce(sum(amount), 0) from erp_customer_receipts where status = 'POSTED' and "receiptDate" > ${addDays(today, -30)} and "receiptDate" <= ${today})::text as received30,
       (select coalesce(sum("totalAmount"), 0) from erp_invoices where status = 'ISSUED' and "invoiceDate" > ${addDays(today, -30)} and "invoiceDate" <= ${today})::text as issued30
-  `.returnsRow({ drafts: "pg/text@1", uninvoiced: "pg/text@1", received30: "pg/text@1", issued30: "pg/text@1" }).build());
+  `.returnsRow({ drafts: "pg/text@1", received30: "pg/text@1", issued30: "pg/text@1" }).build());
   const overdue = AGING_BUCKETS.filter((bucket) => bucket !== "current")
     .reduce((sum, bucket) => addMoney(sum, receivables.totals.buckets[bucket]), "0.00");
 
@@ -688,7 +805,6 @@ export async function getFinanceSummary(today = new Date().toISOString().slice(0
     overdue,
     openInvoices: receivables.totals.invoices,
     draftInvoices: Number(counts.drafts),
-    uninvoicedShipments: Number(counts.uninvoiced),
     receivedLast30Days: cash(counts.received30),
     invoicedLast30Days: cash(counts.issued30),
   };

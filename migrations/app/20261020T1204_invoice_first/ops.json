@@ -1,0 +1,45 @@
+[
+  {
+    "id": "alterNullability.dropNotNull.erp_invoices.shipmentId",
+    "label": "Drop NOT NULL on \"erp_invoices\".\"shipmentId\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "shipmentId",
+        "table": "erp_invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"shipmentId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_invoices",
+          "shipmentId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop NOT NULL on \"shipmentId\"",
+        "sql": "ALTER TABLE \"public\".\"erp_invoices\" ALTER COLUMN \"shipmentId\" DROP NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"shipmentId\" is nullable",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_invoices",
+          "shipmentId",
+          "YES"
+        ]
+      }
+    ]
+  }
+]

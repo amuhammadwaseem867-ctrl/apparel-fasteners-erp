@@ -84,3 +84,22 @@
 .os-lines td:nth-child(7) input {
   min-width: 130px;
 }
+
+/* Invoice totals under the lines (D-048). */
+.os-totals {
+  margin: 12px 0 0 auto;
+  min-width: 280px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.os-totals th,
+.os-totals td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--inv-row, #eef1f5);
+  text-align: left;
+}
+
+.os-totals td { text-align: right; font-variant-numeric: tabular-nums; }
+.os-totals tr:last-child th,
+.os-totals tr:last-child td { background: #eef2f7; }

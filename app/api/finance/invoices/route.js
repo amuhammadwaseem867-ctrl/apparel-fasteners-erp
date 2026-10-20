@@ -1,7 +1,7 @@
-import { authorizeRequest, parseRequestBody } from "@/server/core/api/request";
+import { authorizeRequest } from "@/server/core/api/request";
 import { parseQuery, runRoute } from "@/server/core/api/route";
-import { createInvoice, listInvoices } from "@/server/finance/finance.service";
-import { invoiceInputSchema, invoiceQuerySchema } from "@/server/finance/finance.validation";
+import { listInvoices } from "@/server/finance/finance.service";
+import { invoiceQuerySchema } from "@/server/finance/finance.validation";
 
 export function GET(request) {
   return runRoute(request, async () => {
@@ -10,11 +10,4 @@ export function GET(request) {
   });
 }
 
-/* Creates a DRAFT invoice for a dispatched shipment. */
-export function POST(request) {
-  return runRoute(request, async () => {
-    const user = await authorizeRequest(request, "finance:create");
-    const input = await parseRequestBody(request, invoiceInputSchema);
-    return { data: await createInvoice(input, user.id), status: 201 };
-  });
-}
+/* Invoices are made first, by hand: POST /api/finance/invoices/manual (D-048). */

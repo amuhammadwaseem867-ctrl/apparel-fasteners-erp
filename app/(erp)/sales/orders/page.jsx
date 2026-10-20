@@ -202,9 +202,9 @@ export default function OrdersPage() {
 
           <Link
             className="order-list__primary"
-            href="/sales/orders/new"
+            href="/finance/invoices/new"
           >
-            + New sales order
+            + New invoice
           </Link>
         </div>
       </header>

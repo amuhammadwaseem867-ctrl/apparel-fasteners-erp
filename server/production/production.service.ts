@@ -91,6 +91,22 @@ async function logEvent(
  * Inserts a validated production order with its nine stages inside the
  * caller's transaction (used directly by production plans, D-034).
  */
+/*
+ * A production order made for an order line carries the order's own number
+ * (D-048): AF7-26-0001-1 is line 1 of order AF7-26-0001; a line sent again
+ * after a cancellation becomes AF7-26-0001-1.2. Other production orders
+ * (stock, plans) keep their PRD serial.
+ */
+async function productionNumber(tx: Tx, input: ProductionOrderInput) {
+  if (!input.salesOrderLineId) return allocateDocumentNumber(tx, "PRD");
+  const line = await tx.orm.public.SalesOrderLine.where({ id: input.salesOrderLineId }).first();
+  const sale = line ? await tx.orm.public.SalesOrder.where({ id: line.salesOrderId }).first() : null;
+  if (!line?.lineNo || !sale) return allocateDocumentNumber(tx, "PRD");
+  const base = `${sale.orderNumber}-${line.lineNo}`;
+  const earlier = await tx.orm.public.ProductionOrder.where({ salesOrderLineId: line.id }).all();
+  return earlier.length === 0 ? base : `${base}.${earlier.length + 1}`;
+}
+
 export async function insertProductionOrderInTransaction(
   tx: Tx,
   product: { id: string; unit: string },
@@ -98,7 +114,7 @@ export async function insertProductionOrderInTransaction(
   actorId: string,
 ) {
   const bom = await tx.orm.public.Bom.where({ productId: product.id, isActive: true }).first();
-  const orderNumber = await allocateDocumentNumber(tx, "PRD");
+  const orderNumber = await productionNumber(tx, input);
   const order = await tx.orm.public.ProductionOrder.create({
     orderNumber,
     productId: product.id,

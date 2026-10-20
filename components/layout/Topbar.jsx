@@ -44,14 +44,13 @@ import "./Topbar.css";
 
 /* The "New" menu: each action shows only with the permission it needs. */
 const QUICK_ACTIONS = [
-  { label: "New order", description: "Order sheet for a customer", href: "/sales/orders/new", icon: ShoppingCart, permission: "sales:create" },
+  { label: "New invoice", description: "Order sheet with rates; approving it makes the order", href: "/finance/invoices/new", icon: ShoppingCart, permission: "finance:create" },
   { label: "New customer", description: "Name, address, contact, NTN / STRN", href: "/sales/customers", icon: UserPlus, permission: "customers:create" },
   { label: "Issue raw material", description: "Material to a production order", href: "/production/material-issue", icon: Factory, permission: "inventory:create" },
   { label: "Record QC", description: "Inspection for a production order", href: "/quality/inspections", icon: ClipboardCheck, permission: "quality:create" },
   { label: "Packing list", description: "Cartons, bags and weights", href: "/packing/orders", icon: PackageCheck, permission: "production:update" },
   { label: "Shipment", description: "Dispatch packed goods", href: "/dispatch/shipments", icon: Truck, permission: "dispatch:create" },
   { label: "Gate pass", description: "Inward or outward", href: "/dispatch/gate-passes", icon: FileText, permission: "inventory:create" },
-  { label: "Invoice", description: "From a dispatched shipment", href: "/finance/invoices", icon: FileText, permission: "finance:create" },
   { label: "Purchase order", description: "Raw material from a supplier", href: "/procurement/purchase-orders", icon: Package, permission: "purchasing:create" },
 ];
 
@@ -65,7 +64,7 @@ const RECORD_SEARCHES = [
   { group: "Items", permission: "products:view", path: (q) => `/api/products?search=${q}&pageSize=5`, rows: (data) => data.products, show: (row) => ({ title: row.sku, text: row.name, href: `/inventory/item-master/${encodeURIComponent(row.id)}` }), icon: Package },
 ];
 
-const QUICK_PAGES = ["/dashboard", "/sales/orders", "/sales/orders/new", "/production/orders", "/quality/inspections", "/packing/orders", "/dispatch/shipments", "/finance/invoices"];
+const QUICK_PAGES = ["/dashboard", "/finance/invoices", "/finance/invoices/new", "/sales/orders", "/production/orders", "/quality/inspections", "/packing/orders", "/dispatch/shipments"];
 
 function getInitials(name = "") {
   const parts = name.trim().split(/\s+/).filter(Boolean);
