@@ -131,12 +131,15 @@ function CatalogCoverage() {
 }
 
 function ItemList() {
+  const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
-  const products = useApiData(`/api/products${toQuery({ search, status, page, pageSize: 25 })}`);
+  const products = useApiData(`/api/products${toQuery({ search, status, category, page, pageSize: 25 })}`);
+  const categories = useApiData("/api/products/categories");
+  const categoryList = (categories.data?.categories ?? []).filter((entry) => entry.products > 0);
   const summary = useApiData("/api/inventory/summary?include=items");
   const stockById = useMemo(
     () => new Map((summary.data?.items ?? []).map((item) => [item.productId, item])),
@@ -164,6 +167,15 @@ function ItemList() {
 
   return (
     <section className="inv-card">
+      <div className="inv-chips" role="tablist" aria-label="Category">
+        {[{ name: "", products: null }, ...categoryList].map((entry) => (
+          <button key={entry.name || "all"} type="button" role="tab" aria-selected={category === entry.name}
+            className={`inv-chip${category === entry.name ? " is-active" : ""}`}
+            onClick={() => { setCategory(entry.name); setPage(1); }}>
+            {entry.name || "All"}{entry.products !== null && <small>{entry.products}</small>}
+          </button>
+        ))}
+      </div>
       <div className="inv-toolbar">
         <div className="inv-field">
           <label htmlFor="im-search">Search</label>
@@ -185,7 +197,7 @@ function ItemList() {
       ) : products.loading && !products.data ? (
         <p className="inv-state" role="status">Loading items…</p>
       ) : rows.length === 0 ? (
-        <p className="inv-state">{search || status ? "No items match these filters." : "No items yet. Create one, or start from the required catalogue."}</p>
+        <p className="inv-state">{search || status || category ? "No items match these filters." : "No items yet. Create one, or start from the required catalogue."}</p>
       ) : (
         <div className="inv-table-wrap">
           <table className="inv-table">

@@ -1344,3 +1344,18 @@ navigation.
   printed document columns grow to their longest word instead of
   breaking it. All table text is regular weight (500), headers and
   totals included. One rule in `app/globals.css` covers every table.
+
+## D-046 Item categories and typed locations (2026-10-20)
+
+- Items (item master) has category buttons, each with its item count,
+  from the categories in use. The item form suggests existing categories
+  and product types; a new one can still be typed.
+- Receiving, issuing and returning take a typed location ("Shelf 3 Row
+  2") instead of a pick list of pre-made locations. Existing locations
+  are suggested; any other text becomes a location in AF7's warehouse
+  (MAIN, else the first active one), matched by name or code, so the same
+  name never makes two. An inactive location typed again is made active.
+  The whole transaction is checked before a location is created, so a
+  rejected transaction leaves nothing behind. Transfers still pick from
+  existing locations.
+- The stock list and stock card show the location's name as typed.

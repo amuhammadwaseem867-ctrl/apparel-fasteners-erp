@@ -113,6 +113,25 @@ export const stockDocumentInputSchema = z
     }
   });
 
+/*
+ * What the stock dialog sends: each line names its location either by id
+ * or by a typed name (e.g. "Shelf 3 Row 2"). Typed names are resolved to a
+ * location (created when new) and the result is checked with
+ * stockDocumentInputSchema.
+ */
+export const stockDocumentRequestSchema = z.object({
+  lines: z.array(z.object({
+    locationId: uuid.optional(),
+    locationName: z.string().trim().max(60).optional(),
+  }).passthrough()).min(1).max(200),
+}).passthrough().superRefine((input, context) => {
+  input.lines.forEach((line, index) => {
+    if (!line.locationId && !line.locationName) {
+      context.addIssue({ code: "custom", path: ["lines", index, "locationName"], message: "Enter a location." });
+    }
+  });
+});
+
 export const reservationInputSchema = z.object({
   idempotencyKey,
   productId: uuid,

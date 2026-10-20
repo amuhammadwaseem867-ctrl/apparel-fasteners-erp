@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { apiRequest } from "@/lib/api/client";
+import useApiData from "@/lib/inventory/useApiData";
 import { suggestSku } from "@/lib/inventory/sku";
 import { UNITS } from "@/config/items";
 import "./ProductEditor.css";
@@ -40,6 +41,10 @@ const FIELDS = [
   ["unitPrice", "Unit price", "number", true],
 ];
 
+// Fields that suggest the values already in use (a new value can still be typed).
+const LISTS = { category: "pe-categories", productType: "pe-types" };
+const PRODUCT_TYPES = ["Raw Material", "Finished Good", "Semi-Finished", "Packing Material", "Consumable"];
+
 // Item master specification: each distinct combination is its own SKU.
 const SPEC_FIELDS = [
   ["size", "Size", "e.g. #5, #4.5, 620 SS"],
@@ -55,6 +60,7 @@ const LOGO_OPTIONS = ["", "Plain", "Logo", "Standard"];
 export default function ProductEditor({ productId, initial }) {
   const router = useRouter();
   const editing = Boolean(productId);
+  const categories = useApiData("/api/products/categories");
   const [form, setForm] = useState(() => ({ ...EMPTY_PRODUCT, ...initial }));
   const [loading, setLoading] = useState(editing);
   const [saving, setSaving] = useState(false);
@@ -154,6 +160,12 @@ export default function ProductEditor({ productId, initial }) {
       </header>
       {error && <div className="product-editor__error" role="alert">{error}</div>}
       <form className="product-editor__form" onSubmit={submit}>
+        <datalist id="pe-categories">
+          {(categories.data?.categories ?? []).map((category) => <option key={category.name} value={category.name} />)}
+        </datalist>
+        <datalist id="pe-types">
+          {PRODUCT_TYPES.map((type) => <option key={type} value={type} />)}
+        </datalist>
         <div className="product-editor__grid">
           {FIELDS.map(([key, label, type, required]) => (
             <label key={key}>
@@ -161,6 +173,7 @@ export default function ProductEditor({ productId, initial }) {
               <input
                 required={required}
                 type={type}
+                list={LISTS[key]}
                 min={type === "number" ? "0" : undefined}
                 step={type === "number" ? "any" : undefined}
                 value={form[key]}

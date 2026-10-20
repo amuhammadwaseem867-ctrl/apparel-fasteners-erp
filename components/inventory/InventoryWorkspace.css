@@ -1013,3 +1013,34 @@
 .inv-details { margin: 4px 0 12px; border: 1px solid var(--inv-border); border-radius: 10px; padding: 8px 12px; }
 .inv-details summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--inv-secondary); }
 .inv-details[open] summary { margin-bottom: 10px; }
+
+/* Category buttons above a list (Items, Raw material stock). */
+.inv-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px 16px 0;
+}
+
+.inv-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--inv-border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--inv-text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.inv-chip small {
+  color: var(--inv-muted);
+  font-size: 11px;
+}
+
+.inv-chip:hover { border-color: var(--inv-navy); }
+.inv-chip.is-active { border-color: var(--inv-navy); background: var(--inv-navy); color: #fff; }
+.inv-chip.is-active small { color: rgba(255, 255, 255, 0.75); }

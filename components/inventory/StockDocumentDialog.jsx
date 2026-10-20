@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import ItemPicker from "@/components/inventory/ItemPicker";
+import LocationInput from "@/components/inventory/LocationInput";
 import LocationSelect from "@/components/inventory/LocationSelect";
 import { apiRequest } from "@/lib/api/client";
 import { STOCK_DOCUMENT_TYPES } from "@/server/inventory/stock-rules";
@@ -27,7 +28,7 @@ function newKey() {
 }
 
 function emptyLine() {
-  return { key: newKey(), item: null, locationId: "", toLocationId: "", quantity: "" };
+  return { key: newKey(), item: null, locationId: "", locationText: undefined, toLocationId: "", quantity: "" };
 }
 
 const QUANTITY_LABELS = {
@@ -64,7 +65,7 @@ export default function StockDocumentDialog({
   const needsReason = Boolean(rule?.requiresReason);
 
   const ready = useMemo(() => lines.every((line) =>
-    line.item && line.locationId && line.quantity !== "" &&
+    line.item && (line.locationId || line.locationText?.trim()) && line.quantity !== "" &&
     (!isTransfer || line.toLocationId)) && (!needsReason || reason.trim()),
   [lines, isTransfer, needsReason, reason]);
 
@@ -92,7 +93,7 @@ export default function StockDocumentDialog({
           ...(source ? { sourceType: source.sourceType, sourceId: source.sourceId } : {}),
           lines: lines.map((line) => ({
             productId: line.item.id,
-            locationId: line.locationId,
+            ...(line.locationId ? { locationId: line.locationId } : { locationName: line.locationText.trim() }),
             ...(isTransfer ? { toLocationId: line.toLocationId } : {}),
             quantity: Number(line.quantity),
           })),
@@ -155,13 +156,23 @@ export default function StockDocumentDialog({
               value={line.item}
               onChange={(item) => updateLine(line.key, { item })}
             />
-            <LocationSelect
-              required
-              label={isTransfer ? "From location" : "Location"}
-              locations={locations}
-              value={line.locationId}
-              onChange={(locationId) => updateLine(line.key, { locationId })}
-            />
+            {isTransfer ? (
+              <LocationSelect
+                required
+                label="From location"
+                locations={locations}
+                value={line.locationId}
+                onChange={(locationId) => updateLine(line.key, { locationId })}
+              />
+            ) : (
+              <LocationInput
+                required
+                locations={locations}
+                locationId={line.locationId}
+                text={line.locationText}
+                onChange={(patch) => updateLine(line.key, patch)}
+              />
+            )}
             {isTransfer && (
               <LocationSelect
                 required

@@ -123,9 +123,9 @@ export default function RawMaterialPage() {
       )}
 
       <section className="inv-card">
-        <div className="rm-chips" role="tablist" aria-label="Category">
+        <div className="inv-chips" role="tablist" aria-label="Category">
           {["", ...(data.data?.categories ?? [])].map((value) => (
-            <button key={value || "all"} type="button" role="tab" aria-selected={category === value} className={`rm-chip${category === value ? " is-active" : ""}`} onClick={() => setCategory(value)}>
+            <button key={value || "all"} type="button" role="tab" aria-selected={category === value} className={`inv-chip${category === value ? " is-active" : ""}`} onClick={() => setCategory(value)}>
               {value || "All"}
             </button>
           ))}

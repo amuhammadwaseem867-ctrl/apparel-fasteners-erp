@@ -25,27 +25,6 @@
 
 .rm-kpi.is-active { outline: 2px solid var(--inv-navy); outline-offset: -2px; }
 
-.rm-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 16px 16px 0;
-}
-
-.rm-chip {
-  padding: 7px 14px;
-  border: 1px solid var(--inv-border);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--inv-text);
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.rm-chip:hover { border-color: var(--inv-navy); }
-.rm-chip.is-active { border-color: var(--inv-navy); background: var(--inv-navy); color: #fff; }
-
 .rm-toggle {
   display: inline-flex;
   align-items: center;

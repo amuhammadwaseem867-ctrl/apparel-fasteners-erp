@@ -301,6 +301,40 @@ export async function createLocation(input: LocationInput, actorId: string) {
   });
 }
 
+/* A typed location name as a location code: "Shelf 3 / Row 2" -> "SHELF-3-ROW-2". */
+export function locationCodeFor(name: string) {
+  return name.toUpperCase().replace(/[^A-Z0-9._]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30) || "LOCATION";
+}
+
+/*
+ * Finds the location a user typed, in AF7's warehouse (MAIN, else the first
+ * active one; created when there is none), matching its code or name. A new
+ * name becomes a new location; an inactive one is made active again. No
+ * location has to be set up before stock can be received into it.
+ */
+export async function resolveTypedLocation(name: string, actorId: string) {
+  const code = locationCodeFor(name);
+  const warehouses = await db.orm.public.Warehouse.where({ status: "ACTIVE" }).orderBy((row) => row.createdAt.asc()).all();
+  const warehouse = warehouses.find((row) => row.code === "MAIN") ?? warehouses[0]
+    ?? await createWarehouse({ code: "MAIN", name: "AF7 Main Warehouse", warehouseType: "GENERAL", address: "" }, actorId);
+
+  const find = async () => (await db.orm.public.StorageLocation.where({ warehouseId: warehouse.id }).all())
+    .find((row) => row.code === code || row.name.trim().toLowerCase() === name.trim().toLowerCase());
+
+  let location = await find();
+  if (!location) {
+    try {
+      location = await createLocation({ warehouseId: warehouse.id, code, name: name.trim() }, actorId);
+    } catch (error) {
+      // Created by a parallel request a moment ago: use that one.
+      location = await find();
+      if (!location) throw error;
+    }
+  }
+  if (location.status !== "ACTIVE") await setLocationStatus(location.id, "ACTIVE", actorId);
+  return location.id;
+}
+
 export async function updateLocation(id: string, name: string, actorId: string) {
   const current = await getLocation(id);
 

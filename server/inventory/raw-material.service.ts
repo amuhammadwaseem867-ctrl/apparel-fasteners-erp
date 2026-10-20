@@ -154,10 +154,9 @@ export async function getRawMaterialStock(filters: RawMaterialQuery) {
     from erp_products p
     left join (
       select sb."productId", sum(sb."onHand") as "onHand", sum(sb.reserved) as reserved, sum(sb."qualityHold") as "qualityHold",
-        string_agg(case when sb."onHand" > 0 then w.code || '/' || l.code end, ', ' order by w.code, l.code) as locations
+        string_agg(case when sb."onHand" > 0 then l.name end, ', ' order by l.name) as locations
       from erp_stock_balances sb
       join erp_storage_locations l on l.id = sb."locationId"
-      join erp_warehouses w on w.id = l."warehouseId"
       group by sb."productId"
     ) b on b."productId" = p.id
     left join (
@@ -246,12 +245,11 @@ export async function getItemStockCard(productId: string, range: { dateFrom?: st
 
   const rows = (await db.runtime().query(db.raw.sql`
     select m.id::text as id, m."createdAt"::text as "createdAt", d.id::text as "documentId", d."documentNumber",
-      m."movementType", d.reference, d.reason, w.code || '/' || l.code as location,
+      m."movementType", d.reference, d.reason, l.name as location,
       m."quantityDelta"::text as "quantityDelta", u.name as "userName"
     from erp_stock_movements m
     join erp_stock_documents d on d.id = m."documentId"
     join erp_storage_locations l on l.id = m."locationId"
-    join erp_warehouses w on w.id = l."warehouseId"
     left join erp_users u on u.id = m."createdBy"
     where m."productId" = ${productId}::uuid and m.bucket = 'ON_HAND'
       and m."createdAt" >= coalesce(nullif(${from}, '')::timestamptz, '-infinity')
