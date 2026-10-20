@@ -147,9 +147,6 @@
   white-space: nowrap;
 }
 
-.af7__table--compact .sku {
-  overflow-wrap: anywhere;
-}
 
 .af7__table tfoot td {
   font-weight: 700;
@@ -331,14 +328,17 @@
   letter-spacing: 0.01em;
 }
 
-/* Tables keep the column widths set per document and wrap long text inside cells. */
+/*
+ * Column widths set per document are a starting point: a column grows to
+ * its longest word so no word is ever cut, and text wraps between words.
+ */
 .af7__table {
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 .af7__table th,
 .af7__table td {
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
   word-break: normal;
 }
 

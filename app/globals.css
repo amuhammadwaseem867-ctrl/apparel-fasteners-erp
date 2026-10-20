@@ -114,3 +114,21 @@ svg {
 ::-webkit-scrollbar-thumb:hover {
   background: #aeb7c0;
 }
+/*
+ * Tables everywhere, on screen and in print (D-045): a word is never cut in
+ * the middle; text wraps only between words (or after a dash in a code).
+ * All table text is regular weight, headers and totals included.
+ */
+table th,
+table td {
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  hyphens: manual !important;
+}
+
+table th,
+table td,
+table th *,
+table td * {
+  font-weight: 500 !important;
+}

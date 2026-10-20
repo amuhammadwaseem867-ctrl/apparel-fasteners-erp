@@ -1336,3 +1336,11 @@ navigation.
 - Each item has a stock card: opening balance, every in / out with
   document, reference, location and user, running balance and closing
   balance for any dates, on screen and printed. The stock list prints too.
+
+## D-045 Table text (2026-10-20)
+
+- In every table, on screen and in print, a word is never cut in the
+  middle: text wraps only between words (or after a dash in a code), and
+  printed document columns grow to their longest word instead of
+  breaking it. All table text is regular weight (500), headers and
+  totals included. One rule in `app/globals.css` covers every table.

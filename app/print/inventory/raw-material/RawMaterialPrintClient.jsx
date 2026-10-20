@@ -45,7 +45,7 @@ export default function RawMaterialPrintClient({ params }) {
             <tbody>
               {data.items.map((item) => (
                 <tr key={item.id}>
-                  <td className="sku">{item.sku}</td>
+                  <td>{item.sku}</td>
                   <td>{item.size ?? ""}</td>
                   <td>{[item.itemType, item.material].filter(Boolean).join(" · ")}</td>
                   <td>{item.finish || item.color || ""}</td>
