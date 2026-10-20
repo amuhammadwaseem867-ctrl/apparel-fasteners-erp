@@ -31,7 +31,7 @@ export const NAV_GROUPS = [
       { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
       // The main entry (D-048): an approved invoice makes the order.
       {
-        label: "Invoices",
+        label: "1. Invoices",
         href: "/finance/invoices",
         icon: Receipt,
         children: [
@@ -47,7 +47,7 @@ export const NAV_GROUPS = [
     title: "Order to delivery",
     items: [
       {
-        label: "1. Orders",
+        label: "2. Orders",
         href: "/sales/orders",
         icon: ShoppingCart,
         children: [
@@ -56,7 +56,7 @@ export const NAV_GROUPS = [
         ],
       },
       {
-        label: "2. Production",
+        label: "3. Production",
         href: "/production",
         icon: Factory,
         children: [
@@ -65,10 +65,10 @@ export const NAV_GROUPS = [
           { label: "Issue raw material", href: "/production/material-issue" },
         ],
       },
-      { label: "3. Quality check", href: "/quality/inspections", icon: ClipboardCheck },
-      { label: "4. Packing", href: "/packing/orders", icon: Package },
+      { label: "4. Quality check", href: "/quality/inspections", icon: ClipboardCheck },
+      { label: "5. Packing", href: "/packing/orders", icon: Package },
       {
-        label: "5. Dispatch",
+        label: "6. Dispatch",
         href: "/dispatch",
         icon: Truck,
         children: [

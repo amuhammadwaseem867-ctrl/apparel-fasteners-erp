@@ -1,8 +1,9 @@
 /*
- * The AF7 order flow as an animated graphic: seven steps from order to
+ * The AF7 order flow as an animated graphic: seven steps from invoice to
  * payment, joined by a line that a light pulse travels along, lighting
- * each step in turn. Decorative only (aria-hidden); the same steps the
- * ERP's process bar uses. Motion stops for users who prefer less motion.
+ * each step in turn. Decorative only (aria-hidden); the same order as the
+ * ERP's process bar: the invoice comes first and makes the order (D-048).
+ * Motion stops for users who prefer less motion.
  */
 
 import { ClipboardCheck, Factory, FileText, PackageCheck, ShoppingCart, Truck, Wallet } from "lucide-react";
@@ -10,12 +11,12 @@ import { ClipboardCheck, Factory, FileText, PackageCheck, ShoppingCart, Truck, W
 import "./ProcessFlow.css";
 
 export const FLOW_STEPS = [
-  { icon: ShoppingCart, label: "Order", text: "Order sheet, PO, specification" },
+  { icon: FileText, label: "Invoice", text: "Order sheet with rates, GST 18% or none" },
+  { icon: ShoppingCart, label: "Order", text: "Approved invoice, AF7-26-0001" },
   { icon: Factory, label: "Production", text: "Nine stages, kg to pieces" },
-  { icon: ClipboardCheck, label: "Quality", text: "Check points at every stage" },
+  { icon: ClipboardCheck, label: "Quality", text: "Inspection and check points" },
   { icon: PackageCheck, label: "Packing", text: "Cartons, bags, weights" },
   { icon: Truck, label: "Dispatch", text: "Shipment and gate pass" },
-  { icon: FileText, label: "Invoice", text: "Sales tax invoice, GST" },
   { icon: Wallet, label: "Payment", text: "Receipts and balances" },
 ];
 

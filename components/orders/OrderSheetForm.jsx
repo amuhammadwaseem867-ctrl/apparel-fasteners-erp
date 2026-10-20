@@ -127,7 +127,7 @@ function SheetEditor({ mode, orderId, invoiceTerms = null, initial, orderCustome
     <main className="inv-page">
       <header className="inv-header">
         <div>
-          <p className="inv-header__eyebrow">{asInvoice ? "Invoices" : "1. Orders"}</p>
+          <p className="inv-header__eyebrow">{asInvoice ? "1. Invoices" : "2. Orders"}</p>
           <h1>{asInvoice ? (editing ? `Edit invoice ${header.orderNumber}` : "New invoice") : editing ? `Edit order ${header.orderNumber}` : "New order"}</h1>
           <p>{asInvoice
             ? "Fill the order sheet with the rate for every line. Approving the invoice makes the order; the production copy is printed without rates."

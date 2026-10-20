@@ -33,24 +33,25 @@ import ProcessFlow from "@/components/brand/ProcessFlow";
 
 import "./welcome.css";
 
-const HEADLINE = [["From order"], ["to payment,"], ["one flow.", true]];
+const HEADLINE = [["From invoice"], ["to payment,"], ["one flow.", true]];
 
+// The invoice comes first and makes the order (D-048).
 const MODULES = [
-  { icon: ShoppingCart, title: "Orders", text: "Order sheet in your sequence: product, finish, type, tape colour, slider." },
+  { icon: Landmark, title: "Invoice", text: "Order sheet with rates, sales tax 18% or none; approving it makes the order." },
+  { icon: ShoppingCart, title: "Orders", text: "One number for everything: AF7-26-0001, printed without rates for production." },
   { icon: Factory, title: "Production", text: "Nine stages with start, complete and a note at each one." },
   { icon: ClipboardCheck, title: "Quality", text: "Inspections, approvals and check points per stage." },
-  { icon: PackageCheck, title: "Packing", text: "Packing lists with cartons, bags and net / gross weight." },
+  { icon: PackageCheck, title: "Packing", text: "One packing list per order with cartons, bags and net / gross weight." },
   { icon: Truck, title: "Dispatch", text: "Shipments and inward / outward gate passes." },
-  { icon: Landmark, title: "Invoice & payment", text: "Sales tax invoices, receipts and customer balances." },
-  { icon: Warehouse, title: "Inventory", text: "Raw material to finished goods, by shelf, row and column." },
+  { icon: Warehouse, title: "Inventory", text: "Raw material received, issued and in stock, at the location you type." },
   { icon: Users, title: "HR & Payroll", text: "Employees, attendance, leave and payslips." },
 ];
 
 const FEATURES = [
-  { icon: Gauge, title: "Check points at every stage", text: "Shade, fastness, teeth gap, plating, stops, length. A stage cannot complete until its checks pass." },
+  { icon: Gauge, title: "Check points at every stage", text: "Shade, fastness, teeth gap, plating, stops, length, recorded with each stage." },
   { icon: Scale, title: "Kilograms to pieces", text: "Tape is weighed in kg through dyeing and pressing; teeth making counts the order's pieces." },
-  { icon: FileText, title: "AF7 documents", text: "Order sheet, sales tax invoice, gate pass and packing list, printed in your own layout." },
-  { icon: BarChart3, title: "Every order traceable", text: "One profile shows where an order is, who did what, what is next and what is blocking it." },
+  { icon: FileText, title: "AF7 documents", text: "Invoice, order sheet, packing list and gate pass, printed in your own layout." },
+  { icon: BarChart3, title: "Every order traceable", text: "One profile shows where an order is, who did what and what comes next." },
 ];
 
 /* Adds "is-in" to [data-reveal] elements as they scroll into view. */
@@ -163,9 +164,9 @@ export default function WelcomePage() {
           </h1>
 
           <p className="welcome__lead w-rise" style={{ "--d": "720ms" }}>
-            The AF7 system for zippers and apparel fasteners: order sheets,
-            production stages, quality checks, packing, dispatch, invoices and
-            payments, connected so every order can be followed end to end.
+            The AF7 system for zippers and apparel fasteners: the invoice first,
+            then the order, production stages, quality checks, packing, dispatch
+            and payment, connected so every order can be followed end to end.
           </p>
 
           <div className="welcome__actions w-rise" style={{ "--d": "860ms" }}>
@@ -199,7 +200,7 @@ export default function WelcomePage() {
         <div className="welcome__section-head">
           <span className="welcome__kicker">How it works</span>
           <h2>Seven steps, one screen for each order.</h2>
-          <p>Each step unlocks the next. The system shows what to do now and what is blocking it, and keeps a note of every step.</p>
+          <p>It starts with the invoice; approving it makes the order. The system shows what to do next and keeps a note of every step.</p>
         </div>
         <ProcessFlow variant="row" />
       </section>

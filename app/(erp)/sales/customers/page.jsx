@@ -85,7 +85,7 @@ export default function CustomersPage() {
     <main className="inv-page">
       <header className="inv-header">
         <div>
-          <p className="inv-header__eyebrow">1. Orders</p>
+          <p className="inv-header__eyebrow">2. Orders</p>
           <h1>Customers</h1>
           <p>The people you make zippers for. Pick a customer when you place an order.</p>
         </div>
