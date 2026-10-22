@@ -10,7 +10,8 @@
 # How it differs from a production run: the app runs `next dev` straight from
 # the cloned source bind-mounted at /app, so edits appear without a rebuild.
 # node_modules lives in a named volume (never on the host, never in git) and is
-# installed from package-lock.json by the containers themselves.
+# installed from package-lock.json once per lockfile by the one-shot `install`
+# service — see the x-npm-install anchor below for why it must be idempotent.
 #
 # Local database credentials are generated here (local infrastructure, not a
 # user secret). Any external credential the app may use later (GROQ_API_KEY /
@@ -25,6 +26,26 @@ x-app-env: &app-env
   NEXT_TELEMETRY_DISABLED: "1"
   # Provided by the platform at runtime; gated overrides compare it to "1".
   BASE44_PREVIEW_MODE: ${BASE44_PREVIEW_MODE:-}
+
+# Dependency install, run by the one-shot `install` service. Installing is
+# idempotent: the hash of package-lock.json is recorded in the node_modules
+# volume, and a repeat run with the same lockfile does nothing at all. This
+# matters because `docker compose up` re-runs exited one-shot services — an
+# unconditional `npm ci` there would delete and rebuild the very node_modules
+# directory the running `next dev` is using (Next fails with
+# "Cannot find module 'next/dist/pages/_error'" until the install finishes).
+x-npm-install: &npm-install
+  - sh
+  - -ec
+  - |
+    hash="$$(sha256sum package-lock.json | cut -d' ' -f1)"
+    if [ "$$(cat node_modules/.base44-lock-sha 2>/dev/null)" = "$$hash" ]; then
+      echo "dependencies already installed from this package-lock.json ($$hash)"
+    else
+      npm ci --no-audit --no-fund
+      printf '%s' "$$hash" > node_modules/.base44-lock-sha
+      echo "installed dependencies from package-lock.json ($$hash)"
+    fi
 
 services:
   db:
@@ -45,9 +66,25 @@ services:
       base44.project: "PostgreSQL"
       base44.kind: "infra"
 
-  # One-shot: installs dependencies from the lockfile, then brings the database
-  # up to the code on this branch (migrations) and seeds permissions/roles.
-  # It creates no users — accounts are set with `npm run db:set-accounts`.
+  # One-shot: installs the dependencies of the current lockfile into the
+  # shared node_modules volume. Both `migrate` and `app` wait for it, so no two
+  # containers ever install at the same time. Re-running it is free unless
+  # package-lock.json changed.
+  install:
+    image: node:22-bookworm
+    working_dir: /app
+    restart: "no"
+    volumes:
+      - .:/app
+      - af7-node-modules:/app/node_modules
+    command: *npm-install
+    labels:
+      base44.project: "Dependency install"
+      base44.kind: "worker"
+
+  # One-shot: brings the database up to the code on this branch (migrations)
+  # and seeds permissions/roles. It creates no users — accounts are set with
+  # `npm run db:set-accounts`.
   migrate:
     image: node:22-bookworm
     working_dir: /app
@@ -55,6 +92,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      install:
+        condition: service_completed_successfully
     environment:
       <<: *app-env
     volumes:
@@ -64,7 +103,6 @@ services:
       - sh
       - -ec
       - |
-        npm ci --no-audit --no-fund
         npx prisma db migrate --db "$$DATABASE_URL"
         npm run db:seed-access
     labels:
@@ -78,6 +116,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      install:
+        condition: service_completed_successfully
       migrate:
         condition: service_completed_successfully
     env_file:
@@ -92,11 +132,17 @@ services:
       - af7-node-modules:/app/node_modules
     ports:
       - "3000:3000"
+    # Dependencies are installed by the `install` service (which this one waits
+    # for), never here: an `npm ci` in this container would delete the
+    # node_modules directory the dev server is running from.
     command:
       - sh
       - -ec
       - |
-        npm ci --no-audit --no-fund
+        if [ ! -d node_modules/next ]; then
+          echo "node_modules is missing or incomplete — run: docker compose -f docker-compose.base44.yml up -d"
+          exit 1
+        fi
         exec npm run dev -- -H 0.0.0.0 -p 3000
     # Checks the Next.js server (the only process in this container) and, through
     # the session endpoint, that the app can reach PostgreSQL: without a database

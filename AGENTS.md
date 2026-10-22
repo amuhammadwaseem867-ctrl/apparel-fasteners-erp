@@ -18,10 +18,11 @@ appear without an image rebuild.
 docker compose -f docker-compose.base44.yml up -d --build   # web entry point: :3000
 ```
 
-Services: `db` (PostgreSQL 17, data in the `af7-db-data` volume), `migrate`
-(one-shot: `npm ci`, `prisma db migrate`, `npm run db:seed-access`) and `app`
-(`npm ci` then `next dev -H 0.0.0.0 -p 3000`). `app` starts only after `migrate`
-exits successfully, so the schema is always current before the server boots.
+Services: `db` (PostgreSQL 17, data in the `af7-db-data` volume), `install`
+(one-shot: installs from `package-lock.json`), `migrate` (one-shot: `prisma db
+migrate`, `npm run db:seed-access`) and `app` (`next dev -H 0.0.0.0 -p 3000`).
+`app` starts only after `install` and `migrate` exit successfully, so
+dependencies and the schema are always current before the server boots.
 
 Things that are easy to get wrong:
 
@@ -30,10 +31,14 @@ Things that are easy to get wrong:
   Do not move them to Base44 secrets: the dashboard must stay free to supply the
   app's real external credentials.
 - **Dependencies live in the `af7-node-modules` volume**, installed from
-  `package-lock.json` by the containers at startup. After changing
-  `package.json` / the lockfile, run `docker compose -f docker-compose.base44.yml
-  down` and `up -d` again (never `up` while the app is running: the reinstall
-  replaces the directory the dev server is using). No concurrent installs.
+  `package-lock.json` by the one-shot `install` service, which every other
+  service waits for. The install is idempotent — the lockfile hash is recorded
+  in `node_modules/.base44-lock-sha`, and a run with an unchanged lockfile does
+  nothing — because `docker compose up` restarts exited one-shot services: an
+  unconditional `npm ci` there would delete and rebuild the node_modules
+  directory the running `next dev` is using (`Cannot find module
+  'next/dist/pages/_error'` / 500s on every route until it finishes). `app`
+  never installs. Only one container installs at a time, by construction.
 - **Migrations are Prisma 8** (`@prisma/orm-postgres`, no `schema.prisma`, no
   `@prisma/client`). Apply with `npx prisma db migrate --db "$DATABASE_URL"`;
   read `.agents/skills/prisma-8/` before touching the contract or migrations.
