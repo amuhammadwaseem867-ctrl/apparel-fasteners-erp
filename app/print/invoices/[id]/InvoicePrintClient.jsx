@@ -205,7 +205,7 @@ export default function InvoicePrintClient({ id }) {
               <tr><th>Total amount before GST</th><td>{formatAmount(beforeGst)}</td></tr>
               <tr><th>{gstLabel}</th><td>{formatAmount(invoice.taxTotal)}</td></tr>
               <tr className="af7__strong"><th>Total amount including GST</th><td>{formatAmount(addDecimalStrings(beforeGst, invoice.taxTotal))}</td></tr>
-              <tr><th>Total amount without GST</th><td>{formatAmount(beforeGst)}</td></tr>
+            
             </tbody>
           </table>
           {invoice.status === "ISSUED" && (Number(invoice.credited) > 0 || Number(invoice.received) > 0) && (
