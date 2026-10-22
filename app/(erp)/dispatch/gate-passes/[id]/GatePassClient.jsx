@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -58,7 +58,7 @@ export default function GatePassClient({ id }) {
   }
 
   if (pass.error && !data) return <main className="inv-page"><p className="inv-dialog__error" role="alert">{pass.error}</p></main>;
-  if (!data) return <main className="inv-page"><p className="inv-state" role="status">Loading gate passâ€¦</p></main>;
+  if (!data) return <main className="inv-page"><p className="inv-state" role="status">Loading gate pass…</p></main>;
   const outward = data.passType !== "INWARD";
 
   return (

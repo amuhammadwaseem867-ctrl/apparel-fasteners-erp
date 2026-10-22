@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { authorizeRequest, parseRequestBody } from "@/server/core/api/request";
 import { AppError } from "@/server/core/errors/app-error";

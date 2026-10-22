@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 /*
  * Printed raw material stock list (GET /api/inventory/raw-material) with
@@ -21,7 +21,7 @@ export default function RawMaterialPrintClient({ params }) {
   const { data, error } = useApiData(`/api/inventory/raw-material${toQuery(filters)}`);
 
   if (error) return <main className="print-doc print-doc--message"><p role="alert">{error}</p><Link href="/inventory/raw-material">Back to stock</Link></main>;
-  if (!data) return <main className="print-doc print-doc--message"><p role="status">Loading stockâ€¦</p></main>;
+  if (!data) return <main className="print-doc print-doc--message"><p role="status">Loading stock…</p></main>;
 
   const printed = new Date().toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
 

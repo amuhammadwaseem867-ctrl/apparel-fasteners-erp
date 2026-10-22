@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 /*
  * Order Profile (requirements 1.2, sections 4, 18 and 21): one page that

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 
@@ -101,7 +101,7 @@ export default function AdvancesPage() {
         {advances.error ? (
           <p className="inv-state inv-state--error" role="alert">{advances.error}</p>
         ) : !advances.data ? (
-          <p className="inv-state" role="status">Loading advancesâ€¦</p>
+          <p className="inv-state" role="status">Loading advances…</p>
         ) : rows.length === 0 ? (
           <p className="inv-state">No advances with this status.</p>
         ) : (

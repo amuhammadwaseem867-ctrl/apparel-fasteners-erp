@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -128,7 +128,7 @@ function NewProductionOrderForm() {
 
 export default function NewProductionOrderPage() {
   return (
-    <Suspense fallback={<p className="inv-state" role="status">Loadingâ€¦</p>}>
+    <Suspense fallback={<p className="inv-state" role="status">Loading…</p>}>
       <NewProductionOrderForm />
     </Suspense>
   );

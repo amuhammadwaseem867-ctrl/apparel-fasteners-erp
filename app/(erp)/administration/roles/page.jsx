@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 
@@ -100,7 +100,7 @@ export default function RolesPage() {
         {roles.error ? (
           <p className="inv-state inv-state--error" role="alert">{roles.error}</p>
         ) : !roles.data ? (
-          <p className="inv-state" role="status">Loading rolesâ€¦</p>
+          <p className="inv-state" role="status">Loading roles…</p>
         ) : (
           <div className="inv-table-wrap">
             <table className="inv-table">

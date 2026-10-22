@@ -1,4 +1,4 @@
-﻿import { z } from "zod";
+import { z } from "zod";
 
 import { Y_CUT, isSize45 } from "../../lib/orders/teeth-rules.js";
 

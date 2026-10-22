@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 /*
  * The AF7 welcome page, shown before sign-in. Brand, what the ERP does

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -60,7 +60,7 @@ function InstructionDialog({ instruction, onClose, onSaved }) {
           <div className="inv-field"><label htmlFor="pi-type">Pack type *</label><input id="pi-type" required minLength={2} maxLength={60} list="pi-types" value={values.packType} onChange={set("packType")} /><datalist id="pi-types"><option value="Polybag" /><option value="Box" /><option value="Bundle" /><option value="Card" /><option value="Roll" /></datalist></div>
           <div className="inv-field"><label htmlFor="pi-units">Units per pack *</label><input id="pi-units" type="number" min="0" step="any" required value={values.unitsPerPack} onChange={set("unitsPerPack")} /></div>
           <div className="inv-field"><label htmlFor="pi-packs">Packs per carton *</label><input id="pi-packs" type="number" min="1" step="1" required value={values.packsPerCarton} onChange={set("packsPerCarton")} /></div>
-          <div className="inv-field"><label htmlFor="pi-carton">Carton</label><input id="pi-carton" maxLength={80} placeholder="e.g. 5-ply 40Ã—30Ã—30" value={values.cartonType} onChange={set("cartonType")} /></div>
+          <div className="inv-field"><label htmlFor="pi-carton">Carton</label><input id="pi-carton" maxLength={80} placeholder="e.g. 5-ply 40×30×30" value={values.cartonType} onChange={set("cartonType")} /></div>
           {instruction && <div className="inv-field"><label htmlFor="pi-status">Status</label><select id="pi-status" value={values.status} onChange={set("status")}><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option></select></div>}
         </div>
         <div className="inv-field"><label htmlFor="pi-label">Labelling</label><input id="pi-label" maxLength={500} placeholder="Label content, barcode, language" value={values.labelling} onChange={set("labelling")} /></div>
@@ -98,7 +98,7 @@ export default function PackingInstructionsPage() {
           <div className="inv-field"><label htmlFor="pi-search">Item SKU</label><input id="pi-search" type="search" value={search} onChange={(event) => setSearch(event.target.value)} /></div>
           <div className="inv-field"><label htmlFor="pi-statusf">Status</label><select id="pi-statusf" value={status} onChange={(event) => setStatus(event.target.value)}><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option><option value="">All</option></select></div>
         </div>
-        {result.error ? <p className="inv-state inv-state--error" role="alert">{result.error}</p> : !result.data ? <p className="inv-state" role="status">Loadingâ€¦</p> : rows.length === 0 ? <p className="inv-state">No packing instructions{search ? " match" : " yet"}.</p> : (
+        {result.error ? <p className="inv-state inv-state--error" role="alert">{result.error}</p> : !result.data ? <p className="inv-state" role="status">Loading…</p> : rows.length === 0 ? <p className="inv-state">No packing instructions{search ? " match" : " yet"}.</p> : (
           <div className="inv-table-wrap">
             <table className="inv-table">
               <thead><tr><th>Item</th><th>Customer</th><th>Packing</th><th className="inv-num">Per carton</th><th>Labelling</th><th>Status</th><th /></tr></thead>
@@ -109,7 +109,7 @@ export default function PackingInstructionsPage() {
                     <td data-label="Customer">{row.customerName ?? "Default"}</td>
                     <td data-label="Packing">{row.unitsPerPack} {row.unit} per {row.packType.toLowerCase()} · {row.packsPerCarton} per carton{row.cartonType ? <small>{row.cartonType}</small> : null}</td>
                     <td data-label="Per carton" className="inv-num">{row.unitsPerCarton} {row.unit}</td>
-                    <td data-label="Labelling">{row.labelling || "â€”"}{row.instructions ? <small>{row.instructions}</small> : null}</td>
+                    <td data-label="Labelling">{row.labelling || "—"}{row.instructions ? <small>{row.instructions}</small> : null}</td>
                     <td data-label="Status">{row.status === "ACTIVE" ? <span className="inv-badge inv-badge--good">Active</span> : <span className="inv-badge inv-badge--danger">Inactive</span>}</td>
                     <td data-label="">{can("production:update") && <button type="button" className="inv-link-button" onClick={() => setEditing(row)}>Edit</button>}</td>
                   </tr>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 /*
  * Printed stock card for one item (GET /api/inventory/raw-material/[id]):
@@ -22,7 +22,7 @@ export default function StockCardPrintClient({ id, range }) {
   const { data, error } = useApiData(`/api/inventory/raw-material/${encodeURIComponent(id)}${toQuery(range)}`);
 
   if (error) return <main className="print-doc print-doc--message"><p role="alert">{error}</p><Link href="/inventory/raw-material">Back to stock</Link></main>;
-  if (!data) return <main className="print-doc print-doc--message"><p role="status">Loading stock cardâ€¦</p></main>;
+  if (!data) return <main className="print-doc print-doc--message"><p role="status">Loading stock card…</p></main>;
 
   const { item } = data;
   const period = range.dateFrom || range.dateTo ? `${day(range.dateFrom) || "Start"} to ${day(range.dateTo) || "today"}` : "All dates";

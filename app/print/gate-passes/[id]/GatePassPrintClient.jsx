@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 /*
  * AF7 Inward / Outward Gate Pass (GET /api/gate-passes/[id]): document
@@ -25,11 +25,11 @@ export default function GatePassPrintClient({ id }) {
   const { data: pass, error } = useApiData(`/api/gate-passes/${encodeURIComponent(id)}`);
 
   if (error) return <main className="print-doc print-doc--message"><p role="alert">{error}</p><Link href="/dispatch/gate-passes">Back to gate passes</Link></main>;
-  if (!pass) return <main className="print-doc print-doc--message"><p role="status">Loading gate passâ€¦</p></main>;
+  if (!pass) return <main className="print-doc print-doc--message"><p role="status">Loading gate pass…</p></main>;
 
   const inward = pass.passType === "INWARD";
   const units = [...new Set(pass.lines.map((line) => line.unit))];
-  const weights = (line) => [line.netWeight, line.grossWeight].some((value) => value !== null) ? `${line.netWeight ?? "â€”"} / ${line.grossWeight ?? "â€”"}` : "";
+  const weights = (line) => [line.netWeight, line.grossWeight].some((value) => value !== null) ? `${line.netWeight ?? "—"} / ${line.grossWeight ?? "—"}` : "";
   const net = columnTotal(pass.lines, "netWeight");
   const gross = columnTotal(pass.lines, "grossWeight");
 
@@ -44,8 +44,8 @@ export default function GatePassPrintClient({ id }) {
         title={<>INWARD / OUTWARD<br />GATE PASS</>}
         subtitle={(
           <div>
-            <span className="af7__check"><i>{inward ? "âœ“" : ""}</i>INWARD</span>
-            <span className="af7__check"><i>{inward ? "" : "âœ“"}</i>OUTWARD</span>
+            <span className="af7__check"><i>{inward ? "✓" : ""}</i>INWARD</span>
+            <span className="af7__check"><i>{inward ? "" : "✓"}</i>OUTWARD</span>
             {!inward && <p className="af7__small">{PASS_TYPES[pass.passType]}</p>}
           </div>
         )}
@@ -86,7 +86,7 @@ export default function GatePassPrintClient({ id }) {
           <div className="af7__three">
             <Af7Fields rows={[["Total quantity", units.length === 1 ? `${columnTotal(pass.lines, "quantity")} ${units[0]}` : units.length > 1 ? "Mixed units, see lines" : ""]]} />
             <Af7Fields rows={[["Total no. of bags", columnTotal(pass.lines, "bags")]]} />
-            <Af7Fields rows={[["Total weight (kg)", net || gross ? `${net || "â€”"} / ${gross || "â€”"}` : ""]]} />
+            <Af7Fields rows={[["Total weight (kg)", net || gross ? `${net || "—"} / ${gross || "—"}` : ""]]} />
           </div>
         </Af7Section>
 

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 
@@ -104,7 +104,7 @@ export default function AttendancePage() {
         {employees.error || attendance.error ? (
           <p className="inv-state inv-state--error" role="alert">{employees.error || attendance.error}</p>
         ) : !employees.data || !attendance.data ? (
-          <p className="inv-state" role="status">Loading attendanceâ€¦</p>
+          <p className="inv-state" role="status">Loading attendance…</p>
         ) : rows.length === 0 ? (
           <p className="inv-state">No employees were employed on this date.</p>
         ) : (

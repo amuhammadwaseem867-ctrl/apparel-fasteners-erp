@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 
@@ -99,8 +99,8 @@ export default function PackingListDialog({ initialOrderId = "", defaults = {}, 
           <h3>1. Document information</h3>
           <div className="pk-form__info">
             <div><span>Date</span><strong>{defaults.date ?? today()}</strong></div>
-            <div><span>PO #</span><strong>{defaults.customerPo || "â€”"}</strong></div>
-            <div><span>Order no.</span><strong>{defaults.orderNumber ?? data?.salesOrderNumber ?? "â€”"}</strong></div>
+            <div><span>PO #</span><strong>{defaults.customerPo || "—"}</strong></div>
+            <div><span>Order no.</span><strong>{defaults.orderNumber ?? data?.salesOrderNumber ?? "—"}</strong></div>
           </div>
           <div className="inv-dialog__grid">
             {!initialOrderId && (
@@ -108,7 +108,7 @@ export default function PackingListDialog({ initialOrderId = "", defaults = {}, 
                 <label htmlFor="pk-order">Production order *</label>
                 <select id="pk-order" required value={orderId} onChange={(event) => setOrderId(event.target.value)}>
                   <option value="">{orders.error ? "Orders unavailable" : "Select order"}</option>
-                  {(orders.data?.orders ?? []).map((row) => <option key={row.id} value={row.id}>{row.orderNumber} Â· {row.sku} Â· {row.quantity} {row.unit}</option>)}
+                  {(orders.data?.orders ?? []).map((row) => <option key={row.id} value={row.id}>{row.orderNumber} · {row.sku} · {row.quantity} {row.unit}</option>)}
                 </select>
               </div>
             )}

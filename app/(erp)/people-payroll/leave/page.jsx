@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -38,7 +38,7 @@ function RequestDialog({ types, onClose, onSaved }) {
   }
 
   return (
-    <Modal open onClose={saving ? undefined : onClose} title="New leave request" description="Company holidays in the range (Planning â†’ Calendar) are not counted. Approval records the leave on attendance for payroll." size="medium">
+    <Modal open onClose={saving ? undefined : onClose} title="New leave request" description="Company holidays in the range (Planning → Calendar) are not counted. Approval records the leave on attendance for payroll." size="medium">
       <form className="inv-dialog" onSubmit={submit}>
         <div className="inv-dialog__grid">
           <div className="inv-field">
@@ -161,7 +161,7 @@ export default function LeavePage() {
             </select>
           </div>
         </div>
-        {requests.error ? <p className="inv-state inv-state--error" role="alert">{requests.error}</p> : !requests.data ? <p className="inv-state" role="status">Loadingâ€¦</p> : rows.length === 0 ? <p className="inv-state">No requests.</p> : (
+        {requests.error ? <p className="inv-state inv-state--error" role="alert">{requests.error}</p> : !requests.data ? <p className="inv-state" role="status">Loading…</p> : rows.length === 0 ? <p className="inv-state">No requests.</p> : (
           <div className="inv-table-wrap">
             <table className="inv-table">
               <thead><tr><th>Request</th><th>Employee</th><th>Type</th><th>Dates</th><th className="inv-num">Days</th><th>Status</th><th /></tr></thead>
@@ -171,7 +171,7 @@ export default function LeavePage() {
                     <td data-label="Request"><strong>{row.requestNumber}</strong><small>{row.reason}</small></td>
                     <td data-label="Employee">{row.employeeName}<small>{row.employeeCode}</small></td>
                     <td data-label="Type">{row.leaveTypeName}<small>{row.paid ? "paid" : "unpaid"}</small></td>
-                    <td data-label="Dates">{row.fromDate}{row.toDate !== row.fromDate ? ` â†’ ${row.toDate}` : ""}</td>
+                    <td data-label="Dates">{row.fromDate}{row.toDate !== row.fromDate ? ` → ${row.toDate}` : ""}</td>
                     <td data-label="Days" className="inv-num">{row.days}</td>
                     <td data-label="Status"><span className={`inv-badge inv-badge--${TONE[row.status]}`}>{row.status.charAt(0) + row.status.slice(1).toLowerCase()}</span>{row.decisionNote && <small>{row.decisionNote}</small>}</td>
                     <td data-label="">
@@ -189,7 +189,7 @@ export default function LeavePage() {
       <section className="inv-card">
         <div className="inv-card__header"><h2>Balances</h2></div>
         <div className="inv-toolbar"><div className="inv-field"><label htmlFor="lv-year">Year</label><input id="lv-year" type="number" min="2000" max="2100" value={year} onChange={(event) => setYear(Number(event.target.value) || year)} /></div></div>
-        {balances.error ? <p className="inv-state inv-state--error" role="alert">{balances.error}</p> : !balances.data ? <p className="inv-state" role="status">Loadingâ€¦</p> : balances.data.types.length === 0 ? <p className="inv-state">No leave type has an annual entitlement, so there are no balances to show.</p> : (
+        {balances.error ? <p className="inv-state inv-state--error" role="alert">{balances.error}</p> : !balances.data ? <p className="inv-state" role="status">Loading…</p> : balances.data.types.length === 0 ? <p className="inv-state">No leave type has an annual entitlement, so there are no balances to show.</p> : (
           <div className="inv-table-wrap">
             <table className="inv-table">
               <thead><tr><th>Employee</th>{balances.data.types.map((type) => <th key={type.id} className="inv-num">{type.name} ({type.annualDays})</th>)}</tr></thead>
@@ -211,7 +211,7 @@ export default function LeavePage() {
       </section>
       <section className="inv-card">
         <div className="inv-card__header"><h2>Leave types</h2></div>
-        {!types.data ? <p className="inv-state" role="status">Loadingâ€¦</p> : types.data.leaveTypes.length === 0 ? <p className="inv-state">No leave types yet. Add the types your company uses (for example annual, sick, casual, unpaid).</p> : (
+        {!types.data ? <p className="inv-state" role="status">Loading…</p> : types.data.leaveTypes.length === 0 ? <p className="inv-state">No leave types yet. Add the types your company uses (for example annual, sick, casual, unpaid).</p> : (
           <div className="inv-table-wrap">
             <table className="inv-table">
               <thead><tr><th>Type</th><th>Pay</th><th className="inv-num">Days per year</th><th>Status</th><th /></tr></thead>

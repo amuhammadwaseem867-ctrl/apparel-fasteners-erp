@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -14,7 +14,7 @@ import { formatUnitPrice } from "@/lib/formatters/formatters";
 import "@/components/inventory/InventoryWorkspace.css";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const qty = (value) => (value === null || value === undefined ? "â€”" : Number(value).toLocaleString("en-US", { maximumFractionDigits: 3 }));
+const qty = (value) => (value === null || value === undefined ? "—" : Number(value).toLocaleString("en-US", { maximumFractionDigits: 3 }));
 const ACTIONS = { GOODS_RECEIPT: "Receive", MATERIAL_ISSUE: "Issue to production", MATERIAL_RETURN: "Return from production" };
 
 function useItem(itemRef) {
@@ -56,7 +56,7 @@ export default function ItemProfileClient({ itemRef }) {
   const locations = useApiData("/api/inventory/locations?status=ACTIVE");
   const all = useApiData(id ? `/api/inventory/raw-material/${id}` : null);
 
-  if (loading) return <main className="inv-page"><p className="inv-state" role="status">Loading itemâ€¦</p></main>;
+  if (loading) return <main className="inv-page"><p className="inv-state" role="status">Loading item…</p></main>;
   if (error) return <main className="inv-page"><p className="inv-state inv-state--error" role="alert">{error}</p><Link href="/inventory/item-master">Back to item master</Link></main>;
 
   const spec = [
@@ -102,7 +102,7 @@ export default function ItemProfileClient({ itemRef }) {
           {spec.map(([label, value]) => (
             <div className="inv-kpi" key={label}>
               <span>{label}</span>
-              <small style={{ fontSize: 14, color: "inherit", fontWeight: 700 }}>{value === null || value === undefined || value === "" ? "â€”" : String(value)}</small>
+              <small style={{ fontSize: 14, color: "inherit", fontWeight: 700 }}>{value === null || value === undefined || value === "" ? "—" : String(value)}</small>
             </div>
           ))}
         </div>
@@ -111,7 +111,7 @@ export default function ItemProfileClient({ itemRef }) {
       <section className="inv-card">
         <div className="inv-card__header"><h2>Stock by location</h2></div>
         {balances.error ? <p className="inv-state inv-state--error" role="alert">{balances.error}</p>
-          : !balances.data ? <p className="inv-state" role="status">Loadingâ€¦</p>
+          : !balances.data ? <p className="inv-state" role="status">Loading…</p>
             : stockRows.length === 0 ? <p className="inv-state">No stock has been posted for this item.</p> : (
               <div className="inv-table-wrap">
                 <table className="inv-table">
@@ -145,7 +145,7 @@ export default function ItemProfileClient({ itemRef }) {
                   {reservations.data.reservations.map((row) => (
                     <tr key={row.id}>
                       <td data-label="Location">{row.warehouseCode}/{row.locationCode}</td>
-                      <td data-label="Order">{row.salesOrderId ? <Link href={`/sales/orders/${row.salesOrderId}`}>View order</Link> : "â€”"}</td>
+                      <td data-label="Order">{row.salesOrderId ? <Link href={`/sales/orders/${row.salesOrderId}`}>View order</Link> : "—"}</td>
                       <td data-label="Open" className="inv-num">{row.openQuantity} {row.unit}</td>
                     </tr>
                   ))}
@@ -166,7 +166,7 @@ export default function ItemProfileClient({ itemRef }) {
           <div className="inv-field"><label htmlFor="sc-to">To</label><input id="sc-to" type="date" value={range.dateTo} onChange={(event) => setRange((current) => ({ ...current, dateTo: event.target.value }))} /></div>
         </div>
         {card.error ? <p className="inv-state inv-state--error" role="alert">{card.error}</p>
-          : !card.data ? <p className="inv-state" role="status">Loadingâ€¦</p> : (
+          : !card.data ? <p className="inv-state" role="status">Loading…</p> : (
             <div className="inv-table-wrap">
               <table className="inv-table">
                 <thead><tr><th>Date</th><th>Document</th><th>Transaction</th><th>Reference</th><th>Location</th><th className="inv-num">In</th><th className="inv-num">Out</th><th className="inv-num">Balance</th><th>By</th></tr></thead>
@@ -177,12 +177,12 @@ export default function ItemProfileClient({ itemRef }) {
                       <td data-label="Date">{formatDateTime(row.createdAt)}</td>
                       <td data-label="Document"><Link href={`/print/stock-documents/${row.documentId}`}>{row.documentNumber}</Link></td>
                       <td data-label="Transaction">{documentTypeLabel(row.movementType)}</td>
-                      <td data-label="Reference">{row.reference || row.reason || "â€”"}</td>
+                      <td data-label="Reference">{row.reference || row.reason || "—"}</td>
                       <td data-label="Location">{row.location}</td>
                       <td data-label="In" className="inv-num inv-pos">{row.quantityIn ? qty(row.quantityIn) : ""}</td>
                       <td data-label="Out" className="inv-num inv-neg">{row.quantityOut ? qty(row.quantityOut) : ""}</td>
                       <td data-label="Balance" className="inv-num"><strong>{qty(row.balance)}</strong></td>
-                      <td data-label="By">{row.userName ?? "â€”"}</td>
+                      <td data-label="By">{row.userName ?? "—"}</td>
                     </tr>
                   ))}
                   <tr><td colSpan={5}><strong>Closing balance</strong></td><td className="inv-num"><strong>{qty(card.data.totalIn)}</strong></td><td className="inv-num"><strong>{qty(card.data.totalOut)}</strong></td><td className="inv-num"><strong>{qty(card.data.closingBalance)}</strong></td><td /></tr>

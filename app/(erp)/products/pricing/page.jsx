@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -43,7 +43,7 @@ export default function PricingPage() {
     event.preventDefault();
     run("single", async () => {
       const result = await apiRequest("/api/products/prices", { method: "POST", body: JSON.stringify({ productId: item.id, unitPrice: Number(single.unitPrice), effectiveDate: single.effectiveDate, reason: single.reason }) });
-      setMessage({ error: "", notice: `${result.sku}: ${result.previous} â†’ ${result.next}` });
+      setMessage({ error: "", notice: `${result.sku}: ${result.previous} → ${result.next}` });
       setItem({ ...item, unitPrice: result.next });
       setSingle({ ...single, unitPrice: "", reason: "" });
       history.reload();
@@ -119,7 +119,7 @@ export default function PricingPage() {
       )}
       <section className="inv-card">
         <div className="inv-card__header"><h2>Price history{item ? ` · ${item.sku}` : ""}</h2></div>
-        {history.error ? <p className="inv-state inv-state--error" role="alert">{history.error}</p> : !history.data ? <p className="inv-state" role="status">Loadingâ€¦</p> : history.data.changes.length === 0 ? <p className="inv-state">No price changes recorded{item ? " for this item" : ""}.</p> : (
+        {history.error ? <p className="inv-state inv-state--error" role="alert">{history.error}</p> : !history.data ? <p className="inv-state" role="status">Loading…</p> : history.data.changes.length === 0 ? <p className="inv-state">No price changes recorded{item ? " for this item" : ""}.</p> : (
           <div className="inv-table-wrap">
             <table className="inv-table">
               <thead><tr><th>Item</th><th className="inv-num">From</th><th className="inv-num">To</th><th>Effective</th><th>Reason</th><th>Changed</th></tr></thead>

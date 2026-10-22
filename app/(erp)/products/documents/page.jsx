@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -99,7 +99,7 @@ export default function DocumentsPage() {
           <div className="inv-field"><label htmlFor="pd-search">Search</label><input id="pd-search" type="search" placeholder="Title, file name or SKU" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} /></div>
           <div className="inv-field"><label htmlFor="pd-status">Status</label><select id="pd-status" value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }}><option value="ACTIVE">Current</option><option value="ARCHIVED">Archived</option><option value="">All</option></select></div>
         </div>
-        {list.error ? <p className="inv-state inv-state--error" role="alert">{list.error}</p> : !list.data ? <p className="inv-state" role="status">Loading documentsâ€¦</p> : rows.length === 0 ? <p className="inv-state">No documents{search ? " match" : " yet"}.</p> : (
+        {list.error ? <p className="inv-state inv-state--error" role="alert">{list.error}</p> : !list.data ? <p className="inv-state" role="status">Loading documents…</p> : rows.length === 0 ? <p className="inv-state">No documents{search ? " match" : " yet"}.</p> : (
           <div className="inv-table-wrap">
             <table className="inv-table">
               <thead><tr><th>Document</th><th>Item</th><th>Type</th><th className="inv-num">Size</th><th>Uploaded</th><th /></tr></thead>

@@ -1,4 +1,4 @@
-﻿import { createHash } from "node:crypto";
+import { createHash } from "node:crypto";
 
 import { db } from "../core/database/client";
 import { AppError } from "../core/errors/app-error";

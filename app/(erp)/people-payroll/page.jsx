@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 
@@ -33,9 +33,9 @@ export default function PeoplePayrollPage() {
         <p className="inv-dialog__error" role="alert">{error}</p>
       ) : (
         <section className="inv-kpis" aria-label="People">
-          <div className="inv-kpi"><span>Active employees</span><strong>{active === undefined ? "â€¦" : `${active}${employees.data?.hasMore ? "+" : ""}`}</strong></div>
-          <div className="inv-kpi"><span>Departments</span><strong>{departments.data ? departments.data.departments.filter((item) => item.status === "ACTIVE").length : "â€¦"}</strong></div>
-          <div className={`inv-kpi ${attendance.data && active && attendance.data.records.length < active ? "inv-kpi--warning" : ""}`}><span>Attendance recorded today</span><strong>{attendance.data ? attendance.data.records.length : "â€¦"}</strong><small>{date}</small></div>
+          <div className="inv-kpi"><span>Active employees</span><strong>{active === undefined ? "…" : `${active}${employees.data?.hasMore ? "+" : ""}`}</strong></div>
+          <div className="inv-kpi"><span>Departments</span><strong>{departments.data ? departments.data.departments.filter((item) => item.status === "ACTIVE").length : "…"}</strong></div>
+          <div className={`inv-kpi ${attendance.data && active && attendance.data.records.length < active ? "inv-kpi--warning" : ""}`}><span>Attendance recorded today</span><strong>{attendance.data ? attendance.data.records.length : "…"}</strong><small>{date}</small></div>
         </section>
       )}
       {runs.data && (

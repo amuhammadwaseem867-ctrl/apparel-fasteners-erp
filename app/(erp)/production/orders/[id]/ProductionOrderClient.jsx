@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -160,7 +160,7 @@ function StageSection({ order, stage, onChanged }) {
 
   async function complete() {
     if (busy) return;
-    // Stages 1â€“6 complete through their check points (D-040).
+    // Stages 1–6 complete through their check points (D-040).
     if (!stage.managedBy) {
       setChecking(true);
       return;
@@ -252,10 +252,10 @@ function StageSection({ order, stage, onChanged }) {
                   <td data-label="Rejected" className="inv-num">{run.rejectedQuantity}</td>
                   <td data-label="Wastage" className="inv-num">{run.wastageQuantity}</td>
                   <td data-label="Rework" className="inv-num">{run.reworkQuantity}</td>
-                  <td data-label="Operator">{run.operatorName || "â€”"}</td>
-                  <td data-label="Workstation">{run.workstation || "â€”"}</td>
+                  <td data-label="Operator">{run.operatorName || "—"}</td>
+                  <td data-label="Workstation">{run.workstation || "—"}</td>
                   <td data-label="Recorded">{formatDateTime(run.recordedAt)}<small>{run.recordedBy ?? ""}</small></td>
-                  <td data-label="Remarks">{run.remarks || "â€”"}</td>
+                  <td data-label="Remarks">{run.remarks || "—"}</td>
                 </tr>
               ))}
             </tbody>
@@ -296,7 +296,7 @@ export default function ProductionOrderClient({ id }) {
   }
 
   if (loaded.error && !order) return <main className="inv-page"><p className="inv-dialog__error" role="alert">{loaded.error}</p></main>;
-  if (!order) return <main className="inv-page"><p className="inv-state" role="status">Loading production orderâ€¦</p></main>;
+  if (!order) return <main className="inv-page"><p className="inv-state" role="status">Loading production order…</p></main>;
 
   const actions = AVAILABLE_ACTIONS[order.status] ?? [];
 
@@ -349,7 +349,7 @@ export default function ProductionOrderClient({ id }) {
         <div className="inv-card__header">
           <div>
             <h2>Materials</h2>
-            <small>Requirement from BOM revision {order.bomRevision ?? "â€”"} for {order.quantity} {order.unit}, including scrap. Issues post to the stock ledger.</small>
+            <small>Requirement from BOM revision {order.bomRevision ?? "—"} for {order.quantity} {order.unit}, including scrap. Issues post to the stock ledger.</small>
           </div>
           {order.materials.length > 0 && ["RELEASED", "IN_PROGRESS"].includes(order.status) && (
             <Button variant="primary" onClick={() => setIssueOpen(true)}>Issue material</Button>

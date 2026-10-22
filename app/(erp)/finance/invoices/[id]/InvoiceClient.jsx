@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -120,7 +120,7 @@ export default function InvoiceClient({ id }) {
   }
 
   if (invoice.error && !data) return <main className="inv-page"><p className="inv-dialog__error" role="alert">{invoice.error}</p></main>;
-  if (!data) return <main className="inv-page"><p className="inv-state" role="status">Loading invoiceâ€¦</p></main>;
+  if (!data) return <main className="inv-page"><p className="inv-state" role="status">Loading invoice…</p></main>;
   const open = data.status === "ISSUED" && Number(data.outstanding) > 0;
 
   return (
@@ -149,11 +149,11 @@ export default function InvoiceClient({ id }) {
         <div className="inv-kpi"><span>Invoice total</span><strong>{formatAmount(data.totalAmount)}</strong><small>{data.invoiceType === "NON_TAX" ? "no sales tax" : `incl. tax ${formatAmount(data.taxTotal)}`}</small></div>
         <div className="inv-kpi"><span>Credited</span><strong>{formatAmount(data.credited)}</strong></div>
         <div className="inv-kpi"><span>Received</span><strong>{formatAmount(data.received)}</strong></div>
-        <div className={`inv-kpi ${data.daysOverdue > 0 ? "inv-kpi--danger" : ""}`}><span>Outstanding</span><strong>{data.status === "ISSUED" ? formatAmount(data.outstanding) : "â€”"}</strong></div>
+        <div className={`inv-kpi ${data.daysOverdue > 0 ? "inv-kpi--danger" : ""}`}><span>Outstanding</span><strong>{data.status === "ISSUED" ? formatAmount(data.outstanding) : "—"}</strong></div>
       </section>
 
       <section className="inv-card">
-        <div className="inv-card__header"><h2>Lines</h2><small>Gross = quantity Ã— price, discount on gross, tax on gross âˆ’ discount; each rounded half up to the cent.</small></div>
+        <div className="inv-card__header"><h2>Lines</h2><small>Gross = quantity × price, discount on gross, tax on gross − discount; each rounded half up to the cent.</small></div>
         <div className="inv-table-wrap">
           <table className="inv-table">
             <thead><tr><th className="inv-num">#</th><th>Item</th><th className="inv-num">Qty</th><th className="inv-num">Price</th><th className="inv-num">Gross</th><th className="inv-num">Disc.</th><th className="inv-num">Tax</th><th className="inv-num">Total</th></tr></thead>
@@ -187,7 +187,7 @@ export default function InvoiceClient({ id }) {
                     <td data-label="Receipt"><Link href={`/print/receipts/${receipt.id}`}>{receipt.receiptNumber}</Link></td>
                     <td data-label="Date">{receipt.receiptDate}</td>
                     <td data-label="Method">{RECEIPT_METHOD_LABELS[receipt.method]}</td>
-                    <td data-label="Reference">{receipt.reference || "â€”"}</td>
+                    <td data-label="Reference">{receipt.reference || "—"}</td>
                     <td data-label="Amount" className={`inv-num ${receipt.status === "VOIDED" ? "inv-neg" : ""}`}>{formatAmount(receipt.amount)}</td>
                     <td data-label="Status">{receipt.status === "VOIDED" ? <span className="inv-badge inv-badge--danger" title={receipt.voidReason ?? ""}>Voided</span> : <span className="inv-badge inv-badge--good">Posted</span>}</td>
                     <td data-label="Actions">{receipt.status === "POSTED" && <button type="button" className="inv-text-button" onClick={() => voidReceipt(receipt)}>Void</button>}</td>

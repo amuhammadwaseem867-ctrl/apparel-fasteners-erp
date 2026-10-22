@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 
@@ -52,7 +52,7 @@ export default function AuditPage() {
         {log.error ? (
           <p className="inv-state inv-state--error" role="alert">{log.error}</p>
         ) : !log.data ? (
-          <p className="inv-state" role="status">Loading audit logâ€¦</p>
+          <p className="inv-state" role="status">Loading audit log…</p>
         ) : rows.length === 0 ? (
           <p className="inv-state">No entries match these filters.</p>
         ) : (
@@ -65,7 +65,7 @@ export default function AuditPage() {
                     <td data-label="When">{new Date(entry.createdAt).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "medium" })}</td>
                     <td data-label="Action"><strong>{entry.action}</strong></td>
                     <td data-label="Actor">{entry.actorName ?? (entry.actorId ? "Unknown user" : "System")}<small>{entry.actorEmail ?? ""}</small></td>
-                    <td data-label="Entity">{entry.entityType ?? "â€”"}<small>{entry.entityId ?? ""}</small></td>
+                    <td data-label="Entity">{entry.entityType ?? "—"}<small>{entry.entityId ?? ""}</small></td>
                     <td data-label="Details" style={{ whiteSpace: "normal", maxWidth: 420 }}><small>{summary(entry.metadata)}</small></td>
                   </tr>
                 ))}

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 
@@ -11,7 +11,7 @@ import useApiData, { toQuery } from "@/lib/inventory/useApiData";
 import "@/components/inventory/InventoryWorkspace.css";
 
 function when(value) {
-  return value ? new Date(value).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" }) : "â€”";
+  return value ? new Date(value).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" }) : "—";
 }
 
 function RolePicker({ roles, value, onChange }) {
@@ -178,7 +178,7 @@ export default function UsersPage() {
         {users.error ? (
           <p className="inv-state inv-state--error" role="alert">{users.error}</p>
         ) : !users.data ? (
-          <p className="inv-state" role="status">Loading usersâ€¦</p>
+          <p className="inv-state" role="status">Loading users…</p>
         ) : rows.length === 0 ? (
           <p className="inv-state">No users match these filters.</p>
         ) : (

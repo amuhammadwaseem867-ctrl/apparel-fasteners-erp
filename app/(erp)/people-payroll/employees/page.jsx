@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 
@@ -203,7 +203,7 @@ export default function EmployeesPage() {
         {employees.error ? (
           <p className="inv-state inv-state--error" role="alert">{employees.error}</p>
         ) : !employees.data ? (
-          <p className="inv-state" role="status">Loading employeesâ€¦</p>
+          <p className="inv-state" role="status">Loading employees…</p>
         ) : rows.length === 0 ? (
           <p className="inv-state">{search || departmentId ? "No employees match these filters." : "No employees yet. Add departments first, then employees."}</p>
         ) : (

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 /*
  * AF7 Packing List (GET /api/packing/lists/[id]): date, PO # and order no.,
@@ -18,13 +18,13 @@ export default function PackingListPrintClient({ id }) {
   const { data: list, error } = useApiData(`/api/packing/lists/${encodeURIComponent(id)}`);
 
   if (error) return <main className="print-doc print-doc--message"><p role="alert">{error}</p><Link href="/packing/orders">Back to packing</Link></main>;
-  if (!list) return <main className="print-doc print-doc--message"><p role="status">Loading packing listâ€¦</p></main>;
+  if (!list) return <main className="print-doc print-doc--message"><p role="status">Loading packing list…</p></main>;
 
   // Total of the weights entered; rows left without a weight add nothing.
   const weight = (field) => (list.packages.some((item) => item[field] !== null)
     ? list.packages.filter((item) => item[field] !== null).reduce((sum, item) => addDecimalStrings(sum, item[field]), "0")
-    : "â€”");
-  const weights = (item) => (item.netWeight === null && item.grossWeight === null ? "" : `${item.netWeight ?? "â€”"} / ${item.grossWeight ?? "â€”"}`);
+    : "—");
+  const weights = (item) => (item.netWeight === null && item.grossWeight === null ? "" : `${item.netWeight ?? "—"} / ${item.grossWeight ?? "—"}`);
 
   return (
     <main className="print-doc">

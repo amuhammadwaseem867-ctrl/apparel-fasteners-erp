@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -35,7 +35,7 @@ export default function PackingListClient({ id }) {
   }
 
   if (loaded.error && !list) return <main className="inv-page"><p className="inv-dialog__error" role="alert">{loaded.error}</p></main>;
-  if (!list) return <main className="inv-page"><p className="inv-state" role="status">Loading packing listâ€¦</p></main>;
+  if (!list) return <main className="inv-page"><p className="inv-state" role="status">Loading packing list…</p></main>;
 
   return (
     <main className="inv-page">
@@ -69,13 +69,13 @@ export default function PackingListClient({ id }) {
                 <tr key={item.id}>
                   <td data-label="Sr. no." className="inv-num">{item.packageNo}</td>
                   <td data-label="Description">{item.description || list.productName}</td>
-                  <td data-label="Size">{item.size || list.size || "â€”"}</td>
+                  <td data-label="Size">{item.size || list.size || "—"}</td>
                   <td data-label="Quantity" className="inv-num">{item.quantity} {list.unit}</td>
                   <td data-label="Bags / cartons" className="inv-num">{item.bags} {item.packageType}</td>
-                  <td data-label="Net kg" className="inv-num">{item.netWeight ?? "â€”"}</td>
-                  <td data-label="Gross kg" className="inv-num">{item.grossWeight ?? "â€”"}</td>
-                  <td data-label="Dimensions">{item.dimensions || "â€”"}</td>
-                  <td data-label="Marks">{item.marks || "â€”"}</td>
+                  <td data-label="Net kg" className="inv-num">{item.netWeight ?? "—"}</td>
+                  <td data-label="Gross kg" className="inv-num">{item.grossWeight ?? "—"}</td>
+                  <td data-label="Dimensions">{item.dimensions || "—"}</td>
+                  <td data-label="Marks">{item.marks || "—"}</td>
                 </tr>
               ))}
             </tbody>
@@ -100,8 +100,8 @@ export default function PackingListClient({ id }) {
                   <tr key={index}>
                     <td data-label="When">{new Date(entry.at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</td>
                     <td data-label="What happened">{entry.event}</td>
-                    <td data-label="By">{entry.by ?? "â€”"}</td>
-                    <td data-label="Reference">{entry.reference ?? "â€”"}</td>
+                    <td data-label="By">{entry.by ?? "—"}</td>
+                    <td data-label="Reference">{entry.reference ?? "—"}</td>
                   </tr>
                 ))}
               </tbody>

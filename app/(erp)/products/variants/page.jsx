@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -26,7 +26,7 @@ export default function VariantsPage() {
       </header>
       <section className="inv-card">
         <div className="inv-toolbar"><div className="inv-field"><label htmlFor="pv-search">Search</label><input id="pv-search" type="search" placeholder="SKU, name, category or type" value={search} onChange={(event) => setSearch(event.target.value)} /></div></div>
-        {result.error ? <p className="inv-state inv-state--error" role="alert">{result.error}</p> : !result.data ? <p className="inv-state" role="status">Loadingâ€¦</p> : families.length === 0 ? <p className="inv-state">No items match.</p> : families.map((family) => (
+        {result.error ? <p className="inv-state inv-state--error" role="alert">{result.error}</p> : !result.data ? <p className="inv-state" role="status">Loading…</p> : families.length === 0 ? <p className="inv-state">No items match.</p> : families.map((family) => (
           <div key={family.key} style={{ padding: "8px 18px 16px" }}>
             <h3 style={{ margin: "8px 0" }}>{family.name} <small style={{ fontWeight: 500 }}>· {family.category}{family.itemType ? ` · ${family.itemType}` : ""} · {family.variants.length} variant{family.variants.length === 1 ? "" : "s"}</small></h3>
             <div className="inv-table-wrap">
@@ -36,7 +36,7 @@ export default function VariantsPage() {
                   {family.variants.map((variant) => (
                     <tr key={variant.id}>
                       <td data-label="SKU"><Link href={`/products/${variant.id}`}>{variant.sku}</Link></td>
-                      {family.attributes.map((attribute) => <td key={attribute} data-label={LABELS[attribute]}>{variant[attribute] || "â€”"}</td>)}
+                      {family.attributes.map((attribute) => <td key={attribute} data-label={LABELS[attribute]}>{variant[attribute] || "—"}</td>)}
                       <td data-label="Unit">{variant.unit}</td>
                       <td data-label="Price" className="inv-num">{variant.unitPrice}</td>
                       <td data-label="Status">{variant.status === "ACTIVE" ? "Active" : variant.status.toLowerCase()}</td>

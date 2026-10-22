@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 /*
  * The top bar (D-042). Page title from the menu; search across pages and

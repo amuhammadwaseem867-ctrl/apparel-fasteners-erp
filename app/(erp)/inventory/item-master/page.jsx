@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -98,7 +98,7 @@ function CatalogCoverage() {
       {error ? (
         <p className="inv-state inv-state--error" role="alert">{error}</p>
       ) : !items ? (
-        <p className="inv-state" role="status">Checking the item masterâ€¦</p>
+        <p className="inv-state" role="status">Checking the item master…</p>
       ) : (
         <div className="inv-table-wrap">
           <table className="inv-table">
@@ -109,10 +109,10 @@ function CatalogCoverage() {
               {rows.map(({ entry, item }) => (
                 <tr key={entry.sku}>
                   <td data-label="Specification">{entry.name}<small>{CATEGORY_LABELS[entry.category]}</small></td>
-                  <td data-label="Size">{entry.size || "â€”"}</td>
-                  <td data-label="Type">{[entry.type, entry.material].filter(Boolean).join(" · ") || "â€”"}</td>
-                  <td data-label="Finish">{entry.finish || "â€”"}</td>
-                  <td data-label="Variant / logo">{[entry.variant, entry.logo].filter(Boolean).join(" · ") || "â€”"}</td>
+                  <td data-label="Size">{entry.size || "—"}</td>
+                  <td data-label="Type">{[entry.type, entry.material].filter(Boolean).join(" · ") || "—"}</td>
+                  <td data-label="Finish">{entry.finish || "—"}</td>
+                  <td data-label="Variant / logo">{[entry.variant, entry.logo].filter(Boolean).join(" · ") || "—"}</td>
                   <td data-label="Item">
                     {item ? (
                       <Link href={`/inventory/item-master/${item.id}`}>{item.sku}</Link>
@@ -195,7 +195,7 @@ function ItemList() {
       {products.error ? (
         <p className="inv-state inv-state--error" role="alert">{products.error}</p>
       ) : products.loading && !products.data ? (
-        <p className="inv-state" role="status">Loading itemsâ€¦</p>
+        <p className="inv-state" role="status">Loading items…</p>
       ) : rows.length === 0 ? (
         <p className="inv-state">{search || status || category ? "No items match these filters." : "No items yet. Create one, or start from the required catalogue."}</p>
       ) : (
@@ -215,11 +215,11 @@ function ItemList() {
                     <td data-label="SKU"><Link href={`/inventory/item-master/${item.id}`}>{item.sku}</Link></td>
                     <td data-label="Item">{item.name}<small>{item.category}</small></td>
                     <td data-label="Specification">
-                      {[item.size, item.material, item.itemType, item.finish, item.color, item.variant, item.logoType].filter(Boolean).join(" · ") || "â€”"}
+                      {[item.size, item.material, item.itemType, item.finish, item.color, item.variant, item.logoType].filter(Boolean).join(" · ") || "—"}
                     </td>
                     <td data-label="Unit">{item.unit}</td>
                     <td data-label="Min." className="inv-num">{item.minimumStock}</td>
-                    <td data-label="Available" className="inv-num">{stock?.tracked ? stock.available : "â€”"}</td>
+                    <td data-label="Available" className="inv-num">{stock?.tracked ? stock.available : "—"}</td>
                     <td data-label="Stock">{stockBadge(stock?.tracked ? stock : null)}</td>
                     <td data-label="Status"><span className="inv-badge">{item.status}</span></td>
                     <td data-label="Actions">

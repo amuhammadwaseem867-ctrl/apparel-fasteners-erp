@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useRef, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
@@ -291,7 +291,7 @@ export default function LoginPage() {
                   className="erp-login__forgot"
                   onClick={() =>
                     setError(
-                      "Ask an administrator to reset your password (Administration â†’ Users).",
+                      "Ask an administrator to reset your password (Administration → Users).",
                     )
                   }
                   disabled={busy}

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 /*
  * The AF7 packing list for a whole order (D-048): every product of the
@@ -18,11 +18,11 @@ export default function OrderPackingPrintClient({ id }) {
   const { data, error } = useApiData(`/api/sales/orders/${encodeURIComponent(id)}/packing`);
 
   if (error) return <main className="print-doc print-doc--message"><p role="alert">{error}</p><Link href={`/sales/orders/${id}`}>Back to order</Link></main>;
-  if (!data) return <main className="print-doc print-doc--message"><p role="status">Loading packing listâ€¦</p></main>;
+  if (!data) return <main className="print-doc print-doc--message"><p role="status">Loading packing list…</p></main>;
 
   const { rows } = data;
   const sum = (field) => rows.filter((row) => row[field] !== null && row[field] !== undefined).reduce((total, row) => addDecimalStrings(total, String(row[field])), "0");
-  const weights = (row) => (row.netWeight === null && row.grossWeight === null ? "" : `${row.netWeight ?? "â€”"} / ${row.grossWeight ?? "â€”"}`);
+  const weights = (row) => (row.netWeight === null && row.grossWeight === null ? "" : `${row.netWeight ?? "—"} / ${row.grossWeight ?? "—"}`);
   const units = [...new Set(rows.map((row) => row.unit))];
   const totalQuantity = units.length === 1 ? `${sum("quantity")} ${units[0]}` : units.map((unit) => `${rows.filter((row) => row.unit === unit).reduce((total, row) => addDecimalStrings(total, row.quantity), "0")} ${unit}`).join(" + ");
   const bags = rows.reduce((total, row) => total + (row.bags ?? 1), 0);
@@ -74,7 +74,7 @@ export default function OrderPackingPrintClient({ id }) {
                 <td colSpan={3}>TOTAL</td>
                 <td className="num">{totalQuantity}</td>
                 <td className="center">{bags}</td>
-                <td className="num">{anyWeight("netWeight") ? sum("netWeight") : "â€”"} / {anyWeight("grossWeight") ? sum("grossWeight") : "â€”"}</td>
+                <td className="num">{anyWeight("netWeight") ? sum("netWeight") : "—"} / {anyWeight("grossWeight") ? sum("grossWeight") : "—"}</td>
               </tr>
             </tbody>
           </table>

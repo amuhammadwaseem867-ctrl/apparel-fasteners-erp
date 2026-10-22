@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -109,7 +109,7 @@ function BatchDetail({ id, onClose, onChanged }) {
   const next = { ACTIVE: ["ON_HOLD", "RELEASED", "REJECTED", "CONSUMED"], ON_HOLD: ["RELEASED", "REJECTED"], RELEASED: ["ON_HOLD", "CONSUMED"] }[data?.status] ?? [];
   return (
     <Modal open onClose={onClose} title={data ? `Batch ${data.batchNumber}` : "Batch"} size="large">
-      {result.error ? <p className="inv-dialog__error" role="alert">{result.error}</p> : !data ? <p className="inv-state" role="status">Loadingâ€¦</p> : (
+      {result.error ? <p className="inv-dialog__error" role="alert">{result.error}</p> : !data ? <p className="inv-state" role="status">Loading…</p> : (
         <div className="inv-dialog">
           <p><span className={`inv-badge ${TONE[data.status] ? `inv-badge--${TONE[data.status]}` : ""}`}>{label(data.status)}</span> {data.expired && <span className="inv-badge inv-badge--danger">Expired</span>} · {data.sku} {data.productName} · {data.quantity} {data.unit} · dated {data.madeOn}{data.expiresOn ? ` · expires ${data.expiresOn}` : ""}</p>
           <h3>Traceability</h3>
@@ -157,7 +157,7 @@ export default function BatchesLotsPage() {
           <div className="inv-field"><label htmlFor="bt-search">Search</label><input id="bt-search" type="search" placeholder="Batch, SKU, supplier lot, order or receipt" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} /></div>
           <div className="inv-field"><label htmlFor="bt-status">Status</label><select id="bt-status" value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }}><option value="">All</option><option value="ACTIVE">Active</option><option value="ON_HOLD">On hold</option><option value="RELEASED">Released</option><option value="REJECTED">Rejected</option><option value="CONSUMED">Consumed</option><option value="EXPIRED">Expired (not consumed)</option></select></div>
         </div>
-        {list.error ? <p className="inv-state inv-state--error" role="alert">{list.error}</p> : !list.data ? <p className="inv-state" role="status">Loading batchesâ€¦</p> : rows.length === 0 ? <p className="inv-state">No batches{search || status ? " match" : " registered yet"}.</p> : (
+        {list.error ? <p className="inv-state inv-state--error" role="alert">{list.error}</p> : !list.data ? <p className="inv-state" role="status">Loading batches…</p> : rows.length === 0 ? <p className="inv-state">No batches{search || status ? " match" : " registered yet"}.</p> : (
           <div className="inv-table-wrap">
             <table className="inv-table">
               <thead><tr><th>Batch</th><th>Item</th><th>Source</th><th className="inv-num">Quantity</th><th>Dates</th><th>Status</th></tr></thead>
