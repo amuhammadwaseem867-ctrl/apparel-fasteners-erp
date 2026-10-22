@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -71,7 +71,7 @@ export default function PayrollRunClient({ id }) {
     if (prompts[action] && !window.confirm(prompts[action])) return;
     let paymentReference = "";
     if (action === "pay") {
-      paymentReference = window.prompt("Payment reference (bank batch, cheque numbers…)") ?? null;
+      paymentReference = window.prompt("Payment reference (bank batch, cheque numbersâ€¦)") ?? null;
       if (paymentReference === null) return;
     }
     setBusy(action);
@@ -86,7 +86,7 @@ export default function PayrollRunClient({ id }) {
   }
 
   if (loaded.error && !run) return <main className="inv-page"><p className="inv-dialog__error" role="alert">{loaded.error}</p></main>;
-  if (!run) return <main className="inv-page"><p className="inv-state" role="status">Loading payroll…</p></main>;
+  if (!run) return <main className="inv-page"><p className="inv-state" role="status">Loading payrollâ€¦</p></main>;
   const draft = run.status === "DRAFT";
   const unrecorded = run.lines.filter((line) => line.unrecordedDays > 0).length;
   const unpaid = run.lines.filter((line) => Number(line.basicSalary) === 0).length;
@@ -121,13 +121,13 @@ export default function PayrollRunClient({ id }) {
         <div className="inv-kpi"><span>Net pay</span><strong>{formatAmount(run.netTotal)}</strong></div>
       </section>
       <section className="inv-card">
-        <div className="inv-card__header"><h2>Employees</h2><small>Paid days: monthly = employed − absent − unpaid leave − ½ half days; daily = present + paid leave + ½ half days.</small></div>
+        <div className="inv-card__header"><h2>Employees</h2><small>Paid days: monthly = employed âˆ’ absent âˆ’ unpaid leave âˆ’ Â½ half days; daily = present + paid leave + Â½ half days.</small></div>
         <div className="inv-table-wrap">
           <table className="inv-table">
             <thead>
               <tr>
                 <th>Employee</th><th className="inv-num">Paid days</th><th className="inv-num">Basic</th><th className="inv-num">Allowances</th><th className="inv-num">Overtime</th>
-                <th className="inv-num">Other +</th><th className="inv-num">Gross</th><th className="inv-num">Fixed ded.</th><th className="inv-num">Advance</th><th className="inv-num">Other −</th><th className="inv-num">Net</th><th />
+                <th className="inv-num">Other +</th><th className="inv-num">Gross</th><th className="inv-num">Fixed ded.</th><th className="inv-num">Advance</th><th className="inv-num">Other âˆ’</th><th className="inv-num">Net</th><th />
               </tr>
             </thead>
             <tbody>
@@ -142,7 +142,7 @@ export default function PayrollRunClient({ id }) {
                   <td data-label="Gross" className="inv-num">{formatAmount(line.grossPay)}</td>
                   <td data-label="Fixed ded." className="inv-num">{formatAmount(line.fixedDeduction)}</td>
                   <td data-label="Advance" className="inv-num">{formatAmount(line.advanceRecovery)}</td>
-                  <td data-label="Other −" className="inv-num">{formatAmount(line.otherDeduction)}</td>
+                  <td data-label="Other âˆ’" className="inv-num">{formatAmount(line.otherDeduction)}</td>
                   <td data-label="Net" className="inv-num"><strong>{formatAmount(line.netPay)}</strong></td>
                   <td data-label="Actions">
                     {draft && can("payroll:process") && <button type="button" className="inv-text-button" onClick={() => setAdjusting(line)}>Adjust</button>}{" "}
@@ -158,3 +158,4 @@ export default function PayrollRunClient({ id }) {
     </main>
   );
 }
+

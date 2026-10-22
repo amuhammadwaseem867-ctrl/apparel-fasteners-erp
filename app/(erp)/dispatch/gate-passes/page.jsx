@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -153,7 +153,7 @@ export default function GatePassesPage() {
         {passes.error ? (
           <p className="inv-state inv-state--error" role="alert">{passes.error}</p>
         ) : !passes.data ? (
-          <p className="inv-state" role="status">Loading gate passes…</p>
+          <p className="inv-state" role="status">Loading gate passesâ€¦</p>
         ) : rows.length === 0 ? (
           <p className="inv-state">No gate passes match these filters.</p>
         ) : (
@@ -168,8 +168,8 @@ export default function GatePassesPage() {
                     <td data-label="Party">{row.partyName}</td>
                     <td data-label="Purpose">{row.purpose}</td>
                     <td data-label="Items" className="inv-num">{row.lineCount}</td>
-                    <td data-label="Vehicle">{row.vehicleNumber || "—"}</td>
-                    <td data-label="Return by">{row.expectedReturnDate ?? "—"}</td>
+                    <td data-label="Vehicle">{row.vehicleNumber || "â€”"}</td>
+                    <td data-label="Return by">{row.expectedReturnDate ?? "â€”"}</td>
                     <td data-label="Status"><GatePassStatusBadge status={row.status} overdue={row.overdue} /></td>
                   </tr>
                 ))}
@@ -183,3 +183,4 @@ export default function GatePassesPage() {
     </main>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /*
  * AF7 Inward / Outward Gate Pass (GET /api/gate-passes/[id]): document
@@ -14,8 +14,6 @@ import useApiData from "@/lib/inventory/useApiData";
 import { addDecimalStrings } from "@/server/core/utils/decimal";
 import useCompany from "@/lib/useCompany";
 
-const MIN_ROWS = 12;
-
 /* Sum of the lines that give a value; blank when none does. */
 function columnTotal(lines, field) {
   const given = lines.filter((line) => line[field] !== null && line[field] !== undefined);
@@ -27,14 +25,13 @@ export default function GatePassPrintClient({ id }) {
   const { data: pass, error } = useApiData(`/api/gate-passes/${encodeURIComponent(id)}`);
 
   if (error) return <main className="print-doc print-doc--message"><p role="alert">{error}</p><Link href="/dispatch/gate-passes">Back to gate passes</Link></main>;
-  if (!pass) return <main className="print-doc print-doc--message"><p role="status">Loading gate pass…</p></main>;
+  if (!pass) return <main className="print-doc print-doc--message"><p role="status">Loading gate passâ€¦</p></main>;
 
   const inward = pass.passType === "INWARD";
   const units = [...new Set(pass.lines.map((line) => line.unit))];
-  const weights = (line) => [line.netWeight, line.grossWeight].some((value) => value !== null) ? `${line.netWeight ?? "—"} / ${line.grossWeight ?? "—"}` : "";
+  const weights = (line) => [line.netWeight, line.grossWeight].some((value) => value !== null) ? `${line.netWeight ?? "â€”"} / ${line.grossWeight ?? "â€”"}` : "";
   const net = columnTotal(pass.lines, "netWeight");
   const gross = columnTotal(pass.lines, "grossWeight");
-  const blanks = Math.max(0, MIN_ROWS - pass.lines.length);
 
   return (
     <main className="print-doc">
@@ -47,8 +44,8 @@ export default function GatePassPrintClient({ id }) {
         title={<>INWARD / OUTWARD<br />GATE PASS</>}
         subtitle={(
           <div>
-            <span className="af7__check"><i>{inward ? "✓" : ""}</i>INWARD</span>
-            <span className="af7__check"><i>{inward ? "" : "✓"}</i>OUTWARD</span>
+            <span className="af7__check"><i>{inward ? "âœ“" : ""}</i>INWARD</span>
+            <span className="af7__check"><i>{inward ? "" : "âœ“"}</i>OUTWARD</span>
             {!inward && <p className="af7__small">{PASS_TYPES[pass.passType]}</p>}
           </div>
         )}
@@ -81,9 +78,6 @@ export default function GatePassPrintClient({ id }) {
                   <td className="num">{weights(line)}</td>
                 </tr>
               ))}
-              {Array.from({ length: blanks }, (_, index) => (
-                <tr key={`blank-${index}`} className="af7__blank"><td className="center">{pass.lines.length + index + 1}</td><td /><td /><td /><td /></tr>
-              ))}
             </tbody>
           </table>
         </Af7Section>
@@ -92,7 +86,7 @@ export default function GatePassPrintClient({ id }) {
           <div className="af7__three">
             <Af7Fields rows={[["Total quantity", units.length === 1 ? `${columnTotal(pass.lines, "quantity")} ${units[0]}` : units.length > 1 ? "Mixed units, see lines" : ""]]} />
             <Af7Fields rows={[["Total no. of bags", columnTotal(pass.lines, "bags")]]} />
-            <Af7Fields rows={[["Total weight (kg)", net || gross ? `${net || "—"} / ${gross || "—"}` : ""]]} />
+            <Af7Fields rows={[["Total weight (kg)", net || gross ? `${net || "â€”"} / ${gross || "â€”"}` : ""]]} />
           </div>
         </Af7Section>
 
@@ -105,3 +99,5 @@ export default function GatePassPrintClient({ id }) {
     </main>
   );
 }
+
+

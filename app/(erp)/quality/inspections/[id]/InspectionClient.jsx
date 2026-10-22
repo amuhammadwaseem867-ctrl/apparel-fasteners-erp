@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -48,7 +48,7 @@ export default function InspectionClient({ id }) {
   }
 
   if (loaded.error && !inspection) return <main className="inv-page"><p className="inv-dialog__error" role="alert">{loaded.error}</p></main>;
-  if (!inspection) return <main className="inv-page"><p className="inv-state" role="status">Loading inspection…</p></main>;
+  if (!inspection) return <main className="inv-page"><p className="inv-state" role="status">Loading inspectionâ€¦</p></main>;
 
   return (
     <main className="inv-page">
@@ -115,3 +115,4 @@ export default function InspectionClient({ id }) {
     </main>
   );
 }
+

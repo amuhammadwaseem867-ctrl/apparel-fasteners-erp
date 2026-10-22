@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -39,7 +39,7 @@ export default function ShipmentClient({ id }) {
   }
 
   if (loaded.error && !shipment) return <main className="inv-page"><p className="inv-dialog__error" role="alert">{loaded.error}</p></main>;
-  if (!shipment) return <main className="inv-page"><p className="inv-state" role="status">Loading shipment…</p></main>;
+  if (!shipment) return <main className="inv-page"><p className="inv-state" role="status">Loading shipmentâ€¦</p></main>;
 
   return (
     <main className="inv-page">
@@ -81,7 +81,7 @@ export default function ShipmentClient({ id }) {
                   <td data-label="#" className="inv-num">{line.lineNo}</td>
                   <td data-label="Item"><strong>{line.sku}</strong><small>{line.productName}</small></td>
                   <td data-label="Packing list">{line.packingListId ? <Link href={`/packing/orders/${line.packingListId}`}>{line.packingNumber}</Link> : "Loose stock"}{line.packageCount ? <small>{line.packageCount} packages</small> : null}</td>
-                  <td data-label="Production order">{line.productionOrderId ? <Link href={`/production/orders/${line.productionOrderId}`}>{line.productionOrderNumber}</Link> : "—"}</td>
+                  <td data-label="Production order">{line.productionOrderId ? <Link href={`/production/orders/${line.productionOrderId}`}>{line.productionOrderNumber}</Link> : "â€”"}</td>
                   <td data-label="Quantity" className="inv-num">{line.quantity} {line.unit}</td>
                 </tr>
               ))}
@@ -127,3 +127,4 @@ export default function ShipmentClient({ id }) {
     </main>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /*
  * AF7 Sales Tax Invoice (GET /api/finance/invoices/[id]), laid out like the
@@ -124,7 +124,7 @@ export default function InvoicePrintClient({ id }) {
   const { data: invoice, error } = useApiData(`/api/finance/invoices/${encodeURIComponent(id)}`);
 
   if (error) return <main className="print-doc print-doc--message"><p role="alert">{error}</p><Link href="/finance/invoices">Back to invoices</Link></main>;
-  if (!invoice) return <main className="print-doc print-doc--message"><p role="status">Loading invoice…</p></main>;
+  if (!invoice) return <main className="print-doc print-doc--message"><p role="status">Loading invoiceâ€¦</p></main>;
 
   // Before GST = goods after discount; the GST is the invoice's own tax.
   const beforeGst = subtractDecimalStrings(invoice.subtotal, invoice.discountTotal);
@@ -156,22 +156,23 @@ export default function InvoicePrintClient({ id }) {
         <div className="af7__two">
           <Af7Section title="Consignee">
             <Af7Fields rows={[
+              ["Customer PO #", invoice.customerPo]
               ["Consignee", invoice.customerName],
               ["Address", invoice.customerAddress],
               ["Contact #", invoice.customerPhone],
               ["Contact person", invoice.customerContactPerson],
               ["NTN #", invoice.customerNtn],
               ["STRN #", invoice.customerStrn],
+              ,
             ]} />
           </Af7Section>
           <Af7Section title="Invoice details">
             <Af7Fields rows={[
-              ["Customer PO #", invoice.customerPo],
-              ["Invoice no.", invoice.invoiceNumber],
               ["Date", day(invoice.invoiceDate)],
               ["Order no.", invoice.salesOrderNumber],
               ["Delivery challan", invoice.shipmentNumber],
               ["Due date", day(invoice.dueDate)],
+              ["NTN #", invoice.companyNtn],
             ]} />
           </Af7Section>
         </div>
@@ -238,3 +239,4 @@ export default function InvoicePrintClient({ id }) {
     </main>
   );
 }
+

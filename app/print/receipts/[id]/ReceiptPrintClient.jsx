@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -23,7 +23,7 @@ export default function ReceiptPrintClient({ id }) {
   }, [id]);
 
   if (error) return <main className="print-doc print-doc--message"><p role="alert">{error}</p><Link href="/finance/payments">Back to receipts</Link></main>;
-  if (!receipt) return <main className="print-doc print-doc--message"><p role="status">Loading receipt…</p></main>;
+  if (!receipt) return <main className="print-doc print-doc--message"><p role="status">Loading receiptâ€¦</p></main>;
 
   return (
     <main className="print-doc">
@@ -68,3 +68,4 @@ export default function ReceiptPrintClient({ id }) {
     </main>
   );
 }
+

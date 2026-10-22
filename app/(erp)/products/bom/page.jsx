@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 
@@ -137,7 +137,7 @@ function BomDetail({ id, onChanged, onEdit }) {
   }
 
   if (bom.error) return <p className="inv-dialog__error" role="alert">{bom.error}</p>;
-  if (!bom.data) return <p className="inv-state" role="status">Loading BOM…</p>;
+  if (!bom.data) return <p className="inv-state" role="status">Loading BOMâ€¦</p>;
   const data = bom.data;
 
   return (
@@ -166,7 +166,7 @@ function BomDetail({ id, onChanged, onEdit }) {
                 <td data-label="Component"><strong>{line.sku}</strong><small>{line.productName}</small></td>
                 <td data-label="Qty per unit" className="inv-num">{line.quantity} {line.unit}</td>
                 <td data-label="Scrap %" className="inv-num">{line.scrapPercent}</td>
-                <td data-label="Notes">{line.notes || "—"}</td>
+                <td data-label="Notes">{line.notes || "â€”"}</td>
               </tr>
             ))}
           </tbody>
@@ -213,7 +213,7 @@ export default function BomPage() {
         {boms.error ? (
           <p className="inv-state inv-state--error" role="alert">{boms.error}</p>
         ) : !boms.data ? (
-          <p className="inv-state" role="status">Loading BOMs…</p>
+          <p className="inv-state" role="status">Loading BOMsâ€¦</p>
         ) : rows.length === 0 ? (
           <p className="inv-state">{status ? "No BOMs with this status." : "No bills of materials yet."}</p>
         ) : (
@@ -256,3 +256,4 @@ export default function BomPage() {
     </main>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /*
  * AF7 Order Sheet: the copy that goes to production, laid out like the
@@ -26,7 +26,7 @@ export default function SalesOrderSheetClient({ id }) {
   const backHref = `/sales/orders/${encodeURIComponent(id)}`;
 
   if (error) return <main className="print-doc print-doc--message"><p role="alert">{error}</p><Link href={backHref}>Back to order</Link></main>;
-  if (!order) return <main className="print-doc print-doc--message"><p role="status">Loading order…</p></main>;
+  if (!order) return <main className="print-doc print-doc--message"><p role="status">Loading orderâ€¦</p></main>;
 
   const total = order.lines.reduce((sum, line) => sum + Number(line.quantity), 0);
   const units = [...new Set(order.lines.map((line) => line.unit))];
@@ -80,3 +80,5 @@ export default function SalesOrderSheetClient({ id }) {
     </main>
   );
 }
+
+

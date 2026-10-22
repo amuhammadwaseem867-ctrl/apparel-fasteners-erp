@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -37,7 +37,7 @@ export default function ProductionJobCardClient({ id }) {
   }
 
   if (!order) {
-    return <main className="print-doc print-doc--message"><p role="status">Loading job card…</p></main>;
+    return <main className="print-doc print-doc--message"><p role="status">Loading job cardâ€¦</p></main>;
   }
 
   return (
@@ -59,7 +59,7 @@ export default function ProductionJobCardClient({ id }) {
               <div><dt>Order no.</dt><dd>{order.orderNumber}</dd></div>
               <div><dt>Status</dt><dd>{order.status.replace("_", " ")}</dd></div>
               <div><dt>Priority</dt><dd>{order.priority}</dd></div>
-              <div><dt>Due date</dt><dd>{order.dueDate ?? "—"}</dd></div>
+              <div><dt>Due date</dt><dd>{order.dueDate ?? "â€”"}</dd></div>
               {order.salesOrderNumber && <div><dt>Sales order</dt><dd>{order.salesOrderNumber}</dd></div>}
             </dl>
           </div>
@@ -134,3 +134,4 @@ export default function ProductionJobCardClient({ id }) {
     </main>
   );
 }
+

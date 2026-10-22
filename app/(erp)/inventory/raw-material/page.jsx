@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /*
  * Raw Material Stock (D-044): the live count of every raw material, from
@@ -33,8 +33,8 @@ const STATUS = {
   OUT: <span className="inv-badge inv-badge--danger">Out of stock</span>,
 };
 
-const dash = (value) => (value === null || value === undefined || value === "" ? "—" : value);
-const qty = (value) => (value === null || value === undefined ? "—" : Number(value).toLocaleString("en-US", { maximumFractionDigits: 3 }));
+const dash = (value) => (value === null || value === undefined || value === "" ? "â€”" : value);
+const qty = (value) => (value === null || value === undefined ? "â€”" : Number(value).toLocaleString("en-US", { maximumFractionDigits: 3 }));
 
 function SetupBanner({ list, onDone }) {
   const [busy, setBusy] = useState(false);
@@ -144,7 +144,7 @@ export default function RawMaterialPage() {
         {data.error ? (
           <p className="inv-state inv-state--error" role="alert">{data.error}</p>
         ) : !data.data ? (
-          <p className="inv-state" role="status">Loading stock…</p>
+          <p className="inv-state" role="status">Loading stockâ€¦</p>
         ) : rows.length === 0 ? (
           <p className="inv-state">{search || category || stock ? "No items match these filters." : "No raw materials yet. Add the AF7 list above, or create an item."}</p>
         ) : (
@@ -202,3 +202,4 @@ export default function RawMaterialPage() {
     </main>
   );
 }
+

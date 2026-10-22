@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 
@@ -31,7 +31,7 @@ export default function StageBoardPage() {
       {orders.error ? (
         <p className="inv-state inv-state--error" role="alert">{orders.error}</p>
       ) : !orders.data ? (
-        <p className="inv-state" role="status">Loading stage board…</p>
+        <p className="inv-state" role="status">Loading stage boardâ€¦</p>
       ) : (
         <>
           {orders.data.hasMore && <p className="inv-state" role="status">Showing the 100 most recent active orders. Use the order list filters to see the rest.</p>}
@@ -60,3 +60,4 @@ export default function StageBoardPage() {
     </main>
   );
 }
+

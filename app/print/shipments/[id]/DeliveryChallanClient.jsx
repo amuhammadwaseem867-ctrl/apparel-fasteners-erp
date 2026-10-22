@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -21,9 +21,9 @@ export default function DeliveryChallanClient({ id }) {
   }, [id]);
 
   if (error) return <main className="print-doc print-doc--message"><p role="alert">{error}</p><Link href="/dispatch/shipments">Back to dispatch</Link></main>;
-  if (!shipment) return <main className="print-doc print-doc--message"><p role="status">Loading delivery challan…</p></main>;
+  if (!shipment) return <main className="print-doc print-doc--message"><p role="status">Loading delivery challanâ€¦</p></main>;
 
-  const date = (value) => (value ? new Date(value).toLocaleString("en-GB") : "—");
+  const date = (value) => (value ? new Date(value).toLocaleString("en-GB") : "â€”");
 
   return (
     <main className="print-doc">
@@ -55,7 +55,7 @@ export default function DeliveryChallanClient({ id }) {
           <h2>Transport</h2>
           <span>
             {[shipment.transporter, shipment.vehicleNumber && `Vehicle ${shipment.vehicleNumber}`, shipment.driverName && `Driver ${shipment.driverName}`, shipment.driverPhone, shipment.trackingReference && `Ref ${shipment.trackingReference}`]
-              .filter(Boolean).join(" · ") || "—"}
+              .filter(Boolean).join(" · ") || "â€”"}
           </span>
         </section>
         <table className="print-doc__table">
@@ -67,7 +67,7 @@ export default function DeliveryChallanClient({ id }) {
                 <td><strong>{line.sku}</strong></td>
                 <td>{line.productName}</td>
                 <td>{line.packingNumber ?? "Loose"}</td>
-                <td className="print-doc__num">{line.packageCount ?? "—"}</td>
+                <td className="print-doc__num">{line.packageCount ?? "â€”"}</td>
                 <td className="print-doc__num">{line.quantity}</td>
                 <td>{line.unit}</td>
               </tr>
@@ -85,3 +85,4 @@ export default function DeliveryChallanClient({ id }) {
     </main>
   );
 }
+

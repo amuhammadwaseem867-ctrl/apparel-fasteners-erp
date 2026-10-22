@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 
@@ -113,7 +113,7 @@ export default function SuppliersPage() {
         {suppliers.error ? (
           <p className="inv-state inv-state--error" role="alert">{suppliers.error}</p>
         ) : !suppliers.data ? (
-          <p className="inv-state" role="status">Loading suppliers…</p>
+          <p className="inv-state" role="status">Loading suppliersâ€¦</p>
         ) : rows.length === 0 ? (
           <p className="inv-state">{search || status ? "No suppliers match these filters." : "No suppliers yet."}</p>
         ) : (
@@ -124,8 +124,8 @@ export default function SuppliersPage() {
                 {rows.map((row) => (
                   <tr key={row.id}>
                     <td data-label="Supplier"><strong>{row.name}</strong><small>{row.code}</small></td>
-                    <td data-label="Contact">{row.contactName || "—"}<small>{[row.phone, row.email].filter(Boolean).join(" · ")}</small></td>
-                    <td data-label="Tax reg.">{row.taxRegistration || "—"}</td>
+                    <td data-label="Contact">{row.contactName || "â€”"}<small>{[row.phone, row.email].filter(Boolean).join(" · ")}</small></td>
+                    <td data-label="Tax reg.">{row.taxRegistration || "â€”"}</td>
                     <td data-label="Terms" className="inv-num">{row.paymentTermsDays} days</td>
                     <td data-label="Status"><ProcStatusBadge status={row.status} /></td>
                     <td data-label="">{can("purchasing:create") && <button type="button" className="inv-link-button" onClick={() => setEditing(row)}>Edit</button>}</td>
@@ -141,3 +141,4 @@ export default function SuppliersPage() {
     </main>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -78,7 +78,7 @@ export default function CapacityPage() {
           </div>
           {data && <p className="inv-field__hint" style={{ alignSelf: "end" }}>{data.workingDays} working days from {data.asOf}.</p>}
         </div>
-        {result.error ? <p className="inv-state inv-state--error" role="alert">{result.error}</p> : !data ? <p className="inv-state" role="status">Loading capacity…</p> : (
+        {result.error ? <p className="inv-state inv-state--error" role="alert">{result.error}</p> : !data ? <p className="inv-state" role="status">Loading capacityâ€¦</p> : (
           <div className="inv-table-wrap">
             <table className="inv-table">
               <thead><tr><th>Stage</th><th>Capacity</th><th>Open load</th><th className="inv-num">Days of work</th><th className="inv-num">Utilisation</th><th /></tr></thead>
@@ -86,10 +86,10 @@ export default function CapacityPage() {
                 {data.stages.map((stage) => (
                   <tr key={stage.stageKey}>
                     <td data-label="Stage"><strong>{stage.sequence}. {stage.label}</strong><small>{stage.configured ? stage.name : stage.department}</small></td>
-                    <td data-label="Capacity">{stage.configured ? `${stage.dailyCapacity} ${stage.capacityUnit} × ${stage.shiftsPerDay} shift${stage.shiftsPerDay > 1 ? "s" : ""}` : <span className="inv-badge inv-badge--warning">Not set</span>}</td>
-                    <td data-label="Open load">{stage.load.length === 0 ? "—" : stage.load.map((load) => <div key={load.unit}>{load.quantity} {load.unit} · {load.orders} order{load.orders === 1 ? "" : "s"}{load.overdueOrders ? <span className="inv-neg"> · {load.overdueOrders} overdue</span> : ""}</div>)}{stage.otherUnits.length > 0 && stage.configured && <small>{stage.otherUnits.join(", ")} not comparable with {stage.capacityUnit}</small>}</td>
-                    <td data-label="Days of work" className="inv-num">{stage.loadDays ?? "—"}</td>
-                    <td data-label="Utilisation" className={`inv-num ${stage.utilisationPercent > 100 ? "inv-neg" : ""}`}>{stage.utilisationPercent === null ? "—" : `${stage.utilisationPercent}%`}</td>
+                    <td data-label="Capacity">{stage.configured ? `${stage.dailyCapacity} ${stage.capacityUnit} Ã— ${stage.shiftsPerDay} shift${stage.shiftsPerDay > 1 ? "s" : ""}` : <span className="inv-badge inv-badge--warning">Not set</span>}</td>
+                    <td data-label="Open load">{stage.load.length === 0 ? "â€”" : stage.load.map((load) => <div key={load.unit}>{load.quantity} {load.unit} · {load.orders} order{load.orders === 1 ? "" : "s"}{load.overdueOrders ? <span className="inv-neg"> · {load.overdueOrders} overdue</span> : ""}</div>)}{stage.otherUnits.length > 0 && stage.configured && <small>{stage.otherUnits.join(", ")} not comparable with {stage.capacityUnit}</small>}</td>
+                    <td data-label="Days of work" className="inv-num">{stage.loadDays ?? "â€”"}</td>
+                    <td data-label="Utilisation" className={`inv-num ${stage.utilisationPercent > 100 ? "inv-neg" : ""}`}>{stage.utilisationPercent === null ? "â€”" : `${stage.utilisationPercent}%`}</td>
                     <td data-label="">{can("production:update") && <button type="button" className="inv-link-button" onClick={() => setEditing(stage)}>{stage.configured ? "Edit" : "Set capacity"}</button>}</td>
                   </tr>
                 ))}
@@ -102,3 +102,4 @@ export default function CapacityPage() {
     </main>
   );
 }
+

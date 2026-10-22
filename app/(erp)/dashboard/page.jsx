@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -144,7 +144,7 @@ function greeting() {
 
 function formatDate(value) {
   if (!value) {
-    return "—";
+    return "â€”";
   }
 
   return String(value).slice(0, 10);
@@ -587,3 +587,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

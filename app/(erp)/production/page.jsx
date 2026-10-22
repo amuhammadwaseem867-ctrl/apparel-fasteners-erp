@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 
@@ -37,7 +37,7 @@ export default function ProductionDashboardPage() {
       {summary.error ? (
         <p className="inv-dialog__error" role="alert">{summary.error}</p>
       ) : !data ? (
-        <p className="inv-state" role="status">Loading production summary…</p>
+        <p className="inv-state" role="status">Loading production summaryâ€¦</p>
       ) : (
         <>
           <section className="inv-kpis" aria-label="Production orders by status">
@@ -68,3 +68,4 @@ export default function ProductionDashboardPage() {
     </main>
   );
 }
+

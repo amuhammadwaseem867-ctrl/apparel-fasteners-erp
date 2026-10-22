@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -95,7 +95,7 @@ function WeeklyOffForm({ value, editable, onSaved }) {
 const CHECK_STAGES = PRODUCTION_STAGES.filter((stage) => stage.sequence <= 6);
 const slug = (label) => label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 36) || "check";
 
-/* Production check points (D-040): what each of stages 1–6 must pass before it completes. */
+/* Production check points (D-040): what each of stages 1â€“6 must pass before it completes. */
 function CheckpointsForm({ value, editable, onSaved }) {
   const [stages, setStages] = useState(() => Object.fromEntries(CHECK_STAGES.map((stage) => [stage.key, (value.stages?.[stage.key] ?? []).map((point) => ({ ...point, rowId: point.key }))])));
   const [saving, setSaving] = useState(false);
@@ -144,7 +144,7 @@ function CheckpointsForm({ value, editable, onSaved }) {
                       </select>
                     </td>
                     <td data-label="Unit"><input aria-label="Unit" disabled={!editable} maxLength={20} value={point.unit} onChange={(event) => update(stage.key, point.rowId, "unit", event.target.value)} /></td>
-                    <td data-label="Limit"><input aria-label="Limit" disabled={!editable} maxLength={120} placeholder="e.g. ±0.5 mm, buyer spec" value={point.limit} onChange={(event) => update(stage.key, point.rowId, "limit", event.target.value)} /></td>
+                    <td data-label="Limit"><input aria-label="Limit" disabled={!editable} maxLength={120} placeholder="e.g. Â±0.5 mm, buyer spec" value={point.limit} onChange={(event) => update(stage.key, point.rowId, "limit", event.target.value)} /></td>
                     <td data-label="Required"><input type="checkbox" aria-label="Required" disabled={!editable} checked={point.required} onChange={(event) => update(stage.key, point.rowId, "required", event.target.checked)} /></td>
                     <td data-label="">{editable && <button type="button" className="inv-text-button" onClick={() => setStages((current) => ({ ...current, [stage.key]: current[stage.key].filter((item) => item.rowId !== point.rowId) }))}>Remove</button>}</td>
                   </tr>
@@ -177,7 +177,7 @@ export default function SystemSettingsPage() {
           <p>Company details printed on every document, and the working week used by planning. Changes are audited. Users, roles and the audit log have their own pages.</p>
         </div>
       </header>
-      {result.error ? <p className="inv-state inv-state--error" role="alert">{result.error}</p> : !data ? <p className="inv-state" role="status">Loading settings…</p> : (
+      {result.error ? <p className="inv-state inv-state--error" role="alert">{result.error}</p> : !data ? <p className="inv-state" role="status">Loading settingsâ€¦</p> : (
         <>
           <section className="inv-card">
             <div className="inv-card__header"><h2>Company profile {!data["company.profile"].value.configured && <span className="inv-badge inv-badge--warning">Not yet set</span>}</h2></div>
@@ -211,3 +211,4 @@ export default function SystemSettingsPage() {
     </main>
   );
 }
+

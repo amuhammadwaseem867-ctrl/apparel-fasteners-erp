@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -22,7 +22,7 @@ export default function PurchaseOrderPrintClient({ id }) {
   }, [id]);
 
   if (error) return <main className="print-doc print-doc--message"><p role="alert">{error}</p><Link href="/procurement/purchase-orders">Back to purchase orders</Link></main>;
-  if (!order) return <main className="print-doc print-doc--message"><p role="status">Loading purchase order…</p></main>;
+  if (!order) return <main className="print-doc print-doc--message"><p role="status">Loading purchase orderâ€¦</p></main>;
 
   return (
     <main className="print-doc">
@@ -93,3 +93,4 @@ export default function PurchaseOrderPrintClient({ id }) {
     </main>
   );
 }
+

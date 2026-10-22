@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -58,7 +58,7 @@ export default function InvoicesPage() {
         {invoices.error ? (
           <p className="inv-state inv-state--error" role="alert">{invoices.error}</p>
         ) : !invoices.data ? (
-          <p className="inv-state" role="status">Loading invoices…</p>
+          <p className="inv-state" role="status">Loading invoicesâ€¦</p>
         ) : rows.length === 0 ? (
           <p className="inv-state">{search || status || balance ? "No invoices match these filters." : "No invoices yet. Dispatch a shipment, then invoice it."}</p>
         ) : (
@@ -73,7 +73,7 @@ export default function InvoicesPage() {
                     <td data-label="Order / shipment">{row.salesOrderNumber}<small>{row.shipmentNumber}</small></td>
                     <td data-label="Due">{row.dueDate}{row.daysOverdue > 0 && <small className="inv-neg">{row.daysOverdue} days overdue</small>}</td>
                     <td data-label="Total" className="inv-num">{formatAmount(row.totalAmount)}</td>
-                    <td data-label="Outstanding" className="inv-num">{row.status === "ISSUED" ? formatAmount(row.outstanding) : "—"}</td>
+                    <td data-label="Outstanding" className="inv-num">{row.status === "ISSUED" ? formatAmount(row.outstanding) : "â€”"}</td>
                     <td data-label="Status"><InvoiceStatusBadge status={row.status} paymentStatus={row.paymentStatus} /></td>
                   </tr>
                 ))}
@@ -87,3 +87,4 @@ export default function InvoicesPage() {
     </main>
   );
 }
+

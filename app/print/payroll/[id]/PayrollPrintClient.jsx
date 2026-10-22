@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -23,7 +23,7 @@ export default function PayrollPrintClient({ id, view, employeeId }) {
   }, [id]);
 
   if (error) return <main className="print-doc print-doc--message"><p role="alert">{error}</p><Link href="/people-payroll/payroll">Back to payroll</Link></main>;
-  if (!run) return <main className="print-doc print-doc--message"><p role="status">Loading payroll…</p></main>;
+  if (!run) return <main className="print-doc print-doc--message"><p role="status">Loading payrollâ€¦</p></main>;
 
   const company = (
     <div>
@@ -68,9 +68,9 @@ export default function PayrollPrintClient({ id, view, employeeId }) {
             <table className="print-doc__table">
               <thead><tr><th>Earnings</th><th className="print-doc__num">Amount</th><th>Deductions</th><th className="print-doc__num">Amount</th></tr></thead>
               <tbody>
-                <tr><td>Basic {line.payBasis === "DAILY" ? `(${line.paidDays} days × ${formatAmount(line.basicSalary)})` : ""}</td><td className="print-doc__num">{formatAmount(line.basicEarned)}</td><td>Fixed deduction</td><td className="print-doc__num">{formatAmount(line.fixedDeduction)}</td></tr>
+                <tr><td>Basic {line.payBasis === "DAILY" ? `(${line.paidDays} days Ã— ${formatAmount(line.basicSalary)})` : ""}</td><td className="print-doc__num">{formatAmount(line.basicEarned)}</td><td>Fixed deduction</td><td className="print-doc__num">{formatAmount(line.fixedDeduction)}</td></tr>
                 <tr><td>Allowances</td><td className="print-doc__num">{formatAmount(line.allowancesEarned)}</td><td>Advance recovery</td><td className="print-doc__num">{formatAmount(line.advanceRecovery)}</td></tr>
-                <tr><td>Overtime ({line.overtimeHours} h × {formatAmount(line.overtimeRate)})</td><td className="print-doc__num">{formatAmount(line.overtimePay)}</td><td>Other{line.adjustmentNote ? ` (${line.adjustmentNote})` : ""}</td><td className="print-doc__num">{formatAmount(line.otherDeduction)}</td></tr>
+                <tr><td>Overtime ({line.overtimeHours} h Ã— {formatAmount(line.overtimeRate)})</td><td className="print-doc__num">{formatAmount(line.overtimePay)}</td><td>Other{line.adjustmentNote ? ` (${line.adjustmentNote})` : ""}</td><td className="print-doc__num">{formatAmount(line.otherDeduction)}</td></tr>
                 <tr><td>Other earning</td><td className="print-doc__num">{formatAmount(line.otherEarning)}</td><td /><td /></tr>
               </tbody>
             </table>
@@ -138,3 +138,4 @@ export default function PayrollPrintClient({ id, view, employeeId }) {
     </main>
   );
 }
+

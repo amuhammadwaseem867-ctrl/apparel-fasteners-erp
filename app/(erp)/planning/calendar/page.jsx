@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -73,16 +73,16 @@ export default function CalendarPage() {
         <div>
           <p className="inv-header__eyebrow"><Link href="/planning">Planning</Link></p>
           <h1>Planning calendar</h1>
-          <p>Working days, holidays and what is due: production orders, customer deliveries and supplier deliveries. Weekly off days are set in Administration → Settings{data && !data.weeklyOffConfigured ? " (currently the default: Sunday)" : ""}.</p>
+          <p>Working days, holidays and what is due: production orders, customer deliveries and supplier deliveries. Weekly off days are set in Administration â†’ Settings{data && !data.weeklyOffConfigured ? " (currently the default: Sunday)" : ""}.</p>
         </div>
         <div className="inv-header__actions">
-          <Button variant="secondary" onClick={() => setMonth(shiftMonth(month, -1))}>‹ Previous</Button>
+          <Button variant="secondary" onClick={() => setMonth(shiftMonth(month, -1))}>â€¹ Previous</Button>
           <input aria-label="Month" type="month" value={month} onChange={(event) => event.target.value && setMonth(event.target.value)} />
-          <Button variant="secondary" onClick={() => setMonth(shiftMonth(month, 1))}>Next ›</Button>
+          <Button variant="secondary" onClick={() => setMonth(shiftMonth(month, 1))}>Next â€º</Button>
         </div>
       </header>
       <section className="inv-card">
-        {result.error ? <p className="inv-state inv-state--error" role="alert">{result.error}</p> : !data ? <p className="inv-state" role="status">Loading calendar…</p> : (
+        {result.error ? <p className="inv-state inv-state--error" role="alert">{result.error}</p> : !data ? <p className="inv-state" role="status">Loading calendarâ€¦</p> : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4, padding: 12 }}>
             {WEEKDAYS.map((name) => <div key={name} style={{ fontWeight: 600, fontSize: 12, textAlign: "center" }}>{name}</div>)}
             {Array.from({ length: lead }, (_, index) => <div key={`lead-${index}`} />)}
@@ -91,9 +91,9 @@ export default function CalendarPage() {
                 style={{ minHeight: 76, textAlign: "left", padding: 6, border: "1px solid #e5e7eb", borderRadius: 6, background: day.working ? "#fff" : "#f3f4f6", cursor: "pointer", overflow: "hidden", fontSize: 11 }}>
                 <strong style={{ fontSize: 13 }}>{Number(day.date.slice(8))}</strong>
                 {day.override && <div style={{ color: day.override.dayType === "WORKING" ? "#166534" : "#991b1b" }}>{day.override.note || TYPE_LABEL[day.override.dayType]}</div>}
-                {day.production.length > 0 && <div>⚙ {day.production.length} due</div>}
-                {day.deliveries.length > 0 && <div>🚚 {day.deliveries.length} to ship</div>}
-                {day.purchases.length > 0 && <div>📦 {day.purchases.length} arriving</div>}
+                {day.production.length > 0 && <div>âš™ {day.production.length} due</div>}
+                {day.deliveries.length > 0 && <div>ðŸšš {day.deliveries.length} to ship</div>}
+                {day.purchases.length > 0 && <div>ðŸ“¦ {day.purchases.length} arriving</div>}
               </button>
             ))}
           </div>
@@ -103,3 +103,4 @@ export default function CalendarPage() {
     </main>
   );
 }
+

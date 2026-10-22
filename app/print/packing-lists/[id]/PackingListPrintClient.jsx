@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /*
  * AF7 Packing List (GET /api/packing/lists/[id]): date, PO # and order no.,
@@ -13,21 +13,18 @@ import useApiData from "@/lib/inventory/useApiData";
 import { addDecimalStrings } from "@/server/core/utils/decimal";
 import useCompany from "@/lib/useCompany";
 
-const MIN_ROWS = 10;
-
 export default function PackingListPrintClient({ id }) {
   const company = useCompany();
   const { data: list, error } = useApiData(`/api/packing/lists/${encodeURIComponent(id)}`);
 
   if (error) return <main className="print-doc print-doc--message"><p role="alert">{error}</p><Link href="/packing/orders">Back to packing</Link></main>;
-  if (!list) return <main className="print-doc print-doc--message"><p role="status">Loading packing list…</p></main>;
+  if (!list) return <main className="print-doc print-doc--message"><p role="status">Loading packing listâ€¦</p></main>;
 
   // Total of the weights entered; rows left without a weight add nothing.
   const weight = (field) => (list.packages.some((item) => item[field] !== null)
     ? list.packages.filter((item) => item[field] !== null).reduce((sum, item) => addDecimalStrings(sum, item[field]), "0")
-    : "—");
-  const weights = (item) => (item.netWeight === null && item.grossWeight === null ? "" : `${item.netWeight ?? "—"} / ${item.grossWeight ?? "—"}`);
-  const blanks = Math.max(0, MIN_ROWS - list.packages.length);
+    : "â€”");
+  const weights = (item) => (item.netWeight === null && item.grossWeight === null ? "" : `${item.netWeight ?? "â€”"} / ${item.grossWeight ?? "â€”"}`);
 
   return (
     <main className="print-doc">
@@ -72,9 +69,6 @@ export default function PackingListPrintClient({ id }) {
                   <td className="num">{weights(item)}</td>
                 </tr>
               ))}
-              {Array.from({ length: blanks }, (_, index) => (
-                <tr key={`blank-${index}`} className="af7__blank"><td className="center">{list.packages.length + index + 1}</td><td /><td /><td /><td /><td /></tr>
-              ))}
               <tr className="af7__total-row">
                 <td colSpan={3}>TOTAL</td>
                 <td className="num">{list.totalQuantity} {list.unit}</td>
@@ -94,3 +88,5 @@ export default function PackingListPrintClient({ id }) {
     </main>
   );
 }
+
+

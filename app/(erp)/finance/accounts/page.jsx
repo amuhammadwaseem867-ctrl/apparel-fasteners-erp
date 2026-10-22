@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -90,7 +90,7 @@ export default function AccountsPage() {
         </div>
         <div className="inv-header__actions">{can("finance:approve") && <Button variant="primary" onClick={() => setEditing("new")}>New account</Button>}</div>
       </header>
-      {result.error ? <p className="inv-state inv-state--error" role="alert">{result.error}</p> : !result.data ? <p className="inv-state" role="status">Loading accounts…</p> : TYPES.map(([type, label]) => {
+      {result.error ? <p className="inv-state inv-state--error" role="alert">{result.error}</p> : !result.data ? <p className="inv-state" role="status">Loading accountsâ€¦</p> : TYPES.map(([type, label]) => {
         const group = accounts.filter((account) => account.accountType === type);
         return (
           <section key={type} className="inv-card">
@@ -121,3 +121,4 @@ export default function AccountsPage() {
     </main>
   );
 }
+
