@@ -1,0 +1,124 @@
+# Base44 sandbox/dev stack for the AF7 Apparel Fasteners ERP.
+#
+# This file exists only for the Base44 sandbox (and any developer who wants the
+# same one-command local stack). The application itself is Next.js 16 +
+# Prisma 8 (@prisma/orm-postgres) and needs nothing but a PostgreSQL database.
+#
+#   docker compose -f docker-compose.base44.yml up -d --build
+#   web entry point: http://localhost:3000
+#
+# How it differs from a production run: the app runs `next dev` straight from
+# the cloned source bind-mounted at /app, so edits appear without a rebuild.
+# node_modules lives in a named volume (never on the host, never in git) and is
+# installed from package-lock.json by the containers themselves.
+#
+# Local database credentials are generated here (local infrastructure, not a
+# user secret). Any external credential the app may use later (GROQ_API_KEY /
+# XAI_API_KEY for the optional AI assistant) is delivered by the platform to
+# /run/base44/app.env and wired in as the LAST env_file entry, so a value from
+# the dashboard always wins.
+
+name: apparel-fasteners-erp
+
+x-app-env: &app-env
+  DATABASE_URL: postgresql://af7:af7_local_dev@db:5432/af7
+  NEXT_TELEMETRY_DISABLED: "1"
+  # Provided by the platform at runtime; gated overrides compare it to "1".
+  BASE44_PREVIEW_MODE: ${BASE44_PREVIEW_MODE:-}
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: on-failure
+    environment:
+      POSTGRES_USER: af7
+      POSTGRES_PASSWORD: af7_local_dev
+      POSTGRES_DB: af7
+    volumes:
+      - af7-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U af7 -d af7"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    labels:
+      base44.project: "PostgreSQL"
+      base44.kind: "infra"
+
+  # One-shot: installs dependencies from the lockfile, then brings the database
+  # up to the code on this branch (migrations) and seeds permissions/roles.
+  # It creates no users — accounts are set with `npm run db:set-accounts`.
+  migrate:
+    image: node:22-bookworm
+    working_dir: /app
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      <<: *app-env
+    volumes:
+      - .:/app
+      - af7-node-modules:/app/node_modules
+    command:
+      - sh
+      - -ec
+      - |
+        npm ci --no-audit --no-fund
+        npx prisma db migrate --db "$$DATABASE_URL"
+        npm run db:seed-access
+    labels:
+      base44.project: "Database setup"
+      base44.kind: "worker"
+
+  app:
+    image: node:22-bookworm
+    working_dir: /app
+    restart: on-failure
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    env_file:
+      - /run/base44/app.env
+    environment:
+      <<: *app-env
+      # Needed so next.config.mjs can allow the preview origin in dev.
+      BASE44_PUBLIC_HOST_SUFFIX: ${BASE44_PUBLIC_HOST_SUFFIX:-}
+      BASE44_SANDBOX_HOST_DOMAIN: ${BASE44_SANDBOX_HOST_DOMAIN:-}
+    volumes:
+      - .:/app
+      - af7-node-modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    command:
+      - sh
+      - -ec
+      - |
+        npm ci --no-audit --no-fund
+        exec npm run dev -- -H 0.0.0.0 -p 3000
+    # Checks the Next.js server (the only process in this container) and, through
+    # the session endpoint, that the app can reach PostgreSQL: without a database
+    # that route answers 500, with one it answers 401 (no cookie) or 200.
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          curl -fsS -o /dev/null http://127.0.0.1:3000/login ||
+          { echo "healthcheck failed: the web server did not answer on /login"; exit 1; };
+          code=$$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/auth/session) ||
+          { echo "healthcheck failed: /api/auth/session did not answer"; exit 1; };
+          case "$$code" in 200|401) exit 0;; *) echo "healthcheck failed: /api/auth/session answered $$code (database unreachable?)"; exit 1;; esac
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 120s
+    labels:
+      base44.project: "AF7 ERP"
+      base44.kind: "web"
+      base44.port: "3000"
+
+volumes:
+  af7-db-data:
+  af7-node-modules:
