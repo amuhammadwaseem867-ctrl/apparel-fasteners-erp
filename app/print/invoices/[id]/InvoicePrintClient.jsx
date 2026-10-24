@@ -227,7 +227,7 @@ export default function InvoicePrintClient({ id }) {
           <div className="af7__bank">
             <Af7Fields rows={[["Bank name", company.bankName], ["Account name", company.accountName], ["Account no.", company.accountNumber], ["IBAN", company.iban], ["SWIFT code", company.swiftCode], ["Branch / address", company.bankBranch]]} />
             <div className="af7__signature">
-              <strong>AUTHORIZED SIGNATORY</strong>
+              <strong>CUSTOMER ACKNOWLEDGEMENT</strong>
               <span className="af7__sign-line">Signature</span>
             </div>
             <Af7Stamp />
