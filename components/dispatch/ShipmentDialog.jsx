@@ -21,6 +21,7 @@ function newKey() {
 export default function ShipmentDialog({ initialSalesOrderId = "", onClose, onCreated }) {
   const [salesOrderId, setSalesOrderId] = useState(initialSalesOrderId);
   const [selected, setSelected] = useState([]);
+  const [quantities, setQuantities] = useState({});
   const [loose, setLoose] = useState({});
   const [chosen, setChosen] = useState({ locationId: "", locationText: undefined });
   const [transport, setTransport] = useState({ vehicleNumber: "", driverName: "", driverPhone: "", transporter: "", trackingReference: "", deliveryAddress: "", notes: "" });
@@ -38,8 +39,15 @@ export default function ShipmentDialog({ initialSalesOrderId = "", onClose, onCr
   const locationId = typed ? chosen.locationId : firstList?.locationId || "";
   const locationName = typed && !chosen.locationId ? chosen.locationText.trim() : "";
 
+  const readyLines = selected.map((packingListId) => {
+    const list = data?.readyPackingLists.find((row) => row.id === packingListId);
+    // Default: the list's still-unshipped quantity.
+    const quantity = quantities[packingListId] ?? list?.outstandingQuantity ?? "";
+    const outstanding = Number(list?.outstandingQuantity ?? 0);
+    return { packingListId, quantity: Number(quantity), outstanding, valid: Number(quantity) > 0 && Number(quantity) <= outstanding };
+  });
   const looseLines = Object.entries(loose).filter(([, quantity]) => Number(quantity) > 0);
-  const ready = salesOrderId && (locationId || locationName) && (selected.length > 0 || looseLines.length > 0);
+  const ready = salesOrderId && (locationId || locationName) && (readyLines.some((line) => line.valid) || looseLines.length > 0);
   const setField = (field) => (event) => setTransport((current) => ({ ...current, [field]: event.target.value }));
 
   async function submit(event) {
@@ -56,7 +64,7 @@ export default function ShipmentDialog({ initialSalesOrderId = "", onClose, onCr
           ...(locationId ? { locationId } : { locationName }),
           ...transport,
           lines: [
-            ...selected.map((packingListId) => ({ packingListId })),
+            ...readyLines.filter((line) => line.valid).map((line) => ({ packingListId: line.packingListId, quantity: line.quantity })),
             ...looseLines.map(([productId, quantity]) => ({ productId, quantity: Number(quantity) })),
           ],
         }),
@@ -75,7 +83,7 @@ export default function ShipmentDialog({ initialSalesOrderId = "", onClose, onCr
       <form className="inv-dialog" onSubmit={submit}>
         <div className="inv-field">
           <label htmlFor="sh-order">Sales order *</label>
-          <select id="sh-order" required value={salesOrderId} onChange={(event) => { setSalesOrderId(event.target.value); setSelected([]); setLoose({}); setError(""); }}>
+          <select id="sh-order" required value={salesOrderId} onChange={(event) => { setSalesOrderId(event.target.value); setSelected([]); setQuantities({}); setLoose({}); setError(""); }}>
             <option value="">{orders.error ? "Sales orders unavailable" : "Select approved order"}</option>
             {(orders.data?.orders ?? []).map((order) => <option key={order.id} value={order.id}>{order.orderNumber} · {order.customerName}</option>)}
           </select>
@@ -112,12 +120,22 @@ export default function ShipmentDialog({ initialSalesOrderId = "", onClose, onCr
                 <p className="inv-field__hint">No confirmed packing lists for this order.</p>
               ) : data.readyPackingLists.map((list) => {
                 const item = data.items.find((row) => row.productId === list.productId);
+                const outstanding = Number(list.outstandingQuantity ?? list.totalQuantity);
                 return (
-                  <label key={list.id} style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 13 }}>
+                  <div key={list.id} style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 13, marginBottom: 6 }}>
                     <input type="checkbox" checked={selected.includes(list.id)}
                       onChange={(event) => setSelected((current) => (event.target.checked ? [...current, list.id] : current.filter((value) => value !== list.id)))} />
-                    {list.packingNumber} · {item?.sku ?? "item"} · {list.totalQuantity} in {list.packageCount} packages
-                  </label>
+                    <span style={{ flex: 1 }}>
+                      {list.packingNumber} · {item?.sku ?? "item"} · {list.totalQuantity} packed
+                      {Number(list.allocatedQuantity) > 0 ? ` · ${list.allocatedQuantity} shipped` : ""} · {outstanding} left
+                      {list.packageCount ? ` · ${list.packageCount} packages` : ""}
+                    </span>
+                    {selected.includes(list.id) && (
+                      <input aria-label={`Quantity of ${list.packingNumber}`} type="number" step="any" min="0" max={outstanding} style={{ width: 110 }}
+                        value={quantities[list.id] ?? outstanding}
+                        onChange={(event) => setQuantities((current) => ({ ...current, [list.id]: event.target.value }))} />
+                    )}
+                  </div>
                 );
               })}
             </fieldset>

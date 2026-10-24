@@ -240,6 +240,14 @@ export async function getPackingList(id: string) {
   const packages = await db.orm.public.PackingPackage.where({ packingListId: id }).orderBy((item) => item.packageNo.asc()).all();
   const documents = await db.orm.public.StockDocument.where({ sourceType: "PackingList", sourceId: id }).all();
   const data = await lookups([row]);
+  // Dispatch record (D-050): the shipments that took part of this list.
+  const dispatchLines = await db.runtime().query(db.raw.sql`
+    select l.id::text as id, l.quantity::text as quantity, l."lineNo",
+           s.id::text as "shipmentId", s."shipmentNumber", s.status, s."dispatchedAt", s."deliveredAt"
+    from erp_shipment_lines l join erp_shipments s on s.id = l."shipmentId"
+    where l."packingListId" = ${id}::uuid
+    order by s."createdAt", l."lineNo"
+  `.returnsRow({ id: "pg/text@1", quantity: "pg/text@1", lineNo: "pg/int4@1", shipmentId: "pg/text@1", shipmentNumber: "pg/text@1", status: "pg/text@1", dispatchedAt: "pg/timestamptz-string@1", deliveredAt: "pg/timestamptz-string@1" }).build() as never) as unknown as Array<{ id: string; quantity: string; lineNo: number; shipmentId: string; shipmentNumber: string; status: string; dispatchedAt: string | null; deliveredAt: string | null }>;
   // PO # and customer for the AF7 packing list.
   const sale = data.sales.find((item) => item.id === row.salesOrderId);
   const customer = sale ? await db.orm.public.Customer.where({ id: sale.customerId }).first() : null;
@@ -255,18 +263,43 @@ export async function getPackingList(id: string) {
       grossWeight: item.grossWeight === null ? null : dec(item.grossWeight),
     })),
     stockDocuments: documents.map((document) => ({ id: document.id, documentNumber: document.documentNumber, documentType: document.documentType })),
+    dispatches: dispatchLines.map((line) => ({ ...line, quantity: dec(line.quantity) })),
+    dispatchedQuantity: dispatchLines
+      .filter((line) => line.status === "DISPATCHED" || line.status === "DELIVERED")
+      .map((line) => line.quantity)
+      .reduce((sum, value) => addDecimalStrings(sum, value), "0"),
     history: await packingHistory(row),
   };
 }
 
 /*
  * What happened to a packing list, oldest first: made, passed (confirmed)
- * or cancelled, from the audit log; shipped and delivered, from its shipment.
+ * or cancelled, from the audit log; shipped and delivered, from every
+ * shipment line that took part of it (D-050), so a partially shipped list
+ * shows each shipment. A fully shipped list keeps its singular shipmentId
+ * entry; the line-based query returns that same shipment once, so nothing
+ * is duplicated.
  */
 async function packingHistory(row: { id: string; shipmentId: string | null }) {
   const events = await db.orm.public.AuditLog.where({ entityType: "PackingList", entityId: row.id }).orderBy((item) => item.createdAt.asc()).all();
-  const shipment = row.shipmentId ? await db.orm.public.Shipment.where({ id: row.shipmentId }).first() : null;
-  const userIds = [...new Set([...events.map((item) => item.actorId), shipment?.dispatchedBy, shipment?.deliveredBy].filter(Boolean) as string[])];
+  const dispatches = (await db.runtime().query(db.raw.sql`
+    select distinct on (s.id) s.id::text as "shipmentId", s."shipmentNumber", s.status,
+           s."dispatchedAt", s."dispatchedBy", s."deliveredAt", s."deliveredBy", s."receivedBy"
+    from erp_shipment_lines l join erp_shipments s on s.id = l."shipmentId"
+    where l."packingListId" = ${row.id}::uuid
+    order by s.id, s."createdAt"
+  `.returnsRow({ shipmentId: "pg/text@1", shipmentNumber: "pg/text@1", status: "pg/text@1", dispatchedAt: "pg/timestamptz-string@1", dispatchedBy: "pg/text@1", deliveredAt: "pg/timestamptz-string@1", deliveredBy: "pg/text@1", receivedBy: "pg/text@1" }).build() as never)) as unknown as Array<{
+    shipmentId: string; shipmentNumber: string; status: string;
+    dispatchedAt: string | null; dispatchedBy: string | null;
+    deliveredAt: string | null; deliveredBy: string | null; receivedBy: string | null;
+  }>;
+  const userIds = [
+    ...new Set([
+      ...events.map((item) => item.actorId),
+      ...dispatches.flatMap((item) => [item.dispatchedBy, item.deliveredBy]),
+      row.shipmentId ? dispatches.find((item) => item.shipmentId === row.shipmentId)?.deliveredBy : undefined,
+    ].filter(Boolean) as string[]),
+  ];
   const users = userIds.length ? await db.orm.public.User.where((item) => item.id.in(userIds)).select("id", "name").all() : [];
   const name = (id: string | null | undefined) => users.find((user) => user.id === id)?.name ?? null;
   const LABELS: Record<string, string> = {
@@ -277,8 +310,10 @@ async function packingHistory(row: { id: string; shipmentId: string | null }) {
   const history = events
     .filter((item) => LABELS[item.action])
     .map((item) => ({ event: LABELS[item.action], at: item.createdAt, by: name(item.actorId), reference: null as string | null }));
-  if (shipment?.dispatchedAt) history.push({ event: "Shipped", at: shipment.dispatchedAt, by: name(shipment.dispatchedBy), reference: shipment.shipmentNumber });
-  if (shipment?.deliveredAt) history.push({ event: "Delivered", at: shipment.deliveredAt, by: name(shipment.deliveredBy), reference: shipment.receivedBy ? `received by ${shipment.receivedBy}` : shipment.shipmentNumber });
+  for (const shipment of dispatches) {
+    if (shipment.dispatchedAt) history.push({ event: "Shipped", at: shipment.dispatchedAt, by: name(shipment.dispatchedBy), reference: shipment.shipmentNumber });
+    if (shipment.deliveredAt) history.push({ event: "Delivered", at: shipment.deliveredAt, by: name(shipment.deliveredBy), reference: shipment.receivedBy ? `received by ${shipment.receivedBy}` : shipment.shipmentNumber });
+  }
   return history.sort((a, b) => String(a.at).localeCompare(String(b.at)));
 }
 

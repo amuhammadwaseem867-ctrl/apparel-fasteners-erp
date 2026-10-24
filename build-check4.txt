@@ -1,0 +1,13 @@
+npm notice run apparel-fasteners-erp@0.1.0 build
+npm notice run next build
+▲ Next.js 16.4.0 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.mjs took 112ms
+⨯ Another next build process is already running.
+
+  This could be:
+  - A next build still in progress
+  - A previous build that didn't exit cleanly
+
+  Suggestion: Wait for the build to complete.
+DONE  

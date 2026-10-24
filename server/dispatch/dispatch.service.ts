@@ -19,7 +19,7 @@ import { recordAuditEvent } from "../auth/audit.service";
 import { db } from "../core/database/client";
 import { AppError } from "../core/errors/app-error";
 import { findSqlQueryError } from "../core/errors/database-errors";
-import { addDecimalStrings, normalizeDecimalString, subtractDecimalStrings, toPlainDecimalString } from "../core/utils/decimal";
+import { addDecimalStrings, compareDecimalStrings, decimalSign, normalizeDecimalString, subtractDecimalStrings, toPlainDecimalString } from "../core/utils/decimal";
 import { allocateDocumentNumber, postStockDocumentInTransaction, type Tx } from "../inventory/inventory.service";
 import { quantityPrecisionError } from "../inventory/stock-rules";
 import { FINAL_STAGE } from "../production/production-rules";
@@ -35,6 +35,27 @@ function notFound(): never {
 }
 
 type Runner = Tx | ReturnType<typeof db.runtime>;
+
+/*
+ * Quantity of one packing list already allocated on shipments' lines.
+ * For the dispatch guard only DISPATCHED and DELIVERED count — a draft or
+ * cancelled shipment holds nothing (D-050). For creating a new shipment the
+ * caller adds DRAFT, whose lines reserve packed quantity until the draft is
+ * dispatched or cancelled, so two drafts cannot promise the same units.
+ */
+async function allocatedQuantityForList(runner: Tx | null, packingListId: string, ...statuses: string[]) {
+  const list = statuses.map((status) => `'${status}'`).join(", ");
+  const rows = (await (runner ?? db.runtime()).query(db.raw.sql`
+    select coalesce(sum(l.quantity), 0)::text as quantity
+    from erp_shipment_lines l join erp_shipments s on s.id = l."shipmentId"
+    where l."packingListId" = ${packingListId}::uuid and s.status in (${list}::text[])
+  `.returnsRow({ quantity: "pg/text@1" }).build() as never)) as unknown as Array<{ quantity: string }>;
+  return dec(rows[0]?.quantity);
+}
+
+async function dispatchedQuantityForList(runner: Tx | null, packingListId: string) {
+  return allocatedQuantityForList(runner, packingListId, "DISPATCHED", "DELIVERED");
+}
 
 /* Ordered catalogue quantity per item, and quantity on dispatched/delivered shipments. */
 async function orderPosition(runner: Tx | null, salesOrderId: string, excludeShipmentId = "") {
@@ -108,7 +129,30 @@ export async function createShipment(input: ShipmentInput, actorId: string) {
           status: 409,
         });
       }
-      resolved.push({ productId: list.productId, quantity: dec(list.totalQuantity), packingListId: list.id });
+      // A packing list can be shipped in parts across shipments (D-050).
+      // Default is its still-unshipped quantity; a line may ask for less,
+      // never more. Re-checked inside the transaction below under the sales
+      // order's row lock; there, open DRAFT shipments also reserve packed
+      // quantity, so two drafts cannot promise the same units. The dispatch
+      // guard counts only DISPATCHED/DELIVERED — a cancelled or never-
+      // dispatched draft holds nothing.
+      const allocated = addDecimalStrings(
+        await dispatchedQuantityForList(null, list.id),
+        await allocatedQuantityForList(null, list.id, "DRAFT"),
+      );
+      const outstanding = subtractDecimalStrings(dec(list.totalQuantity), allocated);
+      if (decimalSign(outstanding) <= 0) {
+        throw new AppError(`Line ${index + 1}: ${list.packingNumber} has already been fully shipped.`, { code: "PACKING_LIST_NOT_SHIPPABLE", status: 409 });
+      }
+      const requested = line.quantity === undefined ? outstanding : toPlainDecimalString(line.quantity);
+      if (compareDecimalStrings(requested, outstanding) > 0) {
+        throw new AppError(`Line ${index + 1}: ${list.packingNumber} has only ${outstanding} of its ${dec(list.totalQuantity)} left to ship, not ${requested}.`, {
+          code: "PACKING_LIST_OVER_DISPATCH",
+          status: 409,
+          details: { packingListId: list.id, totalQuantity: dec(list.totalQuantity), allocated, outstanding, requested },
+        });
+      }
+      resolved.push({ productId: list.productId, quantity: requested, packingListId: list.id });
     } else {
       const product = await db.orm.public.Product.where({ id: line.productId! }).first();
       if (!product) {
@@ -133,6 +177,32 @@ export async function createShipment(input: ShipmentInput, actorId: string) {
 
   try {
     const id = await db.transaction(async (tx) => {
+      // The order's row lock serializes shipment creation against dispatch:
+      // re-verify each packed line's outstanding quantity here, where open
+      // drafts also reserve, so two concurrent creations cannot both promise
+      // the same packed units. The dispatch guard remains the final check.
+      const orderLocked = await rows<{ status: string }>(tx, db.raw.sql`
+        select status from erp_sales_orders where id = ${order.id}::uuid for update
+      `.returnsRow({ status: "pg/text@1" }).build());
+      if (orderLocked[0]?.status !== "APPROVED") {
+        throw new AppError("The sales order is no longer approved; this shipment cannot be created.", { code: "SALES_ORDER_NOT_APPROVED", status: 409 });
+      }
+      for (const line of resolved.filter((item) => item.packingListId)) {
+        const list = (await tx.orm.public.PackingList.where({ id: line.packingListId! }).first())!;
+        const allocated = addDecimalStrings(
+          await dispatchedQuantityForList(tx, list.id),
+          await allocatedQuantityForList(tx, list.id, "DRAFT"),
+        );
+        const outstanding = subtractDecimalStrings(dec(list.totalQuantity), allocated);
+        if (compareDecimalStrings(line.quantity, outstanding) > 0) {
+          throw new AppError(`${list.packingNumber} has only ${outstanding} of its ${dec(list.totalQuantity)} left to ship, not ${line.quantity}. Another shipment may have taken it. Reload and try again.`, {
+            code: "PACKING_LIST_OVER_DISPATCH",
+            status: 409,
+            details: { packingListId: list.id, totalQuantity: dec(list.totalQuantity), allocated, outstanding, requested: line.quantity },
+          });
+        }
+      }
+
       const shipmentNumber = await allocateDocumentNumber(tx, "SHP");
       const shipment = await tx.orm.public.Shipment.create({
         shipmentNumber,
@@ -200,13 +270,28 @@ async function dispatch(tx: Tx, shipment: { id: string; shipmentNumber: string; 
   await overShipmentError(await orderPosition(tx, shipment.salesOrderId, shipment.id), quantities);
 
   for (const line of lines.filter((item) => item.packingListId)) {
+    // Under the sales order's row lock, only the outstanding packed quantity
+    // can be claimed: previously dispatched shipments' lines already hold
+    // theirs. A full-quantity dispatch flips the list to SHIPPED and stamps
+    // it; a partial one leaves it CONFIRMED for later shipments (D-050).
     const claimed = await rows<{ id: string }>(tx, db.raw.sql`
-      update erp_packing_lists set status = 'SHIPPED', "shipmentId" = ${shipment.id}::uuid
-      where id = ${line.packingListId!}::uuid and status = 'CONFIRMED' and "locationId" = ${shipment.locationId}::uuid
-      returning id::text as id
+      update erp_packing_lists
+        set status = case when l.quantity >= "totalQuantity" then 'SHIPPED' else "status" end,
+            "shipmentId" = case when l.quantity >= "totalQuantity" then ${shipment.id}::uuid else "shipmentId" end
+        from (values (${line.packingListId!}::uuid, ${dec(line.quantity)}::numeric)) as l(id, quantity)
+        where erp_packing_lists.id = l.id
+          and erp_packing_lists.status = 'CONFIRMED'
+          and erp_packing_lists."locationId" = ${shipment.locationId}::uuid
+          and "totalQuantity"
+              - (select coalesce(sum(sl.quantity), 0) from erp_shipment_lines sl
+                 join erp_shipments s on s.id = sl."shipmentId"
+                 where sl."packingListId" = erp_packing_lists.id
+                   and s.status in ('DISPATCHED', 'DELIVERED'))
+              >= l.quantity
+      returning erp_packing_lists.id::text as id
     `.returnsRow({ id: "pg/text@1" }).build());
     if (!claimed.length) {
-      throw new AppError(`Line ${line.lineNo}: the packing list was already shipped or is no longer confirmed.`, { code: "PACKING_LIST_NOT_SHIPPABLE", status: 409 });
+      throw new AppError(`Line ${line.lineNo}: the packing list's remaining quantity cannot cover ${dec(line.quantity)}; another shipment may have taken it. Reload and try again.`, { code: "PACKING_LIST_NOT_SHIPPABLE", status: 409 });
     }
   }
 
@@ -430,6 +515,20 @@ export async function getSalesOrderFulfilment(salesOrderId: string) {
   const productIds = [...position.ordered.keys()];
   const products = productIds.length ? await db.orm.public.Product.where((item) => item.id.in(productIds)).all() : [];
   const customer = await db.orm.public.Customer.where({ id: order.customerId }).first();
+  // Outstanding packed quantity per list, for partial dispatch (D-050).
+  const readyPackingLists = await Promise.all(packed.map(async (list) => {
+    const allocated = await dispatchedQuantityForList(null, list.id);
+    return {
+      id: list.id,
+      packingNumber: list.packingNumber,
+      productId: list.productId,
+      totalQuantity: dec(list.totalQuantity),
+      allocatedQuantity: allocated,
+      outstandingQuantity: subtractDecimalStrings(dec(list.totalQuantity), allocated),
+      packageCount: list.packageCount,
+      locationId: list.locationId,
+    };
+  }));
 
   return {
     salesOrderId,
@@ -453,13 +552,6 @@ export async function getSalesOrderFulfilment(salesOrderId: string) {
         packedReady: dec(packed.filter((list) => list.productId === productId).reduce((sum, list) => addDecimalStrings(sum, dec(list.totalQuantity)), "0")),
       };
     }),
-    readyPackingLists: packed.map((list) => ({
-      id: list.id,
-      packingNumber: list.packingNumber,
-      productId: list.productId,
-      totalQuantity: dec(list.totalQuantity),
-      packageCount: list.packageCount,
-      locationId: list.locationId,
-    })),
+    readyPackingLists,
   };
 }

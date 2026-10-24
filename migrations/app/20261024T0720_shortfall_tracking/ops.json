@@ -1,0 +1,323 @@
+[
+  {
+    "id": "table.erp_shortfalls",
+    "label": "Create table \"erp_shortfalls\"",
+    "summary": "Creates table \"erp_shortfalls\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_shortfalls"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_shortfalls\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_shortfalls\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_shortfalls\"",
+        "sql": "CREATE TABLE \"public\".\"erp_shortfalls\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"notes\" text,\n  \"productId\" uuid,\n  \"quantity\" numeric NOT NULL,\n  \"reason\" text NOT NULL,\n  \"resolvedAt\" timestamptz,\n  \"resolvedBy\" uuid,\n  \"resolvedQuantity\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"salesOrderId\" uuid NOT NULL,\n  \"salesOrderLineId\" uuid,\n  \"status\" text DEFAULT 'OPEN' NOT NULL,\n  \"unit\" text NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_shortfalls_quantities_2d9cfd39\" CHECK (\"quantity\" > 0 AND \"resolvedQuantity\" >= 0 AND \"resolvedQuantity\" <= \"quantity\"),\n  CONSTRAINT \"erp_shortfalls_resolved_needs_date_c980bd89\" CHECK (\"status\" <> 'RESOLVED' OR \"resolvedAt\" IS NOT NULL),\n  CONSTRAINT \"erp_shortfalls_status_054ddf75\" CHECK (\"status\" IN ('OPEN', 'RESOLVED', 'CANCELLED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_shortfalls\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_shortfalls\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_shortfalls.erp_shortfalls_productId_idx_5858600a",
+    "label": "Create index \"erp_shortfalls_productId_idx_5858600a\" on \"erp_shortfalls\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_shortfalls_productId_idx_5858600a",
+        "table": "erp_shortfalls"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_shortfalls_productId_idx_5858600a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_shortfalls_productId_idx_5858600a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_shortfalls_productId_idx_5858600a\"",
+        "sql": "CREATE INDEX \"erp_shortfalls_productId_idx_5858600a\" ON \"public\".\"erp_shortfalls\" (\"productId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_shortfalls_productId_idx_5858600a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_shortfalls_productId_idx_5858600a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_shortfalls.erp_shortfalls_salesOrderId_idx_0f1a116c",
+    "label": "Create index \"erp_shortfalls_salesOrderId_idx_0f1a116c\" on \"erp_shortfalls\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_shortfalls_salesOrderId_idx_0f1a116c",
+        "table": "erp_shortfalls"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_shortfalls_salesOrderId_idx_0f1a116c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_shortfalls_salesOrderId_idx_0f1a116c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_shortfalls_salesOrderId_idx_0f1a116c\"",
+        "sql": "CREATE INDEX \"erp_shortfalls_salesOrderId_idx_0f1a116c\" ON \"public\".\"erp_shortfalls\" (\"salesOrderId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_shortfalls_salesOrderId_idx_0f1a116c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_shortfalls_salesOrderId_idx_0f1a116c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_shortfalls.erp_shortfalls_salesOrderId_status_idx_a5b16527",
+    "label": "Create index \"erp_shortfalls_salesOrderId_status_idx_a5b16527\" on \"erp_shortfalls\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_shortfalls_salesOrderId_status_idx_a5b16527",
+        "table": "erp_shortfalls"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_shortfalls_salesOrderId_status_idx_a5b16527\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_shortfalls_salesOrderId_status_idx_a5b16527\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_shortfalls_salesOrderId_status_idx_a5b16527\"",
+        "sql": "CREATE INDEX \"erp_shortfalls_salesOrderId_status_idx_a5b16527\" ON \"public\".\"erp_shortfalls\" (\"salesOrderId\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_shortfalls_salesOrderId_status_idx_a5b16527\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_shortfalls_salesOrderId_status_idx_a5b16527\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_shortfalls.erp_shortfalls_salesOrderLineId_idx_47ed3c92",
+    "label": "Create index \"erp_shortfalls_salesOrderLineId_idx_47ed3c92\" on \"erp_shortfalls\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_shortfalls_salesOrderLineId_idx_47ed3c92",
+        "table": "erp_shortfalls"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_shortfalls_salesOrderLineId_idx_47ed3c92\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_shortfalls_salesOrderLineId_idx_47ed3c92\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_shortfalls_salesOrderLineId_idx_47ed3c92\"",
+        "sql": "CREATE INDEX \"erp_shortfalls_salesOrderLineId_idx_47ed3c92\" ON \"public\".\"erp_shortfalls\" (\"salesOrderLineId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_shortfalls_salesOrderLineId_idx_47ed3c92\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_shortfalls_salesOrderLineId_idx_47ed3c92\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_shortfalls.erp_shortfalls_salesOrderId_fkey",
+    "label": "Add foreign key \"erp_shortfalls_salesOrderId_fkey\" on \"erp_shortfalls\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_shortfalls_salesOrderId_fkey",
+        "table": "erp_shortfalls"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_shortfalls_salesOrderId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_shortfalls_salesOrderId_fkey",
+          "public",
+          "\"public\".\"erp_shortfalls\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_shortfalls_salesOrderId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_shortfalls\"\nADD CONSTRAINT \"erp_shortfalls_salesOrderId_fkey\"\nFOREIGN KEY (\"salesOrderId\")\nREFERENCES \"public\".\"erp_sales_orders\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_shortfalls_salesOrderId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_shortfalls_salesOrderId_fkey",
+          "public",
+          "\"public\".\"erp_shortfalls\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_shortfalls.erp_shortfalls_salesOrderLineId_fkey",
+    "label": "Add foreign key \"erp_shortfalls_salesOrderLineId_fkey\" on \"erp_shortfalls\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_shortfalls_salesOrderLineId_fkey",
+        "table": "erp_shortfalls"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_shortfalls_salesOrderLineId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_shortfalls_salesOrderLineId_fkey",
+          "public",
+          "\"public\".\"erp_shortfalls\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_shortfalls_salesOrderLineId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_shortfalls\"\nADD CONSTRAINT \"erp_shortfalls_salesOrderLineId_fkey\"\nFOREIGN KEY (\"salesOrderLineId\")\nREFERENCES \"public\".\"erp_sales_order_lines\" (\"id\")\nON DELETE SET NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_shortfalls_salesOrderLineId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_shortfalls_salesOrderLineId_fkey",
+          "public",
+          "\"public\".\"erp_shortfalls\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.erp_shortfalls.erp_shortfalls_productId_fkey",
+    "label": "Add foreign key \"erp_shortfalls_productId_fkey\" on \"erp_shortfalls\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "erp_shortfalls_productId_fkey",
+        "table": "erp_shortfalls"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"erp_shortfalls_productId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_shortfalls_productId_fkey",
+          "public",
+          "\"public\".\"erp_shortfalls\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"erp_shortfalls_productId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"erp_shortfalls\"\nADD CONSTRAINT \"erp_shortfalls_productId_fkey\"\nFOREIGN KEY (\"productId\")\nREFERENCES \"public\".\"erp_products\" (\"id\")\nON DELETE SET NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"erp_shortfalls_productId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_shortfalls_productId_fkey",
+          "public",
+          "\"public\".\"erp_shortfalls\""
+        ]
+      }
+    ]
+  }
+]

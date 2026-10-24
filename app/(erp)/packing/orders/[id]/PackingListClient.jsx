@@ -48,6 +48,7 @@ export default function PackingListClient({ id }) {
             <Link href={`/production/orders/${list.productionOrderId}`}>{list.orderNumber}</Link>
             {list.salesOrderNumber ? ` · for ${list.salesOrderNumber}` : " · to stock"} · {list.locationLabel}
             {list.shipmentId && <> · shipped on <Link href={`/dispatch/shipments/${list.shipmentId}`}>{list.shipmentNumber}</Link></>}
+            {Number(list.dispatchedQuantity) > 0 && !list.shipmentId && <> · {list.dispatchedQuantity} of {list.totalQuantity} {list.unit} dispatched</>}
           </p>
         </div>
         <div className="inv-header__actions">
@@ -82,6 +83,24 @@ export default function PackingListClient({ id }) {
           </table>
         </div>
         {list.notes && <p className="inv-state">Notes: {list.notes}</p>}
+        {(list.dispatches ?? []).length > 0 && (
+          <div className="inv-table-wrap" style={{ marginTop: 8 }}>
+            <table className="inv-table">
+              <thead><tr><th>Shipment</th><th className="inv-num">Quantity</th><th>Status</th><th>Dispatched</th><th>Delivered</th></tr></thead>
+              <tbody>
+                {list.dispatches.map((dispatch) => (
+                  <tr key={dispatch.id}>
+                    <td data-label="Shipment"><Link href={`/dispatch/shipments/${dispatch.shipmentId}`}>{dispatch.shipmentNumber}</Link></td>
+                    <td data-label="Quantity" className="inv-num">{dispatch.quantity} {list.unit}</td>
+                    <td data-label="Status">{dispatch.status.toLowerCase()}</td>
+                    <td data-label="Dispatched">{dispatch.dispatchedAt ? new Date(dispatch.dispatchedAt).toLocaleDateString("en-GB") : "—"}</td>
+                    <td data-label="Delivered">{dispatch.deliveredAt ? new Date(dispatch.deliveredAt).toLocaleDateString("en-GB") : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
         {list.stockDocuments.length > 0 && (
           <p className="inv-state">
             Stock: {list.stockDocuments.map((document) => <Link key={document.id} href={`/print/stock-documents/${document.id}`}>{document.documentNumber}</Link>)}

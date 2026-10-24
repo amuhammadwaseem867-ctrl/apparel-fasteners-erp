@@ -47,7 +47,9 @@ export default function PackingListDialog({ initialOrderId = "", defaults = {}, 
   const available = data?.stages?.find((stage) => stage.stageKey === "packing")?.available;
   const unit = data?.unit ?? "Pcs";
   const total = round(sum(rows, "quantity"));
-  const hasLocation = location.locationId || location.locationText?.trim() || locationList.length === 1;
+  // The location is always required: the user types it or picks a suggestion;
+  // the single location returned is not picked silently.
+  const hasLocation = Boolean(location.locationId || location.locationText?.trim());
   const ready = orderId && hasLocation && rows.length > 0 && rows.every((row) => Number(row.quantity) > 0 && Number(row.bags) >= 1);
 
   function update(rowKey, patch) {
@@ -60,7 +62,7 @@ export default function PackingListDialog({ initialOrderId = "", defaults = {}, 
     setSaving(confirm ? "pass" : "draft");
     setError("");
     const optionalNumber = (value) => (value === "" ? undefined : Number(value));
-    const chosen = location.locationId || (location.locationText?.trim() ? "" : locationList[0]?.id ?? "");
+    const chosen = location.locationId;
     try {
       const created = await apiRequest("/api/packing/lists", {
         method: "POST",
@@ -112,8 +114,8 @@ export default function PackingListDialog({ initialOrderId = "", defaults = {}, 
                 </select>
               </div>
             )}
-            <LocationInput label="Kept at (finished goods)" required={locationList.length !== 1} locations={locationList}
-              locationId={location.locationId || (location.locationText === undefined && locationList.length === 1 ? locationList[0].id : "")}
+            <LocationInput label="Kept at (finished goods)" required locations={locationList}
+              locationId={location.locationId}
               text={location.locationText} onChange={setLocation} />
           </div>
           {available !== undefined && (

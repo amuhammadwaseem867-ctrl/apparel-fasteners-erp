@@ -82,3 +82,33 @@ const TRANSITIONS: Record<string, Record<string, string>> = {
 export function nextShipmentStatus(action: string, from: string): string | null {
   return TRANSITIONS[action]?.[from] ?? null;
 }
+
+/*
+ * Outstanding packed quantity of a packing list (D-050): its packed total
+ * minus what dispatched/delivered shipments' lines took. Draft and cancelled
+ * shipments hold nothing, so their lines never consume packed quantity.
+ */
+export function packedOutstanding(
+  totalQuantity: string,
+  shipmentLines: Array<{ status: string; quantity: string }>,
+): string {
+  return packedOutstandingAgainst(totalQuantity, shipmentLines, ["DISPATCHED", "DELIVERED"]);
+}
+
+/*
+ * Outstanding against a chosen set of consuming statuses (D-050): dispatch
+ * counts only DISPATCHED/DELIVERED; creating a shipment counts open drafts
+ * as well, so two drafts cannot promise the same packed units.
+ */
+export function packedOutstandingAgainst(
+  totalQuantity: string,
+  shipmentLines: Array<{ status: string; quantity: string }>,
+  consumingStatuses: string[],
+): string {
+  const dispatched = shipmentLines
+    .filter((line) => consumingStatuses.includes(line.status))
+    .map((line) => normalizeDecimalString(line.quantity))
+    .reduce((sum, value) => addDecimalStrings(sum, value), "0");
+  const outstanding = subtractDecimalStrings(normalizeDecimalString(totalQuantity), dispatched);
+  return normalizeDecimalString(decimalSign(outstanding) < 0 ? "0" : outstanding);
+}

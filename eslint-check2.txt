@@ -1,0 +1,2 @@
+npm notice run apparel-fasteners-erp@0.1.0 npx
+npm notice run eslint server/dispatch server/sales/shortfall.service.ts server/sales/shortfall.validation.ts server/packing

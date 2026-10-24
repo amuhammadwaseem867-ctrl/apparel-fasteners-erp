@@ -302,9 +302,8 @@ export async function createLocation(input: LocationInput, actorId: string) {
 }
 
 /* A typed location name as a location code: "Shelf 3 / Row 2" -> "SHELF-3-ROW-2". */
-export function locationCodeFor(name: string) {
-  return name.toUpperCase().replace(/[^A-Z0-9._]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30) || "LOCATION";
-}
+import { locationCodeFor } from "./stock-rules";
+export { locationCodeFor };
 
 /*
  * Finds the location a user typed, in AF7's warehouse (MAIN, else the first

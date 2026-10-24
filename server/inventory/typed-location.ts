@@ -30,6 +30,12 @@ export async function parseBodyWithTypedLocation<T>(request: Request, schema: Sc
   }
   const { locationName, ...rest } = body ?? {};
   const name = typeof locationName === "string" ? locationName.trim().slice(0, 60) : "";
+  // A body with neither an id nor a usable name has no location at all: say so
+  // plainly instead of a generic schema failure on "locationId".
+  if (!rest.locationId && !name) {
+    check(schema, rest);
+    throw new AppError("Choose or type a location.", { code: "LOCATION_REQUIRED", status: 400 });
+  }
   if (rest.locationId || !name) return check(schema, rest);
   check(schema, { ...rest, locationId: STAND_IN });
   return check(schema, { ...rest, locationId: await resolveTypedLocation(name, actorId) });

@@ -101,6 +101,11 @@ export function unitDecimals(unit: string): number {
   return UNIT_DECIMALS[unit.trim().toLowerCase()] ?? 3;
 }
 
+/* A typed location name as a location code: "Shelf 3 / Row 2" -> "SHELF-3-ROW-2". */
+export function locationCodeFor(name: string) {
+  return name.toUpperCase().replace(/[^A-Z0-9._]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30) || "LOCATION";
+}
+
 export function quantityPrecisionError(quantity: number, unit: string): string | null {
   const allowed = unitDecimals(unit);
   const { scale } = toScaledDecimal(quantity);

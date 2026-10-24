@@ -4,8 +4,8 @@ import { idempotencyKeySchema, optionalTextSchema, quantitySchema } from "../cor
 
 const uuid = z.string().uuid();
 
-/* A line ships one confirmed packing list, or loose stock of one item. */
-const shipmentLineSchema = z
+/* A line ships one confirmed packing list (wholly or partly), or loose stock of one item. */
+export const shipmentLineSchema = z
   .object({
     packingListId: uuid.optional(),
     productId: uuid.optional(),
@@ -13,9 +13,12 @@ const shipmentLineSchema = z
   })
   .superRefine((line, context) => {
     const packed = Boolean(line.packingListId);
-    const loose = Boolean(line.productId) || line.quantity !== undefined;
-    if (packed === loose || (loose && (!line.productId || line.quantity === undefined))) {
+    const loose = Boolean(line.productId);
+    if (packed === loose) {
       context.addIssue({ code: "custom", message: "Each line needs either a packing list, or an item and quantity." });
+    }
+    if (loose && line.quantity === undefined) {
+      context.addIssue({ code: "custom", message: "A loose line needs a quantity." });
     }
   });
 

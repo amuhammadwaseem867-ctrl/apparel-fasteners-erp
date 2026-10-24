@@ -1,0 +1,366 @@
+npm notice run apparel-fasteners-erp@0.1.0 build
+npm notice run next build
+▲ Next.js 16.4.0 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.mjs took 55ms
+- Cache Components enabled
+- Partial Prefetching enabled
+
+  Creating an optimized production build ...
+[DIAGNOSTIC] Calling bindings.turbo.createProject...
+[DIAGNOSTIC] bindings.turbo.createProject completed successfully!
+[DIAGNOSTIC] Calling project.writeAllEntrypointsToDisk...
+[DIAGNOSTIC] project.writeAllEntrypointsToDisk completed!
+✓ Compiled successfully in 13.2s
+  Running TypeScript ...
+  Finished TypeScript in 2.7min ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/237) ...
+  Generating static pages using 3 workers (59/237) 
+  Generating static pages using 3 workers (118/237) 
+  Generating static pages using 3 workers (177/237) 
+✓ Generating static pages using 3 workers (237/237) in 110s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ◐ /administration
+├ ◐ /administration/audit
+├ ◐ /administration/profile
+├ ◐ /administration/roles
+├ ◐ /administration/settings
+├ ◐ /administration/users
+├ ƒ /api/admin/audit
+├ ƒ /api/admin/audit/actions
+├ ƒ /api/admin/permissions
+├ ƒ /api/admin/roles
+├ ƒ /api/admin/roles/[id]
+├ ƒ /api/admin/users
+├ ƒ /api/admin/users/[id]
+├ ƒ /api/admin/users/[id]/password
+├ ƒ /api/assistant
+├ ƒ /api/attention
+├ ƒ /api/auth/change-password
+├ ƒ /api/auth/login
+├ ƒ /api/auth/logout
+├ ƒ /api/auth/session
+├ ƒ /api/customers
+├ ƒ /api/customers/[id]
+├ ƒ /api/dashboard
+├ ƒ /api/dispatch/sales-orders/[id]
+├ ƒ /api/dispatch/shipments
+├ ƒ /api/dispatch/shipments/[id]
+├ ƒ /api/finance/credit-notes
+├ ƒ /api/finance/credit-notes/[id]
+├ ƒ /api/finance/invoices
+├ ƒ /api/finance/invoices/[id]
+├ ƒ /api/finance/invoices/[id]/manual
+├ ƒ /api/finance/invoices/manual
+├ ƒ /api/finance/receipts
+├ ƒ /api/finance/receipts/[id]
+├ ƒ /api/finance/receivables
+├ ƒ /api/finance/summary
+├ ƒ /api/gate-passes
+├ ƒ /api/gate-passes/[id]
+├ ƒ /api/gate-passes/[id]/returns
+├ ƒ /api/hr/attendance
+├ ƒ /api/hr/departments
+├ ƒ /api/hr/departments/[id]
+├ ƒ /api/hr/employees
+├ ƒ /api/hr/employees/[id]
+├ ƒ /api/hr/employees/[id]/pay
+├ ƒ /api/hr/leave-balances
+├ ƒ /api/hr/leave-requests
+├ ƒ /api/hr/leave-requests/[id]
+├ ƒ /api/hr/leave-types
+├ ƒ /api/hr/leave-types/[id]
+├ ƒ /api/hr/shifts
+├ ƒ /api/hr/shifts/[id]
+├ ƒ /api/hr/shifts/assign
+├ ƒ /api/inventory/balances
+├ ƒ /api/inventory/batches
+├ ƒ /api/inventory/batches/[id]
+├ ƒ /api/inventory/documents
+├ ƒ /api/inventory/documents/[id]
+├ ƒ /api/inventory/locations
+├ ƒ /api/inventory/locations/[id]
+├ ƒ /api/inventory/movements
+├ ƒ /api/inventory/raw-material
+├ ƒ /api/inventory/raw-material/[id]
+├ ƒ /api/inventory/raw-material/setup
+├ ƒ /api/inventory/reservations
+├ ƒ /api/inventory/reservations/[id]
+├ ƒ /api/inventory/summary
+├ ƒ /api/inventory/warehouses
+├ ƒ /api/inventory/warehouses/[id]
+├ ƒ /api/ledger/accounts
+├ ƒ /api/ledger/accounts/[id]
+├ ƒ /api/ledger/accounts/[id]/ledger
+├ ƒ /api/ledger/cash-transactions
+├ ƒ /api/ledger/cash-transactions/[id]
+├ ƒ /api/ledger/journals
+├ ƒ /api/ledger/journals/[id]
+├ ƒ /api/ledger/post-missing
+├ ƒ /api/ledger/statements/[statement]
+├ ƒ /api/ledger/summary
+├ ƒ /api/packing/instructions
+├ ƒ /api/packing/instructions/[id]
+├ ƒ /api/packing/lists
+├ ƒ /api/packing/lists/[id]
+├ ƒ /api/payroll/advances
+├ ƒ /api/payroll/advances/[id]
+├ ƒ /api/payroll/runs
+├ ƒ /api/payroll/runs/[id]
+├ ƒ /api/payroll/runs/[id]/lines/[lineId]
+├ ƒ /api/planning/boms
+├ ƒ /api/planning/boms/[id]
+├ ƒ /api/planning/calendar
+├ ƒ /api/planning/capacity
+├ ƒ /api/planning/mrp-runs
+├ ƒ /api/planning/mrp-runs/[id]
+├ ƒ /api/planning/planned-orders/[id]
+├ ƒ /api/planning/production-plans
+├ ƒ /api/planning/production-plans/[id]
+├ ƒ /api/planning/work-centers
+├ ƒ /api/planning/work-centers/[stageKey]
+├ ƒ /api/procurement/bills
+├ ƒ /api/procurement/bills/[id]
+├ ƒ /api/procurement/buy-suggestions
+├ ƒ /api/procurement/payables
+├ ƒ /api/procurement/payments
+├ ƒ /api/procurement/payments/[id]
+├ ƒ /api/procurement/performance
+├ ƒ /api/procurement/purchase-orders
+├ ƒ /api/procurement/purchase-orders/[id]
+├ ƒ /api/procurement/receipts
+├ ƒ /api/procurement/receipts/[id]
+├ ƒ /api/procurement/requisitions
+├ ƒ /api/procurement/requisitions/[id]
+├ ƒ /api/procurement/rfqs
+├ ƒ /api/procurement/rfqs/[id]
+├ ƒ /api/procurement/rfqs/[id]/award
+├ ƒ /api/procurement/rfqs/[id]/quotes
+├ ƒ /api/procurement/summary
+├ ƒ /api/procurement/suppliers
+├ ƒ /api/procurement/suppliers/[id]
+├ ƒ /api/production/orders
+├ ƒ /api/production/orders/[id]
+├ ƒ /api/production/orders/[id]/stages/[stageKey]/checks
+├ ƒ /api/production/orders/[id]/stages/[stageKey]/complete
+├ ƒ /api/production/orders/[id]/stages/[stageKey]/runs
+├ ƒ /api/production/orders/[id]/stages/[stageKey]/simple
+├ ƒ /api/production/summary
+├ ƒ /api/products
+├ ƒ /api/products/[id]
+├ ƒ /api/products/categories
+├ ƒ /api/products/categories/[id]
+├ ƒ /api/products/documents
+├ ƒ /api/products/documents/[id]
+├ ƒ /api/products/prices
+├ ƒ /api/products/prices/bulk
+├ ƒ /api/products/variants
+├ ƒ /api/quality/capas
+├ ƒ /api/quality/capas/[id]
+├ ƒ /api/quality/inspections
+├ ƒ /api/quality/inspections/[id]
+├ ƒ /api/quality/ncrs
+├ ƒ /api/quality/ncrs/[id]
+├ ƒ /api/quality/summary
+├ ƒ /api/reports/[report]
+├ ƒ /api/sales/order-sheet
+├ ƒ /api/sales/order-sheet/[id]
+├ ƒ /api/sales/orders
+├ ƒ /api/sales/orders/[id]
+├ ƒ /api/sales/orders/[id]/notes
+├ ƒ /api/sales/orders/[id]/packing
+├ ƒ /api/sales/orders/[id]/to-production
+├ ƒ /api/sales/orders/[id]/trace
+├ ƒ /api/sales/orders/export
+├ ƒ /api/settings
+├ ƒ /api/settings/[key]
+├ ƒ /api/shortfalls
+├ ƒ /api/shortfalls/[id]
+├ ◐ /dashboard
+├ ◐ /dispatch
+├ ◐ /dispatch/delivered
+├ ◐ /dispatch/dispatch
+├ ◐ /dispatch/gate-passes
+├   /dispatch/gate-passes/[id]
+│ └ ◐ /dispatch/gate-passes/[id]
+├ ◐ /dispatch/ready
+├ ◐ /dispatch/shipments
+├   /dispatch/shipments/[id]
+│ └ ◐ /dispatch/shipments/[id]
+├ ◐ /finance
+├ ◐ /finance/accounts
+├ ◐ /finance/cash-bank
+├ ◐ /finance/expenses
+├ ◐ /finance/income
+├ ◐ /finance/invoices
+├   /finance/invoices/[id]
+│ └ ◐ /finance/invoices/[id]
+├   /finance/invoices/[id]/edit
+│ └ ◐ /finance/invoices/[id]/edit
+├ ◐ /finance/invoices/new
+├ ◐ /finance/payables
+├   /finance/payables/bills/[id]
+│ └ ◐ /finance/payables/bills/[id]
+├ ◐ /finance/payments
+├ ◐ /finance/receivables
+├ ◐ /finance/reports
+├ ◐ /finance/transactions
+├ ○ /icon.png
+├ ◐ /inventory
+├ ◐ /inventory/adjustments
+├ ◐ /inventory/batches-lots
+├ ◐ /inventory/finished-goods
+├ ◐ /inventory/item-master
+├   /inventory/item-master/[sku]
+│ └ ◐ /inventory/item-master/[sku]
+├ ◐ /inventory/movements
+├ ◐ /inventory/raw-material
+├ ◐ /inventory/reservations
+├ ◐ /inventory/stock
+├ ◐ /inventory/stock-counts
+├ ◐ /inventory/transfers
+├ ◐ /inventory/warehouses
+├ ◐ /inventory/wip-stock
+├ ○ /login
+├ ◐ /packing
+├ ◐ /packing/completed
+├ ◐ /packing/instructions
+├ ◐ /packing/orders
+├   /packing/orders/[id]
+│ └ ◐ /packing/orders/[id]
+├ ◐ /packing/packages
+├ ◐ /people-payroll
+├ ◐ /people-payroll/advances-loans
+├ ◐ /people-payroll/attendance
+├ ◐ /people-payroll/deductions
+├ ◐ /people-payroll/departments
+├ ◐ /people-payroll/employees
+├ ◐ /people-payroll/leave
+├ ◐ /people-payroll/payroll
+├   /people-payroll/payroll/[id]
+│ └ ◐ /people-payroll/payroll/[id]
+├ ◐ /people-payroll/reports
+├ ◐ /people-payroll/salary-structure
+├ ◐ /people-payroll/shifts
+├ ◐ /planning
+├ ◐ /planning/calendar
+├ ◐ /planning/capacity
+├ ◐ /planning/material-requirements
+├ ◐ /planning/material-reservations
+├ ◐ /planning/mrp-runs
+├ ◐ /planning/production-plans
+├   /planning/production-plans/[id]
+│ └ ◐ /planning/production-plans/[id]
+├ ◐ /planning/shortages
+├   /print/credit-notes/[id]
+│ └ ◐ /print/credit-notes/[id]
+├   /print/gate-passes/[id]
+│ └ ◐ /print/gate-passes/[id]
+├   /print/inventory/items/[id]
+│ └ ◐ /print/inventory/items/[id]
+├ ◐ /print/inventory/raw-material
+├   /print/invoices/[id]
+│ └ ◐ /print/invoices/[id]
+├   /print/packing-lists/[id]
+│ └ ◐ /print/packing-lists/[id]
+├   /print/payroll/[id]
+│ └ ◐ /print/payroll/[id]
+├   /print/production-orders/[id]
+│ └ ◐ /print/production-orders/[id]
+├   /print/purchase-orders/[id]
+│ └ ◐ /print/purchase-orders/[id]
+├   /print/receipts/[id]
+│ └ ◐ /print/receipts/[id]
+├   /print/sales-orders/[id]
+│ └ ◐ /print/sales-orders/[id]
+├   /print/sales-orders/[id]/packing
+│ └ ◐ /print/sales-orders/[id]/packing
+├   /print/shipments/[id]
+│ └ ◐ /print/shipments/[id]
+├   /print/stock-documents/[id]
+│ └ ◐ /print/stock-documents/[id]
+├ ◐ /procurement
+├ ◐ /procurement/goods-receipts
+├ ◐ /procurement/purchase-orders
+├   /procurement/purchase-orders/[id]
+│ └ ◐ /procurement/purchase-orders/[id]
+├ ◐ /procurement/requisitions
+├   /procurement/requisitions/[id]
+│ └ ◐ /procurement/requisitions/[id]
+├ ◐ /procurement/rfqs
+├   /procurement/rfqs/[id]
+│ └ ◐ /procurement/rfqs/[id]
+├ ◐ /procurement/supplier-performance
+├ ◐ /procurement/suppliers
+├ ◐ /production
+├ ◐ /production/completion
+├ ◐ /production/material-issue
+├ ◐ /production/operations
+├ ◐ /production/orders
+├   /production/orders/[id]
+│ └ ◐ /production/orders/[id]
+├ ◐ /production/orders/new
+├ ◐ /production/output
+├ ◐ /production/schedule
+├ ◐ /production/shop-floor
+├ ◐ /production/stage-board
+├ ◐ /production/work-orders
+├ ◐ /products
+├   /products/[id]
+│ └ ◐ /products/[id]
+├   /products/[id]/edit
+│ └ ◐ /products/[id]/edit
+├ ◐ /products/bom
+├ ◐ /products/categories
+├ ◐ /products/documents
+├ ◐ /products/new
+├ ◐ /products/pricing
+├ ◐ /products/variants
+├ ◐ /quality
+├ ◐ /quality/capa
+├ ◐ /quality/final
+├ ◐ /quality/in-process
+├ ◐ /quality/incoming
+├ ◐ /quality/inspections
+├   /quality/inspections/[id]
+│ └ ◐ /quality/inspections/[id]
+├ ◐ /quality/ncr
+├ ◐ /quality/rejections
+├ ◐ /reports
+├ ◐ /reports/delivery
+├ ◐ /reports/dispatch
+├ ◐ /reports/inventory
+├ ◐ /reports/inventory/finished-goods
+├ ◐ /reports/inventory/movements
+├ ◐ /reports/inventory/wip
+├ ◐ /reports/orders
+├ ◐ /reports/packing
+├ ◐ /reports/production
+├ ◐ /reports/production/completion
+├ ◐ /reports/production/rejections
+├ ◐ /reports/production/stages
+├ ◐ /reports/production/wastage
+├ ◐ /reports/quality
+├ ◐ /reports/quality/capa
+├ ◐ /reports/quality/ncr
+├ ◐ /reports/receivables
+├ ◐ /sales
+├ ◐ /sales/customers
+├ ◐ /sales/orders
+├   /sales/orders/[id]
+│ └ ◐ /sales/orders/[id]
+├   /sales/orders/[id]/edit
+│ └ ◐ /sales/orders/[id]/edit
+└ ◐ /sales/orders/new
+
+
+○  (Static)             prerendered as static content
+◐  (Partial Prerender)  prerendered as static HTML with dynamic server-streamed content
+ƒ  (Dynamic)            server-rendered on demand
+
+DONE  

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "test": "node --experimental-strip-types --import ./tests/support/register.mjs --test tests/server/core-foundation.test.mjs tests/server/dashboard-inventory.test.mjs tests/server/login-rate-limit.test.mjs tests/server/module-availability.test.mjs tests/server/sales-order-sheet.test.mjs tests/server/decimal-money.test.mjs tests/server/csv-export.test.mjs tests/server/stock-rules.test.mjs tests/server/mrp-engine.test.mjs tests/server/production-rules.test.mjs tests/server/dispatch-rules.test.mjs tests/server/finance-rules.test.mjs tests/server/payroll-rules.test.mjs tests/server/ledger-rules.test.mjs tests/server/process-steps.test.mjs tests/server/clear-transactions.test.mjs",
+    "test": "node --experimental-strip-types --import ./tests/support/register.mjs --test tests/server/core-foundation.test.mjs tests/server/dashboard-inventory.test.mjs tests/server/login-rate-limit.test.mjs tests/server/module-availability.test.mjs tests/server/sales-order-sheet.test.mjs tests/server/decimal-money.test.mjs tests/server/csv-export.test.mjs tests/server/stock-rules.test.mjs tests/server/mrp-engine.test.mjs tests/server/production-rules.test.mjs tests/server/dispatch-rules.test.mjs tests/server/partial-dispatch.test.mjs tests/server/typed-location.test.mjs tests/server/finance-rules.test.mjs tests/server/payroll-rules.test.mjs tests/server/ledger-rules.test.mjs tests/server/process-steps.test.mjs tests/server/clear-transactions.test.mjs",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma skills sync || exit 0",

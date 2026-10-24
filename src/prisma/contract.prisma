@@ -194,6 +194,7 @@ model Product {
   qualityInspections QualityInspection[]
   packingLists      PackingList[]
   shipmentLines     ShipmentLine[]
+  shortfalls        Shortfall[]
 
   @@index([name])
   @@index([category])
@@ -226,6 +227,7 @@ model SalesOrder {
   processNotes SalesOrderNote[]
   shipments Shipment[]
   invoices  Invoice[]
+  shortfalls Shortfall[]
 
   @@index([customerId])
   @@index([status])
@@ -279,10 +281,43 @@ model SalesOrderLine {
 
   salesOrder SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
   product    Product?   @relation(fields: [productId], references: [id], onDelete: SetNull)
+  shortfalls Shortfall[]
 
   @@index([salesOrderId])
   @@index([productId])
   @@map("erp_sales_order_lines")
+}
+
+/// An explicitly identified quantity of a sales order that cannot currently
+/// be fulfilled as planned (D-050): recorded with a reason and resolved when
+/// the goods are later dispatched, cancelled, or covered another way. History
+/// is kept per record; a balance is never a single mutable total.
+model Shortfall {
+  id              Uuid              @id @default(uuid())
+  salesOrderId    Uuid
+  salesOrderLineId Uuid?
+  productId       Uuid?
+  quantity        Decimal
+  unit            String
+  reason          String
+  notes           String?
+  status          String            @default("OPEN")
+  resolvedQuantity Decimal          @default(0)
+  resolvedAt      TimestamptzString?
+  resolvedBy      Uuid?
+  createdBy       Uuid
+  createdAt       TimestamptzString @default(now())
+  updatedAt       TimestamptzString @default(now())
+
+  salesOrder     SalesOrder  @relation(fields: [salesOrderId], references: [id], onDelete: Restrict)
+  salesOrderLine SalesOrderLine? @relation(fields: [salesOrderLineId], references: [id], onDelete: SetNull)
+  product        Product?    @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([salesOrderId, status])
+  @@check(expression: '"quantity" > 0 AND "resolvedQuantity" >= 0 AND "resolvedQuantity" <= "quantity"', name: "erp_shortfalls_quantities")
+  @@check(expression: '"status" IN (\'OPEN\', \'RESOLVED\', \'CANCELLED\')', name: "erp_shortfalls_status")
+  @@check(expression: '"status" <> \'RESOLVED\' OR "resolvedAt" IS NOT NULL', name: "erp_shortfalls_resolved_needs_date")
+  @@map("erp_shortfalls")
 }
 
 // ---------------------------------------------------------------------------
