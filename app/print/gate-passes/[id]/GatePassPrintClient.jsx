@@ -53,13 +53,32 @@ export default function GatePassPrintClient({ id }) {
         {pass.status === "DRAFT" && <p className="af7__notice">NOT APPROVED: goods may not pass the gate on this pass.</p>}
         {pass.status === "CANCELLED" && <p className="af7__notice">CANCELLED: this gate pass is void.</p>}
 
-        <Af7Section number="1" title="Document information">
-          <div className="af7__two">
-            <Af7Fields rows={[["Date", new Date(pass.createdAt).toLocaleDateString("en-GB")], ["Gate pass no.", pass.passNumber], ["Reference no.", pass.referenceNo || pass.shipmentNumber]]} />
-            <Af7Fields rows={[["M/s / party name", pass.partyName], ["Purpose", pass.purpose], ["Vehicle / driver", [pass.vehicleNumber, pass.driverName].filter(Boolean).join(" · ")], ...(pass.expectedReturnDate ? [["Return by", pass.expectedReturnDate]] : [])]} />
-          </div>
-        </Af7Section>
+       <Af7Section number="1" title="Document information">
+  <div className="af7__two">
+    <Af7Fields
+      rows={[
+        ["Date", new Date(pass.createdAt).toLocaleDateString("en-GB")],
+        ["Gate pass no.", pass.passNumber],
+        ["Reference no.", pass.referenceNo || pass.shipmentNumber],
+      ]}
+    />
 
+    <Af7Fields
+      rows={[
+        ["M/s / party name", pass.partyName],
+        ["Purpose", pass.purpose],
+        [
+          "Vehicle / driver",
+          [pass.vehicleNumber, pass.driverName].filter(Boolean).join(" · "),
+        ],
+        ["Transportation mode", pass.transportationMode || "—"],
+        ...(pass.expectedReturnDate
+          ? [["Return by", pass.expectedReturnDate]]
+          : []),
+      ]}
+    />
+  </div>
+</Af7Section>
         <Af7Section number="2" title="Material details">
           <table className="af7__table">
             <colgroup>
