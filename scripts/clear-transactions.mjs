@@ -29,7 +29,7 @@ import { backupDatabase, pgTool, run, stop } from "./pg-tools.mjs";
 
 /* Emptied together; Postgres refuses (and nothing is cleared) if a kept table still points at one. */
 export const CLEARED_TABLES = [
-  "erp_sales_orders", "erp_sales_order_lines", "erp_sales_order_notes",
+  "erp_sales_orders", "erp_sales_order_lines", "erp_sales_order_notes", "erp_shortfalls",
   "erp_invoices", "erp_invoice_lines", "erp_credit_notes", "erp_credit_note_lines", "erp_customer_receipts",
   "erp_production_orders", "erp_production_stages", "erp_production_stage_runs", "erp_production_stage_checks", "erp_production_events",
   "erp_production_plans", "erp_production_plan_lines",

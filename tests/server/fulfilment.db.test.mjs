@@ -155,13 +155,15 @@ test("dispatch posts stock out once, consumes the order's reservation, and canno
   await expectCode(ship([{ packingListId: ctx.listA.id }]), "PACKING_LIST_NOT_SHIPPABLE");
   await expectCode(changeShipment(first.id, "cancel", {}, actor), "SHIPMENT_STATUS_CONFLICT");
 
-  // Reserve 10 for this order; two drafts carry the same packing list.
+  // Reserve 10 for this order. A draft shipment holds its packed quantity
+  // (D-050), so a second draft for the same packing list is refused, and two
+  // concurrent dispatches of the one draft ship it once.
   const reservation = await createReservation(reservationInputSchema.parse({
     idempotencyKey: key(), productId: ctx.zip.id, locationId: ctx.fg.id, quantity: 10, salesOrderId: ctx.salesOrder.id,
   }), actor);
   const x = await ship([{ packingListId: ctx.listB.id }]);
-  const y = await ship([{ packingListId: ctx.listB.id }]);
-  const outcomes = await Promise.allSettled([changeShipment(x.id, "dispatch", {}, actor), changeShipment(y.id, "dispatch", {}, actor)]);
+  await expectCode(ship([{ packingListId: ctx.listB.id }]), "PACKING_LIST_NOT_SHIPPABLE");
+  const outcomes = await Promise.allSettled([changeShipment(x.id, "dispatch", {}, actor), changeShipment(x.id, "dispatch", {}, actor)]);
   assert.equal(outcomes.filter((outcome) => outcome.status === "fulfilled").length, 1);
   ctx.second = outcomes[0].status === "fulfilled" ? outcomes[0].value : outcomes[1].value;
 

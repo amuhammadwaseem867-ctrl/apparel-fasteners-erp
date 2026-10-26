@@ -44,11 +44,11 @@ type Runner = Tx | ReturnType<typeof db.runtime>;
  * dispatched or cancelled, so two drafts cannot promise the same units.
  */
 async function allocatedQuantityForList(runner: Tx | null, packingListId: string, ...statuses: string[]) {
-  const list = statuses.map((status) => `'${status}'`).join(", ");
+  const list = statuses.join(",");
   const rows = (await (runner ?? db.runtime()).query(db.raw.sql`
     select coalesce(sum(l.quantity), 0)::text as quantity
     from erp_shipment_lines l join erp_shipments s on s.id = l."shipmentId"
-    where l."packingListId" = ${packingListId}::uuid and s.status in (${list}::text[])
+    where l."packingListId" = ${packingListId}::uuid and s.status = any(string_to_array(${list}::text, ','))
   `.returnsRow({ quantity: "pg/text@1" }).build() as never)) as unknown as Array<{ quantity: string }>;
   return dec(rows[0]?.quantity);
 }
@@ -274,20 +274,24 @@ async function dispatch(tx: Tx, shipment: { id: string; shipmentNumber: string; 
     // can be claimed: previously dispatched shipments' lines already hold
     // theirs. A full-quantity dispatch flips the list to SHIPPED and stamps
     // it; a partial one leaves it CONFIRMED for later shipments (D-050).
+    // This shipment is already DISPATCHED here (its status changes first),
+    // so only the other shipments' lines count as taken before it.
     const claimed = await rows<{ id: string }>(tx, db.raw.sql`
       update erp_packing_lists
-        set status = case when l.quantity >= "totalQuantity" then 'SHIPPED' else "status" end,
-            "shipmentId" = case when l.quantity >= "totalQuantity" then ${shipment.id}::uuid else "shipmentId" end
-        from (values (${line.packingListId!}::uuid, ${dec(line.quantity)}::numeric)) as l(id, quantity)
+        set status = case when l.quantity + l.before >= "totalQuantity" then 'SHIPPED' else "status" end,
+            "shipmentId" = case when l.quantity + l.before >= "totalQuantity" then ${shipment.id}::uuid else "shipmentId" end
+        from (
+          select ${line.packingListId!}::uuid as id, ${dec(line.quantity)}::numeric as quantity,
+            (select coalesce(sum(sl.quantity), 0) from erp_shipment_lines sl
+             join erp_shipments s on s.id = sl."shipmentId"
+             where sl."packingListId" = ${line.packingListId!}::uuid
+               and s.id <> ${shipment.id}::uuid
+               and s.status in ('DISPATCHED', 'DELIVERED')) as before
+        ) as l
         where erp_packing_lists.id = l.id
           and erp_packing_lists.status = 'CONFIRMED'
           and erp_packing_lists."locationId" = ${shipment.locationId}::uuid
-          and "totalQuantity"
-              - (select coalesce(sum(sl.quantity), 0) from erp_shipment_lines sl
-                 join erp_shipments s on s.id = sl."shipmentId"
-                 where sl."packingListId" = erp_packing_lists.id
-                   and s.status in ('DISPATCHED', 'DELIVERED'))
-              >= l.quantity
+          and "totalQuantity" - l.before >= l.quantity
       returning erp_packing_lists.id::text as id
     `.returnsRow({ id: "pg/text@1" }).build());
     if (!claimed.length) {
