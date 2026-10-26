@@ -331,6 +331,9 @@ export async function listProductionOrders(filters: ProductionQuery) {
 
   if (filters.status === "ACTIVE") {
     query = query.where((order) => order.status.in(["RELEASED", "IN_PROGRESS", "ON_HOLD"]));
+  } else if (filters.status === "WORKING") {
+    // Orders that still take QC and packing, completed ones included (D-053).
+    query = query.where((order) => order.status.in(["RELEASED", "IN_PROGRESS", "COMPLETED"]));
   } else if (filters.status === "OPEN") {
     query = query.where((order) => order.status.in(["PLANNED", "RELEASED", "IN_PROGRESS", "ON_HOLD"]));
   } else if (filters.status) {
@@ -504,7 +507,8 @@ export async function recordStageRunInTransaction(
 
   const current = totals.find((item) => item.sequence === stage.sequence)!;
   await tx.orm.public.ProductionStage.where({ id: stage.id }).update({
-    status: "IN_PROGRESS",
+    // A completed stage stays completed when later work is added (D-053).
+    status: stage.status === "COMPLETED" ? "COMPLETED" : "IN_PROGRESS",
     processedQuantity: addDecimalStrings(current.processedQuantity, run.inputQuantity),
     acceptedQuantity: addDecimalStrings(current.acceptedQuantity, run.acceptedQuantity),
     rejectedQuantity: addDecimalStrings(current.rejectedQuantity, run.rejectedQuantity),

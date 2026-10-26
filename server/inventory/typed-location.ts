@@ -4,10 +4,14 @@
  * first, with a stand-in location, so a request that would be refused never
  * creates a location; then the typed name is found or created in the
  * warehouse and the body is checked again with the real id.
+ *
+ * The location is never required (D-053): with neither an id nor a name,
+ * `fallback` picks one (e.g. where the item's stock is), else "General";
+ * a fallback returning "" says the body needs none.
  */
 
 import { AppError } from "../core/errors/app-error";
-import { resolveTypedLocation } from "./inventory.service";
+import { DEFAULT_LOCATION_NAME, resolveTypedLocation } from "./inventory.service";
 
 type Schema<T> = { safeParse: (value: unknown) => { success: true; data: T } | { success: false; error: { issues: unknown } } };
 
@@ -21,7 +25,12 @@ function check<T>(schema: Schema<T>, body: Record<string, unknown>): T {
   return parsed.data;
 }
 
-export async function parseBodyWithTypedLocation<T>(request: Request, schema: Schema<T>, actorId: string): Promise<T> {
+export async function parseBodyWithTypedLocation<T>(
+  request: Request,
+  schema: Schema<T>,
+  actorId: string,
+  fallback?: (body: Record<string, unknown>) => Promise<string | null>,
+): Promise<T> {
   let body: Record<string, unknown>;
   try {
     body = await request.json();
@@ -30,11 +39,12 @@ export async function parseBodyWithTypedLocation<T>(request: Request, schema: Sc
   }
   const { locationName, ...rest } = body ?? {};
   const name = typeof locationName === "string" ? locationName.trim().slice(0, 60) : "";
-  // A body with neither an id nor a usable name has no location at all: say so
-  // plainly instead of a generic schema failure on "locationId".
   if (!rest.locationId && !name) {
-    check(schema, rest);
-    throw new AppError("Choose or type a location.", { code: "LOCATION_REQUIRED", status: 400 });
+    // A fallback answering "" means this body needs no location at all.
+    const picked = fallback ? await fallback(rest) : null;
+    if (picked === "") return check(schema, rest);
+    check(schema, { ...rest, locationId: STAND_IN });
+    return check(schema, { ...rest, locationId: picked ?? await resolveTypedLocation(DEFAULT_LOCATION_NAME, actorId) });
   }
   if (rest.locationId || !name) return check(schema, rest);
   check(schema, { ...rest, locationId: STAND_IN });

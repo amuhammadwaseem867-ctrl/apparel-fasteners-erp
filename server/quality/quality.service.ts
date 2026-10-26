@@ -81,8 +81,8 @@ export async function createInspection(input: InspectionInput, actorId: string) 
     if (!order) {
       throw new AppError("Production order not found.", { code: "PRODUCTION_ORDER_NOT_FOUND", status: 400 });
     }
-    if (!["RELEASED", "IN_PROGRESS"].includes(order.status)) {
-      throw new AppError("Only released or in-progress production orders can be inspected.", { code: "PRODUCTION_ORDER_NOT_OPEN", status: 409 });
+    if (!["RELEASED", "IN_PROGRESS", "COMPLETED"].includes(order.status)) {
+      throw new AppError("A planned, held or cancelled production order cannot be inspected; release or resume it first.", { code: "PRODUCTION_ORDER_NOT_OPEN", status: 409 });
     }
     productId = order.productId;
 

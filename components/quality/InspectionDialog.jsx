@@ -40,7 +40,7 @@ export default function InspectionDialog({ fixedType, initialOrderId = "", onClo
   const [error, setError] = useState("");
 
   const productionType = type !== "INCOMING";
-  const orders = useApiData(productionType ? "/api/production/orders?status=ACTIVE&pageSize=100" : null);
+  const orders = useApiData(productionType ? "/api/production/orders?status=WORKING&pageSize=100" : null);
   const order = useApiData(productionType && orderId ? `/api/production/orders/${orderId}` : null);
   const locations = useApiData(type === "INCOMING" ? "/api/inventory/locations?status=ACTIVE" : null);
   const qcStage = order.data?.stages?.find((stage) => stage.stageKey === "quality-check");
@@ -49,7 +49,7 @@ export default function InspectionDialog({ fixedType, initialOrderId = "", onClo
   const number = (value) => (value === "" ? 0 : Number(value));
   const parts = number(values.passed) + number(values.rework) + number(values.rejected);
   const balanced = Number(values.inspected) > 0 && Math.abs(parts - Number(values.inspected)) < 1e-9;
-  const ready = balanced && (productionType ? Boolean(orderId) : Boolean(item && (place.locationId || place.locationText?.trim())));
+  const ready = balanced && (productionType ? Boolean(orderId) : Boolean(item));
 
   async function submit(event) {
     event.preventDefault();
@@ -62,7 +62,7 @@ export default function InspectionDialog({ fixedType, initialOrderId = "", onClo
         body: JSON.stringify({
           idempotencyKey: key,
           inspectionType: type,
-          ...(productionType ? { productionOrderId: orderId } : { productId: item.id, ...(place.locationId ? { locationId: place.locationId } : { locationName: place.locationText.trim() }) }),
+          ...(productionType ? { productionOrderId: orderId } : { productId: item.id, ...(place.locationId ? { locationId: place.locationId } : place.locationText?.trim() ? { locationName: place.locationText.trim() } : {}) }),
           ...(type === "IN_PROCESS" ? { stageKey } : {}),
           inspectedQuantity: Number(values.inspected),
           passedQuantity: number(values.passed),
@@ -120,7 +120,7 @@ export default function InspectionDialog({ fixedType, initialOrderId = "", onClo
         ) : (
           <>
             <ItemPicker label="Item on quality hold" required value={item} onChange={setItem} />
-            <LocationInput label="Location holding the stock" required locations={locations.data ?? []} locationId={place.locationId} text={place.locationText} onChange={setPlace} />
+            <LocationInput label="Location holding the stock" blankHint="where the item is on hold" locations={locations.data ?? []} locationId={place.locationId} text={place.locationText} onChange={setPlace} />
           </>
         )}
         {type === "FINAL" && qcStage && (

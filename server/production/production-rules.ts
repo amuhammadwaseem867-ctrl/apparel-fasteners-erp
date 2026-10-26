@@ -84,16 +84,18 @@ export function stageQuantities(stages: StageTotals[], orderQuantity: string, se
 }
 
 /* Returns an error message, or null when the run is valid. */
+/* Production order statuses that still accept work (D-053). */
+export const WORKING_ORDER_STATUSES = ["RELEASED", "IN_PROGRESS", "COMPLETED"];
+
 export function runError(
   run: RunInput,
   context: { available: string; stageStatus: string; orderStatus: string },
 ): string | null {
-  if (!["RELEASED", "IN_PROGRESS"].includes(context.orderStatus)) {
+  // A completed stage or order still takes later work (D-053): the rest of
+  // a part delivery is packed, checked and delivered after "Complete" was
+  // pressed. Only a planned, held or cancelled order refuses output.
+  if (!WORKING_ORDER_STATUSES.includes(context.orderStatus)) {
     return `Stage output cannot be recorded while the order is ${context.orderStatus.toLowerCase().replace("_", " ")}.`;
-  }
-
-  if (context.stageStatus === "COMPLETED") {
-    return "This stage is already completed.";
   }
 
   for (const [field, value] of Object.entries(run)) {

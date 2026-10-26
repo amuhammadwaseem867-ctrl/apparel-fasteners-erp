@@ -46,7 +46,7 @@ export const stageKeySchema = z.enum(STAGES.map((stage) => stage.key) as [string
 
 export const productionQuerySchema = z.object({
   search: z.string().trim().max(120).default(""),
-  status: z.enum(["PLANNED", "RELEASED", "IN_PROGRESS", "ON_HOLD", "COMPLETED", "CANCELLED", "ACTIVE", "OPEN", ""]).default(""),
+  status: z.enum(["PLANNED", "RELEASED", "IN_PROGRESS", "ON_HOLD", "COMPLETED", "CANCELLED", "ACTIVE", "WORKING", "OPEN", ""]).default(""),
   sort: z.enum(["created", "due"]).default("created"),
   stage: z.string().trim().max(40).default(""),
   page: z.coerce.number().int().min(1).max(100000).default(1),

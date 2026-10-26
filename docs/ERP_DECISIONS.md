@@ -1459,3 +1459,23 @@ navigation.
   than it owes) or on account (no invoice), against the old balance or the
   account as a whole. The ledger balance counts them all; receivables
   settle payments on account against the oldest dues first, so both agree.
+
+## D-053 Location never required; no stock-by-location or completed-stage blockers (2026-10-26)
+
+- A location is optional on every form (receive, issue, stock out, packing,
+  shipment, goods received, incoming QC, reservation). Left blank, stock
+  coming in goes to "General"; stock going out comes from where the item's
+  stock is; an incoming inspection uses where the item is on quality hold.
+  Inspections of a production order need no location at all.
+- Taking stock out (stock out, material issue, dispatch, damage) tops up a
+  short location from the item's other locations, the fullest first. Stock
+  still cannot go below zero in all: when all locations together are short,
+  nothing moves and the refusal says how much there is in all. Transfers
+  still name both locations.
+- A packed list ships from wherever it is kept; the shipment's own location
+  is only for loose items. "Stored at another location" is gone.
+- Pressing Complete on a stage, or the production order completing, no
+  longer stops later work: the rest of a part delivery is still checked,
+  packed, dispatched and delivered. Only a planned, held or cancelled order
+  refuses work. The order page keeps Record QC / Make packing list /
+  Dispatch while anything waits.

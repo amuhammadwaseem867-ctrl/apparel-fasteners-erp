@@ -1,6 +1,6 @@
 import { authorizeRequest } from "@/server/core/api/request";
 import { parseQuery, runRoute } from "@/server/core/api/route";
-import { createShipment, listShipments } from "@/server/dispatch/dispatch.service";
+import { createShipment, defaultShipFrom, listShipments } from "@/server/dispatch/dispatch.service";
 import { shipmentInputSchema, shipmentQuerySchema } from "@/server/dispatch/dispatch.validation";
 import { parseBodyWithTypedLocation } from "@/server/inventory/typed-location";
 
@@ -14,8 +14,8 @@ export function GET(request) {
 export function POST(request) {
   return runRoute(request, async () => {
     const user = await authorizeRequest(request, "dispatch:create");
-    // Ship-from can be typed by hand (D-048).
-    const input = await parseBodyWithTypedLocation(request, shipmentInputSchema, user.id);
+    // Ship-from can be typed by hand (D-048) or left out (D-053).
+    const input = await parseBodyWithTypedLocation(request, shipmentInputSchema, user.id, (body) => defaultShipFrom(body, user.id));
     return { data: await createShipment(input, user.id), status: 201 };
   });
 }

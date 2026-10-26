@@ -20,7 +20,7 @@ import { db } from "../core/database/client";
 import { AppError } from "../core/errors/app-error";
 import { findSqlQueryError } from "../core/errors/database-errors";
 import { addDecimalStrings, compareDecimalStrings, decimalSign, normalizeDecimalString, subtractDecimalStrings, toPlainDecimalString } from "../core/utils/decimal";
-import { allocateDocumentNumber, postStockDocumentInTransaction, type Tx } from "../inventory/inventory.service";
+import { allocateDocumentNumber, bestStockLocation, postStockDocumentInTransaction, type Tx } from "../inventory/inventory.service";
 import { quantityPrecisionError } from "../inventory/stock-rules";
 import { FINAL_STAGE } from "../production/production-rules";
 import { recordStageRunInTransaction } from "../production/production.service";
@@ -97,6 +97,21 @@ async function overShipmentError(position: Awaited<ReturnType<typeof orderPositi
 /* Create                                                              */
 /* ------------------------------------------------------------------ */
 
+/*
+ * Ship-from when none is chosen (D-053): the first packing list's location,
+ * else where the first loose item's stock is, else General.
+ */
+export async function defaultShipFrom(body: Record<string, unknown>, actorId: string) {
+  const lines = Array.isArray(body.lines) ? body.lines as Array<Record<string, unknown>> : [];
+  const packed = lines.find((line) => typeof line.packingListId === "string" && UUID.test(line.packingListId));
+  if (packed) {
+    const list = await db.orm.public.PackingList.where({ id: packed.packingListId as string }).first();
+    if (list) return list.locationId;
+  }
+  const loose = lines.find((line) => typeof line.productId === "string" && UUID.test(line.productId));
+  return loose ? bestStockLocation(loose.productId as string, actorId) : null;
+}
+
 export async function createShipment(input: ShipmentInput, actorId: string) {
   const replay = await db.orm.public.Shipment.where({ idempotencyKey: input.idempotencyKey }).first();
   if (replay) return getShipment(replay.id);
@@ -123,12 +138,8 @@ export async function createShipment(input: ShipmentInput, actorId: string) {
       if (list.salesOrderId && list.salesOrderId !== order.id) {
         throw new AppError(`Line ${index + 1}: ${list.packingNumber} was packed for another sales order.`, { code: "PACKING_LIST_OTHER_ORDER", status: 409 });
       }
-      if (list.locationId !== location.id) {
-        throw new AppError(`Line ${index + 1}: ${list.packingNumber} is stored at another location. Ship from that location or transfer the stock first.`, {
-          code: "PACKING_LIST_OTHER_LOCATION",
-          status: 409,
-        });
-      }
+      // Each packing list ships from wherever it is kept (D-053); the
+      // shipment's own location is only for loose items.
       // A packing list can be shipped in parts across shipments (D-050).
       // Default is its still-unshipped quantity; a line may ask for less,
       // never more. Re-checked inside the transaction below under the sales
@@ -290,7 +301,6 @@ async function dispatch(tx: Tx, shipment: { id: string; shipmentNumber: string; 
         ) as l
         where erp_packing_lists.id = l.id
           and erp_packing_lists.status = 'CONFIRMED'
-          and erp_packing_lists."locationId" = ${shipment.locationId}::uuid
           and "totalQuantity" - l.before >= l.quantity
       returning erp_packing_lists.id::text as id
     `.returnsRow({ id: "pg/text@1" }).build());
@@ -299,20 +309,31 @@ async function dispatch(tx: Tx, shipment: { id: string; shipmentNumber: string; 
     }
   }
 
-  // Consume this order's open reservations at the ship-from location first.
+  // Packed goods leave from their packing list's location, loose goods from
+  // the shipment's (D-053); a location that is short is topped up from the
+  // item's other locations when the stock is posted. This order's open
+  // reservations at each location are consumed first.
+  const lists = await tx.orm.public.PackingList.where((list) => list.id.in(lines.map((line) => line.packingListId).filter(Boolean) as string[])).all();
+  const bySource = new Map<string, string>();
+  for (const line of lines) {
+    const from = lists.find((list) => list.id === line.packingListId)?.locationId ?? shipment.locationId;
+    const key = `${line.productId}|${from}`;
+    bySource.set(key, addDecimalStrings(bySource.get(key) ?? "0", dec(line.quantity)));
+  }
   const documentLines: Array<{ productId: string; locationId: string; quantity: number; reservationId?: string }> = [];
-  for (const [productId, quantity] of quantities) {
+  for (const [key, quantity] of bySource) {
+    const [productId, locationId] = key.split("|");
     const reservations = await rows<{ id: string; open: string }>(tx, db.raw.sql`
       select id::text as id, ("quantity" - "consumedQuantity" - "releasedQuantity")::text as open
       from erp_stock_reservations
       where "salesOrderId" = ${shipment.salesOrderId}::uuid and "productId" = ${productId}::uuid
-        and "locationId" = ${shipment.locationId}::uuid and status = 'ACTIVE'
+        and "locationId" = ${locationId}::uuid and status = 'ACTIVE'
       order by "createdAt", id
     `.returnsRow({ id: "pg/text@1", open: "pg/text@1" }).build());
     for (const part of allocateToReservations(quantity, reservations)) {
       documentLines.push({
         productId,
-        locationId: shipment.locationId,
+        locationId,
         quantity: Number(part.quantity),
         ...(part.reservationId ? { reservationId: part.reservationId } : {}),
       });

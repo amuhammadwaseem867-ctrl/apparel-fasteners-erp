@@ -175,8 +175,15 @@ function StageRow({ order, stage, index, canRun, busy, onStart, onChecks, onMana
   const running = ["RELEASED", "IN_PROGRESS"].includes(order.status);
   const done = stage.status === "COMPLETED";
 
+  // QC, packing and dispatch stay open while anything waits, even after
+  // Complete was pressed (D-053): the rest of a part delivery comes later.
+  const working = running || order.status === "COMPLETED";
+  const waitingManaged = stage.managedBy && Number(stage.available) > 0;
+
   let action = null;
-  if (!done && running) {
+  if (done && working && waitingManaged) {
+    action = <Button size="sm" variant="secondary" onClick={() => onManaged(stage.managedBy)}>{MANAGED_ACTIONS[stage.managedBy]}</Button>;
+  } else if (!done && running) {
     if (stage.managedBy) {
       // QC, packing and dispatch are recorded here; once nothing is left waiting, the stage is completed here too.
       const waiting = Number(stage.available) > 0;

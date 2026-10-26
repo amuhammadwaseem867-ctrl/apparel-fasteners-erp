@@ -174,8 +174,9 @@ test("reserved stock is not available, and an issue can consume a reservation", 
 
   assert.deepEqual(await balance(pcs.id, locA.id), { onHand: 50, reserved: 40, qualityHold: 0 });
 
-  // Only 10 are free; an unreserved issue of 20 must fail.
-  await expectCode(post("MATERIAL_ISSUE", [{ productId: pcs.id, locationId: locA.id, quantity: 20 }]), "INSUFFICIENT_STOCK");
+  // Only 10 are free here and 20 at B (D-053: other locations top up a short
+  // one); reserved stock never counts, so an unreserved issue of 31 must fail.
+  await expectCode(post("MATERIAL_ISSUE", [{ productId: pcs.id, locationId: locA.id, quantity: 31 }]), "INSUFFICIENT_STOCK");
 
   await post("MATERIAL_ISSUE", [{ productId: pcs.id, locationId: locA.id, quantity: 25, reservationId: reservation.id }]);
   assert.deepEqual(await balance(pcs.id, locA.id), { onHand: 25, reserved: 15, qualityHold: 0 });
@@ -198,7 +199,8 @@ test("reserved stock is not available, and an issue can consume a reservation", 
 
 test("quality hold blocks stock until released or rejected", async () => {
   await post("QC_HOLD", [{ productId: pcs.id, locationId: locA.id, quantity: 10 }]);
-  await expectCode(post("STOCK_OUT", [{ productId: pcs.id, locationId: locA.id, quantity: 20 }]), "INSUFFICIENT_STOCK");
+  // 15 free here, 20 at B: held stock never counts, so 36 is refused.
+  await expectCode(post("STOCK_OUT", [{ productId: pcs.id, locationId: locA.id, quantity: 36 }]), "INSUFFICIENT_STOCK");
 
   await post("QC_RELEASE", [{ productId: pcs.id, locationId: locA.id, quantity: 4 }]);
   await post("QC_REJECT", [{ productId: pcs.id, locationId: locA.id, quantity: 6 }]);
@@ -229,9 +231,11 @@ test("quantities must respect the item's unit of measure", async () => {
 });
 
 test("concurrent issues never take stock below zero", async () => {
-  // locB holds 20 pieces. Five concurrent issues of 6: at most three fit.
+  // An item held only at B: 20 pieces in all. Five concurrent issues of 6: at most three fit.
+  const only = await product("ONLY", "Pcs");
+  await post("GOODS_RECEIPT", [{ productId: only.id, locationId: locB.id, quantity: 20 }]);
   const results = await Promise.allSettled(
-    [1, 2, 3, 4, 5].map(() => post("MATERIAL_ISSUE", [{ productId: pcs.id, locationId: locB.id, quantity: 6 }])),
+    [1, 2, 3, 4, 5].map(() => post("MATERIAL_ISSUE", [{ productId: only.id, locationId: locB.id, quantity: 6 }])),
   );
   const succeeded = results.filter((result) => result.status === "fulfilled").length;
   const refused = results.filter((result) => result.status === "rejected");
@@ -240,8 +244,25 @@ test("concurrent issues never take stock below zero", async () => {
   for (const result of refused) {
     assert.equal(result.reason.code, "INSUFFICIENT_STOCK");
   }
-  assert.equal((await balance(pcs.id, locB.id)).onHand, 2);
-  await assertLedgerMatches(pcs.id, locB.id);
+  assert.equal((await balance(only.id, locB.id)).onHand, 2);
+  await assertLedgerMatches(only.id, locB.id);
+});
+
+test("a short location is topped up from the item's other locations; never below zero in all (D-053)", async () => {
+  const item = await product("SPREAD", "Pcs");
+  await post("GOODS_RECEIPT", [{ productId: item.id, locationId: locA.id, quantity: 5 }, { productId: item.id, locationId: locB.id, quantity: 12 }]);
+  const issued = await post("MATERIAL_ISSUE", [{ productId: item.id, locationId: locA.id, quantity: 9 }]);
+  assert.deepEqual(
+    issued.document.movements.map((movement) => [movement.locationId, movement.quantityDelta]).sort(),
+    [[locA.id, "-5"], [locB.id, "-4"]].sort(),
+  );
+  assert.equal((await balance(item.id, locA.id)).onHand, 0);
+  assert.equal((await balance(item.id, locB.id)).onHand, 8);
+  // 8 left in all: 9 is refused and nothing moves.
+  await expectCode(post("STOCK_OUT", [{ productId: item.id, locationId: locA.id, quantity: 9 }]), "INSUFFICIENT_STOCK");
+  assert.equal((await balance(item.id, locB.id)).onHand, 8);
+  await assertLedgerMatches(item.id, locA.id);
+  await assertLedgerMatches(item.id, locB.id);
 });
 
 test("summary reports per-unit totals and low-stock alerts from real balances", async () => {
@@ -251,8 +272,8 @@ test("summary reports per-unit totals and low-stock alerts from real balances", 
 
   assert.ok(alert, "item below its minimum appears as an alert");
   assert.equal(alert.lowStock, true);
-  // Summary is per item across all locations: 20 at A1 + 2 at B1.
-  assert.equal(alert.available, "22");
+  // Summary is per item across all locations: 20 at A1 + 20 at B1.
+  assert.equal(alert.available, "40");
   assert.ok(summary.totalsByUnit.every((total) => typeof total.unit === "string"));
 
   const page = await listBalances({ productId: pcs.id, search: "", page: 1, pageSize: 25 });

@@ -64,7 +64,7 @@ function ReservationForm({ locations, onClose, onSaved }) {
       <form className="inv-dialog" onSubmit={submit}>
         <div className="inv-dialog__grid">
           <ItemPicker required value={item} onChange={setItem} />
-          <LocationSelect required locations={locations} value={locationId} onChange={setLocationId} />
+          <LocationSelect label="Location (blank: where the stock is)" locations={locations} value={locationId} onChange={setLocationId} />
           <div className="inv-field">
             <label htmlFor="rsv-qty">Quantity *{item ? ` (${item.unit})` : ""}</label>
             <input id="rsv-qty" required type="number" step="any" min="0.000001" value={quantity} onChange={(event) => setQuantity(event.target.value)} />
@@ -86,7 +86,7 @@ function ReservationForm({ locations, onClose, onSaved }) {
         {error && <p className="inv-dialog__error" role="alert">{error}</p>}
         <div className="inv-dialog__actions">
           <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
-          <Button type="submit" variant="primary" loading={saving} disabled={!item || !locationId || !quantity}>Reserve</Button>
+          <Button type="submit" variant="primary" loading={saving} disabled={!item || !quantity}>Reserve</Button>
         </div>
       </form>
     </Modal>

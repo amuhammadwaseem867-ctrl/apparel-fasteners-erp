@@ -39,7 +39,7 @@ export default function PackingListDialog({ initialOrderId = "", defaults = {}, 
   const [saving, setSaving] = useState("");
   const [error, setError] = useState("");
 
-  const orders = useApiData(initialOrderId ? null : "/api/production/orders?status=ACTIVE&pageSize=100");
+  const orders = useApiData(initialOrderId ? null : "/api/production/orders?status=WORKING&pageSize=100");
   const order = useApiData(orderId ? `/api/production/orders/${orderId}` : null);
   const locations = useApiData("/api/inventory/locations?status=");
   const locationList = locations.data ?? [];
@@ -49,8 +49,7 @@ export default function PackingListDialog({ initialOrderId = "", defaults = {}, 
   const total = round(sum(rows, "quantity"));
   // The location is always required: the user types it or picks a suggestion;
   // the single location returned is not picked silently.
-  const hasLocation = Boolean(location.locationId || location.locationText?.trim());
-  const ready = orderId && hasLocation && rows.length > 0 && rows.every((row) => Number(row.quantity) > 0 && Number(row.bags) >= 1);
+  const ready = orderId && rows.length > 0 && rows.every((row) => Number(row.quantity) > 0 && Number(row.bags) >= 1);
 
   function update(rowKey, patch) {
     setRows((current) => current.map((row) => (row.key === rowKey ? { ...row, ...patch } : row)));
@@ -69,7 +68,7 @@ export default function PackingListDialog({ initialOrderId = "", defaults = {}, 
         body: JSON.stringify({
           idempotencyKey: `${key}-${confirm ? "pass" : "draft"}`,
           productionOrderId: orderId,
-          ...(chosen ? { locationId: chosen } : { locationName: location.locationText.trim() }),
+          ...(chosen ? { locationId: chosen } : location.locationText?.trim() ? { locationName: location.locationText.trim() } : {}),
           confirm,
           notes,
           packages: rows.map((row) => ({
@@ -114,7 +113,7 @@ export default function PackingListDialog({ initialOrderId = "", defaults = {}, 
                 </select>
               </div>
             )}
-            <LocationInput label="Kept at (finished goods)" required locations={locationList}
+            <LocationInput label="Kept at (finished goods)" blankHint="General" locations={locationList}
               locationId={location.locationId}
               text={location.locationText} onChange={setLocation} />
           </div>

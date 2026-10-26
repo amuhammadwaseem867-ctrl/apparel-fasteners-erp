@@ -65,8 +65,8 @@ export default function StockDocumentDialog({
   const needsReason = Boolean(rule?.requiresReason);
 
   const ready = useMemo(() => lines.every((line) =>
-    line.item && (line.locationId || line.locationText?.trim()) && line.quantity !== "" &&
-    (!isTransfer || line.toLocationId)) && (!needsReason || reason.trim()),
+    line.item && line.quantity !== "" &&
+    (!isTransfer || (line.locationId && line.toLocationId))) && (!needsReason || reason.trim()),
   [lines, isTransfer, needsReason, reason]);
 
   function updateLine(key, patch) {
@@ -93,7 +93,7 @@ export default function StockDocumentDialog({
           ...(source ? { sourceType: source.sourceType, sourceId: source.sourceId } : {}),
           lines: lines.map((line) => ({
             productId: line.item.id,
-            ...(line.locationId ? { locationId: line.locationId } : { locationName: line.locationText.trim() }),
+            ...(line.locationId ? { locationId: line.locationId } : line.locationText?.trim() ? { locationName: line.locationText.trim() } : {}),
             ...(isTransfer ? { toLocationId: line.toLocationId } : {}),
             quantity: Number(line.quantity),
           })),
@@ -166,7 +166,7 @@ export default function StockDocumentDialog({
               />
             ) : (
               <LocationInput
-                required
+                blankHint={rule?.operation === "decrease-available" ? "taken from where the stock is" : "General"}
                 locations={locations}
                 locationId={line.locationId}
                 text={line.locationText}

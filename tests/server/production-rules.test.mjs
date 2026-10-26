@@ -74,10 +74,16 @@ test("a run must balance and may not exceed what is available", () => {
   assert.equal(runError(run("0.5", "0.25", "0.25"), ctx("1")), null, "exact decimals");
 });
 
-test("runs are refused on held, planned, cancelled or completed work", () => {
+test("runs are refused on held, planned or cancelled orders", () => {
   assert.match(runError(run("1", "1"), ctx("10", "PENDING", "ON_HOLD")), /on hold/);
   assert.match(runError(run("1", "1"), ctx("10", "PENDING", "PLANNED")), /planned/);
-  assert.match(runError(run("1", "1"), ctx("10", "COMPLETED", "IN_PROGRESS")), /already completed/);
+  assert.match(runError(run("1", "1"), ctx("10", "PENDING", "CANCELLED")), /cancelled/);
+});
+
+test("a completed stage or order still takes later work, within what is available (D-053)", () => {
+  assert.equal(runError(run("1", "1"), ctx("10", "COMPLETED", "IN_PROGRESS")), null);
+  assert.equal(runError(run("1", "1"), ctx("10", "COMPLETED", "COMPLETED")), null);
+  assert.match(runError(run("11", "11"), ctx("10", "COMPLETED", "COMPLETED")), /Only 10 is available/);
 });
 
 test("no blockers (D-048): a stage can be completed at any time, but only once", () => {

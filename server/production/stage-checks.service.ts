@@ -79,7 +79,7 @@ export async function recordStageChecks(productionOrderId: string, stageKey: str
       select status from erp_production_orders where id = ${productionOrderId}::uuid for update
     `.returnsRow({ status: "pg/text@1" }).build() as never)) as unknown as Array<{ status: string }>;
     if (!locked.length) throw new AppError("Production order not found.", { code: "PRODUCTION_ORDER_NOT_FOUND", status: 404 });
-    if (!["RELEASED", "IN_PROGRESS"].includes(locked[0].status)) {
+    if (!["RELEASED", "IN_PROGRESS", "COMPLETED"].includes(locked[0].status)) {
       throw new AppError(`Checks cannot be recorded while the order is ${locked[0].status.toLowerCase().replace("_", " ")}.`, { code: "PRODUCTION_STATUS_CONFLICT", status: 409 });
     }
     const stage = await tx.orm.public.ProductionStage.where({ productionOrderId, stageKey }).first();

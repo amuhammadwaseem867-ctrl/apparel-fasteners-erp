@@ -7,11 +7,12 @@ import { useId } from "react";
  * locations offered as suggestions. Choosing a suggestion sends its id; any
  * other text is sent as a new location name, which the server finds or
  * creates in the warehouse. Nothing has to be set up or activated first.
+ * Left blank (not required, D-053), the server picks the location.
  */
 
 export const locationLabel = (location) => `${location.code} — ${location.name}`;
 
-export default function LocationInput({ locations = [], locationId, text, onChange, label = "Location", required = false }) {
+export default function LocationInput({ locations = [], locationId, text, onChange, label = "Location", required = false, blankHint = "" }) {
   const id = useId();
   const current = locationId ? locations.find((location) => location.id === locationId) : null;
   const value = text ?? (current ? locationLabel(current) : "");
@@ -31,7 +32,9 @@ export default function LocationInput({ locations = [], locationId, text, onChan
       <datalist id={`${id}-list`}>
         {locations.map((location) => <option key={location.id} value={locationLabel(location)} />)}
       </datalist>
-      <small className="inv-field__hint">Pick one or type a new location; a new one is added automatically.</small>
+      <small className="inv-field__hint">{required
+        ? "Pick one or type a new location; a new one is added automatically."
+        : `Optional. Pick one, type a new one, or leave blank${blankHint ? `: ${blankHint}` : ""}.`}</small>
     </div>
   );
 }

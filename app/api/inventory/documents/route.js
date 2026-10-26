@@ -2,7 +2,7 @@ import { requirePermission } from "@/server/auth/authorization.service";
 import { authorizeRequest, parseRequestBody } from "@/server/core/api/request";
 import { parseQuery, runRoute } from "@/server/core/api/route";
 import { AppError } from "@/server/core/errors/app-error";
-import { listStockDocuments, postStockDocument, resolveTypedLocation } from "@/server/inventory/inventory.service";
+import { DEFAULT_LOCATION_NAME, bestStockLocation, listStockDocuments, postStockDocument, resolveTypedLocation } from "@/server/inventory/inventory.service";
 import { documentQuerySchema, stockDocumentInputSchema, stockDocumentRequestSchema } from "@/server/inventory/inventory.validation";
 import { documentTypeRule } from "@/server/inventory/stock-rules";
 
@@ -40,9 +40,14 @@ export function POST(request) {
     const checked = check(body.lines.map((line, index) => ({ ...strip(line), locationId: line.locationId ?? placeholder(index) })));
     await requirePermission(user.id, documentTypeRule(checked.documentType).permission);
 
+    // No location given (D-053): out of where the item's stock is, in at General.
+    const takesOut = documentTypeRule(checked.documentType).operation === "decrease-available";
     const lines = [];
     for (const line of body.lines) {
-      lines.push({ ...strip(line), locationId: line.locationId ?? await resolveTypedLocation(line.locationName, user.id) });
+      const locationId = line.locationId
+        ?? (line.locationName ? await resolveTypedLocation(line.locationName, user.id) : null)
+        ?? (takesOut ? await bestStockLocation(line.productId, user.id) : await resolveTypedLocation(DEFAULT_LOCATION_NAME, user.id));
+      lines.push({ ...strip(line), locationId });
     }
     const result = await postStockDocument(check(lines), user.id);
     return { data: result, status: result.replayed ? 200 : 201 };

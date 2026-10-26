@@ -47,7 +47,7 @@ export default function ShipmentDialog({ initialSalesOrderId = "", onClose, onCr
     return { packingListId, quantity: Number(quantity), outstanding, valid: Number(quantity) > 0 && Number(quantity) <= outstanding };
   });
   const looseLines = Object.entries(loose).filter(([, quantity]) => Number(quantity) > 0);
-  const ready = salesOrderId && (locationId || locationName) && (readyLines.some((line) => line.valid) || looseLines.length > 0);
+  const ready = salesOrderId && (readyLines.some((line) => line.valid) || looseLines.length > 0);
   const setField = (field) => (event) => setTransport((current) => ({ ...current, [field]: event.target.value }));
 
   async function submit(event) {
@@ -61,7 +61,7 @@ export default function ShipmentDialog({ initialSalesOrderId = "", onClose, onCr
         body: JSON.stringify({
           idempotencyKey: key,
           salesOrderId,
-          ...(locationId ? { locationId } : { locationName }),
+          ...(locationId ? { locationId } : locationName ? { locationName } : {}),
           ...transport,
           lines: [
             ...readyLines.filter((line) => line.valid).map((line) => ({ packingListId: line.packingListId, quantity: line.quantity })),
@@ -142,7 +142,7 @@ export default function ShipmentDialog({ initialSalesOrderId = "", onClose, onCr
           </>
         )}
 
-        <LocationInput label="Ship from" required locations={locations.data ?? []} locationId={locationId} text={chosen.locationText} onChange={setChosen} />
+        <LocationInput label="Ship from (loose items)" blankHint="packed lists ship from where they are kept" locations={locations.data ?? []} locationId={locationId} text={chosen.locationText} onChange={setChosen} />
         <div className="inv-dialog__grid">
           <div className="inv-field"><label htmlFor="sh-vehicle">Vehicle number</label><input id="sh-vehicle" maxLength={40} value={transport.vehicleNumber} onChange={setField("vehicleNumber")} /></div>
           <div className="inv-field"><label htmlFor="sh-driver">Driver</label><input id="sh-driver" maxLength={120} value={transport.driverName} onChange={setField("driverName")} /></div>

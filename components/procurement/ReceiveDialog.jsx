@@ -24,7 +24,7 @@ export default function ReceiveDialog({ order, onClose, onDone }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const lines = open.filter((line) => Number(quantities[line.id]) > 0).map((line) => ({ purchaseOrderLineId: line.id, quantity: Number(quantities[line.id]) }));
-  const valid = (place.locationId || place.locationText?.trim()) && lines.length > 0;
+  const valid = lines.length > 0;
 
   async function submit(event) {
     event.preventDefault();
@@ -34,7 +34,7 @@ export default function ReceiveDialog({ order, onClose, onDone }) {
     try {
       onDone(await apiRequest("/api/procurement/receipts", {
         method: "POST",
-        body: JSON.stringify({ ...values, ...(place.locationId ? { locationId: place.locationId } : { locationName: place.locationText.trim() }), idempotencyKey: key, purchaseOrderId: order.id, lines }),
+        body: JSON.stringify({ ...values, ...(place.locationId ? { locationId: place.locationId } : place.locationText?.trim() ? { locationName: place.locationText.trim() } : {}), idempotencyKey: key, purchaseOrderId: order.id, lines }),
       }));
     } catch (cause) {
       setError(cause.message);
@@ -46,7 +46,7 @@ export default function ReceiveDialog({ order, onClose, onDone }) {
     <Modal open onClose={saving ? undefined : onClose} title={`Receive goods on ${order.poNumber}`} description={`From ${order.supplierName}. Stock is posted to the location immediately; a PO line can never be received beyond its ordered quantity.`} size="large">
       <form className="inv-dialog" onSubmit={submit}>
         <div className="inv-dialog__grid">
-          <LocationInput label="Receive into" required locations={locations.data ?? []} locationId={place.locationId} text={place.locationText} onChange={setPlace} />
+          <LocationInput label="Receive into" blankHint="General" locations={locations.data ?? []} locationId={place.locationId} text={place.locationText} onChange={setPlace} />
           <div className="inv-field"><label htmlFor="gr-date">Received on *</label><input id="gr-date" type="date" required value={values.receivedDate} onChange={(event) => setValues((current) => ({ ...current, receivedDate: event.target.value }))} /></div>
           <div className="inv-field"><label htmlFor="gr-dn">Supplier delivery note</label><input id="gr-dn" maxLength={80} value={values.deliveryNoteRef} onChange={(event) => setValues((current) => ({ ...current, deliveryNoteRef: event.target.value }))} /></div>
         </div>

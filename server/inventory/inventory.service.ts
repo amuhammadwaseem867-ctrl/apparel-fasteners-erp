@@ -21,6 +21,7 @@ import { AppError } from "../core/errors/app-error";
 import { findSqlQueryError } from "../core/errors/database-errors";
 import {
   addDecimalStrings,
+  compareDecimalStrings,
   decimalSign,
   normalizeDecimalString,
   subtractDecimalStrings,
@@ -385,6 +386,10 @@ export async function setLocationStatus(id: string, status: string, actorId: str
 
 const INCREASES = new Set<BalanceOperation>(["increase-on-hand", "increase-hold", "increase-reserved"]);
 
+async function rows<T>(runner: Tx | ReturnType<typeof db.runtime>, plan: unknown): Promise<T[]> {
+  return (await runner.query(plan as never)) as unknown as T[];
+}
+
 async function firstRow<T>(tx: Tx, plan: unknown): Promise<T | undefined> {
   const rows = (await tx.query(plan as any)) as unknown as T[];
   return rows[0];
@@ -404,6 +409,60 @@ function available(balance: BalanceRow): string {
     subtractDecimalStrings(balance.onHand, balance.reserved),
     balance.qualityHold,
   );
+}
+
+/*
+ * Taking stock out never stops at the location (D-053): when the chosen
+ * location has too little, the rest comes from the item's other locations,
+ * the fullest first. Total stock still cannot go below zero: when all
+ * locations together are short, nothing moves and the refusal says so.
+ */
+async function spreadAcrossLocations(tx: Tx, productId: string, locationId: string, quantity: string) {
+  const here = available(await currentBalance(tx, productId, locationId));
+  if (compareDecimalStrings(here, quantity) >= 0) return [{ locationId, quantity }];
+  const others = await rows<{ locationId: string; available: string }>(tx, db.raw.sql`
+    select "locationId"::text as "locationId", ("onHand" - "reserved" - "qualityHold")::text as available
+    from erp_stock_balances
+    where "productId" = ${productId}::uuid and "locationId" <> ${locationId}::uuid
+      and "onHand" - "reserved" - "qualityHold" > 0
+    order by "onHand" - "reserved" - "qualityHold" desc, "locationId"
+  `.returnsRow({ locationId: "pg/text@1", available: "pg/text@1" }).build());
+  const total = others.reduce((sum, row) => addDecimalStrings(sum, row.available), decimalSign(here) > 0 ? here : "0");
+  if (compareDecimalStrings(total, quantity) < 0) {
+    const all = normalizeDecimalString(total);
+    throw new AppError(`Not enough stock: requested ${normalizeDecimalString(quantity)}, available ${all} in all locations.`, {
+      code: "INSUFFICIENT_STOCK",
+      status: 409,
+      details: { productId, locationId, requested: normalizeDecimalString(quantity), available: all },
+    });
+  }
+  const parts: Array<{ locationId: string; quantity: string }> = [];
+  let left = quantity;
+  if (decimalSign(here) > 0) {
+    parts.push({ locationId, quantity: here });
+    left = subtractDecimalStrings(left, here);
+  }
+  for (const row of others) {
+    if (decimalSign(left) <= 0) break;
+    const take = compareDecimalStrings(row.available, left) < 0 ? row.available : left;
+    parts.push({ locationId: row.locationId, quantity: normalizeDecimalString(take) });
+    left = subtractDecimalStrings(left, take);
+  }
+  return parts;
+}
+
+/* Where an item's stock is when nobody says (D-053): its fullest location, else General. */
+export const DEFAULT_LOCATION_NAME = "General";
+
+export async function bestStockLocation(productId: string, actorId: string, bucket: "available" | "qualityHold" = "available") {
+  const [row] = await rows<{ locationId: string }>(db.runtime(), db.raw.sql`
+    select "locationId"::text as "locationId" from erp_stock_balances
+    where "productId" = ${productId}::uuid
+      and (case when ${bucket} = 'qualityHold' then "qualityHold" else "onHand" - "reserved" - "qualityHold" end) > 0
+    order by (case when ${bucket} = 'qualityHold' then "qualityHold" else "onHand" - "reserved" - "qualityHold" end) desc
+    limit 1
+  `.returnsRow({ locationId: "pg/text@1" }).build());
+  return row?.locationId ?? resolveTypedLocation(DEFAULT_LOCATION_NAME, actorId);
 }
 
 async function applyOperation(tx: Tx, op: PlannedOperation): Promise<BalanceRow> {
@@ -748,16 +807,20 @@ export async function postStockDocumentInTransaction(tx: Tx, input: StockDocumen
         ? "consume-reserved"
         : rule.operation;
 
-    planned.push({
-      lineNo: ++lineNo,
-      line,
-      operation,
-      productId: line.productId,
-      locationId: line.locationId,
-      quantity: magnitude,
-      movementType: input.documentType,
-      reservationId: line.reservationId,
-    });
+    const spreads = operation === "decrease-available" && !("destination" in rule && rule.destination);
+    const parts = spreads ? await spreadAcrossLocations(tx, line.productId, line.locationId, magnitude) : [{ locationId: line.locationId, quantity: magnitude }];
+    for (const part of parts) {
+      planned.push({
+        lineNo: ++lineNo,
+        line,
+        operation,
+        productId: line.productId,
+        locationId: part.locationId,
+        quantity: part.quantity,
+        movementType: input.documentType,
+        reservationId: line.reservationId,
+      });
+    }
 
     if ("destination" in rule && rule.destination && line.toLocationId) {
       planned.push({
@@ -823,8 +886,8 @@ export async function postStockDocument(input: StockDocumentInput, actorId: stri
           where id::text = ${input.sourceId ?? ""} for share
         `.returnsRow({ status: "pg/text@1" }).build() as never)) as unknown as Array<{ status: string }>;
 
-        if (!orders.length || !["RELEASED", "IN_PROGRESS"].includes(orders[0].status)) {
-          throw new AppError("Material can only be issued to or returned from a released or in-progress production order.", {
+        if (!orders.length || !["RELEASED", "IN_PROGRESS", "COMPLETED"].includes(orders[0].status)) {
+          throw new AppError("Material cannot be issued to or returned from a planned, held or cancelled production order.", {
             code: "PRODUCTION_ORDER_NOT_OPEN",
             status: 409,
           });
