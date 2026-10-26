@@ -30,7 +30,61 @@ import useApiData from "@/lib/inventory/useApiData";
 import "@/components/inventory/InventoryWorkspace.css";
 import "./OrderProfile.css";
 
-const STATUS_TONE = { New: "draft", Confirmed: "info", "In Production": "info", "On Hold": "warn", "QC Pending": "warn", "QC Approved": "ok", Packing: "info", "Ready for Delivery": "ok", Delivered: "ok", Cancelled: "bad" };
+const STATUS_TONE = { New: "draft", Confirmed: "info", "In Production": "info", "On Hold": "warn", "QC Pending": "warn", "QC Approved": "ok", Packing: "info", "Ready for Delivery": "ok", Dispatched: "info", "Part delivered": "warn", Delivered: "ok", Cancelled: "bad" };
+
+const SHORTFALL_REASONS = [
+  ["PRODUCTION_SHORT", "Production short"],
+  ["MATERIAL_SHORT", "Material short"],
+  ["QC_REJECTED", "Rejected in QC"],
+  ["CUSTOMER_REQUEST", "Customer asked for part now"],
+  ["OTHER", "Other"],
+];
+const SHORTFALL_REASON = Object.fromEntries(SHORTFALL_REASONS);
+
+/* Notes why part of an item is left for later (D-050): nothing waits on it. */
+function ShortfallDialog({ order, line, onClose, onSaved }) {
+  const [quantity, setQuantity] = useState(line.left);
+  const [reason, setReason] = useState("PRODUCTION_SHORT");
+  const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  async function submit(event) {
+    event.preventDefault();
+    setSaving(true);
+    setError("");
+    try {
+      await apiRequest("/api/shortfalls", {
+        method: "POST",
+        body: JSON.stringify({ idempotencyKey: globalThis.crypto?.randomUUID?.() ?? `sf-${Date.now()}-${Math.random().toString(36).slice(2)}`, salesOrderId: order.id, productId: line.productId, quantity: Number(quantity), reason, notes }),
+      });
+      onSaved();
+    } catch (cause) {
+      setError(cause.message);
+      setSaving(false);
+    }
+  }
+  return (
+    <Modal open onClose={saving ? undefined : onClose} title={`Shortfall · ${line.sku ?? line.productName ?? "item"}`}>
+      <form className="inv-dialog" onSubmit={submit}>
+        <p className="inv-field__hint">Ordered {qty(line.ordered)}, delivered {qty(line.delivered)}. The rest can still be packed and sent later; a later delivery settles this shortfall by itself.</p>
+        <div className="inv-dialog__grid">
+          <div className="inv-field"><label htmlFor="sf-qty">Quantity short ({line.unit})</label><input id="sf-qty" type="number" step="any" min="0" required value={quantity} onChange={(event) => setQuantity(event.target.value)} /></div>
+          <div className="inv-field"><label htmlFor="sf-reason">Reason</label>
+            <select id="sf-reason" value={reason} onChange={(event) => setReason(event.target.value)}>
+              {SHORTFALL_REASONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="inv-field"><label htmlFor="sf-notes">Notes</label><input id="sf-notes" maxLength={1000} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="e.g. rest comes next week" /></div>
+        {error && <p className="inv-dialog__error" role="alert">{error}</p>}
+        <div className="inv-dialog__actions">
+          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button type="submit" variant="primary" loading={saving}>Save shortfall</Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
 const STAGE_STATUS = { PENDING: "Not started", IN_PROGRESS: "In progress", COMPLETED: "Done", SKIPPED: "Skipped" };
 
 const day = (value) => (value ? new Date(value).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—");
@@ -239,6 +293,19 @@ export default function OrderProfileClient({ id }) {
     });
   };
   const makeGatePass = (shipment) => run(`gp:${shipment.id}`, () => gatePass(shipment));
+  // The goods leaving the gate are the delivery (D-051): approve if needed, pass, and the shipment is delivered.
+  const passGate = (pass) => {
+    const guardName = window.prompt(`Gate pass ${pass.passNumber}: guard name at the gate?`) ?? "";
+    if (!guardName.trim()) return;
+    return run(`gp:${pass.id}`, async () => {
+      if (pass.status === "DRAFT") await apiRequest(`/api/gate-passes/${pass.id}`, { method: "PATCH", body: JSON.stringify({ action: "approve" }) });
+      await apiRequest(`/api/gate-passes/${pass.id}`, { method: "PATCH", body: JSON.stringify({ action: "pass", guardName }) });
+    });
+  };
+  const cancelShortfall = (shortfall) => {
+    if (!window.confirm("Remove this shortfall note?")) return;
+    return run(`sf:${shortfall.id}`, () => apiRequest(`/api/shortfalls/${shortfall.id}`, { method: "PATCH", body: JSON.stringify({ action: "cancel" }) }));
+  };
   const deliver = (shipment) => {
     const receivedBy = window.prompt(`Who received ${shipment.shipmentNumber}?`) ?? "";
     if (!receivedBy.trim()) return;
@@ -253,7 +320,7 @@ export default function OrderProfileClient({ id }) {
     return <main className="inv-page">{error ? <p className="inv-dialog__error" role="alert">{error}</p> : <p className="inv-state" role="status">Loading order…</p>}</main>;
   }
 
-  const { order, status, production, inspections, packingLists, shipments, gatePasses, invoices, receipts, money } = trace;
+  const { order, status, production, inspections, packingLists, shipments, gatePasses, invoices, receipts, money, deliveryLines = [], shortfalls = [] } = trace;
   const notes = trace.notes ?? [];
   const draftInvoice = invoices.find((row) => row.status === "DRAFT" && !row.shipmentId);
   const addNote = (step, note) => apiRequest(`/api/sales/orders/${encodeURIComponent(id)}/notes`, { method: "POST", body: JSON.stringify({ step, note }) }).then(load);
@@ -450,15 +517,50 @@ export default function OrderProfileClient({ id }) {
               <li key={row.id}>
                 <Link href={`/dispatch/shipments/${row.id}`}>{row.shipmentNumber}</Link> · {row.status.toLowerCase()}{row.vehicleNumber ? ` · vehicle ${row.vehicleNumber}` : ""}{row.dispatchedAt ? ` · dispatched ${day(row.dispatchedAt)}` : ""}{row.deliveredAt ? ` · delivered ${day(row.deliveredAt)}` : ""}
                 {gatePasses.filter((pass) => pass.shipmentId === row.id).map((pass) => (
-                  <span key={pass.id}> · gate pass <Link href={`/print/gate-passes/${pass.id}`}>{pass.passNumber}</Link></span>
+                  <span key={pass.id}> · gate pass <Link href={`/print/gate-passes/${pass.id}`}>{pass.passNumber}</Link> ({pass.status === "COMPLETED" ? "passed" : pass.status.toLowerCase()})</span>
                 ))}
                 <span className="op-inline-actions">
+                  {row.status === "DISPATCHED" && can("inventory:create") && gatePasses.filter((pass) => pass.shipmentId === row.id && ["DRAFT", "APPROVED"].includes(pass.status)).map((pass) => (
+                    <Button key={pass.id} size="sm" variant="primary" loading={busy === `gp:${pass.id}`} onClick={() => passGate(pass)}>Pass gate · delivered</Button>
+                  ))}
                   {row.status === "DRAFT" && can("dispatch:ship") && <Button size="sm" variant="primary" loading={busy === `sh:${row.id}`} onClick={() => dispatchShipment(row)}>Dispatch &amp; make gate pass</Button>}
                   {row.dispatchedAt && !gatePasses.some((pass) => pass.shipmentId === row.id) && <Button size="sm" variant="secondary" loading={busy === `gp:${row.id}`} onClick={() => makeGatePass(row)}>Make gate pass</Button>}
                   {row.status === "DISPATCHED" && can("dispatch:update") && <Button size="sm" variant="secondary" loading={busy === `sh:${row.id}`} onClick={() => deliver(row)}>Mark delivered</Button>}
                 </span>
               </li>
             ))}
+          </ul>
+        )}
+        {deliveryLines.length > 0 && shipments.some((row) => row.status !== "CANCELLED") && (
+          <div className="inv-table-wrap" style={{ marginTop: 10 }}>
+            <table className="inv-table">
+              <thead><tr><th>Item</th><th className="inv-num">Ordered</th><th className="inv-num">Dispatched</th><th className="inv-num">Delivered</th><th className="inv-num">Left (shortfall)</th><th /></tr></thead>
+              <tbody>
+                {deliveryLines.map((line) => (
+                  <tr key={line.productId}>
+                    <td data-label="Item">{line.sku ?? line.productName}</td>
+                    <td data-label="Ordered" className="inv-num">{qty(line.ordered)} {line.unit}</td>
+                    <td data-label="Dispatched" className="inv-num">{qty(line.shipped)}</td>
+                    <td data-label="Delivered" className="inv-num">{qty(line.delivered)}</td>
+                    <td data-label="Left (shortfall)" className="inv-num">{Number(line.left) > 0 ? <strong>{qty(line.left)}</strong> : "—"}</td>
+                    <td data-label="">{Number(line.left) > 0 && Number(line.delivered) > 0 && can("sales:update") && <button type="button" className="inv-link-button" onClick={() => setDialog({ type: "shortfall", line })}>Note reason</button>}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {shortfalls.length > 0 && (
+          <ul className="op-list" style={{ marginTop: 8 }}>
+            {shortfalls.map((row) => {
+              const line = deliveryLines.find((item) => item.productId === row.productId);
+              return (
+                <li key={row.id}>
+                  Shortfall {qty(row.quantity)} {row.unit} {line?.sku ? `of ${line.sku}` : ""} · {SHORTFALL_REASON[row.reason] ?? row.reason}{row.notes ? ` · ${row.notes}` : ""} · {row.status === "OPEN" ? (Number(row.resolvedQuantity) > 0 ? `${qty(row.resolvedQuantity)} delivered since` : "to send later") : row.status === "RESOLVED" ? `delivered later ${day(row.resolvedAt)}` : "removed"} · noted {day(row.createdAt)}
+                  {row.status === "OPEN" && can("sales:update") && <span className="op-inline-actions"><button type="button" className="inv-link-button" onClick={() => cancelShortfall(row)}>Remove</button></span>}
+                </li>
+              );
+            })}
           </ul>
         )}
         <StepNotes steps={["dispatch"]} notes={notes} onAdd={addNote} />
@@ -506,6 +608,9 @@ export default function OrderProfileClient({ id }) {
         );
       })()}
       {dialog?.type === "receipt" && <ReceiptLoader invoiceId={dialog.invoiceId} onClose={() => setDialog(null)} onDone={() => { setDialog(null); load(); }} />}
+      {dialog?.type === "shortfall" && (
+        <ShortfallDialog order={order} line={dialog.line} onClose={() => setDialog(null)} onSaved={() => { setDialog(null); load(); }} />
+      )}
       {dialog?.type === "ship" && (
         <ShipmentDialog initialSalesOrderId={order.id} onClose={() => setDialog(null)} onCreated={() => { setDialog(null); load(); }} />
       )}

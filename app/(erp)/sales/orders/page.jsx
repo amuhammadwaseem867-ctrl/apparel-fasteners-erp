@@ -393,6 +393,12 @@ export default function OrdersPage() {
                         >
                           {order.status}
                         </span>
+                        {order.delivery?.deliveryStatus && (
+                          <small className={`order-list__delivery order-list__delivery--${order.delivery.deliveryStatus === "Delivered" ? "done" : "part"}`}>
+                            {order.delivery.deliveryStatus}
+                            {order.delivery.deliveryStatus !== "Delivered" && Number(order.delivery.left) > 0 ? ` · ${order.delivery.left} left` : ""}
+                          </small>
+                        )}
                       </td>
 
                       <td className="order-list__actions">

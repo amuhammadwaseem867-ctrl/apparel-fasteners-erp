@@ -331,8 +331,78 @@ async function dispatch(tx: Tx, shipment: { id: string; shipmentNumber: string; 
   }, actorId);
 }
 
-async function deliver(tx: Tx, shipment: { id: string; shipmentNumber: string }, actorId: string) {
+/*
+ * A later delivery settles the order's open shortfalls (D-050, D-051): each
+ * delivered quantity resolves the oldest open shortfall of the same item,
+ * up to what is left on it. Nothing is refused; extra quantity is ignored.
+ */
+async function resolveShortfallsByDelivery(
+  tx: Tx,
+  shipment: { id: string; salesOrderId: string },
+  lines: Array<{ productId: string; quantity: unknown }>,
+  actorId: string,
+) {
+  const open = await tx.orm.public.Shortfall.where({ salesOrderId: shipment.salesOrderId, status: "OPEN" }).orderBy((row) => row.createdAt.asc()).all();
+  if (!open.length) return;
+  const delivered = sumByProduct(lines.map((line) => ({ productId: line.productId, quantity: dec(line.quantity) })));
+  for (const shortfall of open) {
+    const available = shortfall.productId ? delivered.get(shortfall.productId) : undefined;
+    if (!available || decimalSign(available) <= 0) continue;
+    const remaining = subtractDecimalStrings(dec(shortfall.quantity), dec(shortfall.resolvedQuantity));
+    const take = compareDecimalStrings(available, remaining) < 0 ? available : remaining;
+    const total = addDecimalStrings(dec(shortfall.resolvedQuantity), take);
+    const done = compareDecimalStrings(total, dec(shortfall.quantity)) >= 0;
+    await tx.orm.public.Shortfall.where({ id: shortfall.id }).update({
+      resolvedQuantity: total,
+      status: done ? "RESOLVED" : "OPEN",
+      resolvedAt: done ? new Date().toISOString() : null,
+      resolvedBy: done ? actorId : null,
+      updatedAt: new Date().toISOString(),
+    });
+    delivered.set(shortfall.productId!, subtractDecimalStrings(available, take));
+    await recordAuditEvent({
+      actorId,
+      action: done ? "SHORTFALL_RESOLVED" : "SHORTFALL_PART_RESOLVED",
+      entityType: "Shortfall",
+      entityId: shortfall.id,
+      metadata: { quantity: take, total, shipmentId: shipment.id },
+    }, tx);
+  }
+}
+
+/*
+ * Delivers a dispatched shipment inside the caller's transaction; used when
+ * its outward gate pass is passed at the gate (D-051): the goods leaving the
+ * gate are the delivery. Returns false (and changes nothing) when the
+ * shipment is not DISPATCHED, e.g. already marked delivered by hand.
+ */
+export async function deliverShipmentInTransaction(
+  tx: Tx,
+  shipmentId: string,
+  details: { receivedBy: string; deliveryNote: string },
+  actorId: string,
+) {
+  const claimed = await rows<{ id: string; shipmentNumber: string; salesOrderId: string }>(tx, db.raw.sql`
+    update erp_shipments set status = 'DELIVERED', "deliveredBy" = ${actorId}::uuid, "deliveredAt" = now(),
+      "receivedBy" = ${details.receivedBy}, "deliveryNote" = ${details.deliveryNote}
+    where id = ${shipmentId}::uuid and status = 'DISPATCHED'
+    returning id::text as id, "shipmentNumber", "salesOrderId"::text as "salesOrderId"
+  `.returnsRow({ id: "pg/text@1", shipmentNumber: "pg/text@1", salesOrderId: "pg/text@1" }).build());
+  if (!claimed.length) return false;
+  await deliver(tx, claimed[0], actorId);
+  await recordAuditEvent({
+    actorId,
+    action: "SHIPMENT_DELIVERED",
+    entityType: "Shipment",
+    entityId: shipmentId,
+    metadata: { shipmentNumber: claimed[0].shipmentNumber, from: "DISPATCHED", to: "DELIVERED", note: details.deliveryNote },
+  }, tx);
+  return true;
+}
+
+async function deliver(tx: Tx, shipment: { id: string; shipmentNumber: string; salesOrderId: string }, actorId: string) {
   const lines = await tx.orm.public.ShipmentLine.where({ shipmentId: shipment.id }).orderBy((line) => line.lineNo.asc()).all();
+  await resolveShortfallsByDelivery(tx, shipment, lines, actorId);
   for (const line of lines.filter((item) => item.packingListId)) {
     const list = (await tx.orm.public.PackingList.where({ id: line.packingListId! }).first())!;
     await recordStageRunInTransaction(tx, list.productionOrderId, FINAL_STAGE.key, {

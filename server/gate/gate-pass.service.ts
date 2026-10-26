@@ -6,7 +6,8 @@
  * returns allowed, never more than went out). DRAFT and APPROVED passes can
  * be cancelled with a reason. Each transition is a compare-and-set; returns
  * lock the pass row. Gate passes record movement only; stock is posted by
- * inventory and dispatch documents.
+ * inventory and dispatch documents. Passing an outward pass made for a
+ * dispatched shipment delivers that shipment (D-051).
  */
 
 import { or } from "@prisma/orm-postgres/orm-client";
@@ -16,6 +17,7 @@ import { db } from "../core/database/client";
 import { AppError } from "../core/errors/app-error";
 import { findSqlQueryError } from "../core/errors/database-errors";
 import { addDecimalStrings, compareDecimalStrings, normalizeDecimalString, subtractDecimalStrings, toPlainDecimalString } from "../core/utils/decimal";
+import { deliverShipmentInTransaction } from "../dispatch/dispatch.service";
 import { allocateDocumentNumber, type Tx } from "../inventory/inventory.service";
 import type { GatePassInput, GatePassQuery } from "./gate-pass.validation";
 
@@ -150,6 +152,15 @@ export async function changeGatePass(
       throw new AppError("This gate pass was changed by someone else. Reload and try again.", { code: "GATE_PASS_STATUS_CONFLICT", status: 409 });
     }
     await recordAuditEvent({ actorId, action: `GATE_PASS_${next}`, entityType: "GatePass", entityId: id, metadata: { passNumber: pass.passNumber, from: pass.status, guardName: details.guardName || null, reason: details.reason || null } }, tx);
+
+    // The order's goods leaving the gate are its delivery (D-051): passing an
+    // outward pass made for a dispatched shipment marks that shipment delivered.
+    if (action === "pass" && pass.shipmentId && pass.passType !== "INWARD") {
+      await deliverShipmentInTransaction(tx, pass.shipmentId, {
+        receivedBy: pass.partyName,
+        deliveryNote: `Passed out at the gate on ${pass.passNumber}${details.guardName ? ` (guard ${details.guardName})` : ""}`,
+      }, actorId);
+    }
   });
   return getGatePass(id);
 }

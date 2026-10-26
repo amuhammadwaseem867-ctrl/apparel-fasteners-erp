@@ -14,6 +14,7 @@ import type {
   SalesOrderQuery,
 } from "./sales.validation";
 import { calculateLineAmounts } from "./sales.validation";
+import { deliveryProgress } from "../dispatch/delivery-progress";
 import { releaseOrderReservations } from "../inventory/inventory.service";
 import {
   centsToDecimalString,
@@ -353,12 +354,15 @@ export async function listSalesOrders(filters: SalesOrderQuery) {
     lineCounts.set(line.salesOrderId, (lineCounts.get(line.salesOrderId) ?? 0) + 1);
   }
 
+  const delivery = await deliveryProgress(orderIds);
+
   return {
     orders: pageOrders.map((order) => ({
       ...order,
       customerName: customerNames.get(order.customerId) ?? "Customer unavailable",
       items: lineCounts.get(order.id) ?? 0,
       totalAmount: Number(order.totalAmount),
+      delivery: delivery.get(order.id) ?? null,
     })),
     page: filters.page,
     pageSize: filters.pageSize,

@@ -11,6 +11,8 @@
 import { recordAuditEvent } from "../auth/audit.service";
 import { db } from "../core/database/client";
 import { AppError } from "../core/errors/app-error";
+import { deliveryProgress } from "../dispatch/delivery-progress";
+import { getSalesOrderFulfilment } from "../dispatch/dispatch.service";
 import { STAGES } from "../production/production-rules";
 import { changeProductionStatus, createProductionOrder, getProductionOrder } from "../production/production.service";
 import { getSalesOrder } from "./sales.service";
@@ -19,14 +21,24 @@ type Row = Record<string, unknown>;
 
 const num = (value: unknown) => (value === null || value === undefined ? null : String(value));
 
-/* The order statuses the requirements name, from the slowest production order. */
-export function overallStatus(orderStatus: string, production: Array<{ status: string; currentStage: string | null; stages: Array<{ stageKey: string; status: string }> }>) {
+/*
+ * The order statuses the requirements name, from the slowest production
+ * order. When the delivered quantities are known they decide (D-051):
+ * Delivered only when the whole order is delivered, Part delivered or
+ * Dispatched before that, whatever production says.
+ */
+export function overallStatus(
+  orderStatus: string,
+  production: Array<{ status: string; currentStage: string | null; stages: Array<{ stageKey: string; status: string }> }>,
+  delivery?: { deliveryStatus: string | null },
+) {
   if (orderStatus === "CANCELLED") return "Cancelled";
   if (orderStatus === "DRAFT") return "New";
+  if (delivery?.deliveryStatus) return delivery.deliveryStatus;
   const live = production.filter((order) => order.status !== "CANCELLED");
   if (live.length === 0) return "Confirmed";
   if (live.some((order) => order.status === "ON_HOLD")) return "On Hold";
-  if (live.every((order) => order.status === "COMPLETED")) return "Delivered";
+  if (live.every((order) => order.status === "COMPLETED")) return delivery ? "Ready for Delivery" : "Delivered";
   if (live.every((order) => order.status === "PLANNED")) return "Confirmed";
   const sequenceOf = (order: (typeof live)[number]) => (order.status === "COMPLETED" ? 99 : STAGES.find((stage) => stage.key === order.currentStage)?.sequence ?? 1);
   const slowest = live.reduce((min, order) => (sequenceOf(order) < sequenceOf(min) ? order : min));
@@ -60,13 +72,27 @@ export async function getOrderTrace(id: string) {
   const authorIds = [...new Set(notes.map((row) => row.createdBy))];
   const authors = authorIds.length ? await db.orm.public.User.where((user) => user.id.in(authorIds)).select("id", "name").all() : [];
 
-  const status = overallStatus(order.status, production as never);
+  const delivery = (await deliveryProgress([id])).get(id) ?? null;
+  // Per item: ordered, packed, dispatched, delivered and what is left (D-051),
+  // with the shortfalls noted on the order and why.
+  const fulfilment = await getSalesOrderFulfilment(id);
+  const shortfalls = await db.orm.public.Shortfall.where({ salesOrderId: id }).orderBy((row) => row.createdAt.asc()).all();
+  const status = overallStatus(order.status, production as never, delivery ?? { deliveryStatus: null });
   const paid = receipts.filter((row) => row.status === "POSTED").reduce((sum, row) => sum + Number(row.amount), 0);
   const invoiced = invoices.filter((row) => row.status === "ISSUED").reduce((sum, row) => sum + Number(row.totalAmount), 0);
 
   return {
     order,
     status,
+    delivery,
+    deliveryLines: fulfilment.items.map((item) => ({
+      ...item,
+      left: Number(item.ordered) > Number(item.delivered) ? String(Math.round((Number(item.ordered) - Number(item.delivered)) * 1000) / 1000) : "0",
+    })),
+    shortfalls: shortfalls.map((row) => ({
+      id: row.id, productId: row.productId, quantity: num(row.quantity), resolvedQuantity: num(row.resolvedQuantity), unit: row.unit,
+      reason: row.reason, notes: row.notes, status: row.status, createdAt: row.createdAt, resolvedAt: row.resolvedAt,
+    })),
     production: production.map((item: Row) => ({
       id: item.id, orderNumber: item.orderNumber, salesOrderLineId: item.salesOrderLineId, status: item.status, currentStage: item.currentStage, quantity: item.quantity, unit: item.unit,
       tapeKg: num(item.tapeKg), sku: item.sku, productName: item.productName, progress: item.progress, dueDate: item.dueDate,
