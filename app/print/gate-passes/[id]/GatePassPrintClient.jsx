@@ -67,10 +67,7 @@ export default function GatePassPrintClient({ id }) {
       rows={[
         ["M/s / party name", pass.partyName],
         ["Purpose", pass.purpose],
-        [
-          "Vehicle / driver",
-          [pass.vehicleNumber, pass.driverName].filter(Boolean).join(" · "),
-        ],
+        ["Vehicle number", pass.vehicleNumber],
         ["Transportation mode", pass.transportationMode || "—"],
         ...(pass.expectedReturnDate
           ? [["Return by", pass.expectedReturnDate]]

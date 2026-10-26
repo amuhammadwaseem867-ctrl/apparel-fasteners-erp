@@ -276,7 +276,7 @@
 
 .af7__bank {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 0.8fr;
+  grid-template-columns: 1.4fr 0.8fr 1fr;
   gap: 14px;
   align-items: end;
 }
@@ -415,7 +415,7 @@
   }
 
   .af7__bank {
-    grid-template-columns: 1.4fr 1fr 0.8fr;
+    grid-template-columns: 1.4fr 0.8fr 1fr;
   }
 
   .af7__title {
