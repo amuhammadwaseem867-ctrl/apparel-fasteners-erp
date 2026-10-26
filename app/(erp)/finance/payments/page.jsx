@@ -58,7 +58,7 @@ export default function PaymentsPage() {
                     <td data-label="Receipt"><Link href={`/print/receipts/${row.id}`}><strong>{row.receiptNumber}</strong></Link></td>
                     <td data-label="Date">{row.receiptDate}</td>
                     <td data-label="Customer">{row.customerName}</td>
-                    <td data-label="Invoice"><Link href={`/finance/invoices/${row.invoiceId}`}>{row.invoiceNumber}</Link></td>
+                    <td data-label="Invoice">{row.invoiceId ? <Link href={`/finance/invoices/${row.invoiceId}`}>{row.invoiceNumber}</Link> : row.invoiceNumber}</td>
                     <td data-label="Method">{RECEIPT_METHOD_LABELS[row.method]}</td>
                     <td data-label="Reference">{row.reference || "—"}</td>
                     <td data-label="Amount" className="inv-num">{formatAmount(row.amount)}</td>

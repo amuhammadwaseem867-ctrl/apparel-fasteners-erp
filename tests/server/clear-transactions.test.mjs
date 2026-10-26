@@ -14,7 +14,7 @@ test("the clean-up never touches logins, customers, items, settings or HR / payr
   for (const table of ["erp_sales_orders", "erp_invoices", "erp_customer_receipts", "erp_stock_movements", "erp_stock_balances", "erp_packing_lists", "erp_shipments"]) {
     assert.ok(CLEARED_TABLES.includes(table), `${table} is a transaction`);
   }
-  assert.deepEqual(KEPT_JOURNAL_SOURCES, ["PayrollRun", "SalaryAdvance"]);
+  assert.deepEqual(KEPT_JOURNAL_SOURCES, ["PayrollRun", "SalaryAdvance", "CustomerOpening"]);
   assert.ok(KEPT_COUNTERS.includes("PAY") && KEPT_COUNTERS.includes("JE"));
   assert.ok(CLEAR_SQL.every((sql) => !/\bdrop\b|erp_users|erp_customers|erp_products/i.test(sql)), "no drops; kept tables are never named");
 });

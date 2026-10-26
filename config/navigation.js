@@ -39,6 +39,7 @@ export const NAV_GROUPS = [
           { label: "New invoice", href: "/finance/invoices/new" },
           { label: "Payments received", href: "/finance/payments" },
           { label: "Customer balances", href: "/finance/receivables" },
+          { label: "Customer ledgers", href: "/sales/customers" },
         ],
       },
     ],

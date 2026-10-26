@@ -8,6 +8,8 @@ import {
   lineAmounts,
   outstandingAmount,
   paymentStatus,
+  runningLedger,
+  settleOldestFirst,
   sumAmounts,
 } from "../../server/finance/finance-rules.ts";
 
@@ -60,4 +62,38 @@ test("due dates and ageing buckets use calendar days", () => {
   assert.equal(agingBucket("2026-08-16", "2026-10-15"), "31-60", "60 days");
   assert.equal(agingBucket("2026-07-16", "2026-10-15"), "90+", "91 days");
   assert.throws(() => agingBucket("2026-02-30x", "2026-10-15"), RangeError);
+});
+
+test("customer ledger: running balance in date order, brought forward for a period (D-052)", () => {
+  const item = (date, kind, debit, credit, at = "") => ({ date, kind, reference: kind, particulars: kind, debit, credit, at, sourceId: null });
+  const items = [
+    item("2026-10-10", "RECEIPT", "0", "2000"),
+    item("2026-10-01", "INVOICE", "5000", "0"),
+    item("2026-01-01", "OPENING", "1000.5", "0"),
+    item("2026-10-10", "INVOICE", "300", "0"),
+  ];
+  const all = runningLedger(items);
+  assert.deepEqual(all.rows.map((row) => [row.date, row.kind, row.balance]), [
+    ["2026-01-01", "OPENING", "1000.50"],
+    ["2026-10-01", "INVOICE", "6000.50"],
+    ["2026-10-10", "INVOICE", "6300.50"],
+    ["2026-10-10", "RECEIPT", "4300.50"],
+  ]);
+  assert.deepEqual([all.totalDebit, all.totalCredit, all.balance], ["6300.50", "2000.00", "4300.50"]);
+
+  const period = runningLedger(items, "2026-10-05", "2026-10-31");
+  assert.deepEqual(period.rows.map((row) => [row.particulars, row.debit, row.balance]), [
+    ["Brought forward", "6000.50", "6000.50"],
+    ["INVOICE", "300.00", "6300.50"],
+    ["RECEIPT", "0.00", "4300.50"],
+  ]);
+  assert.equal(runningLedger(items, "", "2026-09-30").balance, "1000.50");
+  assert.equal(runningLedger([item("2026-10-01", "RECEIPT", "0", "50")]).balance, "-50.00", "paid in advance");
+});
+
+test("payments on account settle the oldest dues first (D-052)", () => {
+  const dues = [{ dueDate: "2026-11-01", outstanding: "500" }, { dueDate: "1900-01-01", outstanding: "300" }, { dueDate: "2026-10-01", outstanding: "200" }];
+  assert.deepEqual(settleOldestFirst(dues, "400").map((due) => [due.dueDate, due.outstanding]), [["2026-10-01", "100.00"], ["2026-11-01", "500.00"]]);
+  assert.deepEqual(settleOldestFirst(dues, "0").length, 3);
+  assert.deepEqual(settleOldestFirst(dues, "5000"), []);
 });

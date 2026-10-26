@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'09a6210e3ab8fa953347f8644d35725ff96b4bf7fde3fea3fa9c9ecac4112343'>;
+  StorageHashBase<'63b8adaa61138d574f1d356629f20a93def2ce14aead7b56cf760df11b112ea1'>;
 export type ExecutionHash =
   ExecutionHashBase<'e1cf76b8c29763c6aa4f96b73f61e093ddbc60602e49930638a84ecb20415a8a'>;
 export type ProfileHash =
@@ -381,6 +381,8 @@ export type FieldOutputTypes = {
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly ntn: CodecTypes['pg/text@1']['output'] | null;
+      readonly openingBalance: CodecTypes['pg/numeric@1']['output'];
+      readonly openingBalanceDate: CodecTypes['pg/text@1']['output'] | null;
       readonly phone: CodecTypes['pg/text@1']['output'] | null;
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly strn: CodecTypes['pg/text@1']['output'] | null;
@@ -393,7 +395,7 @@ export type FieldOutputTypes = {
       readonly customerId: CodecTypes['pg/uuid@1']['output'];
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly idempotencyKey: CodecTypes['pg/text@1']['output'];
-      readonly invoiceId: CodecTypes['pg/uuid@1']['output'];
+      readonly invoiceId: CodecTypes['pg/uuid@1']['output'] | null;
       readonly method: CodecTypes['pg/text@1']['output'];
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly receiptDate: CodecTypes['pg/text@1']['output'];
@@ -1541,6 +1543,8 @@ export type FieldInputTypes = {
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly ntn: CodecTypes['pg/text@1']['input'] | null;
+      readonly openingBalance: CodecTypes['pg/numeric@1']['input'];
+      readonly openingBalanceDate: CodecTypes['pg/text@1']['input'] | null;
       readonly phone: CodecTypes['pg/text@1']['input'] | null;
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly strn: CodecTypes['pg/text@1']['input'] | null;
@@ -1553,7 +1557,7 @@ export type FieldInputTypes = {
       readonly customerId: CodecTypes['pg/uuid@1']['input'];
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly idempotencyKey: CodecTypes['pg/text@1']['input'];
-      readonly invoiceId: CodecTypes['pg/uuid@1']['input'];
+      readonly invoiceId: CodecTypes['pg/uuid@1']['input'] | null;
       readonly method: CodecTypes['pg/text@1']['input'];
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly receiptDate: CodecTypes['pg/text@1']['input'];
@@ -2699,7 +2703,7 @@ export type StorageColumnTypes = {
       readonly customerId: CodecTypes['pg/uuid@1']['output'];
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly idempotencyKey: CodecTypes['pg/text@1']['output'];
-      readonly invoiceId: CodecTypes['pg/uuid@1']['output'];
+      readonly invoiceId: CodecTypes['pg/uuid@1']['output'] | null;
       readonly method: CodecTypes['pg/text@1']['output'];
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly receiptDate: CodecTypes['pg/text@1']['output'];
@@ -2719,6 +2723,8 @@ export type StorageColumnTypes = {
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly ntn: CodecTypes['pg/text@1']['output'] | null;
+      readonly openingBalance: CodecTypes['pg/numeric@1']['output'];
+      readonly openingBalanceDate: CodecTypes['pg/text@1']['output'] | null;
       readonly phone: CodecTypes['pg/text@1']['output'] | null;
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly strn: CodecTypes['pg/text@1']['output'] | null;
@@ -3859,7 +3865,7 @@ export type StorageColumnInputTypes = {
       readonly customerId: CodecTypes['pg/uuid@1']['input'];
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly idempotencyKey: CodecTypes['pg/text@1']['input'];
-      readonly invoiceId: CodecTypes['pg/uuid@1']['input'];
+      readonly invoiceId: CodecTypes['pg/uuid@1']['input'] | null;
       readonly method: CodecTypes['pg/text@1']['input'];
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly receiptDate: CodecTypes['pg/text@1']['input'];
@@ -3879,6 +3885,8 @@ export type StorageColumnInputTypes = {
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly ntn: CodecTypes['pg/text@1']['input'] | null;
+      readonly openingBalance: CodecTypes['pg/numeric@1']['input'];
+      readonly openingBalanceDate: CodecTypes['pg/text@1']['input'] | null;
       readonly phone: CodecTypes['pg/text@1']['input'] | null;
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly strn: CodecTypes['pg/text@1']['input'] | null;
@@ -5042,6 +5050,8 @@ export namespace Models {
     id: CodecTypes['pg/uuid@1']['output'];
     name: CodecTypes['pg/text@1']['output'];
     ntn: CodecTypes['pg/text@1']['output'] | null;
+    openingBalance: CodecTypes['pg/numeric@1']['output'];
+    openingBalanceDate: CodecTypes['pg/text@1']['output'] | null;
     phone: CodecTypes['pg/text@1']['output'] | null;
     status: CodecTypes['pg/text@1']['output'];
     strn: CodecTypes['pg/text@1']['output'] | null;
@@ -5057,7 +5067,7 @@ export namespace Models {
     customerId: CodecTypes['pg/uuid@1']['output'];
     id: CodecTypes['pg/uuid@1']['output'];
     idempotencyKey: CodecTypes['pg/text@1']['output'];
-    invoiceId: CodecTypes['pg/uuid@1']['output'];
+    invoiceId: CodecTypes['pg/uuid@1']['output'] | null;
     method: CodecTypes['pg/text@1']['output'];
     notes: CodecTypes['pg/text@1']['output'] | null;
     receiptDate: CodecTypes['pg/text@1']['output'];
@@ -5067,7 +5077,7 @@ export namespace Models {
     voidReason: CodecTypes['pg/text@1']['output'] | null;
     voidedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
     voidedBy: CodecTypes['pg/uuid@1']['output'] | null;
-    invoice: public_Invoice;
+    invoice: public_Invoice | null;
     readonly [RelationKeys]?: 'invoice';
   };
   export type public_Department = {
@@ -7474,7 +7484,7 @@ type ContractBase = Omit<
                 readonly invoiceId: {
                   readonly dataType: 'pg/uuid';
                   readonly codecId: 'pg/uuid@1';
-                  readonly nullable: false;
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly method: {
@@ -7628,6 +7638,22 @@ type ContractBase = Omit<
                   readonly many: false;
                 };
                 readonly ntn: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly openingBalance: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly openingBalanceDate: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
@@ -16654,6 +16680,14 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly openingBalance: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly openingBalanceDate: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly phone: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -16710,6 +16744,8 @@ type ContractBase = Omit<
                 readonly id: { readonly column: 'id' };
                 readonly name: { readonly column: 'name' };
                 readonly ntn: { readonly column: 'ntn' };
+                readonly openingBalance: { readonly column: 'openingBalance' };
+                readonly openingBalanceDate: { readonly column: 'openingBalanceDate' };
                 readonly phone: { readonly column: 'phone' };
                 readonly status: { readonly column: 'status' };
                 readonly strn: { readonly column: 'strn' };
@@ -16747,7 +16783,7 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly invoiceId: {
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
               };
               readonly method: {
@@ -16797,7 +16833,7 @@ type ContractBase = Omit<
                   readonly model: 'Invoice';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly on: {
                   readonly localFields: readonly ['invoiceId'];
                   readonly targetFields: readonly ['id'];

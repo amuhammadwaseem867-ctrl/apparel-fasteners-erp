@@ -47,7 +47,7 @@ export default function ReceivablesPage() {
                   <tbody>
                     {data.customers.map((row) => (
                       <tr key={row.customerId}>
-                        <td data-label="Customer"><strong>{row.customerName}</strong></td>
+                        <td data-label="Customer"><Link href={`/sales/customers/${row.customerId}`}><strong>{row.customerName}</strong></Link></td>
                         <td data-label="Invoices" className="inv-num">{row.invoices}</td>
                         {data.buckets.map((bucket) => (
                           <td key={bucket} data-label={LABELS[bucket]} className={`inv-num ${bucket !== "current" && Number(row.buckets[bucket]) > 0 ? "inv-neg" : ""}`}>{formatAmount(row.buckets[bucket])}</td>

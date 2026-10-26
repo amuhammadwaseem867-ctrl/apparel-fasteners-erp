@@ -31,6 +31,7 @@ import {
   money,
   outstandingAmount,
   paymentStatus,
+  settleOldestFirst,
   sumAmounts,
   type LineAmounts,
 } from "./finance-rules";
@@ -506,17 +507,27 @@ export async function recordReceipt(input: ReceiptInput, actorId: string) {
 
   try {
     const id = await db.transaction(async (tx) => {
-      const balance = await lockInvoice(tx, input.invoiceId);
-      const outstanding = outstandingAmount(balance.total, balance.credited, balance.received);
-      if (compareMoney(amount, outstanding) > 0) {
-        throw new AppError(`Only ${outstanding} is outstanding on this invoice.`, { code: "RECEIPT_EXCEEDS_OUTSTANDING", status: 409, details: { outstanding } });
+      let invoice: { id: string; customerId: string } | null = null;
+      let customerId = input.customerId || "";
+      if (input.invoiceId) {
+        const balance = await lockInvoice(tx, input.invoiceId);
+        const outstanding = outstandingAmount(balance.total, balance.credited, balance.received);
+        if (compareMoney(amount, outstanding) > 0) {
+          throw new AppError(`Only ${outstanding} is outstanding on this invoice.`, { code: "RECEIPT_EXCEEDS_OUTSTANDING", status: 409, details: { outstanding } });
+        }
+        invoice = (await tx.orm.public.Invoice.where({ id: input.invoiceId }).first())!;
+        if (customerId && customerId !== invoice.customerId) {
+          throw new AppError("This invoice belongs to another customer.", { code: "RECEIPT_CUSTOMER_MISMATCH", status: 400 });
+        }
+        customerId = invoice.customerId;
+      } else if (!(await tx.orm.public.Customer.where({ id: customerId }).first())) {
+        throw new AppError("Customer not found.", { code: "CUSTOMER_NOT_FOUND", status: 400 });
       }
-      const invoice = (await tx.orm.public.Invoice.where({ id: input.invoiceId }).first())!;
       const receiptNumber = await allocateDocumentNumber(tx, "RCT");
       const receipt = await tx.orm.public.CustomerReceipt.create({
         receiptNumber,
-        invoiceId: invoice.id,
-        customerId: invoice.customerId,
+        invoiceId: invoice?.id ?? null,
+        customerId,
         receiptDate: input.receiptDate,
         method: input.method,
         reference: input.reference || null,
@@ -531,7 +542,7 @@ export async function recordReceipt(input: ReceiptInput, actorId: string) {
         action: "RECEIPT_POSTED",
         entityType: "CustomerReceipt",
         entityId: receipt.id,
-        metadata: { receiptNumber, invoiceId: invoice.id, amount },
+        metadata: { receiptNumber, invoiceId: invoice?.id ?? null, customerId, amount },
       }, tx);
       return receipt.id;
     });
@@ -574,7 +585,7 @@ export async function getReceipt(id: string) {
   if (!UUID.test(id)) throw new AppError("Receipt not found.", { code: "RECEIPT_NOT_FOUND", status: 404 });
   const receipt = await db.orm.public.CustomerReceipt.where({ id }).first();
   if (!receipt) throw new AppError("Receipt not found.", { code: "RECEIPT_NOT_FOUND", status: 404 });
-  const invoice = await db.orm.public.Invoice.where({ id: receipt.invoiceId }).first();
+  const invoice = receipt.invoiceId ? await db.orm.public.Invoice.where({ id: receipt.invoiceId }).first() : null;
   const customer = await db.orm.public.Customer.where({ id: receipt.customerId }).first();
   const users = await db.orm.public.User.where((user) => user.id.in([receipt.createdBy, receipt.voidedBy].filter(Boolean) as string[])).select("id", "name").all();
   return {
@@ -591,12 +602,13 @@ export async function listReceipts(filters: ReceiptQuery) {
   const pattern = `%${filters.search}%`;
   const result = await rows<Record<string, string>>(db.runtime(), db.raw.sql`
     select r.id::text as id, r."receiptNumber", r."receiptDate", r.method, coalesce(r.reference, '') as reference,
-      r.amount::text as amount, r.status, i.id::text as "invoiceId", i."invoiceNumber", c.name as "customerName"
+      r.amount::text as amount, r.status, coalesce(i.id::text, '') as "invoiceId", coalesce(i."invoiceNumber", 'On account') as "invoiceNumber", c.name as "customerName"
     from erp_customer_receipts r
-    join erp_invoices i on i.id = r."invoiceId"
+    left join erp_invoices i on i.id = r."invoiceId"
     join erp_customers c on c.id = r."customerId"
     where (${filters.status} = '' or r.status = ${filters.status})
-      and (${filters.search} = '' or r."receiptNumber" ilike ${pattern} or i."invoiceNumber" ilike ${pattern}
+      and (${filters.customerId ?? ""} = '' or r."customerId"::text = ${filters.customerId ?? ""})
+      and (${filters.search} = '' or r."receiptNumber" ilike ${pattern} or coalesce(i."invoiceNumber", '') ilike ${pattern}
         or c.name ilike ${pattern} or coalesce(r.reference, '') ilike ${pattern})
     order by r."createdAt" desc, r.id
     limit ${filters.pageSize + 1} offset ${(filters.page - 1) * filters.pageSize}
@@ -751,7 +763,7 @@ export async function listInvoices(filters: InvoiceQuery, today = new Date().toI
 /* ------------------------------------------------------------------ */
 
 export async function getReceivables(today = new Date().toISOString().slice(0, 10)) {
-  const open = await rows<{ customerId: string; customerName: string; dueDate: string; outstanding: string }>(db.runtime(), db.raw.sql`
+  const dues = await rows<{ customerId: string; customerName: string; dueDate: string; outstanding: string }>(db.runtime(), db.raw.sql`
     select i."customerId"::text as "customerId", c.name as "customerName", i."dueDate",
       (i."totalAmount" - coalesce(cn.total, 0) - coalesce(r.total, 0))::text as outstanding
     from erp_invoices i
@@ -759,7 +771,19 @@ export async function getReceivables(today = new Date().toISOString().slice(0, 1
     left join (select "invoiceId", sum("totalAmount") as total from erp_credit_notes group by "invoiceId") cn on cn."invoiceId" = i.id
     left join (select "invoiceId", sum(amount) as total from erp_customer_receipts where status = 'POSTED' group by "invoiceId") r on r."invoiceId" = i.id
     where i.status = 'ISSUED' and i."totalAmount" - coalesce(cn.total, 0) - coalesce(r.total, 0) > 0
+    union all
+    select c.id::text, c.name, coalesce(c."openingBalanceDate", '1900-01-01'), c."openingBalance"::text
+    from erp_customers c where c."openingBalance" > 0
   `.returnsRow({ customerId: "pg/text@1", customerName: "pg/text@1", dueDate: "pg/text@1", outstanding: "pg/text@1" }).build());
+  // Payments on account settle the oldest dues first (D-052).
+  const onAccount = await rows<{ customerId: string; amount: string }>(db.runtime(), db.raw.sql`
+    select "customerId"::text as "customerId", sum(amount)::text as amount from erp_customer_receipts
+    where status = 'POSTED' and "invoiceId" is null group by "customerId"
+  `.returnsRow({ customerId: "pg/text@1", amount: "pg/text@1" }).build());
+  const open = [...new Set(dues.map((row) => row.customerId))].flatMap((customerId) => settleOldestFirst(
+    dues.filter((row) => row.customerId === customerId),
+    onAccount.find((row) => row.customerId === customerId)?.amount ?? "0",
+  ));
 
   const empty = () => Object.fromEntries(AGING_BUCKETS.map((bucket) => [bucket, "0.00"])) as Record<(typeof AGING_BUCKETS)[number], string>;
   const add = addMoney;

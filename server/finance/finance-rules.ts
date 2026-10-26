@@ -133,3 +133,75 @@ export function compareMoney(a: string, b: string): -1 | 0 | 1 {
 export function addMoney(a: string, b: string): string {
   return centsToDecimalString(cents(a) + cents(b));
 }
+
+export function subtractMoney(a: string, b: string): string {
+  return centsToDecimalString(cents(a) - cents(b));
+}
+
+/* ------------------------------------------------------------------ */
+/* Customer ledger (D-052)                                             */
+/* ------------------------------------------------------------------ */
+
+export type LedgerKind = "OPENING" | "INVOICE" | "CREDIT_NOTE" | "RECEIPT";
+
+export interface LedgerItem {
+  date: string;
+  kind: LedgerKind;
+  reference: string;
+  particulars: string;
+  debit: string;
+  credit: string;
+  at: string;
+  sourceId: string | null;
+}
+
+const KIND_ORDER: Record<LedgerKind, number> = { OPENING: 0, INVOICE: 1, CREDIT_NOTE: 2, RECEIPT: 3 };
+
+/*
+ * The customer's ledger (khata), oldest first, with a running balance:
+ * debit what they owe (old balance, invoices), credit what reduces it
+ * (credit notes, payments). With `from`, everything earlier is one
+ * "Brought forward" line; with `to`, later lines are left out.
+ */
+export function runningLedger(items: LedgerItem[], from = "", to = "") {
+  const sorted = [...items]
+    .filter((item) => !to || item.date <= to)
+    .sort((a, b) => a.date.localeCompare(b.date) || KIND_ORDER[a.kind] - KIND_ORDER[b.kind] || a.at.localeCompare(b.at));
+  const before = from ? sorted.filter((item) => item.date < from) : [];
+  const shown = from ? sorted.filter((item) => item.date >= from) : sorted;
+  const rows: Array<LedgerItem & { balance: string }> = [];
+  let balance = 0n;
+  let debit = 0n;
+  let credit = 0n;
+  if (before.length) {
+    const carried = before.reduce((sum, item) => sum + cents(item.debit) - cents(item.credit), 0n);
+    const line = { debit: carried > 0n ? carried : 0n, credit: carried < 0n ? -carried : 0n };
+    balance = carried;
+    debit = line.debit;
+    credit = line.credit;
+    rows.push({ date: from, kind: "OPENING", reference: "", particulars: "Brought forward", debit: centsToDecimalString(line.debit), credit: centsToDecimalString(line.credit), at: "", sourceId: null, balance: centsToDecimalString(balance) });
+  }
+  for (const item of shown) {
+    balance += cents(item.debit) - cents(item.credit);
+    debit += cents(item.debit);
+    credit += cents(item.credit);
+    rows.push({ ...item, debit: money(item.debit), credit: money(item.credit), balance: centsToDecimalString(balance) });
+  }
+  return { rows, totalDebit: centsToDecimalString(debit), totalCredit: centsToDecimalString(credit), balance: centsToDecimalString(balance) };
+}
+
+/*
+ * Payments on account (no invoice) settle the oldest dues first: the old
+ * balance, then invoices by due date. Returns what is left on each due,
+ * for aging; the total always equals the customer's ledger balance when
+ * that is positive.
+ */
+export function settleOldestFirst<T extends { dueDate: string; outstanding: string }>(dues: T[], onAccount: string) {
+  let left = cents(onAccount);
+  return [...dues].sort((a, b) => a.dueDate.localeCompare(b.dueDate)).map((due) => {
+    const owed = cents(due.outstanding);
+    const take = left > 0n ? (left < owed ? left : owed) : 0n;
+    left -= take;
+    return { ...due, outstanding: centsToDecimalString(owed - take) };
+  }).filter((due) => cents(due.outstanding) > 0n);
+}

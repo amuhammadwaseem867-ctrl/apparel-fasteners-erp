@@ -144,6 +144,11 @@ model Customer {
   contactPerson String?
   ntn           String?
   strn          String?
+  // What the customer owed before the ERP (D-052): the first line of the
+  // customer's ledger, dated openingBalanceDate. Installments received
+  // against it are receipts without an invoice.
+  openingBalance     Decimal @default(0)
+  openingBalanceDate String?
   status    String            @default("ACTIVE")
   createdAt TimestamptzString @default(now())
   updatedAt TimestamptzString @default(now())
@@ -1035,7 +1040,9 @@ model CreditNoteLine {
 model CustomerReceipt {
   id             Uuid               @id @default(uuid())
   receiptNumber  String             @unique
-  invoiceId      Uuid
+  // Empty for a payment on account: an installment against the customer's
+  // old balance or account as a whole, not one invoice (D-052).
+  invoiceId      Uuid?
   customerId     Uuid
   receiptDate    String
   method         String
@@ -1050,7 +1057,7 @@ model CustomerReceipt {
   voidedAt       TimestamptzString?
   voidReason     String?
 
-  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  invoice Invoice? @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
 
   @@index([invoiceId, status])
   @@index([customerId])

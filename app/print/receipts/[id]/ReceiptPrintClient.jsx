@@ -28,7 +28,7 @@ export default function ReceiptPrintClient({ id }) {
   return (
     <main className="print-doc">
       <nav className="print-doc__toolbar" aria-label="Document actions">
-        <Link href={`/finance/invoices/${receipt.invoiceId}`}>Back to invoice</Link>
+        <Link href={receipt.invoiceId ? `/finance/invoices/${receipt.invoiceId}` : `/sales/customers/${receipt.customerId}`}>{receipt.invoiceId ? "Back to invoice" : "Back to customer"}</Link>
         <button type="button" onClick={() => window.print()}>Print</button>
       </nav>
       <article className="print-doc__page">
@@ -42,7 +42,7 @@ export default function ReceiptPrintClient({ id }) {
             <dl>
               <div><dt>Receipt no.</dt><dd>{receipt.receiptNumber}</dd></div>
               <div><dt>Date</dt><dd>{receipt.receiptDate}</dd></div>
-              <div><dt>Invoice</dt><dd>{receipt.invoiceNumber}</dd></div>
+              <div><dt>Invoice</dt><dd>{receipt.invoiceNumber ?? "On account (old balance)"}</dd></div>
             </dl>
           </div>
         </header>
@@ -55,7 +55,7 @@ export default function ReceiptPrintClient({ id }) {
           {receipt.notes && <span>{receipt.notes}</span>}
         </section>
         <section className="print-doc__summary">
-          <div className="print-doc__notes"><p>Received with thanks against invoice {receipt.invoiceNumber}.</p></div>
+          <div className="print-doc__notes"><p>Received with thanks {receipt.invoiceNumber ? `against invoice ${receipt.invoiceNumber}` : "on account"}.</p></div>
           <dl className="print-doc__totals">
             <div className="print-doc__grand"><dt>Amount received</dt><dd>{formatAmount(receipt.amount)}</dd></div>
           </dl>

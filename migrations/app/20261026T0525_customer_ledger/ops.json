@@ -1,0 +1,129 @@
+[
+  {
+    "id": "column.public.erp_customers.openingBalance",
+    "label": "Add column \"openingBalance\" to \"erp_customers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "openingBalance",
+        "table": "erp_customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"openingBalance\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_customers",
+          "openingBalance"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"openingBalance\"",
+        "sql": "ALTER TABLE \"public\".\"erp_customers\" ADD COLUMN \"openingBalance\" numeric DEFAULT '0'::numeric NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"openingBalance\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_customers",
+          "openingBalance"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.erp_customers.openingBalanceDate",
+    "label": "Add column \"openingBalanceDate\" to \"erp_customers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "openingBalanceDate",
+        "table": "erp_customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"openingBalanceDate\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_customers",
+          "openingBalanceDate"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"openingBalanceDate\"",
+        "sql": "ALTER TABLE \"public\".\"erp_customers\" ADD COLUMN \"openingBalanceDate\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"openingBalanceDate\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_customers",
+          "openingBalanceDate"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "alterNullability.dropNotNull.erp_customer_receipts.invoiceId",
+    "label": "Drop NOT NULL on \"erp_customer_receipts\".\"invoiceId\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "invoiceId",
+        "table": "erp_customer_receipts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"invoiceId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_customer_receipts",
+          "invoiceId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop NOT NULL on \"invoiceId\"",
+        "sql": "ALTER TABLE \"public\".\"erp_customer_receipts\" ALTER COLUMN \"invoiceId\" DROP NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"invoiceId\" is nullable",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "erp_customer_receipts",
+          "invoiceId",
+          "YES"
+        ]
+      }
+    ]
+  }
+]

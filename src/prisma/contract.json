@@ -1872,6 +1872,20 @@
                   "kind": "scalar"
                 }
               },
+              "openingBalance": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "openingBalanceDate": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "phone": {
                 "nullable": true,
                 "type": {
@@ -1959,6 +1973,12 @@
                 "ntn": {
                   "column": "ntn"
                 },
+                "openingBalance": {
+                  "column": "openingBalance"
+                },
+                "openingBalanceDate": {
+                  "column": "openingBalanceDate"
+                },
                 "phone": {
                   "column": "phone"
                 },
@@ -2021,7 +2041,7 @@
                 }
               },
               "invoiceId": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/uuid@1",
                   "kind": "scalar"
@@ -2094,7 +2114,7 @@
             "relations": {
               "invoice": {
                 "cardinality": "N:1",
-                "nullable": false,
+                "nullable": true,
                 "on": {
                   "localFields": [
                     "invoiceId"
@@ -14796,7 +14816,7 @@
                 "invoiceId": {
                   "codecId": "pg/uuid@1",
                   "dataType": "pg/uuid",
-                  "nullable": false
+                  "nullable": true
                 },
                 "method": {
                   "codecId": "pg/text@1",
@@ -14962,6 +14982,20 @@
                   "nullable": false
                 },
                 "ntn": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "openingBalance": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "default": {
+                    "kind": "literal",
+                    "value": "0"
+                  },
+                  "nullable": false
+                },
+                "openingBalanceDate": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": true
@@ -24154,7 +24188,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "09a6210e3ab8fa953347f8644d35725ff96b4bf7fde3fea3fa9c9ecac4112343"
+    "storageHash": "63b8adaa61138d574f1d356629f20a93def2ce14aead7b56cf760df11b112ea1"
   },
   "execution": {
     "executionHash": "e1cf76b8c29763c6aa4f96b73f61e093ddbc60602e49930638a84ecb20415a8a",

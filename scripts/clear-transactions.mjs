@@ -45,7 +45,7 @@ export const CLEARED_TABLES = [
 ];
 
 /* Accounting entries and number counters that belong to what is kept. */
-export const KEPT_JOURNAL_SOURCES = ["PayrollRun", "SalaryAdvance"];
+export const KEPT_JOURNAL_SOURCES = ["PayrollRun", "SalaryAdvance", "CustomerOpening"];
 export const KEPT_COUNTERS = ["ADV", "PAY", "LV", "JE"];
 
 const quoted = (values) => values.map((value) => `'${value}'`).join(", ");

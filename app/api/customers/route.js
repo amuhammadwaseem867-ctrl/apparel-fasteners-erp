@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { hasPermission } from "@/server/auth/authorization.service";
 import { authorizeRequest, parseRequestBody } from "@/server/core/api/request";
 import { AppError } from "@/server/core/errors/app-error";
 import { handleApiError } from "@/server/core/errors/error-handler";
 import { failureResponse, successResponse } from "@/server/core/response/api-response";
 import { resolveRequestId } from "@/server/core/utils/request-id";
+import { customerBalances } from "@/server/finance/customer-ledger";
 import { createCustomer, listCustomers } from "@/server/sales/sales.service";
 import { customerInputSchema } from "@/server/sales/sales.validation";
 
@@ -18,7 +20,7 @@ const customerQuerySchema = z.object({
 export async function GET(request) {
   const requestId = resolveRequestId(request.headers.get("x-request-id"));
   try {
-    await authorizeRequest(request, "customers:view");
+    const user = await authorizeRequest(request, "customers:view");
     const parsed = customerQuerySchema.safeParse(
       Object.fromEntries(new URL(request.url).searchParams),
     );
@@ -29,11 +31,17 @@ export async function GET(request) {
         details: parsed.error.issues,
       });
     }
-    return NextResponse.json(successResponse(await listCustomers(
+    const result = await listCustomers(
       parsed.data.search,
       parsed.data.page,
       parsed.data.pageSize,
-    )));
+    );
+    // Each customer's ledger balance, for users who may see money (D-052).
+    if (await hasPermission(user.id, "finance:view")) {
+      const balances = await customerBalances(result.customers.map((customer) => customer.id));
+      result.customers = result.customers.map((customer) => ({ ...customer, balance: balances.get(customer.id) ?? "0.00" }));
+    }
+    return NextResponse.json(successResponse(result));
   } catch (error) {
     const handled = handleApiError(error, requestId);
     return NextResponse.json(handled.body, { status: handled.status });

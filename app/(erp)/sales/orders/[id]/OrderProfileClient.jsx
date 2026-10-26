@@ -335,7 +335,7 @@ export default function OrderProfileClient({ id }) {
         <div>
           <p className="inv-header__eyebrow"><Link href="/sales/orders">Orders</Link> / Order profile</p>
           <h1>Order {order.orderNumber} <span className={`op-badge op-badge--${STATUS_TONE[status] ?? "info"}`}>{status}</span></h1>
-          <p>{order.customer.name}{order.customerPo ? ` · PO ${order.customerPo}` : ""} · ordered {day(order.orderDate)}{order.deliveryDate ? ` · delivery ${day(order.deliveryDate)}` : ""}</p>
+          <p><Link href={`/sales/customers/${order.customer.id}`}>{order.customer.name}</Link>{order.customerPo ? ` · PO ${order.customerPo}` : ""} · ordered {day(order.orderDate)}{order.deliveryDate ? ` · delivery ${day(order.deliveryDate)}` : ""}</p>
         </div>
         <div className="inv-header__actions">
           <Link className="inv-link-button" href={`/print/sales-orders/${order.id}`}><Printer size={15} /> Print order sheet</Link>
@@ -543,7 +543,7 @@ export default function OrderProfileClient({ id }) {
                     <td data-label="Dispatched" className="inv-num">{qty(line.shipped)}</td>
                     <td data-label="Delivered" className="inv-num">{qty(line.delivered)}</td>
                     <td data-label="Left (shortfall)" className="inv-num">{Number(line.left) > 0 ? <strong>{qty(line.left)}</strong> : "—"}</td>
-                    <td data-label="">{Number(line.left) > 0 && Number(line.delivered) > 0 && can("sales:update") && <button type="button" className="inv-link-button" onClick={() => setDialog({ type: "shortfall", line })}>Note reason</button>}</td>
+                    <td data-label="">{Number(line.left) > 0 && can("sales:update") && <button type="button" className="inv-link-button" onClick={() => setDialog({ type: "shortfall", line })}>Note reason</button>}</td>
                   </tr>
                 ))}
               </tbody>

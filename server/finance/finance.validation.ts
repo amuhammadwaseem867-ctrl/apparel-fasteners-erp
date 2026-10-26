@@ -73,14 +73,32 @@ export const creditNoteInputSchema = z.object({
   }
 });
 
+/*
+ * A receipt pays one issued invoice, or (no invoice, D-052) is an
+ * installment on the customer's account: against the old balance or the
+ * account as a whole.
+ */
 export const receiptInputSchema = z.object({
-  invoiceId: uuid,
+  invoiceId: uuid.optional().or(z.literal("")),
+  customerId: uuid.optional().or(z.literal("")),
   receiptDate: date,
   method: z.enum(RECEIPT_METHODS),
   reference: optionalTextSchema(120),
   amount: money,
   notes: optionalTextSchema(1000),
   idempotencyKey: idempotencyKeySchema,
+}).refine((input) => Boolean(input.invoiceId || input.customerId), { path: ["invoiceId"], message: "Choose the invoice or the customer the payment is from." });
+
+/* The customer's balance from before the ERP (D-052). Zero clears it. */
+export const openingBalanceSchema = z.object({
+  amount: z.number().finite().min(0).max(10000000000).refine((value) => toScaledDecimal(value).scale <= 2, "Use at most 2 decimal places."),
+  date,
+  notes: optionalTextSchema(500),
+});
+
+export const ledgerQuerySchema = z.object({
+  from: date.optional().or(z.literal("")),
+  to: date.optional().or(z.literal("")),
 });
 
 export const voidReceiptSchema = z.object({
@@ -99,6 +117,7 @@ export const invoiceQuerySchema = z.object({
 
 export const receiptQuerySchema = z.object({
   status: z.enum(["POSTED", "VOIDED", ""]).default(""),
+  customerId: uuid.optional().or(z.literal("")),
   search: z.string().trim().max(120).default(""),
   page,
   pageSize,
@@ -108,5 +127,7 @@ export type InvoiceInput = z.infer<typeof invoiceInputSchema>;
 export type ManualInvoiceInput = z.infer<typeof manualInvoiceSchema>;
 export type CreditNoteInput = z.infer<typeof creditNoteInputSchema>;
 export type ReceiptInput = z.infer<typeof receiptInputSchema>;
+export type OpeningBalanceInput = z.infer<typeof openingBalanceSchema>;
+export type LedgerQuery = z.infer<typeof ledgerQuerySchema>;
 export type InvoiceQuery = z.infer<typeof invoiceQuerySchema>;
 export type ReceiptQuery = z.infer<typeof receiptQuerySchema>;

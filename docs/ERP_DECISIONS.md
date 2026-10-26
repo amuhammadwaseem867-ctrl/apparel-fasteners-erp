@@ -1423,3 +1423,39 @@ navigation.
   customers, items, suppliers, locations, settings, HR and payroll (with
   its accounting entries), the chart of accounts and the audit log stay.
   Number counters restart, so the first order is AF7-YY-0001.
+
+## D-050 Part dispatch and shortfalls (2026-10-24)
+
+- A confirmed packing list can be shipped in parts across shipments. A
+  shipment line may take less than the list's packed quantity, never more
+  than is left; open draft shipments hold their quantity so two drafts
+  cannot promise the same units. The list becomes SHIPPED when fully taken.
+- A shortfall (erp_shortfalls) records a quantity of an order that is left
+  for later, with a reason. It is noted by hand, never created by itself,
+  and blocks nothing.
+
+## D-051 Gate pass is the delivery; part deliveries (2026-10-26)
+
+- Passing an outward gate pass made for a dispatched shipment marks that
+  shipment delivered (received by the party on the pass, with the guard's
+  name in the delivery note). Marking delivered by hand still works.
+- An order's delivery status comes from quantities: Dispatched, Part
+  delivered (with what is left) and Delivered only when every ordered
+  quantity is delivered. Orders list, order page and customer page show it.
+- The order page lists per item ordered, dispatched, delivered and left
+  (the shortfall). A reason can be noted; a later delivery of the same item
+  settles open shortfalls oldest first. Nothing waits on a shortfall.
+
+## D-052 Customer account and ledger (2026-10-26)
+
+- Each customer has a page with their orders (with delivery), invoices,
+  payments and ledger (khata), and a printable AF7 customer ledger for any
+  period (earlier entries are brought forward).
+- Old balance: what the customer owed before the ERP, with its date; the
+  first ledger line. Changing it posts the difference to the general ledger
+  (Accounts receivable against Owner's equity and opening balances). The
+  clean-up script keeps it and its entries.
+- Payments come in installments of any amount: for one invoice (never more
+  than it owes) or on account (no invoice), against the old balance or the
+  account as a whole. The ledger balance counts them all; receivables
+  settle payments on account against the oldest dues first, so both agree.

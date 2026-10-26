@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import InventoryPager from "@/components/inventory/InventoryPager";
+import { formatAmount } from "@/components/finance/financeUi";
 import { apiRequest } from "@/lib/api/client";
 import useCurrentUser from "@/lib/auth/useCurrentUser";
 import useApiData, { toQuery } from "@/lib/inventory/useApiData";
@@ -87,7 +89,7 @@ export default function CustomersPage() {
         <div>
           <p className="inv-header__eyebrow">2. Orders</p>
           <h1>Customers</h1>
-          <p>The people you make zippers for. Pick a customer when you place an order.</p>
+          <p>The people you make zippers for. Open a customer for their orders, invoices, payments and ledger.</p>
         </div>
         <div className="inv-header__actions">
           {can("customers:create") && <Button variant="primary" onClick={() => setEditing("new")}>New customer</Button>}
@@ -106,16 +108,20 @@ export default function CustomersPage() {
         ) : (
           <div className="inv-table-wrap">
             <table className="inv-table">
-              <thead><tr><th>Customer</th><th>Address</th><th>Contact person</th><th>Contact no</th><th>Email</th><th /></tr></thead>
+              <thead><tr><th>Customer</th><th>Address</th><th>Contact person</th><th>Contact no</th><th>Email</th>{rows.some((row) => row.balance !== undefined) && <th className="inv-num">Balance due</th>}<th /></tr></thead>
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.id}>
-                    <td data-label="Customer"><strong>{row.name}</strong><small>{row.code}</small></td>
+                    <td data-label="Customer"><Link href={`/sales/customers/${row.id}`}><strong>{row.name}</strong></Link><small>{row.code}</small></td>
                     <td data-label="Address">{row.address || "—"}</td>
                     <td data-label="Contact person">{row.contactPerson || "—"}</td>
                     <td data-label="Contact no">{row.phone || "—"}</td>
                     <td data-label="Email">{row.email || "—"}</td>
-                    <td data-label="">{can("customers:update") && <button type="button" className="inv-link-button" onClick={() => setEditing(row)}>Edit</button>}</td>
+                    {row.balance !== undefined && <td data-label="Balance due" className="inv-num">{formatAmount(row.balance)}</td>}
+                    <td data-label="">
+                      <Link className="inv-link-button" href={`/sales/customers/${row.id}`}>Account</Link>
+                      {can("customers:update") && <button type="button" className="inv-link-button" onClick={() => setEditing(row)}>Edit</button>}
+                    </td>
                   </tr>
                 ))}
               </tbody>
