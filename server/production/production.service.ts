@@ -227,7 +227,9 @@ export async function getProductionOrder(id: string) {
   const stages = await db.orm.public.ProductionStage.where({ productionOrderId: id }).orderBy((row) => row.sequence.asc()).all();
   const stageIds = stages.map((stage) => stage.id);
   const runs = stageIds.length
-    ? await db.orm.public.ProductionStageRun.where((run) => run.stageId.in(stageIds)).orderBy((run) => run.recordedAt.asc()).all()
+    // By run number: two runs saved at once can carry recordedAt times in the
+    // other order (each is its transaction's start), the numbers cannot.
+    ? await db.orm.public.ProductionStageRun.where((run) => run.stageId.in(stageIds)).orderBy((run) => run.runNo.asc()).all()
     : [];
   const events = await db.orm.public.ProductionEvent.where({ productionOrderId: id }).orderBy((event) => event.createdAt.asc()).all();
   const product = await db.orm.public.Product.where({ id: order.productId }).first();
