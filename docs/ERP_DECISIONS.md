@@ -1299,7 +1299,7 @@ navigation.
   order carried, so its tax total is zero and its total is goods less
   discount. The type is saved, audited and shown in the list and detail.
 - Its print follows AF7's own invoice sheet (INV_ZIP-26-472): title
-  "PROFORMA INVOICE", INV # and date, consignee, item table (description,
+  "NON SALES TAX INVOICE", INV # and date, consignee, item table (description,
   tape colour, finish, size, unit, quantity, unit price, total) with a
   quantity / amount total row, bank detail with the company NTN, terms
   with HS code, and "Thank you for your business". No GST lines.
