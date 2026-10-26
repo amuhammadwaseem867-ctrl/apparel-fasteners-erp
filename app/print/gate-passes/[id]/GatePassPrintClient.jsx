@@ -106,7 +106,7 @@ export default function GatePassPrintClient({ id }) {
           </div>
         </Af7Section>
 
-        {pass.passedAt && <p className="af7__small">Passed the gate {new Date(pass.passedAt).toLocaleString("en-GB")}{pass.guardName ? ` · guard ${pass.guardName}` : ""}</p>}
+        {pass.passedAt && <p className="af7__small" style={{ padding: "0 8px" }}>Passed the gate {new Date(pass.passedAt).toLocaleString("en-GB")}{pass.guardName ? ` · guard ${pass.guardName}` : ""}</p>}
         <div className="af7__spacer" />
         <Af7Section number="4" title="Authorization / signature">
           <Af7Signatures roles={[["PREPARED BY", pass.createdByName], ["CHECKED BY"], ["AUTHORIZED SIGNATURE", pass.approvedByName], ["RECEIVER / DRIVER SIGNATURE", pass.driverName]]} />

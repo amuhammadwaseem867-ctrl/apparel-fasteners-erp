@@ -7,7 +7,7 @@
 
 import "./Af7Document.css";
 
-export function Af7Page({ company, title, subtitle, children }) {
+export function Af7Page({ company, title, subtitle, longTitle = false, children }) {
   return (
     <article className="print-doc__page af7">
       <header className="af7__head">
@@ -21,7 +21,7 @@ export function Af7Page({ company, title, subtitle, children }) {
           {company.taxRegistration && <span>NTN / STRN: {company.taxRegistration}</span>}
         </div>
         <div className="af7__title">
-          <h1>{title}</h1>
+          <h1 className={longTitle ? "af7__title--long" : undefined}>{title}</h1>
           {subtitle}
         </div>
       </header>

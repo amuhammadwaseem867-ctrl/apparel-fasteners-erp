@@ -76,6 +76,8 @@
 
 .af7__fields {
   display: grid;
+  /* Rows keep their own height when a neighbouring column is taller. */
+  align-content: start;
   gap: 4px;
   margin: 0;
   padding: 0 8px;
@@ -274,11 +276,37 @@
   }
 }
 
+/*
+ * Bank details, stamp and signature side by side: their headings start on
+ * one line at the top, and the stamp box and signature line end together.
+ */
 .af7__bank {
   display: grid;
   grid-template-columns: 1.4fr 0.8fr 1fr;
   gap: 14px;
-  align-items: end;
+  align-items: stretch;
+  margin-bottom: 8px;
+}
+
+.af7__bank > p {
+  align-self: end;
+  margin: 0;
+  padding: 0 8px;
+}
+
+.af7__bank .af7__signature,
+.af7__bank .af7__stamp-box {
+  grid-template-rows: auto 1fr;
+}
+
+.af7__bank .af7__sign-line {
+  align-self: end;
+  margin-top: 0;
+}
+
+.af7__bank .af7__stamp {
+  height: auto;
+  min-height: 22mm;
 }
 
 .af7__sign-line {
@@ -326,6 +354,12 @@
 .af7__title h1 {
   font-size: 14pt;
   letter-spacing: 0.01em;
+}
+
+/* A long one-line title ("NON SALES TAX INVOICE") fits the title column. */
+.af7__title h1.af7__title--long {
+  font-size: 12pt;
+  white-space: nowrap;
 }
 
 /*

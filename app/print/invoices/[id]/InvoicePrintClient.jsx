@@ -33,6 +33,7 @@ function NonTaxInvoice({ invoice, company, paymentTerms }) {
     <Af7Page
       company={company}
       title="NON SALES TAX INVOICE"
+      longTitle
       subtitle={<Af7Fields rows={[["INV #", invoice.invoiceNumber], ["Dated", day(invoice.invoiceDate)]]} />}
     >
       <StatusNotice invoice={invoice} />
