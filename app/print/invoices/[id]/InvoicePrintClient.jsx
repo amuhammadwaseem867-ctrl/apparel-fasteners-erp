@@ -32,7 +32,7 @@ function NonTaxInvoice({ invoice, company, paymentTerms }) {
   return (
     <Af7Page
       company={company}
-      title="PROFORMA INVOICE"
+      title="NON SALES TAX INVOICE"
       subtitle={<Af7Fields rows={[["INV #", invoice.invoiceNumber], ["Dated", day(invoice.invoiceDate)]]} />}
     >
       <StatusNotice invoice={invoice} />
