@@ -46,3 +46,7 @@ dist/
 
 # Database backups made by scripts/go-live.mjs (contain business data)
 backups/
+
+# database backups made by the db scripts (they hold all the data)
+/backups/
+*.dump
