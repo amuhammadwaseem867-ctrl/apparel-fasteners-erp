@@ -2,6 +2,7 @@
 import "@fontsource-variable/montserrat/wght.css";
 import "./globals.css";
 import "./premium-theme.css";
+import "./glass-theme.css";
 
 export const metadata = {
   title: "AF7 ERP",

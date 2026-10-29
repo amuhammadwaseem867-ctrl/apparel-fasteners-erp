@@ -1508,3 +1508,13 @@ navigation.
   sheet's "just material" prices until saved; kept apart from the general
   settings. While being tried out the report is open to sales:view and the
   rates to sales:update; a confidential permission comes later.
+
+## D-056 Glass theme (2026-10-29)
+
+- The ERP uses a glassmorphism theme (app/glass-theme.css): frosted,
+  see-through cards, top bar, process bar and dialogs over a soft AF7
+  navy, sky, gold and violet gradient; the sidebar is navy glass.
+- It is one stylesheet layered over the existing styles and scoped to the
+  ERP shell, so the welcome page, login and every printed document stay as
+  they were. Browsers without blur, and users who ask for less
+  transparency, get solid white panels.

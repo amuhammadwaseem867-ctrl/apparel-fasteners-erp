@@ -1,0 +1,199 @@
+/*
+ * Glass theme for the ERP (D-056): frosted, see-through panels over a soft
+ * AF7 navy-and-sky gradient. Layered over the existing styles, scoped to
+ * the ERP shell (.app-shell), so the welcome page, login and printed
+ * documents are unchanged. Where the browser cannot blur, or the user asks
+ * for less transparency, panels fall back to solid white.
+ */
+
+body .app-shell {
+  --glass-bg: rgba(255, 255, 255, 0.5);
+  --glass-bg-strong: rgba(255, 255, 255, 0.74);
+  --glass-border: rgba(255, 255, 255, 0.72);
+  --glass-edge: rgba(36, 49, 70, 0.08);
+  --glass-shadow: 0 10px 34px -14px rgba(20, 44, 70, 0.28), 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+  --glass-blur: blur(18px) saturate(165%);
+  --af-bg: transparent;
+  --af-surface: var(--glass-bg);
+  --af-surface-soft: rgba(255, 255, 255, 0.42);
+  --af-border: rgba(36, 49, 70, 0.12);
+
+  background:
+    radial-gradient(48% 42% at 6% 4%, rgba(72, 160, 225, 0.55), transparent 70%),
+    radial-gradient(42% 40% at 98% 8%, rgba(227, 176, 82, 0.42), transparent 70%),
+    radial-gradient(50% 48% at 70% 96%, rgba(110, 120, 230, 0.4), transparent 72%),
+    radial-gradient(38% 40% at 22% 88%, rgba(60, 190, 170, 0.3), transparent 70%),
+    linear-gradient(160deg, #dde8f4 0%, #e4e9f5 45%, #ece4f2 100%);
+  background-attachment: fixed;
+}
+
+.app-shell .app-shell__main {
+  background: transparent;
+}
+
+/* ---- The glass recipe ---------------------------------------------- */
+
+.app-shell .erp-topbar,
+.app-shell .pn,
+.app-shell .inv-card,
+.app-shell .inv-kpi,
+.app-shell .ui-card,
+.app-shell .ui-stat-card,
+.app-shell .op-section,
+.app-shell .app-shell__content [class$="-card"],
+.app-shell .app-shell__content [class*="-card "],
+.app-shell .app-shell__content [class$="__card"],
+.app-shell .app-shell__content [class*="__card "],
+.app-shell .app-shell__content [class$="__list-card"],
+.app-shell .app-shell__content [class$="__stat"],
+.app-shell .app-shell__content [class*="__stat "],
+.app-shell .app-shell__content [class$="__panel"],
+.app-shell .app-shell__content [class*="__panel "],
+.app-shell .app-shell__content [class$="-summary"],
+.app-shell .app-shell__content [class$="__filters"],
+.app-shell .app-shell__content [class*="__filters "] {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+
+.app-shell .inv-card,
+.app-shell .ui-card,
+.app-shell .op-section,
+.app-shell .pn {
+  border-radius: 18px;
+}
+
+.app-shell .inv-kpi {
+  border-radius: 16px;
+}
+
+/* Top bar: a frosted strip that the page scrolls under. */
+.app-shell .erp-topbar {
+  border-width: 0 0 1px;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+/* Sidebar: dark navy glass. */
+.app-shell .erp-sidebar {
+  background: linear-gradient(180deg, rgba(24, 34, 49, 0.86) 0%, rgba(20, 44, 70, 0.8) 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 8px 0 32px -18px rgba(7, 29, 46, 0.6);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  backdrop-filter: blur(22px) saturate(150%);
+}
+
+/* Navy page headers keep their colour, with a glass sheen. */
+.app-shell .inv-header {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 18px 44px -26px rgba(7, 29, 46, 0.7), 0 1px 0 rgba(255, 255, 255, 0.18) inset;
+}
+
+/* ---- Tables --------------------------------------------------------- */
+
+.app-shell .inv-table-wrap,
+.app-shell .app-shell__content table {
+  background: transparent;
+}
+
+.app-shell .inv-table thead th,
+.app-shell .app-shell__content table thead th {
+  background: rgba(255, 255, 255, 0.5);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.app-shell .inv-table tbody tr,
+.app-shell .app-shell__content table tbody tr {
+  background: transparent;
+}
+
+.app-shell .inv-table tbody tr:hover,
+.app-shell .app-shell__content table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+/* ---- Fields and buttons --------------------------------------------- */
+
+.app-shell .app-shell__content input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.app-shell .app-shell__content select,
+.app-shell .app-shell__content textarea,
+.app-shell .erp-topbar input {
+  background-color: rgba(255, 255, 255, 0.66);
+  border-color: rgba(36, 49, 70, 0.16);
+}
+
+.app-shell .app-shell__content input:focus,
+.app-shell .app-shell__content select:focus,
+.app-shell .app-shell__content textarea:focus {
+  background-color: rgba(255, 255, 255, 0.92);
+}
+
+/* ---- Dialogs (rendered at the page root, so not inside .app-shell) --- */
+
+.erp-modal__overlay {
+  background: rgba(15, 30, 48, 0.32);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.erp-modal {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 30px 70px -30px rgba(7, 29, 46, 0.55);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  backdrop-filter: blur(24px) saturate(170%);
+}
+
+/* ---- Fallbacks ------------------------------------------------------- */
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  body .app-shell {
+    --glass-bg: #ffffff;
+    --af-surface-soft: #f8fafb;
+  }
+
+  .app-shell .erp-topbar,
+  .erp-modal {
+    background: #ffffff;
+  }
+
+  .app-shell .erp-sidebar {
+    background: var(--af-navy-dark);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  body .app-shell {
+    --glass-bg: #ffffff;
+    --af-surface-soft: #f8fafb;
+  }
+
+  .app-shell .erp-topbar,
+  .erp-modal {
+    background: #ffffff;
+  }
+
+  .app-shell .erp-sidebar {
+    background: var(--af-navy-dark);
+  }
+}
+
+@media print {
+  body .app-shell {
+    background: #ffffff;
+  }
+
+  .app-shell .erp-topbar,
+  .app-shell .inv-card,
+  .app-shell .inv-kpi,
+  .app-shell .op-section {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: #ffffff;
+    box-shadow: none;
+  }
+}
