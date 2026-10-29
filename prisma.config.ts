@@ -8,7 +8,8 @@ export default definePrismaConfig({
   orm: ormConfig({
     contract: "./src/prisma/contract.prisma",
     db: {
-      connection: process.env['DATABASE_URL']!,
+      // Same database as the app (D-054): Vercel's Neon store first, else DATABASE_URL.
+      connection: (process.env['neon_DATABASE_URL']?.trim() || process.env['DATABASE_URL'])!,
     },
   }),
 });

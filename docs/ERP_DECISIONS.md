@@ -1479,3 +1479,14 @@ navigation.
   packed, dispatched and delivered. Only a planned, held or cancelled order
   refuses work. The order page keeps Record QC / Make packing list /
   Dispatch while anything waits.
+
+## D-054 Database on Neon (2026-10-29)
+
+- Prisma Postgres's free plan blocked the database at its operations limit,
+  so the data moved to Neon (free plan, no operations limit) with
+  `npm run db:move`: backup first, empty target only, one transaction,
+  every table's row count compared (86 tables, 2493 rows matched).
+- The app uses `neon_DATABASE_URL` (set by Vercel's Neon store, connected
+  with the prefix "neon_") before `DATABASE_URL`, so no password is copied
+  between settings. Disconnecting the Neon store falls back to DATABASE_URL.
+  The old Prisma database is kept, unchanged, as a fallback.

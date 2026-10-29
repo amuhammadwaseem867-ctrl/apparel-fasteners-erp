@@ -22,6 +22,14 @@ test("database URL validation accepts PostgreSQL URLs and rejects unsafe values"
   );
 });
 
+test("Vercel's Neon store (neon_ prefix) is used before DATABASE_URL (D-054)", () => {
+  const prisma = "postgresql://u:p@db.prisma.io:5432/postgres?sslmode=require";
+  const neon = "postgresql://u:p@ep-x.ap-southeast-1.aws.neon.tech/neondb?sslmode=require";
+  assert.equal(getDatabaseUrl({ DATABASE_URL: prisma, neon_DATABASE_URL: neon }), neon);
+  assert.equal(getDatabaseUrl({ DATABASE_URL: prisma, neon_DATABASE_URL: " " }), prisma);
+  assert.throws(() => getDatabaseUrl({ neon_DATABASE_URL: "https://neon.example" }), { message: /valid PostgreSQL/ });
+});
+
 test("API response helpers preserve the established success and error envelopes", () => {
   assert.deepEqual(successResponse({ id: "item-1" }), {
     success: true,
