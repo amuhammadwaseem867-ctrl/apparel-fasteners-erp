@@ -21,10 +21,25 @@
  */
 
 import { confirm } from "./confirm.mjs";
-import "./load-env.mjs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+
+import { ENV_FILES, envText, parseEnv } from "./load-env.mjs";
 import { backupDatabase, pgTool, run, stop } from "./pg-tools.mjs";
 
 const SCHEMAS = ["public", "prisma_contract"];
+
+/* What the env files hold, by name only (never values), to show why a key is missing. */
+function envFilesReport() {
+  const lines = [`Looking in: ${process.cwd()}`];
+  for (const file of ENV_FILES) {
+    if (!existsSync(file)) { lines.push(`  ${file}: not found`); continue; }
+    const keys = [...parseEnv(envText(readFileSync(file))).keys()];
+    lines.push(`  ${file}: ${keys.length ? keys.join(", ") : "no settings found"}`);
+  }
+  const lookalikes = readdirSync(".").filter((name) => /^\.env/i.test(name) && !ENV_FILES.includes(name));
+  if (lookalikes.length) lines.push(`  other env files here (not read): ${lookalikes.join(", ")}`);
+  return lines.join("\n");
+}
 
 const option = (name) => process.argv.find((arg) => arg.startsWith(`--${name}=`))?.slice(name.length + 3);
 
@@ -56,7 +71,7 @@ async function main() {
   const source = process.env.DATABASE_URL;
   const target = process.env.NEW_DATABASE_URL;
   const given = option("backup");
-  if (!target) stop("NEW_DATABASE_URL is not set. Put the new, empty database's connection string in .env.local as NEW_DATABASE_URL and run: npm run db:move");
+  if (!target) stop(`NEW_DATABASE_URL is not set.\n${envFilesReport()}\nAdd a line NEW_DATABASE_URL=<new database's connection string> to .env.local (open it in Notepad and save; on Windows check it is not saved as .env.local.txt) and run: npm run db:move`);
   if (!source && !given) stop("DATABASE_URL is not set, and no --backup=<file.dump> was given.");
   const to = describe(target, "NEW_DATABASE_URL");
   const from = source ? describe(source, "DATABASE_URL") : null;
