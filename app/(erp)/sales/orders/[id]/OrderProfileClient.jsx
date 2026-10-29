@@ -346,6 +346,7 @@ export default function OrderProfileClient({ id }) {
         </div>
         <div className="inv-header__actions">
           <Link className="inv-link-button" href={`/print/sales-orders/${order.id}`}><Printer size={15} /> Print order sheet</Link>
+          <Link className="inv-link-button" href={`/print/sales-orders/${order.id}/costing`}><Printer size={15} /> Costing report</Link>
           {order.status === "DRAFT" && draftInvoice && can("finance:create") && <Link className="inv-link-button" href={`/finance/invoices/${draftInvoice.id}/edit`}><Pencil size={15} /> Edit</Link>}
           {order.status === "DRAFT" && draftInvoice && can("finance:create") && <Button variant="primary" loading={busy === `in:${draftInvoice.id}`} onClick={() => issueInvoice(draftInvoice)}>Approve invoice</Button>}
           {order.status === "DRAFT" && !draftInvoice && can("sales:update") && <Link className="inv-link-button" href={`/sales/orders/${order.id}/edit`}><Pencil size={15} /> Edit</Link>}

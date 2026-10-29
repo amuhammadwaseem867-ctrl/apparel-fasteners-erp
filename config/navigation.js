@@ -54,6 +54,7 @@ export const NAV_GROUPS = [
         children: [
           { label: "All orders", href: "/sales/orders" },
           { label: "Customers", href: "/sales/customers" },
+          { label: "Costing rates", href: "/sales/costing-rates" },
         ],
       },
       {

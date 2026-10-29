@@ -1490,3 +1490,21 @@ navigation.
   with the prefix "neon_") before `DATABASE_URL`, so no password is copied
   between settings. Disconnecting the Neon store falls back to DATABASE_URL.
   The old Prisma database is kept, unchanged, as a fallback.
+
+## D-055 Order costing report (2026-10-29)
+
+- Each order has a costing report (order page → "Costing report"), laid
+  out like the master costing sheet: per zipper gauge and end, the chain
+  roll (tape) consumption, brass, wastage, recoverable brass scrap and every
+  material's consumption and expense, then the total material cost, cost
+  per piece, profit against the order value before GST, and the stock-out
+  receipt. It is worked out from the order lines each time it is opened.
+- Formulas follow the master sheet with the owner's answers: tape 90 m/kg
+  (#4.5) and 75 m/kg (#5); wastage 0.04 kg under 1,000 m, 0.2 kg to
+  2,000 m, then 0.1 kg per 1,000 m; dyeing and plating charged per meter
+  (plating only on plated finishes); open end uses a pin box set, close end
+  a bottom stop; brass scrap (wastage + open-end gap) recovered at 65%.
+- Rates are a costing rate list (Orders → Costing rates), prefilled from the
+  sheet's "just material" prices until saved; kept apart from the general
+  settings. While being tried out the report is open to sales:view and the
+  rates to sales:update; a confidential permission comes later.
