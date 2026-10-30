@@ -48,6 +48,10 @@
       "model": "CreditNote",
       "namespace": "public"
     },
+    "erp_customer_ledger_entries": {
+      "model": "CustomerLedgerEntry",
+      "namespace": "public"
+    },
     "erp_customer_receipts": {
       "model": "CustomerReceipt",
       "namespace": "public"
@@ -1931,6 +1935,21 @@
                   "namespace": "public"
                 }
               },
+              "oldEntries": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "customerId"
+                  ]
+                },
+                "to": {
+                  "model": "CustomerLedgerEntry",
+                  "namespace": "public"
+                }
+              },
               "salesOrders": {
                 "cardinality": "1:N",
                 "on": {
@@ -1994,6 +2013,154 @@
               },
               "namespaceId": "public",
               "table": "erp_customers"
+            }
+          },
+          "CustomerLedgerEntry": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "credit": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "customerId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "dateMissing": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "dcNumber": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "debit": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "description": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "entryDate": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "lineNo": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "poNumber": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "reference": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "customer": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "customerId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Customer",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "credit": {
+                  "column": "credit"
+                },
+                "customerId": {
+                  "column": "customerId"
+                },
+                "dateMissing": {
+                  "column": "dateMissing"
+                },
+                "dcNumber": {
+                  "column": "dcNumber"
+                },
+                "debit": {
+                  "column": "debit"
+                },
+                "description": {
+                  "column": "description"
+                },
+                "entryDate": {
+                  "column": "entryDate"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "lineNo": {
+                  "column": "lineNo"
+                },
+                "poNumber": {
+                  "column": "poNumber"
+                },
+                "reference": {
+                  "column": "reference"
+                }
+              },
+              "namespaceId": "public",
+              "table": "erp_customer_ledger_entries"
             }
           },
           "CustomerReceipt": {
@@ -14760,6 +14927,143 @@
                 }
               ]
             },
+            "erp_customer_ledger_entries": {
+              "checks": [
+                {
+                  "expression": "\"debit\" >= 0 AND \"credit\" >= 0",
+                  "name": "erp_customer_ledger_entries_amounts_bd2d3c51",
+                  "prefix": "erp_customer_ledger_entries_amounts"
+                }
+              ],
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "credit": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "default": {
+                    "kind": "literal",
+                    "value": "0"
+                  },
+                  "nullable": false
+                },
+                "customerId": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "dateMissing": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nullable": false
+                },
+                "dcNumber": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "debit": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "default": {
+                    "kind": "literal",
+                    "value": "0"
+                  },
+                  "nullable": false
+                },
+                "description": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "entryDate": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "lineNo": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "poNumber": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "reference": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "customerId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "erp_customer_ledger_entries"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "erp_customers"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "customerId"
+                  ],
+                  "name": "erp_customer_ledger_entries_customerId_idx_b2a8a46c",
+                  "prefix": "erp_customer_ledger_entries_customerId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "entryDate"
+                  ],
+                  "name": "erp_customer_ledger_entries_entryDate_idx_f5afac2f",
+                  "prefix": "erp_customer_ledger_entries_entryDate_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "customerId",
+                    "lineNo"
+                  ]
+                }
+              ]
+            },
             "erp_customer_receipts": {
               "checks": [
                 {
@@ -24188,10 +24492,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "63b8adaa61138d574f1d356629f20a93def2ce14aead7b56cf760df11b112ea1"
+    "storageHash": "17c4c0b0a08e9da95d131af9c8b779f84417a554283c8216304be5fa0b5a0a66"
   },
   "execution": {
-    "executionHash": "e1cf76b8c29763c6aa4f96b73f61e093ddbc60602e49930638a84ecb20415a8a",
+    "executionHash": "6a1d0c4c9054d8e1a3445f03bfff9c733ccee81c7c150dcfbfbb703204ffd20b",
     "mutations": {
       "defaults": [
         {
@@ -24300,6 +24604,17 @@
           },
           "ref": {
             "entry": "erp_credit_notes",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "erp_customer_ledger_entries",
             "field": "id",
             "namespace": "public"
           }

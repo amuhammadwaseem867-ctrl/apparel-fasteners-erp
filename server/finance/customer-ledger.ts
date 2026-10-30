@@ -1,6 +1,7 @@
 /*
  * The rows of customers' ledgers (D-052), read in one query: the old
- * balance, issued invoices, their credit notes and posted payments.
+ * balance, the old khata's lines (D-057), issued invoices, their credit
+ * notes and posted payments.
  */
 
 import { db } from "../core/database/client";
@@ -22,6 +23,11 @@ export async function ledgerItems(runner: Runner, customerIds: string[]) {
       'Old balance (before the ERP)' as particulars, c."openingBalance"::text as debit, '0' as credit, c."createdAt"::text as at, null::text as "sourceId",
       '' as method, '' as extra
     from erp_customers c join ids on ids.id = c.id where c."openingBalance" <> 0
+    union all
+    select e."customerId"::text, 'OLD', e."entryDate", coalesce(e.reference, ''), e.description, e.debit::text, e.credit::text,
+      lpad(e."lineNo"::text, 6, '0'), e.id::text, '',
+      concat_ws('|', coalesce(e."poNumber", ''), coalesce(e."dcNumber", ''), case when e."dateMissing" then 'undated' else '' end)
+    from erp_customer_ledger_entries e join ids on ids.id = e."customerId"
     union all
     select i."customerId"::text, 'INVOICE', i."invoiceDate", i."invoiceNumber",
       case when i."invoiceType" = 'NON_TAX' then 'Invoice' else 'Sales tax invoice' end, i."totalAmount"::text, '0',
@@ -45,6 +51,11 @@ export async function ledgerItems(runner: Runner, customerIds: string[]) {
     const kind = row.kind as LedgerKind;
     let particulars = row.particulars ?? "";
     if (kind === "CREDIT_NOTE" && row.extra) particulars += ` on ${row.extra}`;
+    if (kind === "OLD") {
+      const [po, dc, undated] = String(row.extra ?? "").split("|");
+      const notes = [po && `PO ${po}`, dc && `DC ${dc}`, undated && "date not in the sheet"].filter(Boolean);
+      particulars = [particulars || (Number(row.debit) > 0 ? "Old invoice" : "Payment received"), ...notes].join(" · ");
+    }
     if (kind === "RECEIPT") {
       const [invoiceNumber, reference] = String(row.extra ?? "").split("|");
       particulars += ` (${METHOD[row.method ?? ""] ?? row.method}${reference ? ` ${reference}` : ""})${invoiceNumber ? ` for ${invoiceNumber}` : " on account"}`;

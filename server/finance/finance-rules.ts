@@ -142,7 +142,8 @@ export function subtractMoney(a: string, b: string): string {
 /* Customer ledger (D-052)                                             */
 /* ------------------------------------------------------------------ */
 
-export type LedgerKind = "OPENING" | "INVOICE" | "CREDIT_NOTE" | "RECEIPT";
+/* OLD: a line of the customer's old Excel khata (D-057). */
+export type LedgerKind = "OPENING" | "OLD" | "INVOICE" | "CREDIT_NOTE" | "RECEIPT";
 
 export interface LedgerItem {
   date: string;
@@ -155,7 +156,7 @@ export interface LedgerItem {
   sourceId: string | null;
 }
 
-const KIND_ORDER: Record<LedgerKind, number> = { OPENING: 0, INVOICE: 1, CREDIT_NOTE: 2, RECEIPT: 3 };
+const KIND_ORDER: Record<LedgerKind, number> = { OPENING: 0, OLD: 1, INVOICE: 2, CREDIT_NOTE: 3, RECEIPT: 4 };
 
 /*
  * The customer's ledger (khata), oldest first, with a running balance:

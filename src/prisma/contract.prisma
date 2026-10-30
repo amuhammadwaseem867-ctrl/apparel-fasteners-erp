@@ -155,9 +155,36 @@ model Customer {
 
   salesOrders SalesOrder[]
   invoices    Invoice[]
+  oldEntries  CustomerLedgerEntry[]
 
   @@index([name])
   @@map("erp_customers")
+}
+
+// The customer's ledger from before the ERP (D-057), line by line as in the
+// Excel khata: old invoices (debit) and payments received (credit). Read
+// into the customer's ledger after the old balance, before ERP documents.
+model CustomerLedgerEntry {
+  id          Uuid              @id @default(uuid())
+  customerId  Uuid
+  lineNo      Int
+  entryDate   String
+  // The sheet had no date: entryDate is the row above's.
+  dateMissing Boolean           @default(false)
+  reference   String?
+  poNumber    String?
+  dcNumber    String?
+  description String
+  debit       Decimal           @default(0)
+  credit      Decimal           @default(0)
+  createdAt   TimestamptzString @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
+  @@unique([customerId, lineNo])
+  @@index([entryDate])
+  @@check(expression: "\"debit\" >= 0 AND \"credit\" >= 0", name: "erp_customer_ledger_entries_amounts")
+  @@map("erp_customer_ledger_entries")
 }
 
 model Product {

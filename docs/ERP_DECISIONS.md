@@ -1518,3 +1518,24 @@ navigation.
   ERP shell, so the welcome page, login and every printed document stay as
   they were. Browsers without blur, and users who ask for less
   transparency, get solid white panels.
+
+## D-057 Customers from the old Excel khata (2026-10-30)
+
+- The real customers replace the dummy ones. Each customer's old khata
+  (Customer_Ledger_Local-2026-AF-PAK.xlsx, one sheet per customer) is kept
+  line by line in erp_customer_ledger_entries: date, P/I no., PO, DC,
+  description, debit and credit. The customer's ledger shows these lines
+  after the old balance and before ERP documents; a sheet row with no date
+  takes the row above's date and says "date not in the sheet".
+- Receivables count old debits as dues and old credits as payments on
+  account (oldest first). The general ledger gets one CustomerOpening entry
+  per customer for what the khata leaves owing (Dr AR / Cr Owner's equity;
+  the reverse for an advance), so AR matches the khatas.
+- npm run db:replace-customers -- --file=<import.json>: checks every
+  customer's lines add up to the sheet's closing balance, backs up, asks
+  for REPLACE, then in one transaction clears every transaction, removes
+  every customer and their accounting entries, and adds the file's
+  customers (codes CUS-001…). Users, items, suppliers, settings, HR and the
+  chart of accounts are kept. A khata not in PKR (Hassan Sb, USD) is added
+  as a customer without its lines.
+- clear-transactions keeps the old khata, like the old balance.

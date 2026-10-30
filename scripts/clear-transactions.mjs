@@ -12,7 +12,7 @@
  * book and their accounting entries. Their number counters are reset, so the
  * first order is AF7-YY-0001 again.
  *
- * Kept: users, passwords, sessions, roles and permissions; customers;
+ * Kept: users, passwords, sessions, roles and permissions; customers and their old khata;
  * items, categories, BOMs; suppliers; warehouses and locations; settings;
  * HR and payroll (employees, attendance, leave, advances, payroll runs and
  * their accounting entries); the chart of accounts; the audit log.

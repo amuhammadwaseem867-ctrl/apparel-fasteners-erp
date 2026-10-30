@@ -71,6 +71,10 @@ export async function getCustomerAccount(customerId: string) {
     id: "pg/text@1", receiptNumber: "pg/text@1", receiptDate: "pg/text@1", method: "pg/text@1", reference: "pg/text@1", amount: "pg/text@1",
     status: "pg/text@1", notes: "pg/text@1", invoiceId: "pg/text@1", invoiceNumber: "pg/text@1",
   }).build());
+  const [old] = await rows<{ lines: string; debit: string; credit: string }>(runtime, db.raw.sql`
+    select count(*)::text as lines, coalesce(sum(debit), 0)::text as debit, coalesce(sum(credit), 0)::text as credit
+    from erp_customer_ledger_entries where "customerId" = ${customerId}::uuid
+  `.returnsRow({ lines: "pg/text@1", debit: "pg/text@1", credit: "pg/text@1" }).build());
   const orders = await listSalesOrders({ customerId, page: 1, pageSize: 100 } as never);
   const ledger = await runningLedgerFor(runtime, customerId, "", "");
   const issued = invoices.filter((row) => row.status === "ISSUED");
@@ -81,6 +85,9 @@ export async function getCustomerAccount(customerId: string) {
     customer: { ...customer, openingBalance: cash(customer.openingBalance) },
     summary: {
       openingBalance: cash(customer.openingBalance),
+      // The old khata (D-057): its lines and what it left owing.
+      oldLines: Number(old.lines),
+      oldBalance: subtractMoney(addMoney(cash(customer.openingBalance), cash(old.debit)), cash(old.credit)),
       invoiced: sum(issued.map((row) => row.total)),
       credited: sum(issued.map((row) => row.credited)),
       received: sum(posted.map((row) => row.amount)),

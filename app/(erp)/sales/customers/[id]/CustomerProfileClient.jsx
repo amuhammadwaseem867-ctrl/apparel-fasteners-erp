@@ -130,7 +130,7 @@ export default function CustomerProfileClient({ id }) {
       </header>
 
       <section className="inv-kpis" aria-label="Account">
-        <div className="inv-kpi"><span>Old balance</span><strong>{formatAmount(summary.openingBalance)}</strong><small>{customer.openingBalanceDate ? `as on ${day(customer.openingBalanceDate)}` : "before the ERP"}</small></div>
+        <div className="inv-kpi"><span>Old balance</span><strong>{formatAmount(summary.oldBalance)}</strong><small>{summary.oldLines > 0 ? `old khata, ${summary.oldLines} lines` : customer.openingBalanceDate ? `as on ${day(customer.openingBalanceDate)}` : "before the ERP"}</small></div>
         <div className="inv-kpi"><span>Invoiced</span><strong>{formatAmount(summary.invoiced)}</strong><small>{invoices.filter((row) => row.status === "ISSUED").length} approved invoices</small></div>
         <div className="inv-kpi"><span>Received</span><strong>{formatAmount(summary.received)}</strong><small>{Number(summary.onAccount) > 0 ? `${formatAmount(summary.onAccount)} on account` : "all payments"}</small></div>
         <div className={`inv-kpi ${Number(summary.balance) > 0 ? "inv-kpi--warning" : ""}`}><span>Balance due</span><strong>{balance(summary.balance)}</strong><small>from the ledger</small></div>

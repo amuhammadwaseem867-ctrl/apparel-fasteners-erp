@@ -88,3 +88,24 @@ test("receivables count the old balance and settle payments on account oldest fi
   // Old 15,000 is settled by 10,000 on account (5,000 left, 90+); the invoice has 30,000 left.
   assert.equal(mine.buckets["90+"], "5000.00");
 });
+
+test("the old khata's lines (D-057) are in the ledger in sheet order, the account and receivables", async () => {
+  const old = await createCustomer({ code: `CK-${run}`, name: `Khata ${run}` }, actor);
+  await db.runtime().query(db.raw.sql`
+    insert into erp_customer_ledger_entries (id, "customerId", "lineNo", "entryDate", "dateMissing", reference, "poNumber", "dcNumber", description, debit, credit) values
+      (gen_random_uuid(), ${old.id}::uuid, 1, '2025-01-10', false, 'AF-25-1', 'PO-7', null, 'Metal Zipper', 50000, 0),
+      (gen_random_uuid(), ${old.id}::uuid, 2, '2025-02-01', false, null, null, null, 'Payment Received', 0, 20000),
+      (gen_random_uuid(), ${old.id}::uuid, 3, '2025-02-01', true, null, null, null, 'Adjustment of withholding tax', 0, 1000)
+    returning id
+  `.returnsRow({ id: "pg/uuid@1" }).build());
+  const ledger = await getCustomerLedger(old.id);
+  assert.deepEqual(ledger.rows.map((row) => [row.kind, row.reference, row.balance]), [
+    ["OLD", "AF-25-1", "50000.00"], ["OLD", "", "30000.00"], ["OLD", "", "29000.00"],
+  ]);
+  assert.equal(ledger.rows[0].particulars, "Metal Zipper · PO PO-7");
+  assert.equal(ledger.rows[2].particulars, "Adjustment of withholding tax · date not in the sheet");
+  const account = await getCustomerAccount(old.id);
+  assert.deepEqual([account.summary.oldLines, account.summary.oldBalance, account.summary.balance], [3, "29000.00", "29000.00"]);
+  const mine = (await getReceivables("2026-11-30")).customers.find((row) => row.customerId === old.id);
+  assert.equal(mine.total, "29000.00", "old invoices are dues, old payments settle them");
+});

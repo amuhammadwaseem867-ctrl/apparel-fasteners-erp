@@ -50,3 +50,6 @@ backups/
 # database backups made by the db scripts (they hold all the data)
 /backups/
 *.dump
+
+# Customer data for npm run db:replace-customers (never committed)
+customer-ledger-import*.json

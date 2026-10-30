@@ -774,11 +774,17 @@ export async function getReceivables(today = new Date().toISOString().slice(0, 1
     union all
     select c.id::text, c.name, coalesce(c."openingBalanceDate", '1900-01-01'), c."openingBalance"::text
     from erp_customers c where c."openingBalance" > 0
+    union all
+    select c.id::text, c.name, e."entryDate", e.debit::text
+    from erp_customer_ledger_entries e join erp_customers c on c.id = e."customerId" where e.debit > 0
   `.returnsRow({ customerId: "pg/text@1", customerName: "pg/text@1", dueDate: "pg/text@1", outstanding: "pg/text@1" }).build());
-  // Payments on account settle the oldest dues first (D-052).
+  // Payments on account, and the old khata's credits (D-057), settle the oldest dues first (D-052).
   const onAccount = await rows<{ customerId: string; amount: string }>(db.runtime(), db.raw.sql`
-    select "customerId"::text as "customerId", sum(amount)::text as amount from erp_customer_receipts
-    where status = 'POSTED' and "invoiceId" is null group by "customerId"
+    select "customerId", sum(amount)::text as amount from (
+      select "customerId"::text as "customerId", amount from erp_customer_receipts where status = 'POSTED' and "invoiceId" is null
+      union all
+      select "customerId"::text, credit from erp_customer_ledger_entries where credit > 0
+    ) paid group by "customerId"
   `.returnsRow({ customerId: "pg/text@1", amount: "pg/text@1" }).build());
   const open = [...new Set(dues.map((row) => row.customerId))].flatMap((customerId) => settleOldestFirst(
     dues.filter((row) => row.customerId === customerId),
