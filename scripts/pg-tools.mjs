@@ -59,7 +59,7 @@ export function backupDatabase(url, database, given) {
     run("Backing up the database (pg_dump)", pgDump, ["--format=custom", `--file=${backup}`, url]);
   }
   if (!existsSync(backup) || statSync(backup).size === 0) stop(`Backup ${backup} is missing or empty.`);
-  const listing = run("Checking the backup can be restored (pg_restore --list)", pgTool("pg_restore"), ["--list", backup], { capture: true })
+  const listing = run("Checking the backup can be restored (pg_restore --list)", pgTool("pg_restore"), ["--list", backup], { capture: true, quiet: true })
     .split("\n").filter((line) => !line.startsWith(";")).join("\n");
   const tables = listing.split("\n").filter((line) => / TABLE DATA /.test(line)).length;
   if (tables === 0) stop(`Backup ${backup} contains no table data; refusing to continue.`);
