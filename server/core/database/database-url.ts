@@ -38,5 +38,14 @@ export function getDatabaseUrl(
     );
   }
 
+  // node-postgres already treats prefer / require / verify-ca as verify-full
+  // and warns on every connection; saying verify-full keeps the same check
+  // without the warning.
+  const mode = parsed.searchParams.get("sslmode");
+  if (mode && ["prefer", "require", "verify-ca"].includes(mode) && !parsed.searchParams.has("uselibpqcompat")) {
+    parsed.searchParams.set("sslmode", "verify-full");
+    return parsed.toString();
+  }
+
   return value;
 }

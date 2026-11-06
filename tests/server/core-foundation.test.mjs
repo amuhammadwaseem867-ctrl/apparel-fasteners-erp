@@ -10,7 +10,7 @@ import { calculateLineAmounts, salesOrderInputSchema } from "../../server/sales/
 import { productInputSchema } from "../../server/products/product.validation.ts";
 
 test("database URL validation accepts PostgreSQL URLs and rejects unsafe values", () => {
-  const url = "postgresql://erp-user:secret@db.example:5432/erp?sslmode=require";
+  const url = "postgresql://erp-user:secret@db.example:5432/erp?sslmode=verify-full";
   assert.equal(getDatabaseUrl({ DATABASE_URL: url }), url);
   assert.throws(
     () => getDatabaseUrl({ DATABASE_URL: "https://db.example/erp" }),
@@ -23,8 +23,8 @@ test("database URL validation accepts PostgreSQL URLs and rejects unsafe values"
 });
 
 test("Vercel's Neon store (neon_ prefix) is used before DATABASE_URL (D-054)", () => {
-  const prisma = "postgresql://u:p@db.prisma.io:5432/postgres?sslmode=require";
-  const neon = "postgresql://u:p@ep-x.ap-southeast-1.aws.neon.tech/neondb?sslmode=require";
+  const prisma = "postgresql://u:p@db.prisma.io:5432/postgres?sslmode=verify-full";
+  const neon = "postgresql://u:p@ep-x.ap-southeast-1.aws.neon.tech/neondb?sslmode=verify-full";
   assert.equal(getDatabaseUrl({ DATABASE_URL: prisma, neon_DATABASE_URL: neon }), neon);
   assert.equal(getDatabaseUrl({ DATABASE_URL: prisma, neon_DATABASE_URL: " " }), prisma);
   assert.throws(() => getDatabaseUrl({ neon_DATABASE_URL: "https://neon.example" }), { message: /valid PostgreSQL/ });
@@ -149,4 +149,11 @@ test("sales line monetary calculation applies discount before tax with cent roun
     taxCents: 135,
     totalCents: 2835,
   });
+});
+
+test("sslmode=require becomes verify-full, the check node-postgres already does, without its warning", () => {
+  const url = getDatabaseUrl({ DATABASE_URL: "postgresql://u:p@ep-x.neon.tech/neondb?sslmode=require&channel_binding=require" });
+  assert.equal(new URL(url).searchParams.get("sslmode"), "verify-full");
+  assert.equal(new URL(url).searchParams.get("channel_binding"), "require");
+  assert.equal(getDatabaseUrl({ DATABASE_URL: "postgresql://u@127.0.0.1:5432/erp" }), "postgresql://u@127.0.0.1:5432/erp");
 });
