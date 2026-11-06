@@ -1539,3 +1539,23 @@ navigation.
   chart of accounts are kept. A khata not in PKR (Hassan Sb, USD) is added
   as a customer without its lines.
 - clear-transactions keeps the old khata, like the old balance.
+
+## D-058 Stock from the inventory sheet (2026-11-06)
+
+- The stock is replaced with the current balances in AF7's inventory
+  workbook (Google Sheet, 29 tabs). Only each item's latest month counts;
+  the month-by-month history stays in the sheet. Reference tabs (rates,
+  per-piece weights, colours and chemicals bought, dyeing gas) carry no
+  stock and are left out.
+- Each item keeps its location (a new location is made for each place the
+  sheet names; a blank place is General), unit weight and rate. Teeth use
+  the raw material list's SKUs; stops, bottoms and sliders use the listed
+  item when exactly one matches size, finish, model and logo. Pins and
+  boxes, counted apart in the sheet, stay their own items. Units: pieces,
+  kg, or metres for chain rolls.
+- npm run db:import-inventory -- --file=<import.json>: backs up, asks for
+  IMPORT, then in one transaction removes all stock (balances, movements,
+  stock documents, reservations, batches), adds or updates the items and
+  posts one opening Stock In document; every item's stock is checked
+  against the file. Negative or unreadable balances in the sheet are not
+  imported; the extraction lists them.
