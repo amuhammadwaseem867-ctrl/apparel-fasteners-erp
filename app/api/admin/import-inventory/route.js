@@ -49,7 +49,8 @@ export async function POST(request) {
 
     await client.query("begin");
     try {
-      for (const statement of importSql(plan)) await client.query(statement);
+      // One round trip for every statement: the function and the database may be far apart.
+      await client.query(importSql(plan).map((statement) => `${statement};`).join("\n"));
       const rows = (await client.query(`select p.sku, coalesce(sum(b."onHand"), 0)::float8 as stock from erp_products p
         left join erp_stock_balances b on b."productId" = p.id where p.sku = any($1) group by p.sku`, [plan.products.map((product) => product.sku)])).rows;
       const stock = new Map(rows.map((row) => [row.sku, Number(row.stock)]));
