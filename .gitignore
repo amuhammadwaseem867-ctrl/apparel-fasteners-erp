@@ -53,3 +53,6 @@ backups/
 
 # Customer data for npm run db:replace-customers (never committed)
 customer-ledger-import*.json
+
+# Inventory data for npm run db:import-inventory (never committed)
+inventory-import*.json
