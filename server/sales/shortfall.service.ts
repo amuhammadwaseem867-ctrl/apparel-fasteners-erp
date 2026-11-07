@@ -63,7 +63,7 @@ export async function createShortfall(input: ShortfallInput, actorId: string) {
 /*
  * Resolving by fulfilment: the quantity shipped since the shortfall was
  * recorded, above what the order's open shortfall records already claim,
- * can be applied to this record — up to its quantity.
+ * can be applied to this record, up to its quantity.
  */
 export async function resolveShortfall(id: string, input: ShortfallResolve, actorId: string) {
   if (!UUID.test(id)) notFound();
@@ -74,7 +74,7 @@ export async function resolveShortfall(id: string, input: ShortfallResolve, acto
     // write lock: the amount is COALESCEd to "the rest" when not given, and
     // the WHERE clause refuses any request above what is left, so resolved
     // quantity can never pass the recorded quantity, whatever other requests
-    // resolve concurrently — the loser simply matches no rows.
+    // resolve concurrently, the loser simply matches no rows.
     const claimed = (await tx.query(db.raw.sql`
       update erp_shortfalls
         set "resolvedQuantity" = "resolvedQuantity" + amount,

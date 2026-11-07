@@ -138,9 +138,7 @@ export function subtractMoney(a: string, b: string): string {
   return centsToDecimalString(cents(a) - cents(b));
 }
 
-/* ------------------------------------------------------------------ */
 /* Customer ledger (D-052)                                             */
-/* ------------------------------------------------------------------ */
 
 /* OLD: a line of the customer's old Excel khata (D-057). */
 export type LedgerKind = "OPENING" | "OLD" | "INVOICE" | "CREDIT_NOTE" | "RECEIPT";

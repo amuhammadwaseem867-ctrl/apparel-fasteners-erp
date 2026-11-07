@@ -31,9 +31,7 @@
   transform: translateY(-1px);
 }
 
-/* =========================================
-   TOP
-========================================= */
+/* TOP */
 
 .sales-overview-card__top {
   width: 100%;
@@ -63,9 +61,7 @@
   height: 18px;
 }
 
-/* =========================================
-   LINK
-========================================= */
+/* Link */
 
 .sales-overview-card__link {
   width: 28px;
@@ -98,9 +94,7 @@
   outline-offset: 2px;
 }
 
-/* =========================================
-   CONTENT
-========================================= */
+/* Content */
 
 .sales-overview-card__content {
   min-width: 0;
@@ -147,9 +141,7 @@
   font-weight: 500;
 }
 
-/* =========================================
-   TREND
-========================================= */
+/* Trend */
 
 .sales-overview-card__trend {
   margin-top: auto;
@@ -176,9 +168,7 @@
   color: var(--af-text-muted);
 }
 
-/* =========================================
-   RESPONSIVE
-========================================= */
+/* Responsive */
 
 @media (max-width: 1100px) {
   .sales-overview-card {

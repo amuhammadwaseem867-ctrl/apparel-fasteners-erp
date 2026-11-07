@@ -1,8 +1,8 @@
 /**
- * Apparel Fastener ERP — Raw material / Item Master catalog.
+ * Apparel Fastener ERP, Raw material / Item Master catalog.
  *
  * Every unique product specification stays INDEPENDENTLY
- * traceable — sizes, materials, types, finishes, colors,
+ * traceable, sizes, materials, types, finishes, colors,
  * variants and Logo/Plain configurations are never merged.
  */
 
@@ -172,7 +172,7 @@ export const MOVEMENT_TYPES = [
 ];
 
 /**
- * WIP tracking model — connects Inventory and Production.
+ * WIP tracking model, connects Inventory and Production.
  * Warehouse → Material Issue → Production → WIP → Next Stage → Finished Goods
  * {
  *   orderId, workOrderId, stageKey, itemId (sku),

@@ -9,9 +9,7 @@
   width: 100%;
 }
 
-/* =========================================
-   LABEL
-========================================= */
+/* Label */
 
 .erp-input__label {
   display: inline-flex;
@@ -37,9 +35,7 @@
   font-weight: 700;
 }
 
-/* =========================================
-   DESCRIPTION
-========================================= */
+/* Description */
 
 .erp-input__description {
   margin: -2px 0 7px;
@@ -51,9 +47,7 @@
   font-weight: 500;
 }
 
-/* =========================================
-   CONTROL
-========================================= */
+/* Control */
 
 .erp-input__control {
   position: relative;
@@ -118,9 +112,7 @@
   color: #a5adb8;
 }
 
-/* =========================================
-   SEARCH
-========================================= */
+/* Search */
 
 .erp-input--search
   .erp-input__field {
@@ -144,9 +136,7 @@
   pointer-events: none;
 }
 
-/* =========================================
-   LEADING ICON
-========================================= */
+/* Leading icon */
 
 .erp-input__leading-icon {
   position: absolute;
@@ -170,9 +160,7 @@
   padding-left: 38px;
 }
 
-/* =========================================
-   PREFIX
-========================================= */
+/* Prefix */
 
 .erp-input__prefix {
   position: absolute;
@@ -200,9 +188,7 @@
   padding-left: 34px;
 }
 
-/* =========================================
-   SUFFIX
-========================================= */
+/* Suffix */
 
 .erp-input__suffix {
   position: absolute;
@@ -229,9 +215,7 @@
   padding-right: 42px;
 }
 
-/* =========================================
-   CLEAR
-========================================= */
+/* Clear */
 
 .erp-input__clear {
   position: absolute;
@@ -277,9 +261,7 @@
   padding-right: 38px;
 }
 
-/* =========================================
-   STATUS ICON
-========================================= */
+/* Status icon */
 
 .erp-input__status-icon {
   position: absolute;
@@ -304,9 +286,7 @@
   color: var(--af-success);
 }
 
-/* =========================================
-   ERROR STATE
-========================================= */
+/* Error state */
 
 .erp-input--error
   .erp-input__field {
@@ -333,9 +313,7 @@
   padding-right: 40px;
 }
 
-/* =========================================
-   SUCCESS STATE
-========================================= */
+/* Success state */
 
 .erp-input--success
   .erp-input__field {
@@ -355,9 +333,7 @@
   padding-right: 40px;
 }
 
-/* =========================================
-   MESSAGES
-========================================= */
+/* Messages */
 
 .erp-input__message {
   min-height: 18px;
@@ -388,9 +364,7 @@
   color: var(--af-success);
 }
 
-/* =========================================
-   DISABLED
-========================================= */
+/* Disabled */
 
 .erp-input--disabled
   .erp-input__label {
@@ -411,9 +385,7 @@
   opacity: 1;
 }
 
-/* =========================================
-   READ ONLY
-========================================= */
+/* Read only */
 
 .erp-input--readonly
   .erp-input__field {
@@ -429,9 +401,7 @@
   border-color: var(--af-border);
 }
 
-/* =========================================
-   SIZES
-========================================= */
+/* Sizes */
 
 .erp-input--small
   .erp-input__field {
@@ -477,9 +447,7 @@
   left: 13px;
 }
 
-/* =========================================
-   AUTOFILL
-========================================= */
+/* Autofill */
 
 .erp-input__field:-webkit-autofill,
 .erp-input__field:-webkit-autofill:hover,
@@ -494,9 +462,7 @@
     background-color 5000s ease-in-out 0s;
 }
 
-/* =========================================
-   MOBILE
-========================================= */
+/* Mobile */
 
 @media (max-width: 600px) {
   .erp-input__field {

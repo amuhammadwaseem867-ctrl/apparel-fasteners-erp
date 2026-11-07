@@ -1,5 +1,5 @@
 /*
- * Pure tests for partial dispatch of a packing list (D-050) — no database.
+ * Pure tests for partial dispatch of a packing list (D-050), no database.
  * The database-backed cases (stock deductions, stage runs, concurrency) run
  * under npm run test:db against the isolated test database only.
  */

@@ -66,9 +66,7 @@ type SchemaLike = { safeParse: (value: unknown) => { success: true; data: unknow
 const MAX_TABLE_ROWS = 200;
 const MODEL_SAMPLE_ROWS = 40;
 
-/* ------------------------------------------------------------------ */
 /* Definitions                                                         */
-/* ------------------------------------------------------------------ */
 
 const searchParams = { type: "object", properties: { search: { type: "string", description: "Words to match (name, code, SKU, email). Empty lists the first records." } }, required: ["search"], additionalProperties: false };
 const noParams = { type: "object", properties: {}, additionalProperties: false };
@@ -214,9 +212,7 @@ export function toolsFor(user: User): ToolDefinition[] {
   });
 }
 
-/* ------------------------------------------------------------------ */
 /* Execution                                                           */
-/* ------------------------------------------------------------------ */
 
 function validate(schema: SchemaLike, body: unknown) {
   const parsed = schema.safeParse(body);

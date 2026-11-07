@@ -5,9 +5,7 @@
   box-sizing: border-box;
 }
 
-/* =========================================================
-   HEADER
-   ========================================================= */
+/* Header */
 
 .order-list__header {
   width: 100%;
@@ -135,9 +133,7 @@
   opacity: 0.7;
 }
 
-/* =========================================================
-   FILTERS
-   ========================================================= */
+/* Filters */
 
 .order-list__filters {
   width: 100%;
@@ -216,9 +212,7 @@
   box-shadow: 0 0 0 2px rgba(86, 122, 150, 0.12);
 }
 
-/* =========================================================
-   ERROR
-   ========================================================= */
+/* Error */
 
 .order-list__top-error {
   width: 100%;
@@ -265,9 +259,7 @@
   cursor: pointer;
 }
 
-/* =========================================================
-   TABLE PANEL
-   ========================================================= */
+/* Table panel */
 
 .order-list__panel {
   width: 100%;
@@ -283,9 +275,7 @@
   border-radius: 7px;
 }
 
-/* =========================================================
-   TABLE SCROLLER
-   ========================================================= */
+/* Table scroller */
 
 .order-list__scroll {
   width: 100%;
@@ -296,9 +286,7 @@
   scrollbar-width: thin;
 }
 
-/* =========================================================
-   TABLE
-
+/* Table
    IMPORTANT:
    Exact tracks:
    1 = Order #
@@ -307,8 +295,7 @@
    4 = Items
    5 = Total
    6 = Status
-   7 = Action
-   ========================================================= */
+   7 = Action */
 
 .order-list__table {
   width: 100%;
@@ -324,12 +311,9 @@
   font-size: 12px;
 }
 
-/* =========================================================
-   COLUMN WIDTHS
-
+/* Column widths
    These widths are shared by TH + TD.
-   Therefore header and body can NEVER drift apart.
-   ========================================================= */
+   Therefore header and body can NEVER drift apart. */
 
 .order-list__table th:nth-child(1),
 .order-list__table td:nth-child(1) {
@@ -366,9 +350,7 @@
   width: 175px;
 }
 
-/* =========================================================
-   TABLE HEADER
-   ========================================================= */
+/* Table header */
 
 .order-list__table thead {
   background: #f5f7f9;
@@ -418,9 +400,7 @@
   text-align: right;
 }
 
-/* =========================================================
-   TABLE BODY
-   ========================================================= */
+/* Table body */
 
 .order-list__table tbody td {
   height: 58px;
@@ -455,9 +435,7 @@
   background: #fafbfd;
 }
 
-/* =========================================================
-   BODY ALIGNMENT
-   ========================================================= */
+/* Body alignment */
 
 .order-list__table tbody td:nth-child(1),
 .order-list__table tbody td:nth-child(2),
@@ -475,9 +453,7 @@
   text-align: right;
 }
 
-/* =========================================================
-   ORDER NUMBER
-   ========================================================= */
+/* Order number */
 
 .order-list__table tbody td:nth-child(1) a {
   display: inline-block;
@@ -502,9 +478,7 @@
   text-decoration: underline;
 }
 
-/* =========================================================
-   CUSTOMER
-   ========================================================= */
+/* Customer */
 
 .order-list__table tbody td:nth-child(2) {
   overflow: hidden;
@@ -527,9 +501,7 @@
   white-space: nowrap;
 }
 
-/* =========================================================
-   DATE
-   ========================================================= */
+/* Date */
 
 .order-list__table tbody td:nth-child(3) {
   white-space: nowrap;
@@ -537,17 +509,13 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* =========================================================
-   ITEMS
-   ========================================================= */
+/* Items */
 
 .order-list__table tbody td:nth-child(4) {
   font-variant-numeric: tabular-nums;
 }
 
-/* =========================================================
-   TOTAL
-   ========================================================= */
+/* Total */
 
 .order-list__table tbody td:nth-child(5) {
   padding-left: 18px;
@@ -559,9 +527,7 @@
   white-space: nowrap;
 }
 
-/* =========================================================
-   STATUS
-   ========================================================= */
+/* Status */
 
 .order-list__table tbody td:nth-child(6) {
   padding-left: 12px;
@@ -629,12 +595,9 @@
   color: #8a6a1f;
 }
 
-/* =========================================================
-   ACTION COLUMN
-
+/* Action column
    The TD itself remains a table-cell.
-   Only the inner action container is flex.
-   ========================================================= */
+   Only the inner action container is flex. */
 
 .order-list__table tbody td.order-list__actions {
   padding: 0 10px;
@@ -707,9 +670,7 @@
   cursor: wait;
 }
 
-/* =========================================================
-   LOADING / EMPTY
-   ========================================================= */
+/* Loading / empty */
 
 .order-list__message {
   height: 180px !important;
@@ -729,9 +690,7 @@
   vertical-align: middle !important;
 }
 
-/* =========================================================
-   PAGINATION
-   ========================================================= */
+/* Pagination */
 
 .order-list__pagination {
   min-height: 58px;
@@ -791,9 +750,7 @@
   cursor: not-allowed;
 }
 
-/* =========================================================
-   TABLET
-   ========================================================= */
+/* Tablet */
 
 @media (max-width: 1100px) {
   .order-list {
@@ -810,9 +767,7 @@
   }
 }
 
-/* =========================================================
-   MOBILE
-   ========================================================= */
+/* Mobile */
 
 @media (max-width: 640px) {
   .order-list {
