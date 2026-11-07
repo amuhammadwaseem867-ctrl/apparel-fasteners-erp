@@ -20,7 +20,7 @@ import { backendUnavailableReason } from "@/lib/backendUnavailable";
 const UNAVAILABLE_REASON = backendUnavailableReason("Quality control");
 
 /*
- * InspectionList — shared, working inspection list used by
+ * InspectionList, shared, working inspection list used by
  * Incoming, In-Process and Rejections pages. Supports real
  * create / approve / reject / conditional actions and filters.
  */

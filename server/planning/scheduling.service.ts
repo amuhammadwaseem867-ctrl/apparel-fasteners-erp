@@ -40,9 +40,7 @@ function datesBetween(from: string, to: string) {
   return out;
 }
 
-/* ------------------------------------------------------------------ */
 /* Calendar                                                            */
-/* ------------------------------------------------------------------ */
 
 export async function workingDays(from: string, to: string) {
   const { days: weeklyOff } = await getSetting("planning.weeklyOff");
@@ -111,9 +109,7 @@ export async function clearCalendarDay(date: string, actorId: string) {
   return { date };
 }
 
-/* ------------------------------------------------------------------ */
 /* Work centres and capacity                                           */
-/* ------------------------------------------------------------------ */
 
 export async function listWorkCenters() {
   const centers = await db.orm.public.WorkCenter.all();
@@ -176,9 +172,7 @@ export async function getCapacityLoad(horizonDays = 30, asOf = today()) {
   };
 }
 
-/* ------------------------------------------------------------------ */
 /* Production plans                                                    */
-/* ------------------------------------------------------------------ */
 
 type PlanLineInput = { productId: string; quantity: number; dueDate: string; priority: "LOW" | "NORMAL" | "HIGH" | "URGENT"; notes?: string };
 

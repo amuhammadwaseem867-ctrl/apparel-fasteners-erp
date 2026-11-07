@@ -8,9 +8,7 @@
   overflow: hidden;
 }
 
-/* --------------------------------------------------
-   HEADER
--------------------------------------------------- */
+/* Header */
 
 .inventory-activity__header {
   display: flex;
@@ -91,17 +89,13 @@
   outline-offset: 2px;
 }
 
-/* --------------------------------------------------
-   BODY
--------------------------------------------------- */
+/* Body */
 
 .inventory-activity__body {
   min-height: 150px;
 }
 
-/* --------------------------------------------------
-   ACTIVITY LIST
--------------------------------------------------- */
+/* Activity list */
 
 .inventory-activity__list {
   display: flex;
@@ -129,9 +123,7 @@
   background: var(--af-surface-soft);
 }
 
-/* --------------------------------------------------
-   ICON
--------------------------------------------------- */
+/* Icon */
 
 .inventory-activity__icon {
   width: 36px;
@@ -176,9 +168,7 @@
   color: var(--af-danger);
 }
 
-/* --------------------------------------------------
-   CONTENT
--------------------------------------------------- */
+/* Content */
 
 .inventory-activity__content {
   min-width: 0;
@@ -257,9 +247,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* --------------------------------------------------
-   EMPTY
--------------------------------------------------- */
+/* Empty */
 
 .inventory-activity__empty {
   min-height: 150px;
@@ -310,9 +298,7 @@
   line-height: 1.5;
 }
 
-/* --------------------------------------------------
-   LOADING
--------------------------------------------------- */
+/* Loading */
 
 .inventory-activity__loading {
   display: flex;
@@ -351,9 +337,7 @@
   }
 }
 
-/* --------------------------------------------------
-   RESPONSIVE
--------------------------------------------------- */
+/* Responsive */
 
 @media (max-width: 640px) {
   .inventory-activity__header {

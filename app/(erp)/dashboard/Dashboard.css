@@ -27,9 +27,7 @@
   color: var(--dash-text);
 }
 
-/* --------------------------------------------------
-   ENTRANCE
--------------------------------------------------- */
+/* Entrance */
 
 .dash-rise {
   animation: dash-rise 0.8s var(--dash-ease) both;
@@ -50,9 +48,7 @@
   }
 }
 
-/* --------------------------------------------------
-   HERO
--------------------------------------------------- */
+/* Hero */
 
 .dashboard__hero {
   position: relative;
@@ -260,9 +256,7 @@
   animation: dash-rise 0.5s var(--dash-ease) both;
 }
 
-/* --------------------------------------------------
-   STAT CARDS
--------------------------------------------------- */
+/* Stat cards */
 
 .dashboard__stats {
   display: grid;
@@ -400,9 +394,7 @@
   to { background-position: -200% 0; }
 }
 
-/* --------------------------------------------------
-   PANELS
--------------------------------------------------- */
+/* Panels */
 
 .dashboard__grid--bottom {
   display: grid;
@@ -551,9 +543,7 @@
 .dashboard__status--draft { background: #fdf3e2; color: #a76a0f; }
 .dashboard__status--cancelled { background: #fbeaea; color: var(--dash-critical); }
 
-/* --------------------------------------------------
-   ORDER STATUS BARS
--------------------------------------------------- */
+/* Order status bars */
 
 .dashboard__bars {
   display: grid;
@@ -622,9 +612,7 @@
   to { transform: scaleX(1); }
 }
 
-/* --------------------------------------------------
-   ACTIVITY TIMELINE
--------------------------------------------------- */
+/* Activity timeline */
 
 .dashboard__activity {
   position: relative;
@@ -708,9 +696,7 @@
   white-space: nowrap;
 }
 
-/* --------------------------------------------------
-   RESPONSIVE
--------------------------------------------------- */
+/* Responsive */
 
 @media (max-width: 1360px) {
   .dashboard__grid--bottom {
@@ -761,9 +747,7 @@
   }
 }
 
-/* --------------------------------------------------
-   REDUCED MOTION
--------------------------------------------------- */
+/* Reduced motion */
 
 @media (prefers-reduced-motion: reduce) {
   .dashboard *,

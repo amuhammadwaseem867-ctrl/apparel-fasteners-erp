@@ -16,7 +16,7 @@ import "./NotificationCenter.css";
 
 /*
  * Notifications are provided by the caller (backend once
- * connected). Default is an empty set — no mock data.
+ * connected). Default is an empty set, no mock data.
  *
  * Notification shape:
  * { id, type, title, description, time, unread, icon, tone, href }

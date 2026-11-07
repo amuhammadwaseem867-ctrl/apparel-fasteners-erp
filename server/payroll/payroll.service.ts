@@ -34,9 +34,7 @@ async function rows<T>(tx: Tx, plan: unknown) {
   return (await tx.query(plan as never)) as unknown as T[];
 }
 
-/* ------------------------------------------------------------------ */
 /* Advances                                                            */
-/* ------------------------------------------------------------------ */
 
 export async function createAdvance(input: AdvanceInput, actorId: string) {
   const employee = await db.orm.public.Employee.where({ id: input.employeeId }).first();
@@ -123,9 +121,7 @@ export async function listAdvances(filters: { status?: string; employeeId?: stri
   });
 }
 
-/* ------------------------------------------------------------------ */
 /* Calculation                                                         */
-/* ------------------------------------------------------------------ */
 
 async function calculatePeriod(tx: Tx, period: string) {
   const { start, end } = periodBounds(period);
@@ -226,9 +222,7 @@ async function manualAdjustments(tx: Tx, runId: string) {
     .map((line) => [line.employeeId, { otherEarning: dec(line.otherEarning), otherDeduction: dec(line.otherDeduction), adjustmentNote: line.adjustmentNote }]));
 }
 
-/* ------------------------------------------------------------------ */
 /* Runs                                                                */
-/* ------------------------------------------------------------------ */
 
 export async function createPayrollRun(period: string, notes: string, actorId: string) {
   const { days } = periodBounds(period);

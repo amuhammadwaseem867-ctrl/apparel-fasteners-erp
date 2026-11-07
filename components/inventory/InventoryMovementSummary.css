@@ -7,9 +7,7 @@
   border-radius: 10px;
 }
 
-/* --------------------------------------------------
-   HEADER
--------------------------------------------------- */
+/* Header */
 
 .inventory-movement-summary__header {
   display: flex;
@@ -95,9 +93,7 @@
   opacity: 0.5;
 }
 
-/* --------------------------------------------------
-   TABLE
--------------------------------------------------- */
+/* Table */
 
 .inventory-movement-summary__content {
   width: 100%;
@@ -140,9 +136,7 @@
   letter-spacing: 0.01em;
 }
 
-/* --------------------------------------------------
-   ROW
--------------------------------------------------- */
+/* ROW */
 
 .inventory-movement-row {
   min-height: 64px;
@@ -161,9 +155,7 @@
   background: var(--af-surface-soft);
 }
 
-/* --------------------------------------------------
-   TYPE
--------------------------------------------------- */
+/* Type */
 
 .inventory-movement-row__type {
   display: flex;
@@ -219,9 +211,7 @@
   text-overflow: ellipsis;
 }
 
-/* --------------------------------------------------
-   CELLS
--------------------------------------------------- */
+/* Cells */
 
 .inventory-movement-row__reference,
 .inventory-movement-row__location,
@@ -248,9 +238,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* --------------------------------------------------
-   EMPTY STATE
--------------------------------------------------- */
+/* Empty state */
 
 .inventory-movement-summary__empty {
   display: flex;
@@ -307,9 +295,7 @@
   line-height: 1.55;
 }
 
-/* --------------------------------------------------
-   LOADING
--------------------------------------------------- */
+/* Loading */
 
 .inventory-movement-summary__skeleton {
   min-width: 720px;
@@ -382,9 +368,7 @@
   }
 }
 
-/* --------------------------------------------------
-   MOBILE
--------------------------------------------------- */
+/* Mobile */
 
 @media (max-width: 640px) {
   .inventory-movement-summary__header {

@@ -10,9 +10,7 @@
   border-radius: 10px;
 }
 
-/* =========================================
-   HEADER
-========================================= */
+/* Header */
 
 .sales-pipeline__header {
   display: flex;
@@ -48,9 +46,7 @@
   font-weight: 500;
 }
 
-/* =========================================
-   BODY
-========================================= */
+/* Body */
 
 .sales-pipeline__body {
   width: 100%;
@@ -115,9 +111,7 @@
   border-color: rgba(201, 130, 22, 0.35);
 }
 
-/* =========================================
-   STAGE TOP
-========================================= */
+/* Stage top */
 
 .sales-pipeline__stage-top {
   display: flex;
@@ -171,9 +165,7 @@
   background: var(--af-bg);
 }
 
-/* =========================================
-   STAGE CONTENT
-========================================= */
+/* Stage content */
 
 .sales-pipeline__stage-content {
   min-width: 0;
@@ -221,9 +213,7 @@
   text-overflow: ellipsis;
 }
 
-/* =========================================
-   CONNECTOR
-========================================= */
+/* Connector */
 
 .sales-pipeline__connector {
   width: 42px;
@@ -236,9 +226,7 @@
   color: var(--af-border-dark);
 }
 
-/* =========================================
-   EMPTY STATE
-========================================= */
+/* Empty state */
 
 .sales-pipeline__empty {
   min-height: 142px;
@@ -294,9 +282,7 @@
   line-height: 17px;
 }
 
-/* =========================================
-   TABLET
-========================================= */
+/* Tablet */
 
 @media (max-width: 1000px) {
   .sales-pipeline__body {
@@ -313,9 +299,7 @@
   }
 }
 
-/* =========================================
-   MOBILE
-========================================= */
+/* Mobile */
 
 @media (max-width: 640px) {
   .sales-pipeline {

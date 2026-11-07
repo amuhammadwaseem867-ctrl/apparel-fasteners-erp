@@ -36,9 +36,7 @@ async function setStatus(tx: Tx, table: "erp_ncrs" | "erp_capas", id: string, fr
   return (await rows(tx, plan.returnsRow({ id: "pg/text@1" }).build())).length > 0;
 }
 
-/* ------------------------------------------------------------------ */
 /* NCR                                                                 */
-/* ------------------------------------------------------------------ */
 
 export async function createNcr(input: NcrInput, actorId: string) {
   const replay = await db.orm.public.Ncr.where({ idempotencyKey: input.idempotencyKey }).first();
@@ -152,9 +150,7 @@ export async function listNcrs(filters: NcrQuery) {
   return { ncrs: result.slice(0, filters.pageSize).map((row) => ({ ...row, sku: row.sku || null, openActions: Number(row.openActions) })), page: filters.page, pageSize: filters.pageSize, hasMore: result.length > filters.pageSize };
 }
 
-/* ------------------------------------------------------------------ */
 /* CAPA                                                                */
-/* ------------------------------------------------------------------ */
 
 function shapeCapa<T extends { status: string; dueDate: string }>(capa: T) {
   return { ...capa, overdue: ["OPEN", "IN_PROGRESS"].includes(capa.status) && capa.dueDate < today() };

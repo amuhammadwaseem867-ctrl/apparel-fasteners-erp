@@ -17,9 +17,7 @@
   gap: 8px;
 }
 
-/* --------------------------------------------------
-   SUMMARY
--------------------------------------------------- */
+/* Summary */
 
 .inventory-adjustments__summary {
   display: grid;
@@ -102,9 +100,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* --------------------------------------------------
-   FILTERS
--------------------------------------------------- */
+/* Filters */
 
 .inventory-adjustments__filters {
   display: flex;
@@ -214,9 +210,7 @@
   color: var(--af-danger);
 }
 
-/* --------------------------------------------------
-   CARD
--------------------------------------------------- */
+/* Card */
 
 .inventory-adjustments__card {
   overflow: hidden;
@@ -271,9 +265,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* --------------------------------------------------
-   TABLE
--------------------------------------------------- */
+/* Table */
 
 .inventory-adjustments__table-wrap {
   width: 100%;
@@ -342,9 +334,7 @@
   color: var(--af-text-muted);
 }
 
-/* --------------------------------------------------
-   DIRECTION
--------------------------------------------------- */
+/* Direction */
 
 .inventory-adjustments__direction {
   display: inline-flex;
@@ -374,9 +364,7 @@
   border-color: rgba(196, 69, 69, 0.18);
 }
 
-/* --------------------------------------------------
-   STATUS
--------------------------------------------------- */
+/* Status */
 
 .inventory-adjustments__status {
   display: inline-flex;
@@ -424,9 +412,7 @@
   border-color: rgba(196, 69, 69, 0.18);
 }
 
-/* --------------------------------------------------
-   EMPTY / LOADING
--------------------------------------------------- */
+/* Empty / loading */
 
 .inventory-adjustments__empty {
   min-height: 310px;
@@ -491,9 +477,7 @@
   font-size: 12px;
 }
 
-/* --------------------------------------------------
-   RULES
--------------------------------------------------- */
+/* Rules */
 
 .inventory-adjustments__rules {
   overflow: hidden;
@@ -558,9 +542,7 @@
   line-height: 1.55;
 }
 
-/* --------------------------------------------------
-   RESPONSIVE
--------------------------------------------------- */
+/* Responsive */
 
 @media (max-width: 1200px) {
   .inventory-adjustments__summary {

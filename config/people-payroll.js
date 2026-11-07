@@ -1,5 +1,5 @@
 /**
- * Apparel Fastener ERP — People & Payroll domain configuration.
+ * Apparel Fastener ERP, People & Payroll domain configuration.
  *
  * Single source of truth for statuses, options and field labels used across
  * the People & Payroll module. Extend values only through backend support;

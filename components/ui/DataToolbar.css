@@ -75,9 +75,7 @@
   display: inline;
 }
 
-/* -------------------------------------------------------
-   Bulk Selection
-------------------------------------------------------- */
+/* Bulk Selection */
 
 .erp-data-toolbar--selection {
   border-color: var(--af-navy);
@@ -155,9 +153,7 @@
   color: var(--af-text);
 }
 
-/* -------------------------------------------------------
-   Responsive
-------------------------------------------------------- */
+/* Responsive */
 
 @media (max-width: 1100px) {
   .erp-data-toolbar {

@@ -19,9 +19,7 @@
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03);
 }
 
-/* =========================================
-   LEFT
-========================================= */
+/* Left */
 
 .erp-topbar__left {
   min-width: 0;
@@ -84,9 +82,7 @@
   font-weight: 700;
 }
 
-/* =========================================
-   RIGHT
-========================================= */
+/* Right */
 
 .erp-topbar__right {
   display: flex;
@@ -97,9 +93,7 @@
   margin-left: 20px;
 }
 
-/* =========================================
-   SEARCH
-========================================= */
+/* Search */
 
 .erp-topbar__search-trigger {
   width: 250px;
@@ -160,9 +154,7 @@
   font-weight: 600;
 }
 
-/* =========================================
-   CREATE
-========================================= */
+/* Create */
 
 .erp-topbar__create {
   height: 38px;
@@ -199,9 +191,7 @@
   transform: translateY(1px);
 }
 
-/* =========================================
-   ICON BUTTON
-========================================= */
+/* Icon button */
 
 .erp-topbar__icon-button {
   position: relative;
@@ -257,9 +247,7 @@
   font-weight: 800;
 }
 
-/* =========================================
-   PROFILE
-========================================= */
+/* Profile */
 
 .erp-topbar__profile {
   height: 42px;
@@ -331,17 +319,13 @@
   font-weight: 500;
 }
 
-/* =========================================
-   DROPDOWN WRAPPER
-========================================= */
+/* Dropdown wrapper */
 
 .erp-topbar__action-wrap {
   position: relative;
 }
 
-/* =========================================
-   DROPDOWNS
-========================================= */
+/* Dropdowns */
 
 .erp-topbar__dropdown {
   position: absolute;
@@ -517,9 +501,7 @@
   cursor: pointer;
 }
 
-/* =========================================
-   PROFILE DROPDOWN
-========================================= */
+/* Profile dropdown */
 
 .erp-topbar__profile-header {
   display: flex;
@@ -617,9 +599,7 @@
   cursor: pointer;
 }
 
-/* =========================================
-   CREATE MENU
-========================================= */
+/* Create menu */
 
 .erp-topbar__create-menu {
   position: fixed;
@@ -751,9 +731,7 @@
   line-height: 16px;
 }
 
-/* =========================================
-   COMMAND PALETTE
-========================================= */
+/* Command palette */
 
 .erp-command {
   position: fixed;
@@ -968,9 +946,7 @@
   font-weight: 700;
 }
 
-/* =========================================
-   TABLET
-========================================= */
+/* Tablet */
 
 @media (max-width: 1100px) {
   .erp-topbar {
@@ -986,9 +962,7 @@
   }
 }
 
-/* =========================================
-   MOBILE
-========================================= */
+/* Mobile */
 
 @media (max-width: 900px) {
   .erp-topbar {
@@ -1136,7 +1110,7 @@
 }
 
 
-/* ---------- D-042: search results, waiting work, sign out ---------- */
+/* D-042: search results, waiting work, sign out */
 
 .erp-command__item--active {
   background: var(--af-surface-soft);

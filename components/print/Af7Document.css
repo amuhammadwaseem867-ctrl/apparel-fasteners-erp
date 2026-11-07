@@ -339,7 +339,7 @@
   font-size: 8pt;
 }
 
-/* ---------- Alignment and page breaks (all AF7 documents) ---------- */
+/* Alignment and page breaks (all AF7 documents) */
 
 /* Header: logo, company, title in fixed columns so nothing is squeezed. */
 .af7__head {

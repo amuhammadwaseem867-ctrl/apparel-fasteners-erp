@@ -3,9 +3,7 @@
   min-width: 0;
 }
 
-/* --------------------------------
-   Toolbar
--------------------------------- */
+/* Toolbar */
 
 .production-completion-toolbar {
   display: flex;
@@ -90,9 +88,7 @@
   cursor: pointer;
 }
 
-/* --------------------------------
-   Summary
--------------------------------- */
+/* Summary */
 
 .production-completion-summary {
   display: grid;
@@ -125,9 +121,7 @@
   font-weight: 700;
 }
 
-/* --------------------------------
-   Content
--------------------------------- */
+/* Content */
 
 .production-completion-content {
   min-height: 320px;
@@ -138,9 +132,7 @@
   overflow: hidden;
 }
 
-/* --------------------------------
-   Table
--------------------------------- */
+/* Table */
 
 .production-completion-table-wrap {
   width: 100%;
@@ -189,9 +181,7 @@
   font-weight: 700;
 }
 
-/* --------------------------------
-   Quantities
--------------------------------- */
+/* Quantities */
 
 .completion-good {
   color: var(--af-success) !important;
@@ -219,9 +209,7 @@
   font-weight: 600;
 }
 
-/* --------------------------------
-   QC
--------------------------------- */
+/* QC */
 
 .completion-qc {
   display: inline-flex;
@@ -253,9 +241,7 @@
   background: #eef1f3;
 }
 
-/* --------------------------------
-   Status
--------------------------------- */
+/* Status */
 
 .production-completion-status {
   display: inline-flex;
@@ -292,9 +278,7 @@
   background: #fdf0f0;
 }
 
-/* --------------------------------
-   Actions
--------------------------------- */
+/* Actions */
 
 .completion-action {
   display: inline-flex;
@@ -345,9 +329,7 @@
   color: var(--af-success);
 }
 
-/* --------------------------------
-   Responsive
--------------------------------- */
+/* Responsive */
 
 @media (max-width: 1100px) {
   .production-completion-summary {

@@ -3,9 +3,7 @@
   min-width: 0;
 }
 
-/* --------------------------------
-   Toolbar
--------------------------------- */
+/* Toolbar */
 
 .work-orders-toolbar {
   display: flex;
@@ -100,9 +98,7 @@
   border-color: var(--af-navy);
 }
 
-/* --------------------------------
-   Summary
--------------------------------- */
+/* Summary */
 
 .work-orders-summary {
   display: flex;
@@ -156,9 +152,7 @@
   text-decoration: underline;
 }
 
-/* --------------------------------
-   Content
--------------------------------- */
+/* Content */
 
 .work-orders-content {
   margin-top: 14px;
@@ -216,9 +210,7 @@
   font-weight: 700;
 }
 
-/* --------------------------------
-   Status
--------------------------------- */
+/* Status */
 
 .work-orders-status,
 .work-orders-priority {
@@ -295,9 +287,7 @@
   background: #eef1f3;
 }
 
-/* --------------------------------
-   Actions
--------------------------------- */
+/* Actions */
 
 .work-orders-action {
   height: 28px;
@@ -320,9 +310,7 @@
   border-color: var(--af-border-dark);
 }
 
-/* --------------------------------
-   Empty State
--------------------------------- */
+/* Empty State */
 
 .work-orders-content
   > .erp-empty-state {
@@ -330,9 +318,7 @@
   padding: 48px 24px;
 }
 
-/* --------------------------------
-   Responsive
--------------------------------- */
+/* Responsive */
 
 @media (max-width: 1100px) {
   .work-orders-toolbar {

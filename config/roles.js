@@ -1,5 +1,5 @@
 /**
- * Apparel Fastener ERP — Roles & Permissions configuration.
+ * Apparel Fastener ERP, Roles & Permissions configuration.
  * Backend-ready: consumed by lib/permissions and admin UI.
  */
 
