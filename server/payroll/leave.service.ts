@@ -38,9 +38,7 @@ export function datesBetween(from: string, to: string) {
   return out;
 }
 
-/* ------------------------------------------------------------------ */
 /* Shifts                                                              */
-/* ------------------------------------------------------------------ */
 
 /* Paid minutes of a shift; overnight shifts wrap past midnight. */
 export function shiftMinutes(start: string, end: string, breakMinutes: number) {
@@ -99,9 +97,7 @@ export async function listRoster() {
   `.returnsRow({ id: "pg/text@1", employeeCode: "pg/text@1", name: "pg/text@1", department: "pg/text@1", shiftCode: "pg/text@1", shiftId: "pg/text@1" }).build());
 }
 
-/* ------------------------------------------------------------------ */
 /* Leave types                                                         */
-/* ------------------------------------------------------------------ */
 
 export async function listLeaveTypes() {
   return (await db.orm.public.LeaveType.orderBy((row) => row.code.asc()).all()).map((row) => ({ ...row, annualDays: dec(row.annualDays) }));
@@ -125,9 +121,7 @@ export async function updateLeaveType(id: string, input: { name: string; annualD
   return db.orm.public.LeaveType.where({ id }).first();
 }
 
-/* ------------------------------------------------------------------ */
 /* Leave requests                                                      */
-/* ------------------------------------------------------------------ */
 
 async function nonWorkingDates(tx: Tx | ReturnType<typeof db.runtime>, from: string, to: string) {
   const days = await rows<{ date: string }>(tx, db.raw.sql`select date from erp_calendar_days where date between ${from} and ${to} and "dayType" in ('HOLIDAY', 'SHUTDOWN')`.returnsRow({ date: "pg/text@1" }).build());

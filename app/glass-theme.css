@@ -31,7 +31,7 @@ body .app-shell {
   background: transparent;
 }
 
-/* ---- The glass recipe ---------------------------------------------- */
+/* The glass recipe */
 
 .app-shell .erp-topbar,
 .app-shell .pn,
@@ -92,7 +92,7 @@ body .app-shell {
   box-shadow: 0 18px 44px -26px rgba(7, 29, 46, 0.7), 0 1px 0 rgba(255, 255, 255, 0.18) inset;
 }
 
-/* ---- Tables --------------------------------------------------------- */
+/* Tables */
 
 .app-shell .inv-table-wrap,
 .app-shell .app-shell__content table {
@@ -116,7 +116,7 @@ body .app-shell {
   background: rgba(255, 255, 255, 0.45);
 }
 
-/* ---- Fields and buttons --------------------------------------------- */
+/* Fields and buttons */
 
 .app-shell .app-shell__content input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 .app-shell .app-shell__content select,
@@ -132,7 +132,7 @@ body .app-shell {
   background-color: rgba(255, 255, 255, 0.92);
 }
 
-/* ---- Dialogs (rendered at the page root, so not inside .app-shell) --- */
+/* Dialogs (rendered at the page root, so not inside .app-shell) */
 
 .erp-modal__overlay {
   background: rgba(15, 30, 48, 0.32);
@@ -148,7 +148,7 @@ body .app-shell {
   backdrop-filter: blur(24px) saturate(170%);
 }
 
-/* ---- Fallbacks ------------------------------------------------------- */
+/* Fallbacks */
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   body .app-shell {

@@ -7,9 +7,7 @@
   border-radius: 10px;
 }
 
-/* --------------------------------------------------
-   HEADER
--------------------------------------------------- */
+/* Header */
 
 .inventory-warehouse-status__header {
   display: flex;
@@ -95,18 +93,14 @@
   opacity: 0.5;
 }
 
-/* --------------------------------------------------
-   CONTENT
--------------------------------------------------- */
+/* Content */
 
 .inventory-warehouse-status__content {
   width: 100%;
   overflow-x: auto;
 }
 
-/* --------------------------------------------------
-   LIST
--------------------------------------------------- */
+/* List */
 
 .inventory-warehouse-status__list {
   min-width: 760px;
@@ -139,9 +133,7 @@
   background: var(--af-surface-soft);
 }
 
-/* --------------------------------------------------
-   IDENTITY
--------------------------------------------------- */
+/* Identity */
 
 .inventory-warehouse-row__identity {
   display: flex;
@@ -202,9 +194,7 @@
   text-overflow: ellipsis;
 }
 
-/* --------------------------------------------------
-   METRICS
--------------------------------------------------- */
+/* Metrics */
 
 .inventory-warehouse-row__metrics {
   display: grid;
@@ -239,9 +229,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* --------------------------------------------------
-   CAPACITY
--------------------------------------------------- */
+/* Capacity */
 
 .inventory-warehouse-row__capacity-head {
   display: flex;
@@ -301,9 +289,7 @@
   background: var(--af-text-muted);
 }
 
-/* --------------------------------------------------
-   STATUS
--------------------------------------------------- */
+/* Status */
 
 .inventory-warehouse-row__status {
   display: inline-flex;
@@ -350,9 +336,7 @@
   background: currentColor;
 }
 
-/* --------------------------------------------------
-   EMPTY STATE
--------------------------------------------------- */
+/* Empty state */
 
 .inventory-warehouse-status__empty {
   display: flex;
@@ -405,9 +389,7 @@
   line-height: 1.55;
 }
 
-/* --------------------------------------------------
-   LOADING
--------------------------------------------------- */
+/* Loading */
 
 .inventory-warehouse-status__skeleton {
   min-width: 760px;
@@ -501,9 +483,7 @@
   }
 }
 
-/* --------------------------------------------------
-   MOBILE
--------------------------------------------------- */
+/* Mobile */
 
 @media (max-width: 640px) {
   .inventory-warehouse-status__header {

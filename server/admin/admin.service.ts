@@ -86,9 +86,7 @@ async function resolveRoleIds(tx: Tx, codes: string[]) {
   return roles.map((role) => role.id);
 }
 
-/* ------------------------------------------------------------------ */
 /* Users                                                               */
-/* ------------------------------------------------------------------ */
 
 export async function listUsers(filters: UserQuery) {
   const pattern = `%${filters.search}%`;
@@ -220,9 +218,7 @@ export async function resetUserPassword(id: string, password: string, actorId: s
   return getUserDetail(id);
 }
 
-/* ------------------------------------------------------------------ */
 /* Roles and permissions                                               */
-/* ------------------------------------------------------------------ */
 
 export async function listPermissions() {
   const permissions = await db.orm.public.Permission.orderBy((permission) => permission.code.asc()).all();
@@ -321,9 +317,7 @@ export async function setRoleStatus(id: string, status: "ACTIVE" | "DISABLED", a
   return (await listRoles()).find((role) => role.id === id)!;
 }
 
-/* ------------------------------------------------------------------ */
 /* Audit log                                                           */
-/* ------------------------------------------------------------------ */
 
 export async function listAuditLogs(filters: AuditQuery) {
   let query = db.orm.public.AuditLog;

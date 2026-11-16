@@ -136,9 +136,7 @@
   transform: translateY(0);
 }
 
-/* =========================================
-   ACTION VARIANTS
-========================================= */
+/* Action variants */
 
 .erp-page-header__action--primary {
   color: #ffffff;
@@ -194,9 +192,7 @@
   background: #fff6f6;
 }
 
-/* =========================================
-   ACTION SIZES
-========================================= */
+/* Action sizes */
 
 .erp-page-header__action--small {
   min-height: 34px;
@@ -218,9 +214,7 @@
   font-size: 13px;
 }
 
-/* =========================================
-   BACK LINK
-========================================= */
+/* Back link */
 
 .erp-page-header__back {
   display: inline-flex;
@@ -244,9 +238,7 @@
   color: var(--af-navy);
 }
 
-/* =========================================
-   BOTTOM AREA
-========================================= */
+/* Bottom area */
 
 .erp-page-header__bottom {
   width: 100%;
@@ -263,9 +255,7 @@
   border-bottom: 1px solid var(--af-border);
 }
 
-/* =========================================
-   TABS
-========================================= */
+/* Tabs */
 
 .erp-page-header__tabs {
   min-width: 0;
@@ -372,9 +362,7 @@
   border-color: #d6dde5;
 }
 
-/* =========================================
-   STATUS
-========================================= */
+/* Status */
 
 .erp-page-header__status {
   min-height: 26px;
@@ -460,9 +448,7 @@
   background: var(--af-info);
 }
 
-/* =========================================
-   DISABLED
-========================================= */
+/* Disabled */
 
 .erp-page-header__action:disabled {
   opacity: 0.5;
@@ -472,9 +458,7 @@
   transform: none;
 }
 
-/* =========================================
-   TABLET
-========================================= */
+/* Tablet */
 
 @media (max-width: 900px) {
   .erp-page-header__top {
@@ -490,9 +474,7 @@
   }
 }
 
-/* =========================================
-   MOBILE
-========================================= */
+/* Mobile */
 
 @media (max-width: 680px) {
   .erp-page-header {
@@ -533,9 +515,7 @@
   }
 }
 
-/* =========================================
-   SMALL MOBILE
-========================================= */
+/* Small mobile */
 
 @media (max-width: 420px) {
   .erp-page-header__actions {

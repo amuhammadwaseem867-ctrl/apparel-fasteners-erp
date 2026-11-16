@@ -7,9 +7,7 @@
   border-radius: 10px;
 }
 
-/* --------------------------------------------------
-   HEADER
--------------------------------------------------- */
+/* Header */
 
 .inventory-stock-summary__header {
   display: flex;
@@ -96,17 +94,13 @@
   opacity: 0.55;
 }
 
-/* --------------------------------------------------
-   BODY
--------------------------------------------------- */
+/* Body */
 
 .inventory-stock-summary__body {
   padding: 18px;
 }
 
-/* --------------------------------------------------
-   CATEGORY GRID
--------------------------------------------------- */
+/* Category grid */
 
 .inventory-stock-summary__categories {
   display: grid;
@@ -135,9 +129,7 @@
   transform: translateY(-1px);
 }
 
-/* --------------------------------------------------
-   CATEGORY TOP
--------------------------------------------------- */
+/* Category top */
 
 .inventory-stock-category__top {
   display: flex;
@@ -185,9 +177,7 @@
   line-height: 1.5;
 }
 
-/* --------------------------------------------------
-   METRICS
--------------------------------------------------- */
+/* Metrics */
 
 .inventory-stock-category__metrics {
   display: grid;
@@ -230,9 +220,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* --------------------------------------------------
-   EMPTY STATE
--------------------------------------------------- */
+/* Empty state */
 
 .inventory-stock-summary__empty {
   display: flex;
@@ -284,9 +272,7 @@
   line-height: 1.5;
 }
 
-/* --------------------------------------------------
-   LOADING SKELETON
--------------------------------------------------- */
+/* Loading skeleton */
 
 .inventory-stock-summary__skeleton-grid {
   display: grid;
@@ -368,9 +354,7 @@
   }
 }
 
-/* --------------------------------------------------
-   TABLET
--------------------------------------------------- */
+/* Tablet */
 
 @media (max-width: 1000px) {
   .inventory-stock-summary__categories,
@@ -379,9 +363,7 @@
   }
 }
 
-/* --------------------------------------------------
-   MOBILE
--------------------------------------------------- */
+/* Mobile */
 
 @media (max-width: 640px) {
   .inventory-stock-summary__header {

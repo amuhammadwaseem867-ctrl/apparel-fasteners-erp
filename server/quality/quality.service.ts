@@ -52,9 +52,7 @@ async function qcStageAvailable(productionOrderId: string) {
   return stageQuantities(totals, dec(order?.quantity), QC_SEQUENCE).available;
 }
 
-/* ------------------------------------------------------------------ */
 /* Record                                                              */
-/* ------------------------------------------------------------------ */
 
 export async function createInspection(input: InspectionInput, actorId: string) {
   const replay = await db.orm.public.QualityInspection.where({ idempotencyKey: input.idempotencyKey }).first();
@@ -153,9 +151,7 @@ export async function createInspection(input: InspectionInput, actorId: string) 
   }
 }
 
-/* ------------------------------------------------------------------ */
 /* Decide                                                              */
-/* ------------------------------------------------------------------ */
 
 export async function decideInspection(id: string, action: "approve" | "cancel", note: string, actorId: string) {
   if (!UUID.test(id)) notFound();
@@ -232,9 +228,7 @@ export async function decideInspection(id: string, action: "approve" | "cancel",
   return getInspection(id);
 }
 
-/* ------------------------------------------------------------------ */
 /* Read                                                                */
-/* ------------------------------------------------------------------ */
 
 async function describe(rows: Array<{ productId: string; productionOrderId: string | null; locationId: string | null; createdBy: string; decidedBy: string | null }>) {
   const ids = (pick: (row: (typeof rows)[number]) => string | null) => [...new Set(rows.map(pick).filter(Boolean) as string[])];

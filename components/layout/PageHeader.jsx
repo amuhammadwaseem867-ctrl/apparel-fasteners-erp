@@ -87,9 +87,7 @@ export default function PageHeader({
   );
 }
 
-/* =========================================
-   REUSABLE PAGE ACTION
-========================================= */
+/* Reusable page action */
 
 export function PageHeaderAction({
   children,
@@ -141,9 +139,7 @@ export function PageHeaderAction({
   );
 }
 
-/* =========================================
-   PAGE HEADER ACTION GROUP
-========================================= */
+/* Page header action group */
 
 export function PageHeaderActions({
   children,
@@ -158,9 +154,7 @@ export function PageHeaderActions({
   );
 }
 
-/* =========================================
-   PAGE HEADER TABS
-========================================= */
+/* Page header tabs */
 
 export function PageHeaderTabs({
   items = [],
@@ -207,9 +201,7 @@ export function PageHeaderTabs({
   );
 }
 
-/* =========================================
-   STATUS
-========================================= */
+/* Status */
 
 export function PageHeaderStatus({
   children,

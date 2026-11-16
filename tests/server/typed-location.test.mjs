@@ -1,6 +1,6 @@
 /*
  * Pure tests for the location helpers behind typed location entry (D-046 /
- * D-050) — no database. The database-backed cases (finding or creating a
+ * D-050), no database. The database-backed cases (finding or creating a
  * location in the MAIN warehouse) run under npm run test:db only.
  */
 

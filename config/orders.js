@@ -1,5 +1,5 @@
 /**
- * Apparel Fastener ERP — Order domain configuration.
+ * Apparel Fastener ERP, Order domain configuration.
  *
  * Exact order statuses (do not extend without backend support).
  */

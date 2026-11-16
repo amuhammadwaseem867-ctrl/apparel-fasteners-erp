@@ -7,9 +7,7 @@
   border-radius: 10px;
 }
 
-/* --------------------------------------------------
-   HEADER
--------------------------------------------------- */
+/* Header */
 
 .inventory-workflow__header {
   padding: 20px 22px;
@@ -52,9 +50,7 @@
   line-height: 1.55;
 }
 
-/* --------------------------------------------------
-   BODY
--------------------------------------------------- */
+/* Body */
 
 .inventory-workflow__body {
   padding: 24px 22px;
@@ -68,9 +64,7 @@
   min-width: 900px;
 }
 
-/* --------------------------------------------------
-   STEP WRAPPER
--------------------------------------------------- */
+/* Step wrapper */
 
 .inventory-workflow__step-wrapper {
   position: relative;
@@ -83,9 +77,7 @@
   padding-right: 28px;
 }
 
-/* --------------------------------------------------
-   STEP
--------------------------------------------------- */
+/* Step */
 
 .inventory-workflow__step {
   position: relative;
@@ -126,9 +118,7 @@
   border-radius: 7px;
 }
 
-/* --------------------------------------------------
-   ICON
--------------------------------------------------- */
+/* Icon */
 
 .inventory-workflow__step-icon {
   width: 38px;
@@ -167,9 +157,7 @@
   color: #ffffff;
 }
 
-/* --------------------------------------------------
-   NUMBER
--------------------------------------------------- */
+/* Number */
 
 .inventory-workflow__step-number {
   position: absolute;
@@ -214,9 +202,7 @@
   color: var(--af-success);
 }
 
-/* --------------------------------------------------
-   CONTENT
--------------------------------------------------- */
+/* Content */
 
 .inventory-workflow__step-content {
   display: flex;
@@ -246,9 +232,7 @@
   line-height: 1.45;
 }
 
-/* --------------------------------------------------
-   CONNECTOR
--------------------------------------------------- */
+/* Connector */
 
 .inventory-workflow__connector {
   position: absolute;
@@ -294,9 +278,7 @@
   border-color: var(--af-success);
 }
 
-/* --------------------------------------------------
-   RESPONSIVE
--------------------------------------------------- */
+/* Responsive */
 
 @media (max-width: 1100px) {
   .inventory-workflow__body {

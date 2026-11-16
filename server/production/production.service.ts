@@ -83,9 +83,7 @@ async function logEvent(
   }, tx);
 }
 
-/* ------------------------------------------------------------------ */
 /* Create                                                              */
-/* ------------------------------------------------------------------ */
 
 /*
  * Inserts a validated production order with its nine stages inside the
@@ -200,9 +198,7 @@ export async function createProductionOrder(input: ProductionOrderInput, actorId
   }
 }
 
-/* ------------------------------------------------------------------ */
 /* Read                                                                */
-/* ------------------------------------------------------------------ */
 
 function stageTotals(stage: Record<string, unknown>): StageTotals {
   return {
@@ -389,9 +385,7 @@ export async function listProductionOrders(filters: ProductionQuery) {
   };
 }
 
-/* ------------------------------------------------------------------ */
 /* Status changes                                                      */
-/* ------------------------------------------------------------------ */
 
 export async function changeProductionStatus(id: string, action: string, reason: string, actorId: string) {
   await db.transaction(async (tx) => {
@@ -421,9 +415,7 @@ export async function changeProductionStatus(id: string, action: string, reason:
   return getProductionOrder(id);
 }
 
-/* ------------------------------------------------------------------ */
 /* Stage runs and completion                                           */
-/* ------------------------------------------------------------------ */
 
 /*
  * Stages 7-9 are driven by the modules that own them (D-022): quality

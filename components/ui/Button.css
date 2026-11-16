@@ -51,9 +51,7 @@
   transform: none;
 }
 
-/* =========================================
-   PRIMARY
-========================================= */
+/* Primary */
 
 .erp-button--primary {
   color: #ffffff;
@@ -71,9 +69,7 @@
   border-color: var(--af-navy-dark);
 }
 
-/* =========================================
-   SECONDARY
-========================================= */
+/* Secondary */
 
 .erp-button--secondary {
   color: var(--af-text);
@@ -89,9 +85,7 @@
   border-color: var(--af-border-dark);
 }
 
-/* =========================================
-   GHOST
-========================================= */
+/* Ghost */
 
 .erp-button--ghost {
   color: var(--af-text-secondary);
@@ -107,9 +101,7 @@
   background: var(--af-surface-soft);
 }
 
-/* =========================================
-   SOFT
-========================================= */
+/* Soft */
 
 .erp-button--soft {
   color: var(--af-navy);
@@ -125,9 +117,7 @@
   border-color: #d5dce4;
 }
 
-/* =========================================
-   SUCCESS
-========================================= */
+/* Success */
 
 .erp-button--success {
   color: #ffffff;
@@ -143,9 +133,7 @@
   border-color: #11714d;
 }
 
-/* =========================================
-   DANGER
-========================================= */
+/* Danger */
 
 .erp-button--danger {
   color: #ffffff;
@@ -161,9 +149,7 @@
   border-color: #a93838;
 }
 
-/* =========================================
-   OUTLINE DANGER
-========================================= */
+/* Outline danger */
 
 .erp-button--danger-outline {
   color: var(--af-danger);
@@ -179,9 +165,7 @@
   border-color: var(--af-danger);
 }
 
-/* =========================================
-   WARNING
-========================================= */
+/* Warning */
 
 .erp-button--warning {
   color: #ffffff;
@@ -197,9 +181,7 @@
   border-color: #a96e13;
 }
 
-/* =========================================
-   SIZES
-========================================= */
+/* Sizes */
 
 .erp-button--small {
   min-height: 34px;
@@ -225,9 +207,7 @@
   font-size: 13px;
 }
 
-/* =========================================
-   ICON ONLY
-========================================= */
+/* Icon only */
 
 .erp-button--icon {
   width: 38px;
@@ -246,17 +226,13 @@
   min-width: 42px;
 }
 
-/* =========================================
-   FULL WIDTH
-========================================= */
+/* Full width */
 
 .erp-button--full {
   width: 100%;
 }
 
-/* =========================================
-   LOADING
-========================================= */
+/* Loading */
 
 .erp-button--loading {
   cursor: wait;
@@ -284,9 +260,7 @@
   }
 }
 
-/* =========================================
-   MOBILE
-========================================= */
+/* Mobile */
 
 @media (max-width: 600px) {
   .erp-button {

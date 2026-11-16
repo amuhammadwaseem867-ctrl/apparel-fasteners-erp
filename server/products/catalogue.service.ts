@@ -31,9 +31,7 @@ async function rows<T>(tx: Tx | ReturnType<typeof db.runtime>, plan: unknown) {
   return (await tx.query(plan as never)) as unknown as T[];
 }
 
-/* ------------------------------------------------------------------ */
 /* Categories                                                          */
-/* ------------------------------------------------------------------ */
 
 export async function listCategories() {
   const registered = await db.orm.public.ProductCategory.orderBy((row) => row.name.asc()).all();
@@ -88,9 +86,7 @@ export async function updateCategory(id: string, input: { name: string; descript
   }
 }
 
-/* ------------------------------------------------------------------ */
 /* Variant families                                                    */
-/* ------------------------------------------------------------------ */
 
 export async function listVariantFamilies(search: string) {
   const pattern = `%${search}%`;
@@ -116,9 +112,7 @@ export async function listVariantFamilies(search: string) {
   }));
 }
 
-/* ------------------------------------------------------------------ */
 /* Pricing                                                             */
-/* ------------------------------------------------------------------ */
 
 function roundToScale(value: string, scale: number) {
   const parsed = decimalFromString(value);
@@ -178,9 +172,7 @@ export async function listPriceChanges(filters: { productId?: string; page: numb
   return { changes: result.slice(0, filters.pageSize).map((row) => ({ ...row, previousPrice: dec(row.previousPrice), newPrice: dec(row.newPrice) })), page: filters.page, pageSize: filters.pageSize, hasMore: result.length > filters.pageSize };
 }
 
-/* ------------------------------------------------------------------ */
 /* Documents                                                           */
-/* ------------------------------------------------------------------ */
 
 export const DOCUMENT_TYPES = ["SPECIFICATION", "DRAWING", "TEST_REPORT", "CERTIFICATE", "IMAGE", "OTHER"] as const;
 export const MAX_DOCUMENT_BYTES = 5 * 1024 * 1024;

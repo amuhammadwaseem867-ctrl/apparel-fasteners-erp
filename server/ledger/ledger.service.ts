@@ -75,9 +75,7 @@ async function systemAccountIds(tx: Tx) {
   return new Map(found.map((account) => [account.systemKey as SystemKey, account.id]));
 }
 
-/* ------------------------------------------------------------------ */
 /* Posting                                                             */
-/* ------------------------------------------------------------------ */
 
 export type PostingLine = { account: SystemKey | { id: string }; debit?: string; credit?: string; memo?: string | null };
 export type Source = { type: string; id: string; event: string };
@@ -149,9 +147,7 @@ export async function reverseSourcePosting(tx: Tx, source: Source, reversalEvent
   return reverseEntryInTransaction(tx, entry.id, effective, description, actorId, { ...source, event: reversalEvent });
 }
 
-/* ------------------------------------------------------------------ */
 /* Accounts                                                            */
-/* ------------------------------------------------------------------ */
 
 type BalanceRow = { id: string; code: string; name: string; accountType: string; systemKey: string; isCashBank: string; status: string; description: string; debit: string; credit: string };
 
@@ -238,9 +234,7 @@ export async function getAccountLedger(id: string, from: string, to: string) {
   };
 }
 
-/* ------------------------------------------------------------------ */
 /* Journals                                                            */
-/* ------------------------------------------------------------------ */
 
 export async function postManualJournal(input: { entryDate: string; description: string; lines: Array<{ accountId: string; debit: number; credit: number; memo?: string }>; idempotencyKey: string }, actorId: string) {
   const replay = await db.orm.public.JournalEntry.where({ idempotencyKey: input.idempotencyKey }).first();
@@ -317,9 +311,7 @@ export async function listJournalEntries(filters: { from: string; to: string; se
   };
 }
 
-/* ------------------------------------------------------------------ */
 /* Cash and bank: expenses, other income, transfers                     */
-/* ------------------------------------------------------------------ */
 
 export async function recordCashTransaction(input: { kind: "EXPENSE" | "INCOME" | "TRANSFER"; transactionDate: string; cashAccountId: string; counterAccountId: string; amount: number; payee?: string; reference?: string; description: string; idempotencyKey: string }, actorId: string) {
   const replay = await db.orm.public.CashTransaction.where({ idempotencyKey: input.idempotencyKey }).first();
@@ -408,9 +400,7 @@ export async function listCashTransactions(filters: { kind: string; from: string
   };
 }
 
-/* ------------------------------------------------------------------ */
 /* Statements                                                          */
-/* ------------------------------------------------------------------ */
 
 const sum = (values: string[]) => fromCents(values.reduce((total, value) => total + cents(value), 0n));
 

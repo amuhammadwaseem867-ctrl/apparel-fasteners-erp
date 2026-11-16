@@ -261,9 +261,7 @@ export default function Modal({
   );
 }
 
-/* =========================================
-   MODAL ACTION
-========================================= */
+/* Modal action */
 
 export function ModalAction({
   children,
@@ -294,9 +292,7 @@ export function ModalAction({
   );
 }
 
-/* =========================================
-   CONFIRM MODAL
-========================================= */
+/* Confirm modal */
 
 export function ConfirmModal({
   open,

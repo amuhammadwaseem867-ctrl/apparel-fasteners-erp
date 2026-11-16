@@ -19,9 +19,7 @@
   gap: 8px;
 }
 
-/* --------------------------------------------------
-   SUMMARY
--------------------------------------------------- */
+/* Summary */
 
 .inventory-transfers__summary {
   display: grid;
@@ -82,9 +80,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* --------------------------------------------------
-   FILTERS
--------------------------------------------------- */
+/* Filters */
 
 .inventory-transfers__filters {
   display: flex;
@@ -194,9 +190,7 @@
   color: var(--af-danger);
 }
 
-/* --------------------------------------------------
-   CARD
--------------------------------------------------- */
+/* Card */
 
 .inventory-transfers__card {
   min-width: 0;
@@ -253,9 +247,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* --------------------------------------------------
-   TABLE
--------------------------------------------------- */
+/* Table */
 
 .inventory-transfers__table-wrap {
   width: 100%;
@@ -330,9 +322,7 @@
   color: var(--af-text-muted);
 }
 
-/* --------------------------------------------------
-   STATUS
--------------------------------------------------- */
+/* Status */
 
 .inventory-transfers__status {
   display: inline-flex;
@@ -380,9 +370,7 @@
   color: var(--af-danger);
 }
 
-/* --------------------------------------------------
-   EMPTY
--------------------------------------------------- */
+/* Empty */
 
 .inventory-transfers__empty {
   min-height: 310px;
@@ -435,9 +423,7 @@
   line-height: 1.55;
 }
 
-/* --------------------------------------------------
-   FLOW
--------------------------------------------------- */
+/* Flow */
 
 .inventory-transfers__flow {
   background: var(--af-surface);
@@ -503,9 +489,7 @@
   background: var(--af-border);
 }
 
-/* --------------------------------------------------
-   LOADING
--------------------------------------------------- */
+/* Loading */
 
 .inventory-transfers__loading {
   min-height: 310px;
@@ -519,9 +503,7 @@
   font-size: 12px;
 }
 
-/* --------------------------------------------------
-   RESPONSIVE
--------------------------------------------------- */
+/* Responsive */
 
 @media (max-width: 1100px) {
   .inventory-transfers__summary {

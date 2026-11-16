@@ -33,7 +33,7 @@
   color: inherit;
 }
 
-/* ---------- Background ---------- */
+/* Background */
 
 .welcome__backdrop {
   position: absolute;
@@ -131,7 +131,7 @@
   100% { transform: translate(30px, -100svh); opacity: 0; }
 }
 
-/* ---------- Header ---------- */
+/* Header */
 
 .welcome__bar {
   position: sticky;
@@ -220,7 +220,7 @@
   transform: translateX(3px);
 }
 
-/* ---------- Hero ---------- */
+/* Hero */
 
 .welcome__hero {
   display: grid;
@@ -489,7 +489,7 @@
   50% { opacity: 0.25; }
 }
 
-/* ---------- Sections ---------- */
+/* Sections */
 
 .welcome__section {
   padding: clamp(56px, 10vh, 110px) 0 0;
@@ -708,7 +708,7 @@
   color: #fff;
 }
 
-/* ---------- Entrance and scroll reveal ---------- */
+/* Entrance and scroll reveal */
 
 .w-rise {
   opacity: 0;
@@ -742,7 +742,7 @@
   transition: opacity 800ms var(--w-ease) var(--d, 0ms), transform 350ms var(--w-ease), border-color 300ms ease, background 300ms ease;
 }
 
-/* ---------- Responsive ---------- */
+/* Responsive */
 
 @media (max-width: 1080px) {
   .welcome__modules {

@@ -38,7 +38,7 @@ type Runner = Tx | ReturnType<typeof db.runtime>;
 
 /*
  * Quantity of one packing list already allocated on shipments' lines.
- * For the dispatch guard only DISPATCHED and DELIVERED count — a draft or
+ * For the dispatch guard only DISPATCHED and DELIVERED count, a draft or
  * cancelled shipment holds nothing (D-050). For creating a new shipment the
  * caller adds DRAFT, whose lines reserve packed quantity until the draft is
  * dispatched or cancelled, so two drafts cannot promise the same units.
@@ -93,9 +93,7 @@ async function overShipmentError(position: Awaited<ReturnType<typeof orderPositi
   );
 }
 
-/* ------------------------------------------------------------------ */
 /* Create                                                              */
-/* ------------------------------------------------------------------ */
 
 /*
  * Ship-from when none is chosen (D-053): the first packing list's location,
@@ -145,7 +143,7 @@ export async function createShipment(input: ShipmentInput, actorId: string) {
       // never more. Re-checked inside the transaction below under the sales
       // order's row lock; there, open DRAFT shipments also reserve packed
       // quantity, so two drafts cannot promise the same units. The dispatch
-      // guard counts only DISPATCHED/DELIVERED — a cancelled or never-
+      // guard counts only DISPATCHED/DELIVERED, a cancelled or never-
       // dispatched draft holds nothing.
       const allocated = addDecimalStrings(
         await dispatchedQuantityForList(null, list.id),
@@ -260,9 +258,7 @@ export async function createShipment(input: ShipmentInput, actorId: string) {
   }
 }
 
-/* ------------------------------------------------------------------ */
 /* Dispatch / deliver / cancel                                         */
-/* ------------------------------------------------------------------ */
 
 async function rows<T>(tx: Runner, plan: unknown) {
   return (await tx.query(plan as never)) as unknown as T[];
@@ -490,9 +486,7 @@ export async function changeShipment(
   return getShipment(id);
 }
 
-/* ------------------------------------------------------------------ */
 /* Read                                                                */
-/* ------------------------------------------------------------------ */
 
 async function headerLookups(rows: Array<{ salesOrderId: string; customerId: string; locationId: string }>) {
   const unique = (values: string[]) => [...new Set(values)];

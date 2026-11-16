@@ -41,9 +41,7 @@ export async function periodIsLocked(tx: Tx | null, period: string) {
   return run ? run.runNumber : null;
 }
 
-/* ------------------------------------------------------------------ */
 /* Departments                                                         */
-/* ------------------------------------------------------------------ */
 
 export async function listDepartments() {
   const departments = await db.orm.public.Department.orderBy((row) => row.name.asc()).all();
@@ -76,9 +74,7 @@ export async function updateDepartment(id: string, input: { name: string; status
   return db.orm.public.Department.where({ id }).first();
 }
 
-/* ------------------------------------------------------------------ */
 /* Employees                                                           */
-/* ------------------------------------------------------------------ */
 
 function present(employee: Record<string, unknown>, departmentName: string | null, canViewPay: boolean) {
   const result: Record<string, unknown> = { ...employee, departmentName };
@@ -200,9 +196,7 @@ export async function setEmployeePay(id: string, input: EmployeePay, actorId: st
   return getEmployee(id, true);
 }
 
-/* ------------------------------------------------------------------ */
 /* Attendance                                                          */
-/* ------------------------------------------------------------------ */
 
 export async function saveAttendance(input: AttendanceSave, actorId: string) {
   const period = input.date.slice(0, 7);

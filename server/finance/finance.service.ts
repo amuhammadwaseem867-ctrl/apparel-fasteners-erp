@@ -80,9 +80,7 @@ async function lockInvoice(tx: Tx, invoiceId: string) {
   return { total: cash(row.total), ...(await balances(tx, invoiceId)) };
 }
 
-/* ------------------------------------------------------------------ */
 /* Invoices                                                            */
-/* ------------------------------------------------------------------ */
 
 export async function createInvoice(input: InvoiceInput, actorId: string) {
   const replay = await db.orm.public.Invoice.where({ idempotencyKey: input.idempotencyKey }).first();
@@ -352,9 +350,7 @@ export async function changeInvoice(id: string, action: "issue" | "cancel", reas
   return getInvoice(id);
 }
 
-/* ------------------------------------------------------------------ */
 /* Credit notes                                                        */
-/* ------------------------------------------------------------------ */
 
 async function creditedByLine(runner: Runner, invoiceId: string) {
   const result = await rows<{ invoiceLineId: string; quantity: string; gross: string; discount: string; tax: string; total: string }>(runner, db.raw.sql`
@@ -496,9 +492,7 @@ export async function getCreditNote(id: string) {
   };
 }
 
-/* ------------------------------------------------------------------ */
 /* Receipts                                                            */
-/* ------------------------------------------------------------------ */
 
 export async function recordReceipt(input: ReceiptInput, actorId: string) {
   const replay = await db.orm.public.CustomerReceipt.where({ idempotencyKey: input.idempotencyKey }).first();
@@ -624,9 +618,7 @@ export async function listReceipts(filters: ReceiptQuery) {
   };
 }
 
-/* ------------------------------------------------------------------ */
 /* Reading invoices                                                    */
-/* ------------------------------------------------------------------ */
 
 export async function getInvoice(id: string, today = new Date().toISOString().slice(0, 10)) {
   if (!UUID.test(id)) invoiceNotFound();
@@ -758,9 +750,7 @@ export async function listInvoices(filters: InvoiceQuery, today = new Date().toI
   };
 }
 
-/* ------------------------------------------------------------------ */
 /* Receivables                                                         */
-/* ------------------------------------------------------------------ */
 
 export async function getReceivables(today = new Date().toISOString().slice(0, 10)) {
   const dues = await rows<{ customerId: string; customerName: string; dueDate: string; outstanding: string }>(db.runtime(), db.raw.sql`

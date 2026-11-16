@@ -1,6 +1,4 @@
-/* =========================================
-   WRAPPER
-========================================= */
+/* Wrapper */
 
 .erp-table-wrapper {
   position: relative;
@@ -22,9 +20,7 @@
   max-height: 640px;
 }
 
-/* =========================================
-   TABLE
-========================================= */
+/* Table */
 
 .erp-table {
   width: 100%;
@@ -38,9 +34,7 @@
   font-size: 13px;
 }
 
-/* =========================================
-   HEADER
-========================================= */
+/* Header */
 
 .erp-table thead th {
   position: relative;
@@ -72,9 +66,7 @@
   z-index: 5;
 }
 
-/* =========================================
-   BODY
-========================================= */
+/* Body */
 
 .erp-table tbody td {
   height: 54px;
@@ -107,9 +99,7 @@
   background: #f2f5f8;
 }
 
-/* =========================================
-   COMPACT
-========================================= */
+/* Compact */
 
 .erp-table-wrapper--compact
   .erp-table tbody td {
@@ -119,9 +109,7 @@
   padding-bottom: 6px;
 }
 
-/* =========================================
-   SORT
-========================================= */
+/* Sort */
 
 .erp-table__sort {
   display: inline-flex;
@@ -154,9 +142,7 @@
   flex: 0 0 auto;
 }
 
-/* =========================================
-   ALIGNMENT
-========================================= */
+/* Alignment */
 
 .erp-table__align--center {
   text-align: center !important;
@@ -166,9 +152,7 @@
   text-align: right !important;
 }
 
-/* =========================================
-   SELECTION
-========================================= */
+/* Selection */
 
 .erp-table__select-column {
   width: 46px !important;
@@ -232,9 +216,7 @@
   border-radius: 1px;
 }
 
-/* =========================================
-   ACTIONS
-========================================= */
+/* Actions */
 
 .erp-table__actions-column {
   width: 90px;
@@ -249,9 +231,7 @@
   white-space: nowrap;
 }
 
-/* =========================================
-   EMPTY
-========================================= */
+/* Empty */
 
 .erp-table__empty-cell {
   height: 260px !important;
@@ -316,9 +296,7 @@
   line-height: 1.5;
 }
 
-/* =========================================
-   LOADING
-========================================= */
+/* Loading */
 
 .erp-table__skeleton-row td {
   background: var(--af-surface);
@@ -362,9 +340,7 @@
   }
 }
 
-/* =========================================
-   PAGINATION
-========================================= */
+/* Pagination */
 
 .erp-table-pagination {
   min-height: 54px;
@@ -451,9 +427,7 @@
   text-align: center;
 }
 
-/* =========================================
-   MOBILE
-========================================= */
+/* Mobile */
 
 @media (max-width: 700px) {
   .erp-table-wrapper {

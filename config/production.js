@@ -1,5 +1,5 @@
 /**
- * Apparel Fastener ERP — Production stage configuration.
+ * Apparel Fastener ERP, Production stage configuration.
  *
  * The factory production flow for zippers / apparel fasteners.
  * Every production stage record (backend entity) is expected to

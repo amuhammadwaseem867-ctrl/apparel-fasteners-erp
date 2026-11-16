@@ -31,9 +31,7 @@
   padding-bottom: 28px;
 }
 
-/* --------------------------------------------------
-   ENTRANCE: page sections rise one after another
--------------------------------------------------- */
+/* ENTRANCE: page sections rise one after another */
 
 .inv-page > * {
   animation: inv-rise 0.7s var(--inv-ease) both;
@@ -57,9 +55,7 @@
   }
 }
 
-/* --------------------------------------------------
-   HERO HEADER
--------------------------------------------------- */
+/* Hero header */
 
 .inv-header {
   position: relative;
@@ -256,9 +252,7 @@
   font-size: 13px;
 }
 
-/* --------------------------------------------------
-   KPI TILES
--------------------------------------------------- */
+/* KPI tiles */
 
 .inv-kpis {
   display: grid;
@@ -352,9 +346,7 @@
 .inv-kpi--warning strong { color: #a76a0f; }
 .inv-kpi--danger strong { color: var(--af-danger, #c44545); }
 
-/* --------------------------------------------------
-   CARDS, TOOLBARS, TABLES
--------------------------------------------------- */
+/* Cards, toolbars, tables */
 
 .inv-card {
   min-width: 0;
@@ -548,9 +540,7 @@
   font-size: 12px;
 }
 
-/* --------------------------------------------------
-   FORM CONTROLS
--------------------------------------------------- */
+/* Form controls */
 
 .inv-field {
   display: grid;
@@ -735,9 +725,7 @@
   text-decoration: underline;
 }
 
-/* --------------------------------------------------
-   ITEM PICKER
--------------------------------------------------- */
+/* Item picker */
 
 .inv-picker {
   position: relative;
@@ -824,9 +812,7 @@
   padding: 8px;
 }
 
-/* --------------------------------------------------
-   DIALOG CONTENT
--------------------------------------------------- */
+/* Dialog content */
 
 .inv-dialog {
   display: grid;
@@ -878,9 +864,7 @@
   font-size: 14px;
 }
 
-/* --------------------------------------------------
-   PHONES
--------------------------------------------------- */
+/* Phones */
 
 @media (max-width: 640px) {
   .inv-header {
@@ -950,9 +934,7 @@
   }
 }
 
-/* --------------------------------------------------
-   REDUCED MOTION AND PRINT
--------------------------------------------------- */
+/* Reduced motion and print */
 
 @media (prefers-reduced-motion: reduce) {
   .inv-page,

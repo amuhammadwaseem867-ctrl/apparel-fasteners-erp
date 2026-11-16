@@ -3,9 +3,7 @@
   min-width: 0;
 }
 
-/* --------------------------------
-   Toolbar
--------------------------------- */
+/* Toolbar */
 
 .production-output-toolbar {
   display: flex;
@@ -90,9 +88,7 @@
   cursor: pointer;
 }
 
-/* --------------------------------
-   Summary
--------------------------------- */
+/* Summary */
 
 .production-output-summary {
   display: grid;
@@ -125,9 +121,7 @@
   font-weight: 700;
 }
 
-/* --------------------------------
-   Content
--------------------------------- */
+/* Content */
 
 .production-output-content {
   min-height: 320px;
@@ -138,9 +132,7 @@
   overflow: hidden;
 }
 
-/* --------------------------------
-   Table
--------------------------------- */
+/* Table */
 
 .production-output-table-wrap {
   width: 100%;
@@ -189,9 +181,7 @@
   font-weight: 700;
 }
 
-/* --------------------------------
-   Quantities
--------------------------------- */
+/* Quantities */
 
 .output-good {
   color: var(--af-success) !important;
@@ -202,9 +192,7 @@
   font-weight: 700;
 }
 
-/* --------------------------------
-   Status
--------------------------------- */
+/* Status */
 
 .production-output-status {
   display: inline-flex;
@@ -236,9 +224,7 @@
   background: #fdf0f0;
 }
 
-/* --------------------------------
-   Actions
--------------------------------- */
+/* Actions */
 
 .production-output-action {
   display: inline-flex;
@@ -281,9 +267,7 @@
   color: var(--af-success);
 }
 
-/* --------------------------------
-   Responsive
--------------------------------- */
+/* Responsive */
 
 @media (max-width: 1100px) {
   .production-output-summary {

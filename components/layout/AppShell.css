@@ -7,9 +7,7 @@
   background: var(--af-bg);
 }
 
-/* =========================================
-   SIDEBAR WIDTH STATES
-========================================= */
+/* Sidebar width states */
 
 .app-shell--expanded {
   --current-sidebar-width: var(--sidebar-expanded);
@@ -19,9 +17,7 @@
   --current-sidebar-width: var(--sidebar-collapsed);
 }
 
-/* =========================================
-   WORKSPACE
-========================================= */
+/* Workspace */
 
 .app-shell__workspace {
   position: relative;
@@ -40,9 +36,7 @@
     margin-left 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* =========================================
-   MAIN
-========================================= */
+/* Main */
 
 .app-shell__main {
   flex: 1;
@@ -87,17 +81,13 @@
   }
 }
 
-/* =========================================
-   MOBILE OVERLAY
-========================================= */
+/* Mobile overlay */
 
 .app-shell__mobile-overlay {
   display: none;
 }
 
-/* =========================================
-   TABLET
-========================================= */
+/* Tablet */
 
 @media (max-width: 1200px) {
   .app-shell__content {
@@ -105,9 +95,7 @@
   }
 }
 
-/* =========================================
-   MOBILE
-========================================= */
+/* Mobile */
 
 @media (max-width: 900px) {
   .app-shell {
@@ -155,9 +143,7 @@
   }
 }
 
-/* =========================================
-   SMALL MOBILE
-========================================= */
+/* Small mobile */
 
 @media (max-width: 520px) {
   .app-shell__content {

@@ -19,9 +19,7 @@
   gap: 8px;
 }
 
-/* --------------------------------------------------
-   SUMMARY
--------------------------------------------------- */
+/* Summary */
 
 .inventory-batches__summary {
   display: grid;
@@ -98,9 +96,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* --------------------------------------------------
-   FILTERS
--------------------------------------------------- */
+/* Filters */
 
 .inventory-batches__filters {
   display: flex;
@@ -210,9 +206,7 @@
   color: var(--af-danger);
 }
 
-/* --------------------------------------------------
-   CARD
--------------------------------------------------- */
+/* Card */
 
 .inventory-batches__card {
   overflow: hidden;
@@ -267,9 +261,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* --------------------------------------------------
-   TABLE
--------------------------------------------------- */
+/* Table */
 
 .inventory-batches__table-wrap {
   width: 100%;
@@ -365,9 +357,7 @@
   color: var(--af-text-muted);
 }
 
-/* --------------------------------------------------
-   STATUS
--------------------------------------------------- */
+/* Status */
 
 .inventory-batches__status {
   display: inline-flex;
@@ -409,9 +399,7 @@
   border-color: var(--af-border);
 }
 
-/* --------------------------------------------------
-   EMPTY / LOADING
--------------------------------------------------- */
+/* Empty / loading */
 
 .inventory-batches__empty {
   min-height: 310px;
@@ -476,9 +464,7 @@
   font-size: 12px;
 }
 
-/* --------------------------------------------------
-   TRACEABILITY
--------------------------------------------------- */
+/* Traceability */
 
 .inventory-batches__traceability {
   overflow: hidden;
@@ -541,9 +527,7 @@
   line-height: 1.55;
 }
 
-/* --------------------------------------------------
-   RESPONSIVE
--------------------------------------------------- */
+/* Responsive */
 
 @media (max-width: 1200px) {
   .inventory-batches__summary {

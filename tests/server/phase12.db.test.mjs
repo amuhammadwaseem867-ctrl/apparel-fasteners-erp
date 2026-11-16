@@ -146,9 +146,7 @@ test("documents: type must match the bytes, size is limited, content round-trips
   assert.equal((await getDocumentContent(saved.id)).status, "ARCHIVED");
 });
 
-/* ------------------------------------------------------------------ */
 /* Planning, packing instructions, batches, settings                    */
-/* ------------------------------------------------------------------ */
 
 test("settings: validated, audited, with honest defaults", async () => {
   const { getSetting, setSetting } = await import("../../server/settings/settings.service.ts");

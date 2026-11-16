@@ -520,9 +520,7 @@ export default function Table({
   );
 }
 
-/* =========================================
-   SKELETON ROW
-========================================= */
+/* Skeleton row */
 
 function SkeletonRow({
   columns,
@@ -559,9 +557,7 @@ function SkeletonRow({
   );
 }
 
-/* =========================================
-   PAGINATION
-========================================= */
+/* Pagination */
 
 function TablePagination({
   page,
@@ -628,9 +624,7 @@ function TablePagination({
   );
 }
 
-/* =========================================
-   NESTED VALUE
-========================================= */
+/* Nested value */
 
 function getNestedValue(object, path) {
   if (!path) return undefined;

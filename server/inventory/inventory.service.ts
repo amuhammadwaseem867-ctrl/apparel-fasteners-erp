@@ -71,9 +71,7 @@ function notFound(message: string, code: string): AppError {
   return new AppError(message, { code, status: 404 });
 }
 
-/* ------------------------------------------------------------------ */
 /* Warehouses and locations                                            */
-/* ------------------------------------------------------------------ */
 
 export async function listWarehouses(filters: { search: string; status: string }) {
   let query = db.orm.public.Warehouse;
@@ -380,9 +378,7 @@ export async function setLocationStatus(id: string, status: string, actorId: str
   return getLocation(id);
 }
 
-/* ------------------------------------------------------------------ */
 /* Balance operations (inside a transaction)                           */
-/* ------------------------------------------------------------------ */
 
 const INCREASES = new Set<BalanceOperation>(["increase-on-hand", "increase-hold", "increase-reserved"]);
 
@@ -637,9 +633,7 @@ async function existingDocument(idempotencyKey: string, documentType: string) {
   return document;
 }
 
-/* ------------------------------------------------------------------ */
 /* Posting stock documents                                             */
-/* ------------------------------------------------------------------ */
 
 interface LineContext {
   productId: string;
@@ -910,9 +904,7 @@ export async function postStockDocument(input: StockDocumentInput, actorId: stri
   }
 }
 
-/* ------------------------------------------------------------------ */
 /* Reservations                                                        */
-/* ------------------------------------------------------------------ */
 
 async function validateReservationSource(input: ReservationInput) {
   if (!input.salesOrderId) {
@@ -1187,9 +1179,7 @@ export async function listReservations(filters: ReservationQuery) {
   };
 }
 
-/* ------------------------------------------------------------------ */
 /* Queries                                                             */
-/* ------------------------------------------------------------------ */
 
 async function enrichment(rows: Array<{ productId: string; locationId: string }>) {
   const productIds = [...new Set(rows.map((row) => row.productId))];

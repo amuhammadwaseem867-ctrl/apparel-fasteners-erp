@@ -74,9 +74,7 @@ async function requireProducts(lines: Array<{ productId: string; quantity: numbe
   return products;
 }
 
-/* ------------------------------------------------------------------ */
 /* Suppliers                                                           */
-/* ------------------------------------------------------------------ */
 
 export async function listSuppliers(filters: ListQuery) {
   let query = db.orm.public.Supplier;
@@ -125,9 +123,7 @@ export async function updateSupplier(id: string, input: SupplierUpdate, actorId:
   return getSupplier(id);
 }
 
-/* ------------------------------------------------------------------ */
 /* Requisitions                                                        */
-/* ------------------------------------------------------------------ */
 
 export async function createRequisition(input: RequisitionInput, actorId: string) {
   const replay = await db.orm.public.PurchaseRequisition.where({ idempotencyKey: input.idempotencyKey }).first();
@@ -215,9 +211,7 @@ export async function listRequisitions(filters: ListQuery) {
   };
 }
 
-/* ------------------------------------------------------------------ */
 /* RFQs                                                                */
-/* ------------------------------------------------------------------ */
 
 export async function createRfq(input: RfqInput, actorId: string) {
   const replay = await db.orm.public.Rfq.where({ idempotencyKey: input.idempotencyKey }).first();
@@ -351,9 +345,7 @@ export async function listRfqs(filters: ListQuery) {
   return { rfqs: page.map((row) => ({ ...row, quoteCount: quotes.filter((quote) => quote.rfqId === row.id).length })), page: filters.page, pageSize: filters.pageSize, hasMore: result.length > filters.pageSize };
 }
 
-/* ------------------------------------------------------------------ */
 /* Purchase orders                                                     */
-/* ------------------------------------------------------------------ */
 
 type PoDraft = {
   supplierId: string;
@@ -484,9 +476,7 @@ export async function listPurchaseOrders(filters: ListQuery) {
   };
 }
 
-/* ------------------------------------------------------------------ */
 /* Goods receipts                                                      */
-/* ------------------------------------------------------------------ */
 
 export async function receivePurchaseOrder(input: ReceiptInput, actorId: string) {
   const replay = await db.orm.public.PurchaseReceipt.where({ idempotencyKey: input.idempotencyKey }).first();

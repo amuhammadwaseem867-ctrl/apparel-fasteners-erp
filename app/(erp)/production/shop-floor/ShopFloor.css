@@ -3,9 +3,7 @@
   min-width: 0;
 }
 
-/* --------------------------------
-   Toolbar
--------------------------------- */
+/* Toolbar */
 
 .shop-floor-toolbar {
   display: flex;
@@ -90,9 +88,7 @@
   cursor: pointer;
 }
 
-/* --------------------------------
-   Summary
--------------------------------- */
+/* Summary */
 
 .shop-floor-summary {
   display: grid;
@@ -125,9 +121,7 @@
   font-weight: 700;
 }
 
-/* --------------------------------
-   Content
--------------------------------- */
+/* Content */
 
 .shop-floor-content {
   min-height: 320px;
@@ -138,9 +132,7 @@
   border-radius: 10px;
 }
 
-/* --------------------------------
-   Grid
--------------------------------- */
+/* Grid */
 
 .shop-floor-grid {
   display: grid;
@@ -151,9 +143,7 @@
   gap: 14px;
 }
 
-/* --------------------------------
-   Card
--------------------------------- */
+/* Card */
 
 .shop-floor-card {
   display: flex;
@@ -204,9 +194,7 @@
   font-size: 12px;
 }
 
-/* --------------------------------
-   Status
--------------------------------- */
+/* Status */
 
 .shop-floor-status {
   display: inline-flex;
@@ -239,9 +227,7 @@
   background: #fdf0f0;
 }
 
-/* --------------------------------
-   Meta
--------------------------------- */
+/* Meta */
 
 .shop-floor-card__meta {
   display: grid;
@@ -286,9 +272,7 @@
   font-weight: 600;
 }
 
-/* --------------------------------
-   Progress
--------------------------------- */
+/* Progress */
 
 .shop-floor-card__progress {
   margin-top: 17px;
@@ -327,9 +311,7 @@
   transition: width var(--transition-normal);
 }
 
-/* --------------------------------
-   Quantities
--------------------------------- */
+/* Quantities */
 
 .shop-floor-card__quantities {
   display: grid;
@@ -368,9 +350,7 @@
   color: var(--af-danger);
 }
 
-/* --------------------------------
-   Timing
--------------------------------- */
+/* Timing */
 
 .shop-floor-card__timing {
   display: grid;
@@ -396,9 +376,7 @@
   font-weight: 600;
 }
 
-/* --------------------------------
-   Downtime
--------------------------------- */
+/* Downtime */
 
 .shop-floor-card__downtime {
   display: flex;
@@ -413,9 +391,7 @@
   font-size: 12px;
 }
 
-/* --------------------------------
-   Actions
--------------------------------- */
+/* Actions */
 
 .shop-floor-actions {
   display: flex;
@@ -469,9 +445,7 @@
   color: var(--af-danger);
 }
 
-/* --------------------------------
-   Responsive
--------------------------------- */
+/* Responsive */
 
 @media (max-width: 1100px) {
   .shop-floor-summary {
