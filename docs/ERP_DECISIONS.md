@@ -1559,3 +1559,13 @@ navigation.
   posts one opening Stock In document; every item's stock is checked
   against the file. Negative or unreadable balances in the sheet are not
   imported; the extraction lists them.
+
+## D-059 Quick costing (2026-11-16)
+
+- Orders → Quick costing: type a customer, reference, date and lines
+  (item with gauge, size, finish, quantity, optional rate), press
+  Calculate, then Print costing document. It is the same costing
+  document as an order's costing report, titled QUICK COSTING.
+- It only calculates with the costing rates (D-055): no order, invoice,
+  stock movement or accounting entry is made, and nothing is saved. The
+  document goes to the print view through this browser tab only.

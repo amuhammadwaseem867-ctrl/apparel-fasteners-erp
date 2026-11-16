@@ -97,3 +97,50 @@ export async function getOrderCosting(salesOrderId: string) {
     ...costOrder(lines, rates, revenue),
   };
 }
+
+/*
+ * Quick costing (D-059): the costing document for lines typed in by hand,
+ * for quick documentation. It only reads the costing rates: no order,
+ * invoice, stock or accounting entry is made, and nothing is saved.
+ */
+export const quickCostingSchema = z.object({
+  customerName: z.string().trim().max(160).default(""),
+  reference: z.string().trim().max(80).default(""),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use a date like 2026-11-16."),
+  lines: z.array(z.object({
+    productName: z.string().trim().min(1, "Each line needs an item, e.g. #5 Metal Zipper Close End.").max(160),
+    size: z.string().trim().max(40).default(""),
+    finish: z.string().trim().max(60).default(""),
+    quantity: z.number().finite().gt(0, "Quantity must be more than 0.").max(100000000),
+    unitPrice: z.number().finite().min(0).max(100000000).default(0),
+  })).min(1, "Add at least one line.").max(100),
+});
+
+export async function getQuickCosting(input: unknown) {
+  const parsed = quickCostingSchema.safeParse(input);
+  if (!parsed.success) throw new AppError("Quick costing validation failed.", { code: "VALIDATION_FAILED", status: 400, details: parsed.error.issues });
+  const { customerName, reference, date, lines } = parsed.data;
+  const rates = await getCostingRates();
+  const revenue = lines.reduce((sum, line) => sum + line.quantity * line.unitPrice, 0);
+  const costLines = lines.map((line, index) => ({
+    lineNo: index + 1,
+    productName: line.productName,
+    size: line.size || null,
+    finish: line.finish || null,
+    quantity: line.quantity,
+  }));
+  return {
+    quick: true,
+    order: {
+      id: null,
+      orderNumber: reference || "—",
+      orderDate: date,
+      status: null,
+      customerName: customerName || "—",
+      lines: lines.map((line, index) => ({ id: String(index + 1), ...line, unit: "Pcs" })),
+    },
+    ratesConfigured: rates.configured,
+    rates,
+    ...costOrder(costLines, rates, revenue),
+  };
+}
