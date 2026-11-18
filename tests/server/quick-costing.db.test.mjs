@@ -62,3 +62,41 @@ test("rates saved before 2-way zippers get the default 2-way pin box rate; a sav
     await db.runtime().query(db.raw.sql`delete from erp_app_settings where key = 'costing.rates' returning key`.returnsRow({ key: "pg/text@1" }).build());
   }
 });
+
+test("costing history (D-060): a saved quick costing is listed, prints its snapshot, and can be deleted; invoices are saved once", async () => {
+  const service = await import("../../server/costing/costing.service.ts");
+  const { randomUUID } = await import("node:crypto");
+  const actor = randomUUID();
+  const ref = `QH-${Date.now()}`;
+  const before = await counts();
+  const saved = await service.saveQuickCosting({
+    customerName: "History test", reference: ref, date: "2026-11-18",
+    lines: [{ productName: "#5 Metal Zipper Close End", size: "7 Inch", finish: "Antique Brass", quantity: 1000, unitPrice: 25 }],
+  }, actor);
+  assert.match(saved.recordNumber, /^QC-\d{4}-\d{6}$/);
+  assert.equal(saved.data.recordNumber, saved.recordNumber, "the printout carries the costing number");
+  assert.equal(Number(saved.revenue), 25000);
+  const after = await counts();
+  assert.deepEqual([after.orders, after.invoices, after.journal, after.stock], [before.orders, before.invoices, before.journal, before.stock], "still no order, invoice, stock or accounting entry");
+  const list = await service.listCostingRecords({ search: ref });
+  assert.deepEqual(list.records.map((row) => row.recordNumber), [saved.recordNumber]);
+  assert.equal(list.totals.count, "1");
+
+  const invoice = (amount) => ({ invoices: [{ number: `INV-${ref}`, date: "2026-11-01", customerName: "Inv test", lines: [
+    { productName: "#5 Metal Zipper Open End with Customer Slider", size: "20 Inch", finish: "Antique Brass", unit: "Pcs", quantity: 100, amount },
+    { productName: "#5 Tape White", size: "", unit: "KG", quantity: 10, amount: 11000 },
+  ] }] });
+  const first = await service.importInvoiceCostings(invoice(5000), actor);
+  const again = await service.importInvoiceCostings(invoice(6000), actor);
+  assert.equal(again.saved[0].recordNumber, first.saved[0].recordNumber, "saving an invoice again replaces it, same number");
+  const rows = await service.listCostingRecords({ search: `INV-${ref}` });
+  assert.equal(rows.records.length, 1);
+  assert.deepEqual([rows.records[0].revenue, rows.records[0].notCostedRevenue], ["6000.00", "11000.00"], "tape is kept apart from the profit");
+  const record = await service.getCostingRecord(rows.records[0].id);
+  assert.equal(record.data.invoice, true);
+  assert.equal(record.data.recordNumber, first.saved[0].recordNumber);
+  await assert.rejects(service.deleteCostingRecord(record.id, actor), (error) => error.code === "COSTING_NOT_DELETABLE");
+
+  await service.deleteCostingRecord(saved.id, actor);
+  await assert.rejects(service.getCostingRecord(saved.id), (error) => error.code === "COSTING_NOT_FOUND");
+});

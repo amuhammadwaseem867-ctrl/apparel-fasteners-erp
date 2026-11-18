@@ -40,6 +40,7 @@ const GAUGE_FIELDS = [
   ["bottomStopPerPc", "Bottom stop per pc (close end)"],
   ["pinBoxSetPerPc", "Pin box set per pc (open end)"],
   ["twoWayPinBoxSetPerPc", "2-way pin box set per pc (2-way open end)"],
+  ["aluminiumChainPerMeter", "Aluminium chain per meter (ready-made)"],
   ["topStopPerPc", "Top stop per pc (×2)"],
   ["pullerPerPc", "Puller / slider per pc"],
 ];

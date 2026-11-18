@@ -1576,3 +1576,23 @@ navigation.
   sliders/pullers per piece, and the open-end gap brass recovered as
   scrap. Order costing reports use the same rule. Rates saved before
   this get the default 2-way rate until changed.
+
+## D-060 Costing history and invoice costing (2026-11-18)
+
+- Orders → Costing history keeps every saved costing (QC-YYYY-NNNNNN):
+  quick costings saved with "Save to history & print", and one costing
+  per invoice. Each keeps the costing as calculated, so it prints the
+  same later even if the rates change. Search by customer, invoice or
+  number, filter by type and dates, with totals of value, material cost
+  and profit. Quick costings can be deleted; invoice costings stay, and
+  saving an invoice again replaces its costing under the same number.
+  Still never an order, invoice, stock or accounting entry.
+- Rules for invoice lines: aluminium zippers use ready-made aluminium
+  chain at a rate per meter (Costing rates, default 61 PKR from the
+  inventory sheet) in place of tape and brass; "with customer slider /
+  puller" or "without slider" has no slider cost; the customer's chain
+  roll ("Use AF Pin Box and Stopper", "chain roll from customer") has no
+  chain cost; chain rolls sold by the meter or roll are chain only; a
+  chain roll "for plating" is a plating job (plating per meter only);
+  tape, loose sliders and pins are not costed, their value shown apart
+  from the profit.

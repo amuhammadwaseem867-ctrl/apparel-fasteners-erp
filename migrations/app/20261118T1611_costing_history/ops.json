@@ -1,0 +1,200 @@
+[
+  {
+    "id": "table.erp_costing_records",
+    "label": "Create table \"erp_costing_records\"",
+    "summary": "Creates table \"erp_costing_records\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "erp_costing_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"erp_costing_records\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_costing_records\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"erp_costing_records\"",
+        "sql": "CREATE TABLE \"public\".\"erp_costing_records\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdBy\" uuid NOT NULL,\n  \"customerName\" text,\n  \"data\" text NOT NULL,\n  \"documentDate\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"materialCost\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"notCostedRevenue\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"pieces\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"profit\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"recordNumber\" text NOT NULL,\n  \"reference\" text,\n  \"revenue\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"source\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"erp_costing_records_source_f0c0ccad\" CHECK (\"source\" IN ('QUICK', 'INVOICE'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"erp_costing_records\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_costing_records\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.erp_costing_records.erp_costing_records_recordNumber_key",
+    "label": "Add unique constraint on \"erp_costing_records\" (recordNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "erp_costing_records_recordNumber_key",
+        "table": "erp_costing_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"erp_costing_records_recordNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_costing_records_recordNumber_key",
+          "public",
+          "\"public\".\"erp_costing_records\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"erp_costing_records_recordNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"erp_costing_records\" ADD CONSTRAINT \"erp_costing_records_recordNumber_key\" UNIQUE (\"recordNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"erp_costing_records_recordNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "erp_costing_records_recordNumber_key",
+          "public",
+          "\"public\".\"erp_costing_records\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_costing_records.erp_costing_records_customerName_idx_cd210f87",
+    "label": "Create index \"erp_costing_records_customerName_idx_cd210f87\" on \"erp_costing_records\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_costing_records_customerName_idx_cd210f87",
+        "table": "erp_costing_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_costing_records_customerName_idx_cd210f87\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_costing_records_customerName_idx_cd210f87\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_costing_records_customerName_idx_cd210f87\"",
+        "sql": "CREATE INDEX \"erp_costing_records_customerName_idx_cd210f87\" ON \"public\".\"erp_costing_records\" (\"customerName\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_costing_records_customerName_idx_cd210f87\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_costing_records_customerName_idx_cd210f87\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_costing_records.erp_costing_records_documentDate_idx_10f15229",
+    "label": "Create index \"erp_costing_records_documentDate_idx_10f15229\" on \"erp_costing_records\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_costing_records_documentDate_idx_10f15229",
+        "table": "erp_costing_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_costing_records_documentDate_idx_10f15229\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_costing_records_documentDate_idx_10f15229\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_costing_records_documentDate_idx_10f15229\"",
+        "sql": "CREATE INDEX \"erp_costing_records_documentDate_idx_10f15229\" ON \"public\".\"erp_costing_records\" (\"documentDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_costing_records_documentDate_idx_10f15229\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_costing_records_documentDate_idx_10f15229\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.erp_costing_records.erp_costing_records_one_per_invoice_e3c33e5b",
+    "label": "Create index \"erp_costing_records_one_per_invoice_e3c33e5b\" on \"erp_costing_records\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "erp_costing_records_one_per_invoice_e3c33e5b",
+        "table": "erp_costing_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"erp_costing_records_one_per_invoice_e3c33e5b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_costing_records_one_per_invoice_e3c33e5b\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"erp_costing_records_one_per_invoice_e3c33e5b\"",
+        "sql": "CREATE UNIQUE INDEX \"erp_costing_records_one_per_invoice_e3c33e5b\" ON \"public\".\"erp_costing_records\" (\"source\", \"reference\") WHERE (\"source\" = 'INVOICE')",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"erp_costing_records_one_per_invoice_e3c33e5b\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"erp_costing_records_one_per_invoice_e3c33e5b\""
+        ]
+      }
+    ]
+  }
+]

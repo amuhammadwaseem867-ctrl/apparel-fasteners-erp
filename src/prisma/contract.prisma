@@ -2037,3 +2037,29 @@ model AppSetting {
 
   @@map("erp_app_settings")
 }
+
+// Costing history (D-060): every saved costing, quick or from an invoice,
+// with the full costing as calculated (data, JSON), so it prints the same
+// later even when the costing rates change. Never an order or invoice.
+model CostingRecord {
+  id           Uuid              @id @default(uuid())
+  recordNumber String            @unique
+  source       String
+  documentDate String
+  customerName String?
+  reference    String?
+  pieces       Decimal           @default(0)
+  revenue      Decimal           @default(0)
+  materialCost Decimal           @default(0)
+  profit       Decimal           @default(0)
+  notCostedRevenue Decimal       @default(0)
+  data         String
+  createdBy    Uuid
+  createdAt    TimestamptzString @default(now())
+
+  @@index([documentDate])
+  @@index([customerName])
+  @@index([source, reference], where: "\"source\" = 'INVOICE'", unique: true, name: "erp_costing_records_one_per_invoice")
+  @@check(expression: "\"source\" IN ('QUICK', 'INVOICE')", name: "erp_costing_records_source")
+  @@map("erp_costing_records")
+}

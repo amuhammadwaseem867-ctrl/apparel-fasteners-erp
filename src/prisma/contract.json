@@ -40,6 +40,10 @@
       "model": "CashTransaction",
       "namespace": "public"
     },
+    "erp_costing_records": {
+      "model": "CostingRecord",
+      "namespace": "public"
+    },
     "erp_credit_note_lines": {
       "model": "CreditNoteLine",
       "namespace": "public"
@@ -1519,6 +1523,157 @@
               },
               "namespaceId": "public",
               "table": "erp_cash_transactions"
+            }
+          },
+          "CostingRecord": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdBy": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "customerName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "data": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "documentDate": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "materialCost": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "notCostedRevenue": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "pieces": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "profit": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "recordNumber": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "reference": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "revenue": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "source": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "createdBy": {
+                  "column": "createdBy"
+                },
+                "customerName": {
+                  "column": "customerName"
+                },
+                "data": {
+                  "column": "data"
+                },
+                "documentDate": {
+                  "column": "documentDate"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "materialCost": {
+                  "column": "materialCost"
+                },
+                "notCostedRevenue": {
+                  "column": "notCostedRevenue"
+                },
+                "pieces": {
+                  "column": "pieces"
+                },
+                "profit": {
+                  "column": "profit"
+                },
+                "recordNumber": {
+                  "column": "recordNumber"
+                },
+                "reference": {
+                  "column": "reference"
+                },
+                "revenue": {
+                  "column": "revenue"
+                },
+                "source": {
+                  "column": "source"
+                }
+              },
+              "namespaceId": "public",
+              "table": "erp_costing_records"
             }
           },
           "CreditNote": {
@@ -14670,6 +14825,152 @@
                 }
               ]
             },
+            "erp_costing_records": {
+              "checks": [
+                {
+                  "expression": "\"source\" IN ('QUICK', 'INVOICE')",
+                  "name": "erp_costing_records_source_f0c0ccad",
+                  "prefix": "erp_costing_records_source"
+                }
+              ],
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "createdBy": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "customerName": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "data": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "documentDate": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "dataType": "pg/uuid",
+                  "nullable": false
+                },
+                "materialCost": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "default": {
+                    "kind": "literal",
+                    "value": "0"
+                  },
+                  "nullable": false
+                },
+                "notCostedRevenue": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "default": {
+                    "kind": "literal",
+                    "value": "0"
+                  },
+                  "nullable": false
+                },
+                "pieces": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "default": {
+                    "kind": "literal",
+                    "value": "0"
+                  },
+                  "nullable": false
+                },
+                "profit": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "default": {
+                    "kind": "literal",
+                    "value": "0"
+                  },
+                  "nullable": false
+                },
+                "recordNumber": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "reference": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "revenue": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "default": {
+                    "kind": "literal",
+                    "value": "0"
+                  },
+                  "nullable": false
+                },
+                "source": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [
+                {
+                  "columns": [
+                    "customerName"
+                  ],
+                  "name": "erp_costing_records_customerName_idx_cd210f87",
+                  "prefix": "erp_costing_records_customerName_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "documentDate"
+                  ],
+                  "name": "erp_costing_records_documentDate_idx_10f15229",
+                  "prefix": "erp_costing_records_documentDate_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "source",
+                    "reference"
+                  ],
+                  "name": "erp_costing_records_one_per_invoice_e3c33e5b",
+                  "prefix": "erp_costing_records_one_per_invoice",
+                  "unique": true,
+                  "where": "\"source\" = 'INVOICE'"
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "recordNumber"
+                  ]
+                }
+              ]
+            },
             "erp_credit_note_lines": {
               "checks": [
                 {
@@ -24492,10 +24793,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "17c4c0b0a08e9da95d131af9c8b779f84417a554283c8216304be5fa0b5a0a66"
+    "storageHash": "5ababcdcc5b7e1ec46d27c32405512b310fd1f95bd4d217c2335d48b01b5c25c"
   },
   "execution": {
-    "executionHash": "6a1d0c4c9054d8e1a3445f03bfff9c733ccee81c7c150dcfbfbb703204ffd20b",
+    "executionHash": "6fb814ab3eefdb7acc08f0a55a44a73ca45117cfe146606915b7ae762e2212ae",
     "mutations": {
       "defaults": [
         {
@@ -24582,6 +24883,17 @@
           },
           "ref": {
             "entry": "erp_cash_transactions",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "erp_costing_records",
             "field": "id",
             "namespace": "public"
           }

@@ -113,3 +113,33 @@ test("2-way open end (D-059): two-way pin box set, two sliders, gap brass recove
   assert.equal(get(oneWay, "puller").required, 300);
   close(twoWay.scrap.kg, oneWay.scrap.kg, 9);
 });
+
+test("invoice lines (D-060): aluminium chain, customer's slider or chain, chain rolls by the meter, plating jobs", () => {
+  const order = costOrder([
+    line(1, "#5 Aluminum Zipper Open End Right Insert with DA Puller", "20 Inch", 100, "Silver"),
+    line(2, "#5 Metal Zipper Open End Right Insert with Customer Slider", "20 Inch", 100, "Antique Brass"),
+    { ...line(3, "#4.5 Brass Chain Roll", "", 250, "Golden Brass"), unit: "MTR" },
+    { ...line(4, "#4.5 Brass Auto-gap chain rolls for Plating", "", 100, "Antique Silver"), unit: "Mtr" },
+    line(5, "#5 Metal Zipper Open End (Use AF Pin Box And Stopper)", "26 Inch", 50, "Antique Brass"),
+    line(6, "#5 Sliders", "#5", 2000, ""),
+  ], DEFAULT_COSTING_RATES, 0);
+  const find = (label) => order.sections.find((section) => `${section.gauge} ${section.end} ${section.material} ${section.chainSource}` === label);
+  const keys = (section) => section.items.map((item) => item.key);
+  const alu = find("5 Open end Aluminium full");
+  assert.deepEqual(keys(alu), ["aluminium-chain", "pin-box", "puller", "top-stop", "packing"]);
+  close(alu.items[0].expense, alu.meters * 61, 6);
+  assert.equal(alu.scrap.value, 0);
+  const customerSlider = find("5 Open end Brass full");
+  assert.ok(!keys(customerSlider).includes("puller"), "the customer's slider costs us nothing");
+  assert.equal(customerSlider.customerSliders, 100);
+  const chain = find("4.5 Chain roll Brass full");
+  assert.equal(chain.countUnit, "Mtr");
+  close(chain.meters, 250);
+  assert.deepEqual(keys(chain), ["tape", "dyeing", "brass"], "chain only: no stops, sliders or packing (golden brass is not plated)");
+  const plating = find("4.5 Chain roll Brass plating-only");
+  assert.deepEqual(keys(plating), ["plating"]);
+  close(plating.materialCost, 100 * DEFAULT_COSTING_RATES.gauges[0].platingPerMeter, 6);
+  const parts = find("5 Open end Brass no-chain");
+  assert.deepEqual(keys(parts), ["pin-box", "top-stop", "packing"], "Use AF pin box and stopper: only those are ours");
+  assert.deepEqual(order.skipped.map((row) => row.lineNo), [6], "loose sliders are not costed");
+});

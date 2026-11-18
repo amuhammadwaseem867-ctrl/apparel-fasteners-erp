@@ -55,6 +55,7 @@ export const NAV_GROUPS = [
           { label: "All orders", href: "/sales/orders" },
           { label: "Customers", href: "/sales/customers" },
           { label: "Quick costing", href: "/sales/quick-costing" },
+          { label: "Costing history", href: "/sales/costing-history" },
           { label: "Costing rates", href: "/sales/costing-rates" },
         ],
       },

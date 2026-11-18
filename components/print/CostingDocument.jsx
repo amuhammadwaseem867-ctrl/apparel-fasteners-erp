@@ -12,13 +12,19 @@ const day = (value) => (value ? new Date(`${String(value).slice(0, 10)}T00:00:00
 const n = (value, digits = 2) => Number(value ?? 0).toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
 const pkr = (value) => n(value, 2);
 
+/* "#5 Open end", "#5 Open end · Aluminium". */
+export const sectionLabel = (section) => `#${section.gauge} ${section.end}${section.material === "Aluminium" ? " · Aluminium" : ""}${
+  section.chainSource === "no-chain" ? " · customer's chain" : section.chainSource === "plating-only" ? " · plating job" : ""}`;
+
 function Section({ section, number }) {
+  const brass = section.material !== "Aluminium" && (section.chainSource ?? "full") === "full";
+  const unit = section.countUnit === "Mtr" ? "m" : "pcs";
   const g = section.lines[0];
   return (
     <>
-      <Af7Section number={`${number}.1`} title={`#${section.gauge} ${section.end} · chain roll (tape) consumption`}>
+      <Af7Section number={`${number}.1`} title={`${sectionLabel(section)} · chain roll (tape) consumption`}>
         <table className="af7__table">
-          <thead><tr><th>#</th><th>Item / finish</th><th>Qty (pcs)</th><th>Size</th><th>Size (cm)</th><th>Cut (cm, with margin)</th><th>Meters</th><th>Rolls</th><th>Tape (kg)</th></tr></thead>
+          <thead><tr><th>#</th><th>Item / finish</th><th>Qty ({unit})</th><th>Size</th><th>Size (cm)</th><th>Cut (cm, with margin)</th><th>Meters</th><th>Rolls</th><th>Tape (kg)</th></tr></thead>
           <tbody>
             {section.lines.map((line) => (
               <tr key={line.lineNo}>
@@ -38,7 +44,7 @@ function Section({ section, number }) {
         </table>
       </Af7Section>
 
-      <Af7Section number={`${number}.2`} title="Brass per piece and complete order (teeth to teeth)">
+      {brass && <Af7Section number={`${number}.2`} title="Brass per piece and complete order (teeth to teeth)">
         <table className="af7__table">
           <thead><tr><th>#</th><th>Teeth length (cm)</th><th>Qty</th><th>Meters per zipper</th><th>Brass per meter (g)</th><th>Per zipper (g)</th><th>Total brass (g)</th><th>Total brass (kg)</th></tr></thead>
           <tbody>
@@ -57,10 +63,10 @@ function Section({ section, number }) {
             <tr className="af7__total-row"><td colSpan={2}>TOTAL</td><td className="num">{n(section.pieces, 0)}</td><td colSpan={3} /><td className="num">{n(section.brassKg * 1000, 2)}</td><td className="num">{n(section.brassKg, 3)}</td></tr>
           </tbody>
         </table>
-        {section.end !== "Close end" && <p className="af7__small" style={{ padding: "0 8px" }}>{section.end}: the teeth cut from the gap ({n(section.lines.reduce((sum, line) => sum + line.gapBrassKg, 0), 3)} kg brass) are recovered as scrap.</p>}
-      </Af7Section>
+        {(section.end === "Open end" || section.end === "2-way open end") && <p className="af7__small" style={{ padding: "0 8px" }}>{section.end}: the teeth cut from the gap ({n(section.lines.reduce((sum, line) => sum + line.gapBrassKg, 0), 3)} kg brass) are recovered as scrap.</p>}
+      </Af7Section>}
 
-      <Af7Section number={`${number}.3`} title="Wastage and recoverable brass scrap">
+      {brass && <Af7Section number={`${number}.3`} title="Wastage and recoverable brass scrap">
         <table className="af7__table">
           <thead><tr><th>Wastage (kg)</th><th>Wastage in rolls</th><th>Wastage in meters</th><th>Brass wastage (kg)</th><th>Tape wastage (kg)</th><th>Brass scrap (kg)</th><th>Recoverable value (PKR)</th><th>Per piece</th></tr></thead>
           <tbody>
@@ -77,8 +83,12 @@ function Section({ section, number }) {
           </tbody>
         </table>
         {g && <p className="af7__small" style={{ padding: "0 8px" }}>Wastage by order meters: under 1,000 m 0.04 kg, to 2,000 m 0.2 kg, above 0.1 kg per 1,000 m. Scrap recovered at the brass rate × recovery %.</p>}
-      </Af7Section>
+      </Af7Section>}
 
+      {section.chainSource === "no-chain" && <p className="af7__small" style={{ padding: "0 8px" }}>The customer gives the chain roll: no tape, teeth or dyeing of ours.</p>}
+      {section.chainSource === "plating-only" && <p className="af7__small" style={{ padding: "0 8px" }}>Plating job on the customer&rsquo;s chain: plating per meter only.</p>}
+      {!brass && (section.chainSource ?? "full") === "full" && <p className="af7__small" style={{ padding: "0 8px" }}>Aluminium: the chain is bought ready-made, costed per meter; no tape, brass or scrap of ours.</p>}
+      {section.customerSliders > 0 && <p className="af7__small" style={{ padding: "0 8px" }}>Customer&rsquo;s sliders on {n(section.customerSliders, 0)} pcs: no slider cost.</p>}
       <Af7Section number={`${number}.4`} title="Material requirement & consumption">
         <table className="af7__table">
           <thead><tr><th>Item</th><th>Required</th><th>Rejection</th><th>Total utilized</th><th>Unit price</th><th>Rejection value</th><th>Total expense</th><th>Per piece</th></tr></thead>
@@ -97,7 +107,7 @@ function Section({ section, number }) {
             ))}
             <tr className="af7__total-row"><td colSpan={5}>TOTAL</td><td className="num">{pkr(section.rejectionValue)}</td><td className="num">{pkr(section.totalExpense)}</td><td className="num">{n(section.totalExpense / section.pieces, 4)}</td></tr>
             <tr><td colSpan={6}>Less: recoverable brass scrap</td><td className="num">−{pkr(section.scrap.value)}</td><td className="num">−{n(section.scrap.perPiece, 4)}</td></tr>
-            <tr className="af7__total-row"><td colSpan={6}>TOTAL MATERIAL COST AGAINST ORDER (#{section.gauge} {section.end})</td><td className="num">{pkr(section.materialCost)}</td><td className="num">{n(section.perPiece, 4)}</td></tr>
+            <tr className="af7__total-row"><td colSpan={6}>TOTAL MATERIAL COST AGAINST ORDER ({sectionLabel(section)})</td><td className="num">{pkr(section.materialCost)}</td><td className="num">{n(section.perPiece, 4)}</td></tr>
           </tbody>
         </table>
       </Af7Section>
@@ -108,17 +118,23 @@ function Section({ section, number }) {
 export default function CostingDocument({ data, company }) {
   const { order, sections, skipped, totals } = data;
   const issued = sections.flatMap((section) => section.items
-    .filter((item) => ["tape", "brass", "bottom-stop", "pin-box", "two-way-pin-box", "puller", "top-stop"].includes(item.key))
-    .map((item) => ({ ...item, label: `#${section.gauge} ${section.end} · ${item.name}` })));
+    .filter((item) => ["tape", "brass", "aluminium-chain", "bottom-stop", "pin-box", "two-way-pin-box", "puller", "top-stop"].includes(item.key))
+    .map((item) => ({ ...item, label: `${sectionLabel(section)} · ${item.name}` })));
 
   return (
     <Af7Page
       company={company}
-      title={data.quick ? "QUICK COSTING" : "ORDER COSTING"}
+      title={data.quick ? "QUICK COSTING" : data.invoice ? "INVOICE COSTING" : "ORDER COSTING"}
       longTitle
-      subtitle={<Af7Fields rows={[[data.quick ? "Reference" : "Order no.", order.orderNumber], ["Dated", day(order.orderDate)], ["Customer", order.customerName]]} />}
+      subtitle={<Af7Fields rows={[
+        ...(data.recordNumber ? [["Costing no.", data.recordNumber]] : []),
+        [data.quick ? "Reference" : data.invoice ? "Invoice no." : "Order no.", order.orderNumber],
+        ["Dated", day(order.orderDate)],
+        ["Customer", order.customerName],
+      ]} />}
     >
-      <p className="af7__notice">CONFIDENTIAL · internal costing, not for the customer.{data.quick ? " Costing only: no order, invoice or accounting entry was made." : ""}</p>
+      <p className="af7__notice">CONFIDENTIAL · internal costing, not for the customer.{data.quick || data.invoice ? " Costing only: no order, invoice or accounting entry was made." : ""}</p>
+      {(data.notes ?? []).map((note) => <p key={note} className="af7__small" style={{ padding: "0 8px" }}>{note}</p>)}
       {!data.ratesConfigured && <p className="af7__small" style={{ padding: "0 8px" }}>Rates: the master costing sheet&rsquo;s defaults. Set your own in Costing rates.</p>}
 
       <Af7Section number="1" title="Order summary">
@@ -148,7 +164,7 @@ export default function CostingDocument({ data, company }) {
       </Af7Section>
 
       {sections.length === 0 && <p className="af7__notice">No line could be costed. Each line needs a gauge in its item name (e.g. #5), a size and a quantity.</p>}
-      {sections.map((section, index) => <Section key={`${section.gauge}-${section.end}`} section={section} number={index + 2} />)}
+      {sections.map((section, index) => <Section key={sectionLabel(section) + section.countUnit} section={section} number={index + 2} />)}
 
       {issued.length > 0 && (
         <Af7Section number={sections.length + 2} title="Stock-out receipt · inventory issued to production">

@@ -18,9 +18,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'17c4c0b0a08e9da95d131af9c8b779f84417a554283c8216304be5fa0b5a0a66'>;
+  StorageHashBase<'5ababcdcc5b7e1ec46d27c32405512b310fd1f95bd4d217c2335d48b01b5c25c'>;
 export type ExecutionHash =
-  ExecutionHashBase<'6a1d0c4c9054d8e1a3445f03bfff9c733ccee81c7c150dcfbfbb703204ffd20b'>;
+  ExecutionHashBase<'6fb814ab3eefdb7acc08f0a55a44a73ca45117cfe146606915b7ae762e2212ae'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -346,6 +346,22 @@ export type FieldOutputTypes = {
       readonly voidReason: CodecTypes['pg/text@1']['output'] | null;
       readonly voidedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
       readonly voidedBy: CodecTypes['pg/uuid@1']['output'] | null;
+    };
+    readonly CostingRecord: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['output'];
+      readonly customerName: CodecTypes['pg/text@1']['output'] | null;
+      readonly data: CodecTypes['pg/text@1']['output'];
+      readonly documentDate: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly materialCost: CodecTypes['pg/numeric@1']['output'];
+      readonly notCostedRevenue: CodecTypes['pg/numeric@1']['output'];
+      readonly pieces: CodecTypes['pg/numeric@1']['output'];
+      readonly profit: CodecTypes['pg/numeric@1']['output'];
+      readonly recordNumber: CodecTypes['pg/text@1']['output'];
+      readonly reference: CodecTypes['pg/text@1']['output'] | null;
+      readonly revenue: CodecTypes['pg/numeric@1']['output'];
+      readonly source: CodecTypes['pg/text@1']['output'];
     };
     readonly CreditNote: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -1523,6 +1539,22 @@ export type FieldInputTypes = {
       readonly voidedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly voidedBy: CodecTypes['pg/uuid@1']['input'] | null;
     };
+    readonly CostingRecord: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['input'];
+      readonly customerName: CodecTypes['pg/text@1']['input'] | null;
+      readonly data: CodecTypes['pg/text@1']['input'];
+      readonly documentDate: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly materialCost: CodecTypes['pg/numeric@1']['input'];
+      readonly notCostedRevenue: CodecTypes['pg/numeric@1']['input'];
+      readonly pieces: CodecTypes['pg/numeric@1']['input'];
+      readonly profit: CodecTypes['pg/numeric@1']['input'];
+      readonly recordNumber: CodecTypes['pg/text@1']['input'];
+      readonly reference: CodecTypes['pg/text@1']['input'] | null;
+      readonly revenue: CodecTypes['pg/numeric@1']['input'];
+      readonly source: CodecTypes['pg/text@1']['input'];
+    };
     readonly CreditNote: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly createdBy: CodecTypes['pg/uuid@1']['input'];
@@ -2699,6 +2731,22 @@ export type StorageColumnTypes = {
       readonly voidedBy: CodecTypes['pg/uuid@1']['output'] | null;
       readonly voidReason: CodecTypes['pg/text@1']['output'] | null;
     };
+    readonly erp_costing_records: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['output'];
+      readonly customerName: CodecTypes['pg/text@1']['output'] | null;
+      readonly data: CodecTypes['pg/text@1']['output'];
+      readonly documentDate: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly materialCost: CodecTypes['pg/numeric@1']['output'];
+      readonly notCostedRevenue: CodecTypes['pg/numeric@1']['output'];
+      readonly pieces: CodecTypes['pg/numeric@1']['output'];
+      readonly profit: CodecTypes['pg/numeric@1']['output'];
+      readonly recordNumber: CodecTypes['pg/text@1']['output'];
+      readonly reference: CodecTypes['pg/text@1']['output'] | null;
+      readonly revenue: CodecTypes['pg/numeric@1']['output'];
+      readonly source: CodecTypes['pg/text@1']['output'];
+    };
     readonly erp_credit_note_lines: {
       readonly creditNoteId: CodecTypes['pg/uuid@1']['output'];
       readonly discountAmount: CodecTypes['pg/numeric@1']['output'];
@@ -3874,6 +3922,22 @@ export type StorageColumnInputTypes = {
       readonly voidedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly voidedBy: CodecTypes['pg/uuid@1']['input'] | null;
       readonly voidReason: CodecTypes['pg/text@1']['input'] | null;
+    };
+    readonly erp_costing_records: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly createdBy: CodecTypes['pg/uuid@1']['input'];
+      readonly customerName: CodecTypes['pg/text@1']['input'] | null;
+      readonly data: CodecTypes['pg/text@1']['input'];
+      readonly documentDate: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly materialCost: CodecTypes['pg/numeric@1']['input'];
+      readonly notCostedRevenue: CodecTypes['pg/numeric@1']['input'];
+      readonly pieces: CodecTypes['pg/numeric@1']['input'];
+      readonly profit: CodecTypes['pg/numeric@1']['input'];
+      readonly recordNumber: CodecTypes['pg/text@1']['input'];
+      readonly reference: CodecTypes['pg/text@1']['input'] | null;
+      readonly revenue: CodecTypes['pg/numeric@1']['input'];
+      readonly source: CodecTypes['pg/text@1']['input'];
     };
     readonly erp_credit_note_lines: {
       readonly creditNoteId: CodecTypes['pg/uuid@1']['input'];
@@ -5064,6 +5128,23 @@ export namespace Models {
     voidReason: CodecTypes['pg/text@1']['output'] | null;
     voidedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
     voidedBy: CodecTypes['pg/uuid@1']['output'] | null;
+    readonly [RelationKeys]?: never;
+  };
+  export type public_CostingRecord = {
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    createdBy: CodecTypes['pg/uuid@1']['output'];
+    customerName: CodecTypes['pg/text@1']['output'] | null;
+    data: CodecTypes['pg/text@1']['output'];
+    documentDate: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/uuid@1']['output'];
+    materialCost: CodecTypes['pg/numeric@1']['output'];
+    notCostedRevenue: CodecTypes['pg/numeric@1']['output'];
+    pieces: CodecTypes['pg/numeric@1']['output'];
+    profit: CodecTypes['pg/numeric@1']['output'];
+    recordNumber: CodecTypes['pg/text@1']['output'];
+    reference: CodecTypes['pg/text@1']['output'] | null;
+    revenue: CodecTypes['pg/numeric@1']['output'];
+    source: CodecTypes['pg/text@1']['output'];
     readonly [RelationKeys]?: never;
   };
   export type public_CreditNote = {
@@ -6366,6 +6447,7 @@ export declare const models: {
     CalendarDay: Models.public_CalendarDay;
     Capa: Models.public_Capa;
     CashTransaction: Models.public_CashTransaction;
+    CostingRecord: Models.public_CostingRecord;
     CreditNote: Models.public_CreditNote;
     CreditNoteLine: Models.public_CreditNoteLine;
     Customer: Models.public_Customer;
@@ -7302,6 +7384,139 @@ type ContractBase = Omit<
                   readonly prefix: 'erp_cash_transactions_kind_transactionDate_idx';
                   readonly columns: readonly ['kind', 'transactionDate'];
                   readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [];
+            };
+            readonly erp_costing_records: {
+              columns: {
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly createdBy: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly customerName: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly data: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly documentDate: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly materialCost: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly notCostedRevenue: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly pieces: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly profit: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly recordNumber: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly reference: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly revenue: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
+                  };
+                  readonly many: false;
+                };
+                readonly source: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['recordNumber'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'erp_costing_records_customerName_idx_cd210f87';
+                  readonly prefix: 'erp_costing_records_customerName_idx';
+                  readonly columns: readonly ['customerName'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'erp_costing_records_documentDate_idx_10f15229';
+                  readonly prefix: 'erp_costing_records_documentDate_idx';
+                  readonly columns: readonly ['documentDate'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'erp_costing_records_one_per_invoice_e3c33e5b';
+                  readonly prefix: 'erp_costing_records_one_per_invoice';
+                  readonly columns: readonly ['source', 'reference'];
+                  readonly where: '"source" = \'INVOICE\'';
+                  readonly unique: true;
                 },
               ];
               foreignKeys: readonly [];
@@ -15692,6 +15907,10 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'CashTransaction';
     };
+    readonly erp_costing_records: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'CostingRecord';
+    };
     readonly erp_credit_note_lines: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'CreditNoteLine';
@@ -16658,6 +16877,90 @@ type ContractBase = Omit<
                 readonly voidReason: { readonly column: 'voidReason' };
                 readonly voidedAt: { readonly column: 'voidedAt' };
                 readonly voidedBy: { readonly column: 'voidedBy' };
+              };
+            };
+          };
+          readonly CostingRecord: {
+            readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly createdBy: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly customerName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly data: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly documentDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly materialCost: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly notCostedRevenue: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly pieces: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly profit: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly recordNumber: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly reference: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly revenue: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly source: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'erp_costing_records';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly createdBy: { readonly column: 'createdBy' };
+                readonly customerName: { readonly column: 'customerName' };
+                readonly data: { readonly column: 'data' };
+                readonly documentDate: { readonly column: 'documentDate' };
+                readonly id: { readonly column: 'id' };
+                readonly materialCost: { readonly column: 'materialCost' };
+                readonly notCostedRevenue: { readonly column: 'notCostedRevenue' };
+                readonly pieces: { readonly column: 'pieces' };
+                readonly profit: { readonly column: 'profit' };
+                readonly recordNumber: { readonly column: 'recordNumber' };
+                readonly reference: { readonly column: 'reference' };
+                readonly revenue: { readonly column: 'revenue' };
+                readonly source: { readonly column: 'source' };
               };
             };
           };
@@ -24088,6 +24391,14 @@ type ContractBase = Omit<
           readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'erp_cash_transactions';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'erp_costing_records';
             readonly field: 'id';
             readonly namespace: 'public';
           };
