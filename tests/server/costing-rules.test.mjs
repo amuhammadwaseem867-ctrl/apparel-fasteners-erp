@@ -92,3 +92,24 @@ test("dyeing per meter on all tape, plating per meter only on plated finishes; t
   close(order.totals.profit, 50000 - order.totals.materialCost, 6);
   close(order.totals.perPiece, order.totals.materialCost / 2100, 6);
 });
+
+test("2-way open end (D-059): two-way pin box set, two sliders, gap brass recovered; own section", async () => {
+  const { endOf } = await import("../../server/costing/costing-rules.ts");
+  assert.equal(endOf("#5 Metal Zipper 2 Way Open End"), "2-way open end");
+  assert.equal(endOf("#5 Two-Way zipper"), "2-way open end");
+  assert.equal(endOf("#5 Metal Zipper Open End"), "Open end");
+  assert.equal(endOf("#5 Metal Zipper Close End"), "Close end");
+  const order = costOrder([
+    line(1, "#5 Metal Zipper 2 Way Open End", "26 Inch", 300, "Antique Brass"),
+    line(2, "#5 Metal Zipper Open End", "26 Inch", 300, "Antique Brass"),
+  ], DEFAULT_COSTING_RATES, 0);
+  const twoWay = order.sections.find((section) => section.end === "2-way open end");
+  const oneWay = order.sections.find((section) => section.end === "Open end");
+  const get = (section, key) => section.items.find((item) => item.key === key);
+  assert.equal(get(twoWay, "two-way-pin-box").required, 300);
+  close(get(twoWay, "two-way-pin-box").expense, 300 * 2.0969);
+  assert.equal(get(twoWay, "puller").required, 600, "two sliders per zipper");
+  assert.ok(!get(twoWay, "pin-box") && !get(twoWay, "bottom-stop"));
+  assert.equal(get(oneWay, "puller").required, 300);
+  close(twoWay.scrap.kg, oneWay.scrap.kg, 9);
+});

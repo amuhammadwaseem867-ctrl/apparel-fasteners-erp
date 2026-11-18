@@ -21,8 +21,9 @@
  *   scrap value    = (wasted brass + gap brass) x brass price x 65%
  *   items          = (required + wastage) x unit price: tape kg, dyeing per
  *                    meter, plating per meter (plated finishes), brass kg,
- *                    bottom stop (closed end) or pin box set (open end),
- *                    puller, 2 top stops per piece, packing
+ *                    bottom stop (closed end), pin box set (open end) or
+ *                    two-way pin box set and 2 sliders (2-way open end,
+ *                    D-059), puller, 2 top stops per piece, packing
  *   material cost  = sum of items - scrap value
  * Pure functions: rates come in, numbers go out (rounded only for display).
  */
@@ -41,6 +42,8 @@ export type GaugeRates = {
   platingPerMeter: number;
   bottomStopPerPc: number;
   pinBoxSetPerPc: number;
+  /* 2-way open end (D-059): its pin box set, in place of the one-way set. */
+  twoWayPinBoxSetPerPc: number;
   topStopPerPc: number;
   pullerPerPc: number;
 };
@@ -71,12 +74,12 @@ export const DEFAULT_COSTING_RATES: CostingRates = {
     {
       gauge: "4.5", marginCm: 3.5, rollMeters: 200, tapeMetersPerKg: 90, brassGramsPerMeter: 26.88, rollWeightKg: 7.6, brassKgPerRoll: 5.88,
       openEndGapCm: 4.5, tapePricePerKg: 487.5, dyeingPerMeter: 350 / 90, platingPerMeter: 4.873,
-      bottomStopPerPc: 2.65 * 0.273, pinBoxSetPerPc: 2.677, topStopPerPc: 2.65 * 0.0943, pullerPerPc: 9,
+      bottomStopPerPc: 2.65 * 0.273, pinBoxSetPerPc: 2.677, twoWayPinBoxSetPerPc: 2.0969, topStopPerPc: 2.65 * 0.0943, pullerPerPc: 9,
     },
     {
       gauge: "5", marginCm: 4, rollMeters: 100, tapeMetersPerKg: 75, brassGramsPerMeter: 41.67, rollWeightKg: 5.5, brassKgPerRoll: 4.16,
       openEndGapCm: 4.5, tapePricePerKg: 244, dyeingPerMeter: 500 / 90, platingPerMeter: 4.873,
-      bottomStopPerPc: 1.041, pinBoxSetPerPc: 2.677, topStopPerPc: 0.617, pullerPerPc: 31.4,
+      bottomStopPerPc: 1.041, pinBoxSetPerPc: 2.677, twoWayPinBoxSetPerPc: 2.0969, topStopPerPc: 0.617, pullerPerPc: 31.4,
     },
   ],
 };
@@ -109,6 +112,12 @@ export function sizeInCm(size: string | null): number | null {
 
 export const isOpenEnd = (productName: string) => /open/i.test(productName);
 
+/* "2 Way", "2-way", "Two Way": a two-way separating (open end) zipper with two sliders (D-059). */
+export const isTwoWay = (productName: string) => /\b(2|two)[\s-]*way\b/i.test(productName);
+
+export type ZipperEnd = "Open end" | "Close end" | "2-way open end";
+export const endOf = (productName: string): ZipperEnd => (isTwoWay(productName) ? "2-way open end" : isOpenEnd(productName) ? "Open end" : "Close end");
+
 export function isPlated(finish: string | null, rates: CostingRates) {
   const text = (finish ?? "").toLowerCase();
   return Boolean(text) && rates.platedFinishes.some((keyword) => keyword && text.includes(keyword.toLowerCase()));
@@ -124,7 +133,7 @@ export function wastageKg(meters: number, rates: CostingRates) {
 
 export type CostedLine = CostingLineInput & {
   gauge: string;
-  end: "Open end" | "Close end";
+  end: ZipperEnd;
   sizeCm: number;
   cutCm: number;
   meters: number;
@@ -152,7 +161,7 @@ export type CostItem = {
 
 export type CostSection = {
   gauge: string;
-  end: "Open end" | "Close end";
+  end: ZipperEnd;
   pieces: number;
   meters: number;
   rolls: number;
@@ -179,7 +188,8 @@ export function costLine(line: CostingLineInput, rates: CostingRates): { line?: 
   const sizeCm = sizeInCm(line.size);
   if (!sizeCm) return skip("No size on the line.");
   if (!(line.quantity > 0)) return skip("No quantity.");
-  const open = isOpenEnd(line.productName);
+  const end = endOf(line.productName);
+  const open = end !== "Close end";
   const cutCm = sizeCm + gaugeRates.marginCm;
   const meters = (cutCm * line.quantity) / 100;
   const teethCm = sizeCm - rates.teethDeductionCm;
@@ -188,7 +198,7 @@ export function costLine(line: CostingLineInput, rates: CostingRates): { line?: 
     line: {
       ...line,
       gauge,
-      end: open ? "Open end" : "Close end",
+      end,
       sizeCm,
       cutCm,
       meters,
@@ -228,17 +238,20 @@ export function costSection(lines: CostedLine[], rates: CostingRates): CostSecti
 
   const scrapKg = wastage.brassKg + gapBrassKg;
   const scrapValue = scrapKg * rates.brassPricePerKg * (rates.scrapRecoveryPercent / 100);
-  const open = end === "Open end";
 
   const items = [
     item("tape", "Tape", "Kg", tapeKg, wastage.tapeKg, g.tapePricePerKg, pieces),
     item("dyeing", "Dyeing", "Meter", meters, wastage.meters, g.dyeingPerMeter, pieces),
     ...(platedMeters > 0 ? [item("plating", "Plating", "Meter", platedMeters, wastage.meters * (platedMeters / meters), g.platingPerMeter, pieces)] : []),
     item("brass", "Brass", "Kg", brassKg, wastage.brassKg + gapBrassKg, rates.brassPricePerKg, pieces),
-    open
-      ? item("pin-box", "Pin box set", "Pcs", pieces, 0, g.pinBoxSetPerPc, pieces)
-      : item("bottom-stop", "Bottom stop", "Pcs", pieces, 0, g.bottomStopPerPc, pieces),
-    item("puller", "Puller / slider", "Pcs", pieces, 0, g.pullerPerPc, pieces),
+    end === "2-way open end"
+      ? item("two-way-pin-box", "Two-way pin box set", "Pcs", pieces, 0, g.twoWayPinBoxSetPerPc, pieces)
+      : end === "Open end"
+        ? item("pin-box", "Pin box set", "Pcs", pieces, 0, g.pinBoxSetPerPc, pieces)
+        : item("bottom-stop", "Bottom stop", "Pcs", pieces, 0, g.bottomStopPerPc, pieces),
+    end === "2-way open end"
+      ? item("puller", "Puller / slider (2 per piece)", "Pcs", pieces * 2, 0, g.pullerPerPc, pieces)
+      : item("puller", "Puller / slider", "Pcs", pieces, 0, g.pullerPerPc, pieces),
     item("top-stop", "Top stop (2 per piece)", "Pcs", pieces * 2, 0, g.topStopPerPc, pieces),
     item("packing", "Packing", "Pcs", pieces, 0, rates.packingPerPc, pieces),
   ];

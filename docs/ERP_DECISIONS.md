@@ -1569,3 +1569,10 @@ navigation.
 - It only calculates with the costing rates (D-055): no order, invoice,
   stock movement or accounting entry is made, and nothing is saved. The
   document goes to the print view through this browser tab only.
+- 2-way zippers: an item named "2 Way" / "Two Way" (e.g. "#5 Metal Zipper
+  2 Way Open End") is costed as a 2-way open end, in its own section: a
+  two-way pin box set (Costing rates, default 2.0969 PKR from the
+  inventory sheet's "Two Way Pins Set") instead of the pin box set, 2
+  sliders/pullers per piece, and the open-end gap brass recovered as
+  scrap. Order costing reports use the same rule. Rates saved before
+  this get the default 2-way rate until changed.

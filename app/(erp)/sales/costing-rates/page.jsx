@@ -39,6 +39,7 @@ const GAUGE_FIELDS = [
   ["platingPerMeter", "Plating per meter"],
   ["bottomStopPerPc", "Bottom stop per pc (close end)"],
   ["pinBoxSetPerPc", "Pin box set per pc (open end)"],
+  ["twoWayPinBoxSetPerPc", "2-way pin box set per pc (2-way open end)"],
   ["topStopPerPc", "Top stop per pc (×2)"],
   ["pullerPerPc", "Puller / slider per pc"],
 ];

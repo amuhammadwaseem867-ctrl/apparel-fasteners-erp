@@ -57,7 +57,7 @@ function Section({ section, number }) {
             <tr className="af7__total-row"><td colSpan={2}>TOTAL</td><td className="num">{n(section.pieces, 0)}</td><td colSpan={3} /><td className="num">{n(section.brassKg * 1000, 2)}</td><td className="num">{n(section.brassKg, 3)}</td></tr>
           </tbody>
         </table>
-        {section.end === "Open end" && <p className="af7__small" style={{ padding: "0 8px" }}>Open end: the teeth cut from the gap ({n(section.lines.reduce((sum, line) => sum + line.gapBrassKg, 0), 3)} kg brass) are recovered as scrap.</p>}
+        {section.end !== "Close end" && <p className="af7__small" style={{ padding: "0 8px" }}>{section.end}: the teeth cut from the gap ({n(section.lines.reduce((sum, line) => sum + line.gapBrassKg, 0), 3)} kg brass) are recovered as scrap.</p>}
       </Af7Section>
 
       <Af7Section number={`${number}.3`} title="Wastage and recoverable brass scrap">
@@ -108,7 +108,7 @@ function Section({ section, number }) {
 export default function CostingDocument({ data, company }) {
   const { order, sections, skipped, totals } = data;
   const issued = sections.flatMap((section) => section.items
-    .filter((item) => ["tape", "brass", "bottom-stop", "pin-box", "puller", "top-stop"].includes(item.key))
+    .filter((item) => ["tape", "brass", "bottom-stop", "pin-box", "two-way-pin-box", "puller", "top-stop"].includes(item.key))
     .map((item) => ({ ...item, label: `#${section.gauge} ${section.end} · ${item.name}` })));
 
   return (

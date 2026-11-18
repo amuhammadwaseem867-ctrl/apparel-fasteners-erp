@@ -16,7 +16,10 @@ import { QUICK_COSTING_KEY } from "@/lib/costing/quickCosting";
 
 import "@/components/inventory/InventoryWorkspace.css";
 
-const ITEMS = ["#5 Metal Zipper Close End", "#5 Metal Zipper Open End", "#4.5 Metal Zipper Close End", "#4.5 Metal Zipper Open End"];
+const ITEMS = [
+  "#5 Metal Zipper Close End", "#5 Metal Zipper Open End", "#5 Metal Zipper 2 Way Open End",
+  "#4.5 Metal Zipper Close End", "#4.5 Metal Zipper Open End", "#4.5 Metal Zipper 2 Way Open End",
+];
 const today = () => new Date().toISOString().slice(0, 10);
 const blankLine = () => ({ productName: "#5 Metal Zipper Close End", size: "", finish: "", quantity: "", unitPrice: "" });
 const n = (value, digits = 2) => Number(value ?? 0).toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });

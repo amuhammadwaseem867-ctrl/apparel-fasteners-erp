@@ -48,3 +48,17 @@ test("quick costing refuses lines without an item or quantity", async () => {
   await assert.rejects(getQuickCosting({ date: "2026-11-16", lines: [] }), (error) => error.code === "VALIDATION_FAILED");
   await assert.rejects(getQuickCosting({ date: "2026-11-16", lines: [{ productName: "#5 Metal Zipper", size: "7 Inch", quantity: 0 }] }), (error) => error.code === "VALIDATION_FAILED");
 });
+
+test("rates saved before 2-way zippers get the default 2-way pin box rate; a saved one is kept", async () => {
+  const { setCostingRates } = await import("../../server/costing/costing.service.ts");
+  const actor = (await import("node:crypto")).randomUUID();
+  const old = { ...DEFAULT_COSTING_RATES, gauges: DEFAULT_COSTING_RATES.gauges.map(({ twoWayPinBoxSetPerPc, ...rest }) => rest) };
+  try {
+    const saved = await setCostingRates(old, actor);
+    assert.deepEqual(saved.gauges.map((gauge) => gauge.twoWayPinBoxSetPerPc), [2.0969, 2.0969]);
+    const changed = await setCostingRates({ ...DEFAULT_COSTING_RATES, gauges: DEFAULT_COSTING_RATES.gauges.map((gauge) => ({ ...gauge, twoWayPinBoxSetPerPc: 3.5 })) }, actor);
+    assert.deepEqual(changed.gauges.map((gauge) => gauge.twoWayPinBoxSetPerPc), [3.5, 3.5]);
+  } finally {
+    await db.runtime().query(db.raw.sql`delete from erp_app_settings where key = 'costing.rates' returning key`.returnsRow({ key: "pg/text@1" }).build());
+  }
+});

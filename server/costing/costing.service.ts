@@ -31,6 +31,8 @@ export const gaugeRatesSchema = z.object({
   platingPerMeter: rate,
   bottomStopPerPc: rate,
   pinBoxSetPerPc: rate,
+  // Rates saved before 2-way zippers (D-059) have none: the default is used.
+  twoWayPinBoxSetPerPc: rate.optional(),
   topStopPerPc: rate,
   pullerPerPc: rate,
 });
@@ -55,7 +57,13 @@ export async function getCostingRates(): Promise<CostingRates & { configured: bo
   if (!row) return { ...DEFAULT_COSTING_RATES, configured: false };
   const parsed = costingRatesSchema.safeParse(JSON.parse(row.value));
   if (!parsed.success) throw new AppError("The saved costing rates are invalid; save them again.", { code: "SETTING_INVALID", status: 500 });
-  return { ...parsed.data, configured: true };
+  const gauges = parsed.data.gauges.map((gauge) => ({
+    ...gauge,
+    twoWayPinBoxSetPerPc: gauge.twoWayPinBoxSetPerPc
+      ?? DEFAULT_COSTING_RATES.gauges.find((item) => item.gauge === gauge.gauge)?.twoWayPinBoxSetPerPc
+      ?? DEFAULT_COSTING_RATES.gauges[0].twoWayPinBoxSetPerPc,
+  }));
+  return { ...parsed.data, gauges, configured: true };
 }
 
 export async function setCostingRates(value: unknown, actorId: string) {
