@@ -38,6 +38,18 @@ export default function CostingHistoryPage() {
     }
   }
 
+  async function editCustomer(row) {
+    const name = window.prompt(`Customer for ${row.recordNumber} (${row.reference || "no reference"}):`, row.customerName);
+    if (name === null) return;
+    try {
+      await apiRequest(`/api/costing/records/${row.id}`, { method: "PATCH", body: JSON.stringify({ customerName: name }) });
+      setMessage(`${row.recordNumber}: customer set to ${name.trim() || "(none)"}.`);
+      list.reload();
+    } catch (cause) {
+      setMessage(cause.message);
+    }
+  }
+
   const data = list.data;
   return (
     <main className="inv-page">
@@ -56,7 +68,7 @@ export default function CostingHistoryPage() {
         <section className="inv-kpis" aria-label="Totals">
           <div className="inv-kpi"><span>Costings</span><strong>{n(data.totals.count, 0)}</strong><small>in this list</small></div>
           <div className="inv-kpi"><span>Value (before GST)</span><strong>{n(data.totals.revenue)}</strong><small>costed lines</small></div>
-          <div className="inv-kpi"><span>Material cost</span><strong>{n(data.totals.materialCost)}</strong><small>after scrap recovered</small></div>
+          <div className="inv-kpi"><span>Material cost</span><strong>{n(data.totals.materialCost)}</strong><small>{Number(data.totals.noValue) > 0 ? `of priced costings; ${data.totals.noValue} without prices left out` : "after scrap recovered"}</small></div>
           <div className={`inv-kpi ${Number(data.totals.profit) < 0 ? "inv-kpi--warning" : ""}`}><span>Profit</span><strong>{n(data.totals.profit)}</strong><small>{Number(data.totals.revenue) > 0 ? `${n((Number(data.totals.profit) / Number(data.totals.revenue)) * 100, 1)}% margin` : ""}</small></div>
         </section>
       )}
@@ -85,11 +97,11 @@ export default function CostingHistoryPage() {
                           <td data-label="Date">{day(row.documentDate)}</td>
                           <td data-label="Type">{row.source === "INVOICE" ? "Invoice" : "Quick"}</td>
                           <td data-label="Reference">{row.reference || "—"}</td>
-                          <td data-label="Customer">{row.customerName || "—"}</td>
+                          <td data-label="Customer">{row.customerName || <span title="No customer name on the invoice">—</span>}{can("sales:update") && <> <button type="button" className="inv-link-button" onClick={() => editCustomer(row)}>{row.customerName ? "Edit" : "Add"}</button></>}</td>
                           <td data-label="Pieces" className="inv-num">{n(row.pieces, 0)}</td>
                           <td data-label="Value" className="inv-num">{n(row.revenue)}{Number(row.notCostedRevenue) > 0 ? <small title="Lines not costed (tape, sliders…)"> +{n(row.notCostedRevenue)}</small> : null}</td>
                           <td data-label="Material cost" className="inv-num">{n(row.materialCost)}</td>
-                          <td data-label="Profit" className="inv-num">{n(row.profit)}</td>
+                          <td data-label="Profit" className="inv-num">{Number(row.revenue) > 0 ? <span style={Number(row.profit) < 0 ? { color: "#b42318" } : undefined}>{n(row.profit)}</span> : <small title="Order sheet or prices in dollars: no PKR value">no prices</small>}</td>
                           <td data-label="Margin" className="inv-num">{margin(row)}</td>
                           <td>
                             <Link className="inv-link-button" href={`/print/costing/records/${row.id}`}>Print</Link>

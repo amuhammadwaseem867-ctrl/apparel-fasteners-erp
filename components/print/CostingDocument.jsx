@@ -151,8 +151,8 @@ export default function CostingDocument({ data, company }) {
               <td className="num"><strong>{pkr(totals.materialCost)}</strong></td>
               <td className="num">{n(totals.perPiece, 4)}</td>
               <td className="num">{pkr(totals.revenue)}</td>
-              <td className="num"><strong>{pkr(totals.profit)}</strong></td>
-              <td className="num">{n(totals.marginPercent, 1)}%</td>
+              <td className="num"><strong>{totals.revenue > 0 ? pkr(totals.profit) : "—"}</strong></td>
+              <td className="num">{totals.revenue > 0 ? `${n(totals.marginPercent, 1)}%` : "—"}</td>
             </tr>
           </tbody>
         </table>

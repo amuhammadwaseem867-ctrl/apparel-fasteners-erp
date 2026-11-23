@@ -236,13 +236,17 @@ export async function listCostingRecords(query: unknown) {
     pieces: "pg/text@1", revenue: "pg/text@1", materialCost: "pg/text@1", profit: "pg/text@1", notCostedRevenue: "pg/text@1",
   }).build());
   const [sums] = await rows<Record<string, string>>(db.runtime(), db.raw.sql`
-    select count(*)::text as count, coalesce(sum(revenue), 0)::text as revenue, coalesce(sum("materialCost"), 0)::text as "materialCost", coalesce(sum(profit), 0)::text as profit
+    select count(*)::text as count, coalesce(sum(revenue), 0)::text as revenue,
+      -- A costing with no value (order sheet, prices in dollars) has no profit or loss to count.
+      coalesce(sum("materialCost") filter (where revenue > 0), 0)::text as "materialCost",
+      coalesce(sum(profit) filter (where revenue > 0), 0)::text as profit,
+      count(*) filter (where revenue = 0)::text as "noValue"
     from erp_costing_records
     where (${filters.search} = '' or lower(coalesce("customerName", '') || ' ' || coalesce(reference, '') || ' ' || "recordNumber") like ${like})
       and (${filters.source} = '' or source = ${filters.source})
       and (${filters.from} = '' or "documentDate" >= ${filters.from})
       and (${filters.to} = '' or "documentDate" <= ${filters.to})
-  `.returnsRow({ count: "pg/text@1", revenue: "pg/text@1", materialCost: "pg/text@1", profit: "pg/text@1" }).build());
+  `.returnsRow({ count: "pg/text@1", revenue: "pg/text@1", materialCost: "pg/text@1", profit: "pg/text@1", noValue: "pg/text@1" }).build());
   return { records: list.slice(0, pageSize), hasMore: list.length > pageSize, page: filters.page, totals: sums };
 }
 
@@ -263,6 +267,29 @@ export async function getCostingRecord(id: string) {
   }).build());
   if (!row) throw new AppError("Costing not found.", { code: "COSTING_NOT_FOUND", status: 404 });
   return { ...row, data: JSON.parse(row.data) };
+}
+
+export const costingRecordEditSchema = z.object({
+  customerName: z.string().trim().max(160),
+  reference: z.string().trim().max(80).optional(),
+});
+
+/* Sets the customer (and, for a quick costing, the reference); the printout follows. */
+export async function updateCostingRecord(id: string, input: unknown, actorId: string) {
+  const record = await getCostingRecord(id);
+  const parsed = costingRecordEditSchema.safeParse(input);
+  if (!parsed.success) throw new AppError("Costing validation failed.", { code: "VALIDATION_FAILED", status: 400, details: parsed.error.issues });
+  const customerName = parsed.data.customerName;
+  const reference = record.source === "QUICK" && parsed.data.reference !== undefined ? parsed.data.reference : record.reference;
+  const data = { ...record.data, order: { ...record.data.order, customerName: customerName || "—", orderNumber: reference || "—" } };
+  await db.transaction(async (tx) => {
+    await rows(tx, db.raw.sql`
+      update erp_costing_records set "customerName" = nullif(${customerName}, ''), reference = nullif(${reference}, ''), data = ${JSON.stringify(data)}
+      where id = ${id}::uuid returning id
+    `.returnsRow({ id: "pg/uuid@1" }).build());
+    await recordAuditEvent({ actorId, action: "COSTING_UPDATED", entityType: "CostingRecord", entityId: id, metadata: { recordNumber: record.recordNumber, customerName } }, tx);
+  });
+  return getCostingRecord(id);
 }
 
 /* Quick costings saved by mistake can go; invoice costings stay with their invoice. */
