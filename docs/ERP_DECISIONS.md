@@ -1596,3 +1596,13 @@ navigation.
   chain roll "for plating" is a plating job (plating per meter only);
   tape, loose sliders and pins are not costed, their value shown apart
   from the profit.
+
+## D-061 No dyeing or plating cost; recalculating costings (2026-11-23)
+
+- Dyeing and plating are not charged: the default rates are 0 and a
+  costing leaves both items off while their rate is 0 (a chain roll "for
+  plating" then costs nothing). They can be set again in Costing rates.
+- Costing history → "Recalculate with current rates" re-costs every saved
+  invoice costing from the lines it keeps, with the current Costing
+  rates, in batches; numbers, dates and customers stay. Use it after
+  changing a rate (e.g. aluminium chain per meter).

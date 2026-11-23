@@ -23,6 +23,7 @@ export default function CostingHistoryPage() {
   const { can } = useCurrentUser();
   const [filters, setFilters] = useState({ search: "", source: "", from: "", to: "", page: 1 });
   const [message, setMessage] = useState("");
+  const [recalculating, setRecalculating] = useState(false);
   const query = new URLSearchParams(Object.entries(filters).filter(([, value]) => value !== "" && value !== null).map(([key, value]) => [key, String(value)]));
   const list = useApiData(`/api/costing/records?${query}`);
   const set = (key) => (event) => setFilters((current) => ({ ...current, [key]: event.target.value, page: 1 }));
@@ -35,6 +36,28 @@ export default function CostingHistoryPage() {
       list.reload();
     } catch (cause) {
       setMessage(cause.message);
+    }
+  }
+
+  /* Re-costs every saved invoice costing with the current Costing rates, a batch at a time. */
+  async function recalculate() {
+    if (!window.confirm("Recalculate every invoice costing with the current Costing rates? Numbers, dates and customers stay; costs and profit are updated.")) return;
+    setRecalculating(true);
+    try {
+      let offset = 0;
+      for (;;) {
+        const response = await apiRequest("/api/costing/records/recalculate", { method: "POST", body: JSON.stringify({ offset, limit: 15 }) });
+        const step = response.data ?? response;
+        offset = step.next;
+        setMessage(`Recalculating… ${Math.min(offset, step.total)} of ${step.total}`);
+        if (step.done) break;
+      }
+      setMessage("All invoice costings recalculated with the current rates.");
+      list.reload();
+    } catch (cause) {
+      setMessage(`Stopped: ${cause.message}. Press Recalculate again to finish; it is safe to repeat.`);
+    } finally {
+      setRecalculating(false);
     }
   }
 
@@ -60,6 +83,8 @@ export default function CostingHistoryPage() {
           <p>Every saved costing, from quick costing or an invoice. Print any of them again; no order or invoice is made.</p>
         </div>
         <div className="inv-header__actions">
+          {can("sales:update") && <button type="button" className="inv-link-button" disabled={recalculating} onClick={recalculate}>{recalculating ? "Recalculating…" : "Recalculate with current rates"}</button>}
+          <Link className="inv-link-button" href="/sales/costing-rates">Costing rates</Link>
           <Link className="inv-link-button inv-link-button--primary" href="/sales/quick-costing">New quick costing</Link>
         </div>
       </header>

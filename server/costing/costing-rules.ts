@@ -70,7 +70,11 @@ export type CostingRates = {
   gauges: GaugeRates[];
 };
 
-/* The master sheet's "just material" prices and the owner's answers (2026-10-29). */
+/*
+ * The master sheet's "just material" prices and the owner's answers
+ * (2026-10-29). Dyeing and plating are not charged (owner, 2026-11-23):
+ * both are 0 until set in Costing rates.
+ */
 export const DEFAULT_COSTING_RATES: CostingRates = {
   brassPricePerKg: 3500,
   packingPerPc: 0.15,
@@ -83,12 +87,12 @@ export const DEFAULT_COSTING_RATES: CostingRates = {
   gauges: [
     {
       gauge: "4.5", marginCm: 3.5, rollMeters: 200, tapeMetersPerKg: 90, brassGramsPerMeter: 26.88, rollWeightKg: 7.6, brassKgPerRoll: 5.88,
-      openEndGapCm: 4.5, tapePricePerKg: 487.5, dyeingPerMeter: 350 / 90, platingPerMeter: 4.873,
+      openEndGapCm: 4.5, tapePricePerKg: 487.5, dyeingPerMeter: 0, platingPerMeter: 0,
       bottomStopPerPc: 2.65 * 0.273, pinBoxSetPerPc: 2.677, twoWayPinBoxSetPerPc: 2.0969, aluminiumChainPerMeter: 61, topStopPerPc: 2.65 * 0.0943, pullerPerPc: 9,
     },
     {
       gauge: "5", marginCm: 4, rollMeters: 100, tapeMetersPerKg: 75, brassGramsPerMeter: 41.67, rollWeightKg: 5.5, brassKgPerRoll: 4.16,
-      openEndGapCm: 4.5, tapePricePerKg: 244, dyeingPerMeter: 500 / 90, platingPerMeter: 4.873,
+      openEndGapCm: 4.5, tapePricePerKg: 244, dyeingPerMeter: 0, platingPerMeter: 0,
       bottomStopPerPc: 1.041, pinBoxSetPerPc: 2.677, twoWayPinBoxSetPerPc: 2.0969, aluminiumChainPerMeter: 61, topStopPerPc: 0.617, pullerPerPc: 31.4,
     },
   ],
@@ -314,13 +318,14 @@ export function costSection(lines: CostedLine[], rates: CostingRates): CostSecti
   const sliders = sum(lines.filter((line) => !line.noSlider), (line) => line.quantity * (end === "2-way open end" ? 2 : 1));
   const customerSliders = sum(lines.filter((line) => line.noSlider && end !== "Chain roll"), (line) => line.quantity);
   const chain = chainSource === "no-chain" ? []
-    : chainSource === "plating-only" ? [item("plating", "Plating (customer's chain)", "Meter", meters, 0, g.platingPerMeter, pieces)]
+    : chainSource === "plating-only" ? (g.platingPerMeter > 0 ? [item("plating", "Plating (customer's chain)", "Meter", meters, 0, g.platingPerMeter, pieces)] : [])
     : aluminium
     ? [item("aluminium-chain", "Aluminium chain", "Meter", meters, 0, g.aluminiumChainPerMeter ?? 61, pieces)]
     : [
       item("tape", "Tape", "Kg", tapeKg, wastage.tapeKg, g.tapePricePerKg, pieces),
-      item("dyeing", "Dyeing", "Meter", meters, wastage.meters, g.dyeingPerMeter, pieces),
-      ...(platedMeters > 0 ? [item("plating", "Plating", "Meter", platedMeters, wastage.meters * (platedMeters / meters), g.platingPerMeter, pieces)] : []),
+      // A rate of 0 means not charged: the item is left off the costing.
+      ...(g.dyeingPerMeter > 0 ? [item("dyeing", "Dyeing", "Meter", meters, wastage.meters, g.dyeingPerMeter, pieces)] : []),
+      ...(platedMeters > 0 && g.platingPerMeter > 0 ? [item("plating", "Plating", "Meter", platedMeters, wastage.meters * (platedMeters / meters), g.platingPerMeter, pieces)] : []),
       item("brass", "Brass", "Kg", brassKg, wastage.brassKg + gapBrassKg, rates.brassPricePerKg, pieces),
     ];
   const components = end === "Chain roll" ? [] : [

@@ -11,6 +11,11 @@ import { DEFAULT_COSTING_RATES, costOrder, gaugeOf, sizeInCm, wastageKg } from "
 
 const close = (actual, expected, digits = 4) => assert.ok(Math.abs(actual - expected) < 10 ** -digits, `${actual} != ${expected}`);
 const sheetWastage = { ...DEFAULT_COSTING_RATES, wastageSmallKg: 0.02, wastageMediumKg: 0.02, wastageLargeKgPer1000m: 0 };
+/* The master sheet's dyeing and plating rates, for the tests of how they are charged. */
+const withDyeingPlating = {
+  ...DEFAULT_COSTING_RATES,
+  gauges: DEFAULT_COSTING_RATES.gauges.map((gauge) => ({ ...gauge, dyeingPerMeter: gauge.gauge === "5" ? 500 / 90 : 350 / 90, platingPerMeter: 4.873 })),
+};
 const line = (lineNo, productName, size, quantity, finish = "Shiny Black") => ({ lineNo, productName, size, finish, quantity });
 
 test("gauge and size are read from the order sheet", () => {
@@ -78,7 +83,7 @@ test("dyeing per meter on all tape, plating per meter only on plated finishes; t
     line(2, "#5 Metal Zipper Close End", "7 Inch", 1000, "Gun Metal"),
     line(3, "#4.5 Metal Zipper Open End", "26 Inch", 100, "Shiny Silver"),
     line(4, "Packing tape", "", 5, ""),
-  ], DEFAULT_COSTING_RATES, 50000);
+  ], withDyeingPlating, 50000);
   assert.deepEqual(order.sections.map((section) => `${section.gauge} ${section.end}`), ["4.5 Open end", "5 Close end"]);
   assert.deepEqual(order.skipped.map((row) => row.lineNo), [4]);
   const five = order.sections[1];
@@ -122,7 +127,7 @@ test("invoice lines (D-060): aluminium chain, customer's slider or chain, chain 
     { ...line(4, "#4.5 Brass Auto-gap chain rolls for Plating", "", 100, "Antique Silver"), unit: "Mtr" },
     line(5, "#5 Metal Zipper Open End (Use AF Pin Box And Stopper)", "26 Inch", 50, "Antique Brass"),
     line(6, "#5 Sliders", "#5", 2000, ""),
-  ], DEFAULT_COSTING_RATES, 0);
+  ], withDyeingPlating, 0);
   const find = (label) => order.sections.find((section) => `${section.gauge} ${section.end} ${section.material} ${section.chainSource}` === label);
   const keys = (section) => section.items.map((item) => item.key);
   const alu = find("5 Open end Aluminium full");
@@ -138,8 +143,19 @@ test("invoice lines (D-060): aluminium chain, customer's slider or chain, chain 
   assert.deepEqual(keys(chain), ["tape", "dyeing", "brass"], "chain only: no stops, sliders or packing (golden brass is not plated)");
   const plating = find("4.5 Chain roll Brass plating-only");
   assert.deepEqual(keys(plating), ["plating"]);
-  close(plating.materialCost, 100 * DEFAULT_COSTING_RATES.gauges[0].platingPerMeter, 6);
+  close(plating.materialCost, 100 * 4.873, 6);
   const parts = find("5 Open end Brass no-chain");
   assert.deepEqual(keys(parts), ["pin-box", "top-stop", "packing"], "Use AF pin box and stopper: only those are ours");
   assert.deepEqual(order.skipped.map((row) => row.lineNo), [6], "loose sliders are not costed");
+});
+
+test("dyeing and plating are not charged by default (owner, 2026-11-23): no such items, no cost", () => {
+  const order = costOrder([
+    line(1, "#5 Metal Zipper Close End", "7 Inch", 1000, "Antique Brass"),
+    { ...line(2, "#4.5 Brass Chain Roll for Plating", "", 100, "Antique Silver"), unit: "Mtr" },
+  ], DEFAULT_COSTING_RATES, 0);
+  const keys = order.sections.flatMap((section) => section.items.map((item) => item.key));
+  assert.ok(!keys.includes("dyeing") && !keys.includes("plating"), keys.join(","));
+  const platingJob = order.sections.find((section) => section.chainSource === "plating-only");
+  assert.equal(platingJob.materialCost, 0, "a plating job costs nothing when plating is not charged");
 });

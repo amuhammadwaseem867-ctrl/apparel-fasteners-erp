@@ -100,3 +100,35 @@ test("costing history (D-060): a saved quick costing is listed, prints its snaps
   await service.deleteCostingRecord(saved.id, actor);
   await assert.rejects(service.getCostingRecord(saved.id), (error) => error.code === "COSTING_NOT_FOUND");
 });
+
+test("recalculating invoice costings (D-061) uses the current rates and keeps numbers and customers", async () => {
+  const service = await import("../../server/costing/costing.service.ts");
+  const { randomUUID } = await import("node:crypto");
+  const actor = randomUUID();
+  const ref = `RC-${Date.now()}`;
+  const withDyeing = { ...DEFAULT_COSTING_RATES, gauges: DEFAULT_COSTING_RATES.gauges.map((gauge) => ({ ...gauge, dyeingPerMeter: 5, platingPerMeter: 4 })) };
+  try {
+    await service.setCostingRates(withDyeing, actor);
+    const [saved] = (await service.importInvoiceCostings({ invoices: [{ number: ref, date: "2026-11-02", customerName: "Recalc test", lines: [
+      { productName: "#5 Metal Zipper Close End", size: "7 Inch", finish: "Antique Brass", unit: "Pcs", quantity: 1000, amount: 25000 },
+    ] }] }, actor)).saved;
+    const before = (await service.listCostingRecords({ search: ref })).records[0];
+    const printed = await service.getCostingRecord(before.id);
+    assert.ok(printed.data.sections[0].items.some((item) => item.key === "dyeing"));
+
+    await service.setCostingRates(DEFAULT_COSTING_RATES, actor);
+    let step = { next: 0, done: false };
+    while (!step.done) step = await service.recalculateInvoiceCostings({ offset: step.next, limit: 50 }, actor);
+
+    const after = (await service.listCostingRecords({ search: ref })).records[0];
+    assert.equal(after.recordNumber, saved.recordNumber);
+    assert.equal(after.customerName, "Recalc test");
+    assert.ok(Number(after.materialCost) < Number(before.materialCost), "dyeing and plating no longer charged");
+    assert.equal(Number(after.revenue), 25000);
+    const reprinted = await service.getCostingRecord(after.id);
+    assert.ok(!reprinted.data.sections[0].items.some((item) => item.key === "dyeing" || item.key === "plating"));
+    assert.equal(reprinted.data.recordNumber, saved.recordNumber);
+  } finally {
+    await db.runtime().query(db.raw.sql`delete from erp_app_settings where key = 'costing.rates' returning key`.returnsRow({ key: "pg/text@1" }).build());
+  }
+});

@@ -379,3 +379,52 @@ export async function importInvoiceCostings(input: unknown, actorId: string) {
     return { saved };
   });
 }
+
+/*
+ * Recalculates saved invoice costings with the current costing rates
+ * (D-061), from the invoice lines each costing keeps; numbers, dates and
+ * customers stay. A batch at a time, so a slow database never times out.
+ */
+export async function recalculateInvoiceCostings(input: { offset?: number; limit?: number }, actorId: string) {
+  const offset = Math.max(0, Math.floor(Number(input.offset ?? 0)));
+  const limit = Math.min(50, Math.max(1, Math.floor(Number(input.limit ?? 20))));
+  const rates = await getCostingRates();
+  const [{ total }] = await rows<{ total: string }>(db.runtime(), db.raw.sql`
+    select count(*)::text as total from erp_costing_records where source = 'INVOICE'
+  `.returnsRow({ total: "pg/text@1" }).build());
+  const batch = await rows<{ id: string; recordNumber: string; reference: string; documentDate: string; customerName: string; data: string }>(db.runtime(), db.raw.sql`
+    select id::text as id, "recordNumber", coalesce(reference, '') as reference, "documentDate", coalesce("customerName", '') as "customerName", data
+    from erp_costing_records where source = 'INVOICE' order by "recordNumber" limit ${limit} offset ${offset}
+  `.returnsRow({ id: "pg/text@1", recordNumber: "pg/text@1", reference: "pg/text@1", documentDate: "pg/text@1", customerName: "pg/text@1", data: "pg/text@1" }).build());
+  const generated = (note: string) => note.startsWith("Prices are in US dollars") || note.startsWith("Not costed lines are worth");
+  await db.transaction(async (tx) => {
+    for (const record of batch) {
+      const saved = JSON.parse(record.data);
+      const notes: string[] = saved.notes ?? [];
+      const invoice = invoiceCostingSchema.shape.invoices.element.parse({
+        number: record.reference || record.recordNumber,
+        date: record.documentDate,
+        customerName: record.customerName,
+        usd: notes.some((note) => note.startsWith("Prices are in US dollars")),
+        notes: notes.filter((note) => !generated(note)),
+        lines: (saved.order?.lines ?? []).map((line: Record<string, unknown>) => ({
+          productName: line.productName, size: line.size ?? "", finish: line.finish ?? "", tapeColor: line.tapeColor ?? "",
+          unit: line.unit ?? "Pcs", quantity: line.quantity, amount: line.amount ?? null,
+        })),
+      });
+      const costing = invoiceCosting(invoice, rates);
+      const data = JSON.stringify({ ...costing.data, recordNumber: record.recordNumber, order: { ...costing.data.order, customerName: record.customerName || "—" } });
+      await rows(tx, db.raw.sql`
+        update erp_costing_records set pieces = ${String(costing.totals.pieces)}::numeric, revenue = ${money(costing.totals.revenue)}::numeric,
+          "materialCost" = ${money(costing.totals.materialCost)}::numeric, profit = ${money(costing.totals.profit)}::numeric,
+          "notCostedRevenue" = ${money(costing.notCostedRevenue)}::numeric, data = ${data}
+        where id = ${record.id}::uuid returning id
+      `.returnsRow({ id: "pg/uuid@1" }).build());
+    }
+    if (batch.length) {
+      await recordAuditEvent({ actorId, action: "INVOICE_COSTINGS_RECALCULATED", entityType: "CostingRecord", entityId: null, metadata: { offset, count: batch.length } }, tx);
+    }
+  });
+  const next = offset + batch.length;
+  return { recalculated: batch.length, next, total: Number(total), done: next >= Number(total) || batch.length === 0 };
+}
